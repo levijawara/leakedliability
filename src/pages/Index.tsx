@@ -101,25 +101,15 @@ const Index = () => {
         <Card className="max-w-4xl mx-auto p-12 text-center bg-gradient-to-br from-card to-muted/20 border-foreground">
           <h2 className="text-4xl font-black mb-4">Ready to Change the Industry?</h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join the movement to hold producers accountable and get crews paid faster.
+            Follow @LeakedLiability on Instagram to join the movement. Let's start holding producers accountable, so that we can get crews paid faster.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
-              onClick={() => navigate("/auth")}
-              className="text-lg px-8"
-            >
-              Get Started
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline"
-              onClick={() => navigate("/leaderboard")}
-              className="text-lg px-8"
-            >
-              View Leaderboard
-            </Button>
-          </div>
+          <Button 
+            size="lg" 
+            onClick={() => window.open('https://www.instagram.com/leakedliability/', '_blank')}
+            className="text-lg px-8"
+          >
+            Follow on Instagram
+          </Button>
         </Card>
       </div>
     </div>
