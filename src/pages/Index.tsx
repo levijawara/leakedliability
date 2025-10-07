@@ -55,7 +55,7 @@ const Index = () => {
               className="text-lg px-8"
             >
               <FileText className="mr-2 h-5 w-5" />
-              Submit Report
+              Submission Forms
             </Button>
           </div>
         </div>

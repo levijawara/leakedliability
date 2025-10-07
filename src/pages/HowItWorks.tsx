@@ -10,7 +10,7 @@ const HowItWorks = () => {
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         <h1 className="text-5xl md:text-6xl font-black text-center mb-4">How It Works</h1>
         <p className="text-center text-muted-foreground text-lg mb-12 max-w-3xl mx-auto">
-          Understanding the process, rules, and accountability measures that make Leaked Liability™ work.
+          Understanding the submission process, rules, and accountability measures. Users submit either Crew Member forms or Producer/Production Company forms.
         </p>
 
         {/* Participants */}
@@ -34,9 +34,9 @@ const HowItWorks = () => {
 
         <Separator className="my-12" />
 
-        {/* What Crew Members Can Submit */}
+        {/* Crew Member Submission Forms */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">What Crew Members Can Submit:</h2>
+          <h2 className="text-3xl font-bold mb-6">Crew Member Submission Forms:</h2>
           <div className="space-y-4">
             <div className="flex gap-3">
               <span className="text-2xl">⚠️</span>
@@ -62,9 +62,9 @@ const HowItWorks = () => {
           </div>
         </Card>
 
-        {/* What Producers/Production Companies Can Submit */}
+        {/* Producer/Production Company Submission Forms */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">What Producers/Production Companies Can Submit:</h2>
+          <h2 className="text-3xl font-bold mb-6">Producer/Production Company Submission Forms:</h2>
           <div className="space-y-4">
             <div className="flex gap-3">
               <span className="text-2xl">🧾</span>
@@ -129,9 +129,9 @@ const HowItWorks = () => {
 
         <Separator className="my-12" />
 
-        {/* Crew Member Submission Instructions */}
+        {/* Crew Member Form Instructions */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">Crew Member Submission Instructions:</h2>
+          <h2 className="text-3xl font-bold mb-6">Crew Member Form Instructions:</h2>
           <div className="space-y-6">
             <div>
               <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
@@ -168,9 +168,9 @@ const HowItWorks = () => {
           </div>
         </Card>
 
-        {/* Producer/Production Company Submission Instructions */}
+        {/* Producer/Production Company Form Instructions */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">Producer/Production Company Submission Instructions:</h2>
+          <h2 className="text-3xl font-bold mb-6">Producer/Production Company Form Instructions:</h2>
           <div className="space-y-6">
             <div>
               <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
