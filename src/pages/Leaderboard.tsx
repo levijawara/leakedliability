@@ -75,8 +75,8 @@ export default function Leaderboard() {
                     <br />
                     <span className="text-xs font-normal">(0 - 1,000)</span>
                   </TableHead>
-                  <TableHead className="text-primary-foreground font-black text-sm text-right">
-                    TOTAL $$$
+                  <TableHead className="text-primary-foreground font-black text-sm text-center">
+                    TOTAL <span className="text-status-excellent">$$$</span>
                     <br />
                     <span className="text-status-excellent">OWED</span>
                   </TableHead>
@@ -129,8 +129,8 @@ export default function Leaderboard() {
                       <TableCell className="text-center font-bold text-lg">
                         {Math.round(producer.pscs_score || 0)}
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-status-excellent">
-                        ${producer.total_amount_owed?.toLocaleString() || "0"}
+                      <TableCell className="text-center font-semibold">
+                        <span className="text-status-excellent">$</span>{producer.total_amount_owed?.toLocaleString() || "0"}
                       </TableCell>
                       <TableCell className="text-center">
                         {producer.oldest_debt_date
@@ -171,7 +171,7 @@ export default function Leaderboard() {
 
         {/* Legend */}
         <Card className="mt-8 p-6">
-          <h3 className="font-bold text-lg mb-4">Days Overdue Color Code</h3>
+          <h3 className="font-bold text-lg mb-4">Days-Since-Wrap color coding:</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded bg-status-excellent" />
