@@ -89,43 +89,48 @@ export default function Leaderboard() {
         </Card>
 
         {/* PSCS Formula */}
-        <Card className="mb-8 p-8 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
-          <h3 className="font-black text-xl mb-6 text-center">PSCS™ OFFICIAL FORMULA</h3>
-          <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg">
-            <div className="font-mono text-center space-y-4">
-              <div className="text-lg md:text-xl">
-                <span className="font-black">PSCS</span> = 
-                <span className="inline-block mx-2">
-                  [
-                  <span className="text-status-danger font-bold">Σ($owed)</span>
-                  {" × "}
-                  <span className="text-status-critical font-bold">log(days + 1)</span>
-                  ]
-                </span>
-              </div>
-              <div className="text-2xl font-black text-primary">×</div>
-              <div className="text-base md:text-lg">
-                <span className="inline-block">
-                  [
-                  <span className="text-status-warning font-bold">crew</span>
-                  <sup className="text-xs">0.5</sup>
-                  {" + "}
-                  <span className="text-status-warning font-bold">jobs</span>
-                  <sup className="text-xs">0.3</sup>
-                  {" + "}
-                  <span className="text-status-warning font-bold">cities</span>
-                  <sup className="text-xs">0.2</sup>
-                  ]
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground mt-6 pt-4 border-t border-border">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  <div><span className="font-bold">Σ($owed)</span> = Total Amount Owed</div>
-                  <div><span className="font-bold">days</span> = Days Since Oldest Debt</div>
-                  <div><span className="font-bold">crew</span> = Total Crew Members Owed</div>
-                  <div><span className="font-bold">jobs</span> = Total Jobs With Unpaid Debts</div>
-                  <div><span className="font-bold">cities</span> = Total Cities Affected</div>
+        <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
+          <h3 className="font-black text-lg mb-4 text-center">PSCS™ OFFICIAL FORMULA</h3>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Left Half - Formula */}
+            <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center justify-center">
+              <div className="font-mono text-center space-y-3 text-foreground">
+                <div className="text-base md:text-lg text-black">
+                  <span className="font-black">PSCS</span> = 
+                  <span className="inline-block mx-2">
+                    [
+                    <span className="font-bold">Σ($owed)</span>
+                    {" × "}
+                    <span className="font-bold">log(days + 1)</span>
+                    ]
+                  </span>
                 </div>
+                <div className="text-xl font-black text-black">×</div>
+                <div className="text-sm md:text-base text-black">
+                  <span className="inline-block">
+                    [
+                    <span className="font-bold">crew</span>
+                    <sup className="text-xs">0.5</sup>
+                    {" + "}
+                    <span className="font-bold">jobs</span>
+                    <sup className="text-xs">0.3</sup>
+                    {" + "}
+                    <span className="font-bold">cities</span>
+                    <sup className="text-xs">0.2</sup>
+                    ]
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Half - Legend */}
+            <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center">
+              <div className="text-xs text-muted-foreground space-y-2 w-full">
+                <div><span className="font-bold text-foreground">Σ($owed)</span> = Total Amount Owed</div>
+                <div><span className="font-bold text-foreground">days</span> = Days Since Oldest Debt</div>
+                <div><span className="font-bold text-foreground">crew</span> = Total Crew Members Owed</div>
+                <div><span className="font-bold text-foreground">jobs</span> = Total Jobs With Unpaid Debts</div>
+                <div><span className="font-bold text-foreground">cities</span> = Total Cities Affected</div>
               </div>
             </div>
           </div>
