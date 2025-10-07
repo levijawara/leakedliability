@@ -153,7 +153,7 @@ export default function SubmitReport() {
             className="text-lg px-8"
           >
             <FileWarning className="mr-2 h-5 w-5" />
-            Open Submission Form
+            Open Submission Forms
           </Button>
         </Card>
         </div>
