@@ -23,12 +23,11 @@ const Index = () => {
           </h1>
 
           <p className="text-2xl md:text-3xl font-bold text-muted-foreground max-w-2xl mx-auto">
-            Weaponizing human psychology to motivate producers to pay crew faster
+            A platform designed to enable and empower freelance crew members, by intrinsically motivating producers to be good people.
           </p>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            A public leaderboard tracking producers who owe payments to freelance filmmakers. 
-            No more Net 30+. It's time for accountability.
+            Net30+ was created as a means to assist businesses with monthly cash-flow BEFORE bank transactions became automated. We used AI to help build and automate this entire platform...in a matter of days. Anyone who thinks NET30+ payment terms are still needed or necessary is deluded.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">

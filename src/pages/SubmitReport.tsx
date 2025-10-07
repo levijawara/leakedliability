@@ -142,140 +142,19 @@ export default function SubmitReport() {
           </div>
         </Card>
 
-        <Card className="p-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                  <FileWarning className="h-5 w-5" />
-                  Producer Information
-                </h2>
-                
-                <FormField
-                  control={form.control}
-                  name="producerName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Producer Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="John Doe" {...field} />
-                      </FormControl>
-                      <FormDescription>Legal name or known alias</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="producerCompany"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Production Company</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Optional" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold">Project Details</h2>
-                
-                <FormField
-                  control={form.control}
-                  name="projectName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Music Video for Artist X" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Los Angeles" {...field} />
-                      </FormControl>
-                      <FormDescription>Where the project took place</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-4">
-                <h2 className="text-xl font-bold">Payment Information</h2>
-                
-                <FormField
-                  control={form.control}
-                  name="amountOwed"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Amount Owed *</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" placeholder="500.00" {...field} />
-                      </FormControl>
-                      <FormDescription>Dollar amount without $ symbol</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="invoiceDate"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Invoice Date *</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormDescription>When payment was originally due</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="notes"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Additional Notes</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Any additional context about the payment issue..."
-                          rows={4}
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full" 
-                size="lg"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? "Submitting..." : "Submit Report"}
-              </Button>
-            </form>
-          </Form>
+        <Card className="p-8 text-center">
+          <h2 className="text-2xl font-bold mb-4">Submit Your Report</h2>
+          <p className="text-muted-foreground mb-6">
+            Click the button below to submit your unpaid invoice report via our secure form.
+          </p>
+          <Button 
+            size="lg" 
+            onClick={() => window.open("https://your-typeform-link-here.typeform.com/to/your-form-id", "_blank")}
+            className="text-lg px-8"
+          >
+            <FileWarning className="mr-2 h-5 w-5" />
+            Open Submission Form
+          </Button>
         </Card>
         </div>
       </div>
