@@ -105,7 +105,7 @@ export default function Leaderboard() {
                   <TableHead className="text-primary-foreground font-black text-sm text-center">
                     TOTAL <span className="text-status-excellent">$$$</span>
                     <br />
-                    <span className="text-status-excellent">OWED</span>
+                    OWED
                   </TableHead>
                   <TableHead className="text-primary-foreground font-black text-sm text-center">
                     OLDEST
