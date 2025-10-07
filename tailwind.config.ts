@@ -57,6 +57,14 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        status: {
+          excellent: "hsl(var(--status-excellent))",
+          warning: "hsl(var(--status-warning))",
+          danger: "hsl(var(--status-danger))",
+          critical: "hsl(var(--status-critical))",
+          nuclear: "hsl(var(--status-nuclear))",
+          "nuclear-text": "hsl(var(--status-nuclear-text))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
