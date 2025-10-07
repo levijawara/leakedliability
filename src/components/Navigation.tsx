@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingDown, FileText, Info } from "lucide-react";
+import { Home, TrendingUp, FileText, Info } from "lucide-react";
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export function Navigation() {
               size="sm"
               onClick={() => navigate("/leaderboard")}
             >
-              <TrendingDown className="h-4 w-4 mr-2" />
+              <TrendingUp className="h-4 w-4 mr-2" />
               Leaderboard
             </Button>
             <Button

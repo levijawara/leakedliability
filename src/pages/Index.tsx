@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, FileText, Users, TrendingDown } from "lucide-react";
+import { AlertTriangle, FileText, Users, TrendingUp } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ const Index = () => {
               onClick={() => navigate("/leaderboard")}
               className="text-lg px-8"
             >
-              <TrendingDown className="mr-2 h-5 w-5" />
+              <TrendingUp className="mr-2 h-5 w-5" />
               View Leaderboard
             </Button>
             <Button 
@@ -77,7 +77,7 @@ const Index = () => {
 
           <Card className="p-6 text-center space-y-4">
             <div className="w-12 h-12 rounded-full bg-status-excellent/10 flex items-center justify-center mx-auto">
-              <TrendingDown className="h-6 w-6 text-status-excellent" />
+              <TrendingUp className="h-6 w-6 text-status-excellent" />
             </div>
             <h3 className="text-xl font-bold">Public Accountability</h3>
             <p className="text-muted-foreground">
