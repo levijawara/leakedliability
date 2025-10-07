@@ -70,7 +70,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold">Crew Protection</h3>
             <p className="text-muted-foreground">
-              Your Identity stays anonymous. We only need it for documentation, corroboration, and verification purposes.
+              Your identity stays anonymous. We only need it for documentation, corroboration, and verification purposes.
             </p>
           </Card>
 
