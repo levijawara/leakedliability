@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, FileText, Users, TrendingUp } from "lucide-react";
+import { AlertTriangle, FileText, Users, TrendingUp, Info } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -27,10 +27,19 @@ const Index = () => {
           </p>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Net30+ was created as a means to assist businesses with monthly cash-flow BEFORE bank transactions became automated. We used AI to help build and automate this entire platform...in a matter of days. Anyone who thinks NET30+ payment terms are still needed or necessary is deluded.
+            NET30+ was created as a means to assist businesses with monthly cash-flow BEFORE bank transactions became automated, but humanity has come a VERY long way—so has our technology. There's no need to pretend anymore. Humanity's undisciplined greed is the only reason why NET30+ still lingers, so we've decided to do something about it.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => navigate("/how-it-works")}
+              className="text-lg px-8"
+            >
+              <Info className="mr-2 h-5 w-5" />
+              How It Works
+            </Button>
             <Button 
               size="lg" 
               onClick={() => navigate("/leaderboard")}
