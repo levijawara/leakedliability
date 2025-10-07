@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingDown, FileText } from "lucide-react";
+import { Home, TrendingDown, FileText, Info } from "lucide-react";
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -24,6 +24,14 @@ export function Navigation() {
             >
               <Home className="h-4 w-4 mr-2" />
               Home
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/how-it-works")}
+            >
+              <Info className="h-4 w-4 mr-2" />
+              How It Works
             </Button>
             <Button
               variant="ghost"
