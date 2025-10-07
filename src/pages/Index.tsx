@@ -64,17 +64,17 @@ const Index = () => {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <Card className="p-6 text-center space-y-4">
+          <Card className="p-6 text-center space-y-4 border-foreground">
             <div className="w-12 h-12 rounded-full bg-status-critical/10 flex items-center justify-center mx-auto">
               <Users className="h-6 w-6 text-status-critical" />
             </div>
             <h3 className="text-xl font-bold">Crew Protection</h3>
             <p className="text-muted-foreground">
-              Your identity stays anonymous. Producers never see who reported them.
+              Your Identity stays anonymous. We only need it for documentation, corroboration, and verification purposes.
             </p>
           </Card>
 
-          <Card className="p-6 text-center space-y-4">
+          <Card className="p-6 text-center space-y-4 border-foreground">
             <div className="w-12 h-12 rounded-full bg-status-warning/10 flex items-center justify-center mx-auto">
               <AlertTriangle className="h-6 w-6 text-status-warning" />
             </div>
@@ -84,13 +84,13 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 text-center space-y-4">
+          <Card className="p-6 text-center space-y-4 border-foreground">
             <div className="w-12 h-12 rounded-full bg-status-excellent/10 flex items-center justify-center mx-auto">
               <TrendingUp className="h-6 w-6 text-status-excellent" />
             </div>
             <h3 className="text-xl font-bold">Public Accountability</h3>
             <p className="text-muted-foreground">
-              Verified reports appear publicly, creating social pressure for faster payments.
+              Verified reports enable us to post factual statistics, which could encourage better production budget negotiation and handling.
             </p>
           </Card>
         </div>
@@ -98,7 +98,7 @@ const Index = () => {
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-20">
-        <Card className="max-w-4xl mx-auto p-12 text-center bg-gradient-to-br from-card to-muted/20">
+        <Card className="max-w-4xl mx-auto p-12 text-center bg-gradient-to-br from-card to-muted/20 border-foreground">
           <h2 className="text-4xl font-black mb-4">Ready to Change the Industry?</h2>
           <p className="text-lg text-muted-foreground mb-8">
             Join the movement to hold producers accountable and get crews paid faster.
