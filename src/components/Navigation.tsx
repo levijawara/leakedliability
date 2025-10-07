@@ -41,14 +41,6 @@ export function Navigation() {
               <TrendingUp className="h-4 w-4 mr-2" />
               Leaderboard
             </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => navigate("/submit")}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Submit Report
-            </Button>
           </div>
         </div>
       </div>
