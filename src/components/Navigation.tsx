@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, FileText, Info } from "lucide-react";
+import { Home, TrendingUp, FileText, Info, AlertTriangle } from "lucide-react";
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -48,6 +48,14 @@ export function Navigation() {
             >
               <FileText className="h-4 w-4 mr-2" />
               Submission Forms
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/disclaimer")}
+            >
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Disclaimer
             </Button>
           </div>
         </div>

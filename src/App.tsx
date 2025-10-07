@@ -8,6 +8,7 @@ import Leaderboard from "./pages/Leaderboard";
 import SubmitReport from "./pages/SubmitReport";
 import HowItWorks from "./pages/HowItWorks";
 import Auth from "./pages/Auth";
+import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/submit" element={<SubmitReport />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/auth" element={<Auth />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
