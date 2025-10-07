@@ -149,7 +149,7 @@ export default function SubmitReport() {
           </p>
           <Button 
             size="lg" 
-            onClick={() => window.open("https://your-typeform-link-here.typeform.com/to/your-form-id", "_blank")}
+            onClick={() => window.open("https://form.typeform.com/to/xuqf6PDX", "_blank")}
             className="text-lg px-8"
           >
             <FileWarning className="mr-2 h-5 w-5" />
