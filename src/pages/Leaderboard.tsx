@@ -61,6 +61,33 @@ export default function Leaderboard() {
           </div>
         </Card>
 
+        {/* Legend */}
+        <Card className="mb-8 p-6">
+          <h3 className="font-bold text-lg mb-4">Days-Since-Wrap color coding:</h3>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-status-excellent" />
+              <span className="text-sm text-status-excellent font-semibold">0-14 days</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-status-warning" />
+              <span className="text-sm text-status-warning font-semibold">15-29 days</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-status-danger" />
+              <span className="text-sm text-status-danger font-semibold">30-89 days</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-status-critical" />
+              <span className="text-sm text-status-critical font-semibold">90-364 days</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded bg-status-nuclear border border-status-nuclear-text" />
+              <span className="text-sm bg-status-nuclear text-status-nuclear-text px-2 py-1 rounded font-bold">365+ days</span>
+            </div>
+          </div>
+        </Card>
+
         {/* Leaderboard Table */}
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
@@ -169,32 +196,6 @@ export default function Leaderboard() {
           </div>
         </Card>
 
-        {/* Legend */}
-        <Card className="mt-8 p-6">
-          <h3 className="font-bold text-lg mb-4">Days-Since-Wrap color coding:</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-status-excellent" />
-              <span className="text-sm">0-14 days</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-status-warning" />
-              <span className="text-sm">15-29 days</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-status-danger" />
-              <span className="text-sm">30-89 days</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-status-critical" />
-              <span className="text-sm">90-364 days</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded bg-status-nuclear border border-status-nuclear-text" />
-              <span className="text-sm font-bold">365+ days</span>
-            </div>
-          </div>
-        </Card>
         </div>
       </div>
     </>
