@@ -2,12 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, FileText, Users, TrendingUp, Info } from "lucide-react";
+import { Navigation } from "@/components/Navigation";
 
 const Index = () => {
   const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-muted/10 to-background">
+      <Navigation />
+      
       {/* Hero Section */}
       <div className="container mx-auto px-4 py-20">
         <div className="max-w-4xl mx-auto text-center space-y-6">
