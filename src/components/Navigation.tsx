@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, FileText, Info, AlertTriangle } from "lucide-react";
+import { Home, TrendingUp, FileText, Info, AlertTriangle, Instagram } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Navigation() {
@@ -24,9 +24,10 @@ export function Navigation() {
               href="https://www.instagram.com/leakedliability/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xl font-black hover:opacity-80 transition-opacity"
+              className="text-xl font-black hover:opacity-80 transition-opacity flex items-center gap-2"
             >
               @LeakedLiability
+              <Instagram className="h-5 w-5" />
             </a>
           </div>
 
