@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Home, TrendingUp, FileText, Info, AlertTriangle } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -9,12 +10,15 @@ export function Navigation() {
     <nav className="border-b bg-card/50 backdrop-blur">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <button 
-            onClick={() => navigate("/")}
-            className="text-xl font-black hover:opacity-80 transition-opacity"
-          >
-            Leaked Liability™
-          </button>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <button 
+              onClick={() => navigate("/")}
+              className="text-xl font-black hover:opacity-80 transition-opacity"
+            >
+              Leaked Liability™
+            </button>
+          </div>
 
           <div className="flex items-center gap-2">
             <Button
