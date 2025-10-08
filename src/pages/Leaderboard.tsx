@@ -94,8 +94,8 @@ export default function Leaderboard() {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left Half - Formula */}
             <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center justify-center">
-              <div className="font-mono text-center space-y-3 text-foreground">
-                <div className="text-base md:text-lg text-black">
+              <div className="font-mono text-center space-y-3">
+                <div className="text-base md:text-lg text-foreground">
                   <span className="font-black">PSCS</span> = 
                   <span className="inline-block mx-2">
                     [
@@ -105,8 +105,8 @@ export default function Leaderboard() {
                     ]
                   </span>
                 </div>
-                <div className="text-xl font-black text-black">×</div>
-                <div className="text-sm md:text-base text-black">
+                <div className="text-xl font-black text-foreground">×</div>
+                <div className="text-sm md:text-base text-foreground">
                   <span className="inline-block">
                     [
                     <span className="font-bold">crew</span>
