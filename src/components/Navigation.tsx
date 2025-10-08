@@ -12,15 +12,6 @@ export function Navigation() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <button 
-              onClick={() => navigate("/")}
-              className="text-xl font-black hover:opacity-80 transition-opacity"
-            >
-              Leaked Liability™
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -29,6 +20,17 @@ export function Navigation() {
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
+            <a 
+              href="https://www.instagram.com/leakedliability/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xl font-black hover:opacity-80 transition-opacity"
+            >
+              @LeakedLiability
+            </a>
+          </div>
+
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -38,7 +40,7 @@ export function Navigation() {
               How It Works
             </Button>
             <Button
-              variant="ghost"
+              variant="default"
               size="sm"
               onClick={() => navigate("/leaderboard")}
             >
