@@ -11,6 +11,12 @@ export function Navigation() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <div 
+              onClick={() => navigate("/")}
+              className="bg-white h-10 w-10 flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity"
+            >
+              <span className="text-black font-black text-xl">LL</span>
+            </div>
             <ThemeToggle />
             <Button
               variant="ghost"
