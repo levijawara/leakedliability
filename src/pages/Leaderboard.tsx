@@ -94,31 +94,27 @@ export default function Leaderboard() {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left Half - Formula */}
             <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center justify-center">
-              <div className="font-mono text-center space-y-3">
-                <div className="text-base md:text-lg text-foreground">
+              <div className="font-mono text-center space-y-2">
+                <div className="text-sm md:text-base text-foreground">
                   <span className="font-black">PSCS</span> = 
                   <span className="inline-block mx-2">
                     [
-                    <span className="font-bold">Σ($owed)</span>
-                    {" × "}
-                    <span className="font-bold">log(days + 1)</span>
+                    <span className="font-bold">1000</span>
+                    {" − "}
+                    <span className="font-bold">min(650, A<sub className="text-xs">age</sub>)</span>
+                    {" − "}
+                    <span className="font-bold">min(300, 0.15 × amt)</span>
+                    {" − "}
+                    <span className="font-bold">max(0, RepeatPenalty)</span>
                     ]
                   </span>
                 </div>
-                <div className="text-xl font-black text-foreground">×</div>
-                <div className="text-sm md:text-base text-foreground">
-                  <span className="inline-block">
-                    [
-                    <span className="font-bold">crew</span>
-                    <sup className="text-xs">0.5</sup>
-                    {" + "}
-                    <span className="font-bold">jobs</span>
-                    <sup className="text-xs">0.3</sup>
-                    {" + "}
-                    <span className="font-bold">cities</span>
-                    <sup className="text-xs">0.2</sup>
-                    ]
-                  </span>
+                <div className="text-xs text-muted-foreground mt-2">
+                  <div className="flex justify-around">
+                    <span className="text-center">AgePenalty</span>
+                    <span className="text-center">AmountPenalty</span>
+                    <span className="text-center">RepeatPenalty</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -126,11 +122,11 @@ export default function Leaderboard() {
             {/* Right Half - Legend */}
             <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center">
               <div className="text-xs text-muted-foreground space-y-2 w-full">
-                <div><span className="font-bold text-foreground">Σ($owed)</span> = Total Amount Owed</div>
-                <div><span className="font-bold text-foreground">days</span> = Days Since Oldest Debt</div>
-                <div><span className="font-bold text-foreground">crew</span> = Total Crew Members Owed</div>
-                <div><span className="font-bold text-foreground">jobs</span> = Total Jobs With Unpaid Debts</div>
-                <div><span className="font-bold text-foreground">cities</span> = Total Cities Affected</div>
+                <div className="font-bold text-foreground mb-2">Where:</div>
+                <div><span className="font-bold text-foreground">Age</span> = 8 × days, if 0 ≤ days ≤ 60</div>
+                <div><span className="font-bold text-foreground">AgePenalty</span> = 300 + 1.5(days−60), if days &gt; 60</div>
+                <div className="pt-2"><span className="font-bold text-foreground">days</span> = max(0, TODAY − debt_date)</div>
+                <div className="pt-2"><span className="font-bold text-foreground">amt</span> = Total amount owed</div>
               </div>
             </div>
           </div>
