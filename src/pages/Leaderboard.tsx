@@ -22,7 +22,7 @@ export default function Leaderboard() {
       const { data, error } = await supabase
         .from("producers")
         .select("*")
-        .order("pscs_score", { ascending: true });
+        .order("pscs_score", { ascending: false });
       
       if (error) throw error;
       return data;
