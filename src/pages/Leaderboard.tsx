@@ -192,9 +192,9 @@ export default function Leaderboard() {
                       className="hover:bg-muted/50 transition-colors"
                     >
                       <TableCell className="font-semibold">
-                        {producer.name}
+                        <span className="blur-sm select-none">{producer.name}</span>
                         {producer.company && (
-                          <div className="text-xs text-muted-foreground">{producer.company}</div>
+                          <div className="text-xs text-muted-foreground blur-sm select-none">{producer.company}</div>
                         )}
                       </TableCell>
                       <TableCell className="text-center font-bold text-lg">
