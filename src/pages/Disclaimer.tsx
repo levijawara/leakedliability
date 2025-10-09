@@ -1,7 +1,12 @@
 import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Disclaimer() {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -43,6 +48,17 @@ export default function Disclaimer() {
             <p className="pt-4">
               For specific disputes or claims, users should seek advice from a qualified legal professional.
             </p>
+
+            <div className="pt-6 border-t mt-6">
+              <Button 
+                onClick={() => navigate("/admin/import")}
+                className="w-full"
+                variant="outline"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Import Producer Data (Admin)
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </main>
