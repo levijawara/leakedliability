@@ -41,15 +41,10 @@ export default function Admin() {
         return;
       }
 
-      // Check if user has admin role
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", user.id)
-        .eq("role", "admin")
-        .maybeSingle();
+      // Check if user has admin role via secure function
+      const { data, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
 
-      if (!roles) {
+      if (error || !data) {
         toast({
           title: "Access Denied",
           description: "You don't have admin privileges.",
@@ -60,7 +55,7 @@ export default function Admin() {
       }
 
       setIsAdmin(true);
-      loadAdminData();
+      await loadAdminData();
     } catch (error: any) {
       toast({
         title: "Error",

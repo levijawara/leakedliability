@@ -126,16 +126,6 @@ export function Navigation() {
               <FileText className="h-4 w-4 mr-2" />
               Submission Forms
             </Button>
-            {isAdmin && (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate("/admin")}
-              >
-                <Shield className="h-4 w-4 mr-2" />
-                Admin
-              </Button>
-            )}
             <Button
               variant="ghost"
               size="sm"
