@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { getSignedUrls } from "@/lib/storage";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -27,6 +28,8 @@ export default function Admin() {
   const [disputes, setDisputes] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [documentSignedUrls, setDocumentSignedUrls] = useState<string[]>([]);
+  const [loadingUrls, setLoadingUrls] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -183,6 +186,28 @@ export default function Admin() {
     }
   };
 
+  const loadDocumentUrls = async (documentUrls: string[]) => {
+    if (!documentUrls || documentUrls.length === 0) {
+      setDocumentSignedUrls([]);
+      return;
+    }
+
+    setLoadingUrls(true);
+    try {
+      const urls = await getSignedUrls(documentUrls, 3600); // 1 hour expiration
+      setDocumentSignedUrls(urls);
+    } catch (error: any) {
+      toast({
+        title: "Error Loading Documents",
+        description: error.message,
+        variant: "destructive",
+      });
+      setDocumentSignedUrls([]);
+    } finally {
+      setLoadingUrls(false);
+    }
+  };
+
   const handleResolveDispute = async (id: string, resolution: string) => {
     if (!adminNotes.trim()) {
       toast({
@@ -279,9 +304,10 @@ export default function Admin() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => {
+                        onClick={async () => {
                           setSelectedItem(sub);
                           setAdminNotes(sub.admin_notes || "");
+                          await loadDocumentUrls(sub.document_urls || []);
                         }}
                       >
                         Review
@@ -316,15 +342,22 @@ export default function Admin() {
                 {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
                   <div>
                     <strong>Documents:</strong>
-                    <ul className="mt-2 space-y-1">
-                      {selectedItem.document_urls.map((url: string, idx: number) => (
-                        <li key={idx}>
-                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                            Document {idx + 1}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
+                    {loadingUrls ? (
+                      <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Loading documents...</span>
+                      </div>
+                    ) : (
+                      <ul className="mt-2 space-y-1">
+                        {documentSignedUrls.map((url: string, idx: number) => (
+                          <li key={idx}>
+                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                              Document {idx + 1}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
 
