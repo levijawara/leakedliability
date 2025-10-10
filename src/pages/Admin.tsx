@@ -299,8 +299,15 @@ export default function Admin() {
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="mb-8">
-        <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
-        <p className="text-muted-foreground">Review and manage all submissions, reports, and disputes</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Review and manage all submissions, reports, and disputes</p>
+          </div>
+          <Button variant="outline" onClick={() => navigate("/")}>
+            Home
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="submissions" className="space-y-6">
