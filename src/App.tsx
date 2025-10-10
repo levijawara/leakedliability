@@ -10,6 +10,7 @@ import SubmitReport from "./pages/SubmitReport";
 import HowItWorks from "./pages/HowItWorks";
 import WhyItWorks from "./pages/WhyItWorks";
 import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
 
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/why-it-works" element={<WhyItWorks />} />
             <Route path="/disclaimer" element={<Disclaimer />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
