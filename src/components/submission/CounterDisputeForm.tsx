@@ -8,6 +8,7 @@ import { FileUploadZone } from "./FileUploadZone";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { counterDisputeSchema } from "@/lib/validation";
 
 interface CounterDisputeFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -44,6 +45,22 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Validate input
+      const validationResult = counterDisputeSchema.safeParse({
+        originalReportRef,
+        explanation,
+      });
+
+      if (!validationResult.success) {
+        toast({
+          title: "Validation Error",
+          description: validationResult.error.errors[0].message,
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({

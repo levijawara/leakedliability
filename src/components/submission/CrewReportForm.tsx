@@ -9,6 +9,7 @@ import { FileUploadZone } from "./FileUploadZone";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { crewReportSchema } from "@/lib/validation";
 
 interface CrewReportFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -49,6 +50,26 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Validate input
+      const validationResult = crewReportSchema.safeParse({
+        reportingType: reportingType as "individual" | "on_behalf",
+        producerFirstName: producerName.firstName,
+        producerLastName: producerName.lastName,
+        producerEmail: producerName.email,
+        producerAliases,
+        amountOwed: parseFloat(amountOwed),
+      });
+
+      if (!validationResult.success) {
+        toast({
+          title: "Validation Error",
+          description: validationResult.error.errors[0].message,
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({

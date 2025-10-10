@@ -7,6 +7,7 @@ import { FileUploadZone } from "./FileUploadZone";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { paymentConfirmationSchema } from "@/lib/validation";
 
 interface PaymentConfirmationFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -43,6 +44,22 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Validate input
+      const validationResult = paymentConfirmationSchema.safeParse({
+        producerName,
+        amountPaid: parseFloat(amountPaid),
+      });
+
+      if (!validationResult.success) {
+        toast({
+          title: "Validation Error",
+          description: validationResult.error.errors[0].message,
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
