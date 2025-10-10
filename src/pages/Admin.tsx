@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { getSignedUrls } from "@/lib/storage";
+import JSZip from "jszip";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -208,6 +209,46 @@ export default function Admin() {
     }
   };
 
+  const downloadAllAsZip = async (documentPaths: string[], itemId: string, itemType: string) => {
+    try {
+      toast({
+        title: "Preparing Download",
+        description: "Creating ZIP file...",
+      });
+
+      const urls = await getSignedUrls(documentPaths, 3600);
+      const zip = new JSZip();
+
+      // Fetch and add each file to the ZIP
+      for (let i = 0; i < urls.length; i++) {
+        const response = await fetch(urls[i]);
+        const blob = await response.blob();
+        const fileName = documentPaths[i].split('/').pop() || `document_${i + 1}`;
+        zip.file(fileName, blob);
+      }
+
+      // Generate and download the ZIP
+      const content = await zip.generateAsync({ type: "blob" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(content);
+      link.download = `${itemType}_${itemId}_documents.zip`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+
+      toast({
+        title: "Success",
+        description: "Documents downloaded successfully",
+      });
+    } catch (error) {
+      console.error('Error creating ZIP:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create ZIP file",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleResolveDispute = async (id: string, resolution: string) => {
     if (!adminNotes.trim()) {
       toast({
@@ -341,7 +382,16 @@ export default function Admin() {
 
                 {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
                   <div>
-                    <strong>Documents:</strong>
+                    <div className="flex items-center justify-between mb-2">
+                      <strong>Documents:</strong>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => downloadAllAsZip(selectedItem.document_urls, selectedItem.id, 'submission')}
+                      >
+                        Download All as ZIP
+                      </Button>
+                    </div>
                     {loadingUrls ? (
                       <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                         <Loader2 className="h-4 w-4 animate-spin" />
