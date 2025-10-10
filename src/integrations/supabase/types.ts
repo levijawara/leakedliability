@@ -231,6 +231,54 @@ export type Database = {
         }
         Relationships: []
       }
+      submissions: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          document_urls: string[] | null
+          email: string
+          form_data: Json
+          full_name: string
+          id: string
+          role_department: string | null
+          status: string
+          submission_type: string
+          updated_at: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          document_urls?: string[] | null
+          email: string
+          form_data?: Json
+          full_name: string
+          id?: string
+          role_department?: string | null
+          status?: string
+          submission_type: string
+          updated_at?: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          document_urls?: string[] | null
+          email?: string
+          form_data?: Json
+          full_name?: string
+          id?: string
+          role_department?: string | null
+          status?: string
+          submission_type?: string
+          updated_at?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
