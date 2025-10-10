@@ -34,14 +34,18 @@ export function Navigation() {
   }, []);
 
   const checkAdminStatus = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-    
-    setIsAdmin(!!data);
+    try {
+      const { data, error } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+      if (error) {
+        console.error('has_role error', error);
+        setIsAdmin(false);
+        return;
+      }
+      setIsAdmin(Boolean(data));
+    } catch (e) {
+      console.error('checkAdminStatus exception', e);
+      setIsAdmin(false);
+    }
   };
 
   const menuItems = [
@@ -122,6 +126,16 @@ export function Navigation() {
               <FileText className="h-4 w-4 mr-2" />
               Submission Forms
             </Button>
+            {isAdmin && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => navigate("/admin")}
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Admin
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
