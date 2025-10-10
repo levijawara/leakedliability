@@ -108,7 +108,7 @@ export default function Admin() {
       .from("submissions")
       .update({ 
         verified: true, 
-        status: "approved",
+        status: "verified",
         admin_notes: adminNotes || null 
       })
       .eq("id", id);
@@ -296,7 +296,7 @@ export default function Admin() {
                     <TableCell>{sub.email}</TableCell>
                     <TableCell className="capitalize">{sub.submission_type}</TableCell>
                     <TableCell>
-                      <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'approved' ? 'default' : 'destructive'}>
+                      <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
                         {sub.status}
                       </Badge>
                     </TableCell>
