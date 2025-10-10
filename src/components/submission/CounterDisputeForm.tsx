@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { counterDisputeSchema } from "@/lib/validation";
+import { uploadFiles } from "@/lib/storage";
 
 interface CounterDisputeFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -23,26 +24,6 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
   const { toast } = useToast();
 
-  const uploadFiles = async (files: File[], userId: string) => {
-    const uploadedUrls: string[] = [];
-    
-    for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      // Use random UUID for filename to prevent enumeration attacks
-      const randomId = crypto.randomUUID();
-      const fileName = `${randomId}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('submission-documents')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-      
-      uploadedUrls.push(fileName);
-    }
-    
-    return uploadedUrls;
-  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -73,7 +54,7 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
         return;
       }
 
-      const documentUrls = await uploadFiles(evidenceFiles, user.id);
+      const documentUrls = await uploadFiles(evidenceFiles);
 
       const { error } = await supabase.from('submissions').insert({
         user_id: user.id,

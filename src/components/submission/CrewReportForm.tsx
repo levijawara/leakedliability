@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { crewReportSchema } from "@/lib/validation";
+import { uploadFiles } from "@/lib/storage";
 
 interface CrewReportFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -28,26 +29,6 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
   const [jobDocFiles, setJobDocFiles] = useState<File[]>([]);
   const { toast } = useToast();
 
-  const uploadFiles = async (files: File[], userId: string) => {
-    const uploadedUrls: string[] = [];
-    
-    for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      // Use random UUID for filename to prevent enumeration attacks
-      const randomId = crypto.randomUUID();
-      const fileName = `${randomId}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('submission-documents')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-      
-      uploadedUrls.push(fileName);
-    }
-    
-    return uploadedUrls;
-  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -84,7 +65,7 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
 
       // Upload all files
       const allFiles = [...invoiceFiles, ...communicationFiles, ...jobDocFiles];
-      const documentUrls = await uploadFiles(allFiles, user.id);
+      const documentUrls = await uploadFiles(allFiles);
 
       // Submit the report
       const { error } = await supabase.from('submissions').insert({

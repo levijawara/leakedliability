@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { producerSubmissionSchema } from "@/lib/validation";
+import { uploadFiles } from "@/lib/storage";
 
 interface ProducerSubmissionFormProps {
   userInfo: { firstName: string; lastName: string; email: string };
@@ -37,26 +38,6 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
     report_dispute: "Challenge a crew member's report with counter-evidence"
   };
 
-  const uploadFiles = async (files: File[], userId: string) => {
-    const uploadedUrls: string[] = [];
-    
-    for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      // Use random UUID for filename to prevent enumeration attacks
-      const randomId = crypto.randomUUID();
-      const fileName = `${randomId}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('submission-documents')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-      
-      uploadedUrls.push(fileName);
-    }
-    
-    return uploadedUrls;
-  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -87,7 +68,7 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
         return;
       }
 
-      const documentUrls = await uploadFiles(documentFiles, user.id);
+      const documentUrls = await uploadFiles(documentFiles);
 
       const { error } = await supabase.from('submissions').insert({
         user_id: user.id,

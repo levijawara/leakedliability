@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { paymentConfirmationSchema } from "@/lib/validation";
+import { uploadFiles } from "@/lib/storage";
 
 interface PaymentConfirmationFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -22,26 +23,6 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
   const [proofFiles, setProofFiles] = useState<File[]>([]);
   const { toast } = useToast();
 
-  const uploadFiles = async (files: File[], userId: string) => {
-    const uploadedUrls: string[] = [];
-    
-    for (const file of files) {
-      const fileExt = file.name.split('.').pop();
-      // Use random UUID for filename to prevent enumeration attacks
-      const randomId = crypto.randomUUID();
-      const fileName = `${randomId}.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('submission-documents')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-      
-      uploadedUrls.push(fileName);
-    }
-    
-    return uploadedUrls;
-  };
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -72,7 +53,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         return;
       }
 
-      const documentUrls = await uploadFiles(proofFiles, user.id);
+      const documentUrls = await uploadFiles(proofFiles);
 
       const { error } = await supabase.from('submissions').insert({
         user_id: user.id,
