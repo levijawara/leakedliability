@@ -170,7 +170,7 @@ export default function Auth() {
       <Card className="w-full max-w-md p-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black mb-2">Leaked Liability™</h1>
-          <p className="text-muted-foreground">Sign in to submit reports</p>
+          <p className="text-muted-foreground">Filmmaking's financial accountability platform.</p>
         </div>
 
         <Tabs defaultValue="signin" className="w-full">
@@ -347,7 +347,7 @@ export default function Auth() {
         </Tabs>
 
         <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Your identity will remain anonymous to producers and the public.</p>
+          <p>Crew member identities remain anonymous, always. If you're a producer, known exploitation may cause career instability. Move with caution.</p>
         </div>
       </Card>
     </div>
