@@ -2,14 +2,14 @@ import { Navigation } from "@/components/Navigation";
 
 export default function WhyItWorks() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-background via-muted/10 to-background">
       <Navigation />
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        <h1 className="text-4xl md:text-5xl font-bold mb-8 text-center">
-          WHY IT WORKS
+      <main className="container mx-auto px-4 py-12 max-w-5xl">
+        <h1 className="text-5xl md:text-6xl font-black text-center mb-4">
+          Why It Works
         </h1>
         
-        <p className="text-xl text-center mb-12 text-muted-foreground">
+        <p className="text-center text-muted-foreground text-lg mb-12 max-w-3xl mx-auto">
           Because no one else ever dared to make accountability contagious.
         </p>
 
