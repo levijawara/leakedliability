@@ -1,0 +1,505 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+
+export default function Admin() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [paymentReports, setPaymentReports] = useState<any[]>([]);
+  const [disputes, setDisputes] = useState<any[]>([]);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [adminNotes, setAdminNotes] = useState("");
+
+  useEffect(() => {
+    checkAdminAccess();
+  }, []);
+
+  const checkAdminAccess = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      // Check if user has admin role
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (!roles) {
+        toast({
+          title: "Access Denied",
+          description: "You don't have admin privileges.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+      loadAdminData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      navigate("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAdminData = async () => {
+    // Load all submissions
+    const { data: subs } = await supabase
+      .from("submissions")
+      .select("*")
+      .order("created_at", { ascending: false });
+    
+    setSubmissions(subs || []);
+
+    // Load all payment reports
+    const { data: reports } = await supabase
+      .from("payment_reports")
+      .select(`
+        *,
+        producer:producers(name, company)
+      `)
+      .order("created_at", { ascending: false });
+    
+    setPaymentReports(reports || []);
+
+    // Load all disputes
+    const { data: disps } = await supabase
+      .from("disputes")
+      .select(`
+        *,
+        payment_report:payment_reports(project_name)
+      `)
+      .order("created_at", { ascending: false });
+    
+    setDisputes(disps || []);
+  };
+
+  const handleVerifySubmission = async (id: string) => {
+    const { error } = await supabase
+      .from("submissions")
+      .update({ 
+        verified: true, 
+        status: "approved",
+        admin_notes: adminNotes || null 
+      })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Submission verified successfully",
+      });
+      loadAdminData();
+      setSelectedItem(null);
+      setAdminNotes("");
+    }
+  };
+
+  const handleRejectSubmission = async (id: string) => {
+    if (!adminNotes.trim()) {
+      toast({
+        title: "Notes Required",
+        description: "Please provide a reason for rejection",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("submissions")
+      .update({ 
+        status: "rejected",
+        admin_notes: adminNotes 
+      })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Rejected",
+        description: "Submission rejected",
+      });
+      loadAdminData();
+      setSelectedItem(null);
+      setAdminNotes("");
+    }
+  };
+
+  const handleVerifyPaymentReport = async (id: string) => {
+    const { error } = await supabase
+      .from("payment_reports")
+      .update({ verified: true })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Payment report verified",
+      });
+      loadAdminData();
+    }
+  };
+
+  const handleResolveDispute = async (id: string, resolution: string) => {
+    if (!adminNotes.trim()) {
+      toast({
+        title: "Notes Required",
+        description: "Please provide resolution notes",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from("disputes")
+      .update({ 
+        status: resolution,
+        resolution_notes: adminNotes 
+      })
+      .eq("id", id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Success",
+        description: "Dispute resolved",
+      });
+      loadAdminData();
+      setSelectedItem(null);
+      setAdminNotes("");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <div className="mb-8">
+        <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
+        <p className="text-muted-foreground">Review and manage all submissions, reports, and disputes</p>
+      </div>
+
+      <Tabs defaultValue="submissions" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="submissions">
+            Submissions ({submissions.filter(s => s.status === 'pending').length})
+          </TabsTrigger>
+          <TabsTrigger value="reports">
+            Payment Reports ({paymentReports.filter(r => !r.verified).length})
+          </TabsTrigger>
+          <TabsTrigger value="disputes">
+            Disputes ({disputes.filter(d => d.status === 'pending').length})
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="submissions" className="space-y-4">
+          <Card className="p-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {submissions.map((sub) => (
+                  <TableRow key={sub.id}>
+                    <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>{sub.full_name}</TableCell>
+                    <TableCell>{sub.email}</TableCell>
+                    <TableCell className="capitalize">{sub.submission_type}</TableCell>
+                    <TableCell>
+                      <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'approved' ? 'default' : 'destructive'}>
+                        {sub.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedItem(sub);
+                          setAdminNotes(sub.admin_notes || "");
+                        }}
+                      >
+                        Review
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+
+          {selectedItem && (
+            <Card className="p-6">
+              <h3 className="text-lg font-bold mb-4">Review Submission</h3>
+              <div className="space-y-4">
+                <div>
+                  <p><strong>Name:</strong> {selectedItem.full_name}</p>
+                  <p><strong>Email:</strong> {selectedItem.email}</p>
+                  <p><strong>Type:</strong> {selectedItem.submission_type}</p>
+                  {selectedItem.role_department && (
+                    <p><strong>Role:</strong> {selectedItem.role_department}</p>
+                  )}
+                </div>
+                
+                <div>
+                  <strong>Form Data:</strong>
+                  <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto">
+                    {JSON.stringify(selectedItem.form_data, null, 2)}
+                  </pre>
+                </div>
+
+                {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
+                  <div>
+                    <strong>Documents:</strong>
+                    <ul className="mt-2 space-y-1">
+                      {selectedItem.document_urls.map((url: string, idx: number) => (
+                        <li key={idx}>
+                          <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                            Document {idx + 1}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-sm font-medium">Admin Notes</label>
+                  <Textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="Add notes about this submission..."
+                    className="mt-2"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={() => handleVerifySubmission(selectedItem.id)}>
+                    Verify & Approve
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => handleRejectSubmission(selectedItem.id)}
+                  >
+                    Reject
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setSelectedItem(null);
+                    setAdminNotes("");
+                  }}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-4">
+          <Card className="p-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Producer</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Days Overdue</TableHead>
+                  <TableHead>Verified</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentReports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>{report.project_name}</TableCell>
+                    <TableCell>{report.producer?.name || 'N/A'}</TableCell>
+                    <TableCell>${report.amount_owed.toLocaleString()}</TableCell>
+                    <TableCell>{report.days_overdue}</TableCell>
+                    <TableCell>
+                      <Badge variant={report.verified ? 'default' : 'secondary'}>
+                        {report.verified ? 'Yes' : 'No'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {!report.verified && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleVerifyPaymentReport(report.id)}
+                        >
+                          Verify
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="disputes" className="space-y-4">
+          <Card className="p-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {disputes.map((dispute) => (
+                  <TableRow key={dispute.id}>
+                    <TableCell>{new Date(dispute.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell className="capitalize">{dispute.dispute_type}</TableCell>
+                    <TableCell>{dispute.payment_report?.project_name || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge variant={dispute.status === 'pending' ? 'secondary' : 'default'}>
+                        {dispute.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedItem(dispute);
+                          setAdminNotes(dispute.resolution_notes || "");
+                        }}
+                      >
+                        Review
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+
+          {selectedItem && selectedItem.dispute_type && (
+            <Card className="p-6">
+              <h3 className="text-lg font-bold mb-4">Review Dispute</h3>
+              <div className="space-y-4">
+                <div>
+                  <p><strong>Type:</strong> {selectedItem.dispute_type}</p>
+                  <p><strong>Explanation:</strong> {selectedItem.explanation}</p>
+                  {selectedItem.evidence_url && (
+                    <p>
+                      <strong>Evidence:</strong>{' '}
+                      <a href={selectedItem.evidence_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        View Evidence
+                      </a>
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium">Resolution Notes</label>
+                  <Textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="Add resolution notes..."
+                    className="mt-2"
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button onClick={() => handleResolveDispute(selectedItem.id, 'resolved')}>
+                    Resolve (Approve)
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => handleResolveDispute(selectedItem.id, 'rejected')}
+                  >
+                    Reject Dispute
+                  </Button>
+                  <Button variant="outline" onClick={() => {
+                    setSelectedItem(null);
+                    setAdminNotes("");
+                  }}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
