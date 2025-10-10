@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
@@ -12,12 +14,46 @@ import { CrewReportForm } from "@/components/submission/CrewReportForm";
 import { PaymentConfirmationForm } from "@/components/submission/PaymentConfirmationForm";
 import { CounterDisputeForm } from "@/components/submission/CounterDisputeForm";
 import { ProducerSubmissionForm } from "@/components/submission/ProducerSubmissionForm";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SubmitReport() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
   const [participantType, setParticipantType] = useState<"crew" | "producer" | "production_company" | null>(null);
   const [submissionType, setSubmissionType] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState({ firstName: "", lastName: "", email: "", role: "" });
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to submit a report",
+          variant: "destructive",
+        });
+        navigate("/auth");
+        return;
+      }
+      
+      setIsAuthenticated(true);
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
 
   const handleBack = () => setStep(Math.max(1, step - 1));
   const handleNext = () => setStep(step + 1);
@@ -28,6 +64,21 @@ export default function SubmitReport() {
     setSubmissionType(null);
     setUserInfo({ firstName: "", lastName: "", email: "", role: "" });
   };
+
+  if (loading) {
+    return (
+      <>
+        <Navigation />
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12 flex items-center justify-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>

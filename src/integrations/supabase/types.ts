@@ -231,6 +231,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          business_name: string | null
+          created_at: string
+          id: string
+          legal_first_name: string
+          legal_last_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type: Database["public"]["Enums"]["account_type"]
+          business_name?: string | null
+          created_at?: string
+          id?: string
+          legal_first_name: string
+          legal_last_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: Database["public"]["Enums"]["account_type"]
+          business_name?: string | null
+          created_at?: string
+          id?: string
+          legal_first_name?: string
+          legal_last_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
           admin_notes: string | null
@@ -318,6 +351,7 @@ export type Database = {
       }
     }
     Enums: {
+      account_type: "crew" | "producer" | "production_company" | "admin"
       app_role: "admin" | "user"
     }
     CompositeTypes: {
@@ -446,6 +480,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      account_type: ["crew", "producer", "production_company", "admin"],
       app_role: ["admin", "user"],
     },
   },
