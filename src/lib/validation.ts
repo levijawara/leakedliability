@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const crewReportSchema = z.object({
-  reportingType: z.enum(["individual", "on_behalf"]),
+  reportingType: z.enum(["producer", "production_company", "both"]),
   producerFirstName: z.string().trim().min(1, "First name is required").max(100),
   producerLastName: z.string().trim().min(1, "Last name is required").max(100),
   producerEmail: z.string().trim().email("Invalid email address").max(255),
