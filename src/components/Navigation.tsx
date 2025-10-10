@@ -219,16 +219,6 @@ export function Navigation() {
                         <User className="h-4 w-4 mr-2" />
                         Profile
                       </Button>
-                      {isAdmin && (
-                        <Button
-                          variant="outline"
-                          className="justify-start"
-                          onClick={() => handleNavigate("/admin")}
-                        >
-                          <Shield className="h-4 w-4 mr-2" />
-                          Admin Dashboard
-                        </Button>
-                      )}
                       <Button
                         variant="ghost"
                         className="justify-start"
