@@ -373,6 +373,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      refresh_all_producer_stats: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       account_type: "crew" | "producer" | "production_company" | "admin"
