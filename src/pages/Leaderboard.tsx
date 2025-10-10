@@ -55,7 +55,8 @@ export default function Leaderboard() {
               <h3 className="font-bold text-lg mb-2">Public Accountability Notice</h3>
               <p className="text-sm text-muted-foreground">
                 This leaderboard tracks producers who owe payments to freelance crew members. 
-                All data is verified through our review process. Scores update daily based on payment behavior.
+                All data is verified through our review process. Scores update daily and include 
+                time-based forgiveness after debts are closed.
               </p>
             </div>
           </div>
@@ -90,30 +91,26 @@ export default function Leaderboard() {
 
         {/* PSCS Formula */}
         <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
-          <h3 className="font-black text-lg mb-4 text-center">PSCS™ OFFICIAL FORMULA</h3>
+          <h3 className="font-black text-lg mb-4 text-center">PSCS™ ROLLING FORMULA</h3>
           <div className="grid md:grid-cols-2 gap-6">
             {/* Left Half - Formula */}
             <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center justify-center">
-              <div className="font-mono text-center space-y-2">
-                <div className="text-sm md:text-base text-foreground">
+              <div className="font-mono text-center space-y-3">
+                <div className="text-xs md:text-sm text-foreground">
                   <span className="font-black">PSCS</span> = 
-                  <span className="inline-block mx-2">
-                    [
-                    <span className="font-bold">1000</span>
-                    {" − "}
-                    <span className="font-bold">min(650, A<sub className="text-xs">age</sub>)</span>
-                    {" − "}
-                    <span className="font-bold">min(300, 0.15 × amt)</span>
-                    {" − "}
-                    <span className="font-bold">max(0, RepeatPenalty)</span>
-                    ]
+                  <span className="inline-block mx-1">
+                    1000 × (1 − P) + F
                   </span>
                 </div>
-                <div className="text-xs text-muted-foreground mt-2">
-                  <div className="flex justify-around">
-                    <span className="text-center">AgePenalty</span>
-                    <span className="text-center">AmountPenalty</span>
-                    <span className="text-center">RepeatPenalty</span>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div><span className="font-bold text-foreground">P</span> = weighted penalty</div>
+                  <div className="text-[10px]">
+                    = 0.35×F<sub>$</sub> + 0.35×F<sub>days</sub> + 0.10×F<sub>crew</sub><br/>
+                    + 0.10×F<sub>jobs</sub> + 0.10×F<sub>geo</sub>
+                  </div>
+                  <div className="pt-1"><span className="font-bold text-foreground">F</span> = forgiveness (if clean)</div>
+                  <div className="text-[10px]">
+                    = (1 − e<sup>−t/90</sup>) × (1000 − base)
                   </div>
                 </div>
               </div>
@@ -121,12 +118,16 @@ export default function Leaderboard() {
             
             {/* Right Half - Legend */}
             <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center">
-              <div className="text-xs text-muted-foreground space-y-2 w-full">
-                <div className="font-bold text-foreground mb-2">Where:</div>
-                <div><span className="font-bold text-foreground">Age</span> = 8 × days, if 0 ≤ days ≤ 60</div>
-                <div><span className="font-bold text-foreground">AgePenalty</span> = 300 + 1.5(days−60), if days &gt; 60</div>
-                <div className="pt-2"><span className="font-bold text-foreground">days</span> = max(0, TODAY − debt_date)</div>
-                <div className="pt-2"><span className="font-bold text-foreground">amt</span> = Total amount owed</div>
+              <div className="text-[11px] text-muted-foreground space-y-1.5 w-full">
+                <div className="font-bold text-foreground mb-2">Penalty Factors:</div>
+                <div>F<sub>$</sub> = min(1, amt / $5k)</div>
+                <div>F<sub>days</sub> = min(1, days / 180)</div>
+                <div>F<sub>crew</sub> = min(1, crew / 5)</div>
+                <div>F<sub>jobs</sub> = min(1, jobs / 5)</div>
+                <div>F<sub>geo</sub> = min(1, cities / 3)</div>
+                <div className="pt-2 font-bold text-foreground">Time Forgiveness:</div>
+                <div>t = days since last debt closed</div>
+                <div className="text-[10px] italic">Clean record → ~63% forgiven in 90d, ~95% in 270d</div>
               </div>
             </div>
           </div>

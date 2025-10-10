@@ -122,6 +122,7 @@ export type Database = {
         Row: {
           amount_owed: number
           city: string | null
+          closed_date: string | null
           created_at: string
           days_overdue: number
           id: string
@@ -137,6 +138,7 @@ export type Database = {
         Insert: {
           amount_owed: number
           city?: string | null
+          closed_date?: string | null
           created_at?: string
           days_overdue: number
           id?: string
@@ -152,6 +154,7 @@ export type Database = {
         Update: {
           amount_owed?: number
           city?: string | null
+          closed_date?: string | null
           created_at?: string
           days_overdue?: number
           id?: string
@@ -180,6 +183,7 @@ export type Database = {
           company: string | null
           created_at: string
           id: string
+          last_closed_date: string | null
           name: string
           oldest_debt_date: string | null
           oldest_debt_days: number | null
@@ -198,6 +202,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           id?: string
+          last_closed_date?: string | null
           name: string
           oldest_debt_date?: string | null
           oldest_debt_days?: number | null
@@ -216,6 +221,7 @@ export type Database = {
           company?: string | null
           created_at?: string
           id?: string
+          last_closed_date?: string | null
           name?: string
           oldest_debt_date?: string | null
           oldest_debt_days?: number | null
@@ -261,6 +267,24 @@ export type Database = {
           legal_last_name?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      pscs_config: {
+        Row: {
+          description: string | null
+          key: string
+          value: number
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          value: number
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          value?: number
         }
         Relationships: []
       }
