@@ -19,24 +19,50 @@ export function FileUploadZone({
   files, 
   onFilesChange,
   maxFiles = 10,
-  accept = "image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+  accept = ".pdf,.doc,.docx,.png,.jpg,.jpeg,.webp,.heic,.xls,.xlsx,.csv"
 }: FileUploadZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
+
+  const validateFile = (file: File): boolean => {
+    const allowedExtensions = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg', '.webp', '.heic', '.xls', '.xlsx', '.csv'];
+    const fileName = file.name.toLowerCase();
+    const isValid = allowedExtensions.some(ext => fileName.endsWith(ext));
+    
+    if (!isValid) {
+      toast({
+        title: "Invalid File Type",
+        description: `${file.name} is not allowed. Only documents (PDF, DOC, DOCX), images (PNG, JPG, JPEG, WEBP, HEIC), and spreadsheets (XLS, XLSX, CSV) are permitted.`,
+        variant: "destructive"
+      });
+    }
+    
+    if (fileName.endsWith('.heic')) {
+      toast({
+        title: "HEIC File Detected",
+        description: "iPhone HEIC files are accepted but may need conversion to view in some browsers. Consider converting to JPG if you experience issues.",
+        variant: "default"
+      });
+    }
+    
+    return isValid;
+  };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
     const droppedFiles = Array.from(e.dataTransfer.files);
-    const newFiles = [...files, ...droppedFiles].slice(0, maxFiles);
+    const validFiles = droppedFiles.filter(validateFile);
+    const newFiles = [...files, ...validFiles].slice(0, maxFiles);
     onFilesChange(newFiles);
-  }, [files, maxFiles, onFilesChange]);
+  }, [files, maxFiles, onFilesChange, toast]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const selectedFiles = Array.from(e.target.files);
-      const newFiles = [...files, ...selectedFiles].slice(0, maxFiles);
+      const validFiles = selectedFiles.filter(validateFile);
+      const newFiles = [...files, ...validFiles].slice(0, maxFiles);
       onFilesChange(newFiles);
     }
   };
@@ -73,6 +99,8 @@ export function FileUploadZone({
         </p>
         <p className="text-xs text-muted-foreground mb-4">
           Maximum {maxFiles} files, up to 50MB each
+          <br />
+          Accepted: PDF, DOC, DOCX, PNG, JPG, JPEG, WEBP, HEIC, XLS, XLSX, CSV
         </p>
         <input
           type="file"
