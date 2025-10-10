@@ -12,6 +12,7 @@ export function Navigation() {
   const menuItems = [
     { icon: Home, label: "Home", path: "/" },
     { icon: Info, label: "How It Works", path: "/how-it-works" },
+    { icon: Info, label: "Why It Works", path: "/why-it-works" },
     { icon: TrendingUp, label: "Leaderboard", path: "/leaderboard" },
     { icon: FileText, label: "Submission Forms", path: "/submit" },
     { icon: AlertTriangle, label: "Disclaimer", path: "/disclaimer" },
@@ -56,6 +57,14 @@ export function Navigation() {
             >
               <Info className="h-4 w-4 mr-2" />
               How It Works
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate("/why-it-works")}
+            >
+              <Info className="h-4 w-4 mr-2" />
+              Why It Works
             </Button>
             <Button
               variant="default"
