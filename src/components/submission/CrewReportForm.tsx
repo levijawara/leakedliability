@@ -33,7 +33,9 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
     
     for (const file of files) {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+      // Use random UUID for filename to prevent enumeration attacks
+      const randomId = crypto.randomUUID();
+      const fileName = `${randomId}.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
         .from('submission-documents')
