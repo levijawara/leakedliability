@@ -180,6 +180,14 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
         </div>
 
         <FileUploadZone
+          label="Job Documentation"
+          description="Deal memos, contracts, timecards, call sheets, crew lists, etc."
+          files={jobDocFiles}
+          onFilesChange={setJobDocFiles}
+          maxFiles={10}
+        />
+
+        <FileUploadZone
           label="Invoice/Payment Request *"
           description="Submit the SAME invoice you sent to the producer, or screenshot from payroll platform"
           files={invoiceFiles}
@@ -192,14 +200,6 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
           description="ANY and ALL communication regarding your payment (emails, texts, etc.)"
           files={communicationFiles}
           onFilesChange={setCommunicationFiles}
-          maxFiles={10}
-        />
-
-        <FileUploadZone
-          label="Job Documentation"
-          description="Deal memos, contracts, timecards, call sheets, crew lists, etc."
-          files={jobDocFiles}
-          onFilesChange={setJobDocFiles}
           maxFiles={10}
         />
       </div>
