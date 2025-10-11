@@ -311,36 +311,30 @@ export default function Admin() {
       </div>
 
       <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid grid-cols-6 gap-2">
-          <TabsTrigger value="crew_report" className="flex items-center gap-2">
-            <span>⚠️</span>
-            <span className="hidden sm:inline">Crew Member Report</span>
-            <span className="sm:hidden">Crew</span>
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8 gap-1">
+          <TabsTrigger value="crew_report" className="text-xs sm:text-sm">
+            ⚠️ <span className="hidden sm:inline ml-1">Crew Report</span>
           </TabsTrigger>
-          <TabsTrigger value="payment_confirmation" className="flex items-center gap-2">
-            <span>✅</span>
-            <span className="hidden sm:inline">Payment Confirmation</span>
-            <span className="sm:hidden">Payment</span>
+          <TabsTrigger value="payment_confirmation" className="text-xs sm:text-sm">
+            ✅ <span className="hidden sm:inline ml-1">Payment</span>
           </TabsTrigger>
-          <TabsTrigger value="counter_dispute" className="flex items-center gap-2">
-            <span>‼️</span>
-            <span className="hidden sm:inline">Counter-Dispute</span>
-            <span className="sm:hidden">Counter</span>
+          <TabsTrigger value="counter_dispute" className="text-xs sm:text-sm">
+            ‼️ <span className="hidden sm:inline ml-1">Counter</span>
           </TabsTrigger>
-          <TabsTrigger value="payment_documentation" className="flex items-center gap-2">
-            <span>🧾</span>
-            <span className="hidden sm:inline">Payment Documentation</span>
-            <span className="sm:hidden">Docs</span>
+          <TabsTrigger value="payment_documentation" className="text-xs sm:text-sm">
+            🧾 <span className="hidden sm:inline ml-1">Docs</span>
           </TabsTrigger>
-          <TabsTrigger value="report_explanation" className="flex items-center gap-2">
-            <span>☮️</span>
-            <span className="hidden sm:inline">Report Explanation</span>
-            <span className="sm:hidden">Explain</span>
+          <TabsTrigger value="report_explanation" className="text-xs sm:text-sm">
+            ☮️ <span className="hidden sm:inline ml-1">Explain</span>
           </TabsTrigger>
-          <TabsTrigger value="report_dispute" className="flex items-center gap-2">
-            <span>⁉️</span>
-            <span className="hidden sm:inline">Report Dispute</span>
-            <span className="sm:hidden">Dispute</span>
+          <TabsTrigger value="report_dispute" className="text-xs sm:text-sm">
+            ⁉️ <span className="hidden sm:inline ml-1">Dispute</span>
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="text-xs sm:text-sm">
+            📊 <span className="hidden sm:inline ml-1">Reports</span>
+          </TabsTrigger>
+          <TabsTrigger value="disputes" className="text-xs sm:text-sm">
+            ⚖️ <span className="hidden sm:inline ml-1">Disputes</span>
           </TabsTrigger>
         </TabsList>
 
@@ -482,6 +476,55 @@ export default function Admin() {
             </TabsContent>
           );
         })}
+
+        <TabsContent value="reports" className="space-y-4">
+          <Card className="p-6">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Producer</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Days Overdue</TableHead>
+                  <TableHead>Verified</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentReports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>{report.project_name}</TableCell>
+                    <TableCell>{report.producer?.name || 'N/A'}</TableCell>
+                    <TableCell>${report.amount_owed.toLocaleString()}</TableCell>
+                    <TableCell>{report.days_overdue}</TableCell>
+                    <TableCell>
+                      <Badge variant={report.verified ? 'default' : 'secondary'}>
+                        {report.verified ? 'Yes' : 'No'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {!report.verified && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleVerifyPaymentReport(report.id)}
+                        >
+                          Verify
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="disputes" className="space-y-4">
+          <Card className="p-6">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
