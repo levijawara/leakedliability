@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
+import { useState, useEffect } from "react";
 
 const getDaysColor = (days: number | null) => {
   if (!days || days < 0) return "bg-background text-foreground";
@@ -16,6 +17,9 @@ const getDaysColor = (days: number | null) => {
 };
 
 export default function Leaderboard() {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [blurNames, setBlurNames] = useState(true);
+
   const { data: producers, isLoading } = useQuery({
     queryKey: ["producers"],
     queryFn: async () => {
@@ -28,6 +32,32 @@ export default function Leaderboard() {
       return data;
     },
   });
+
+  useEffect(() => {
+    checkAdminStatus();
+    loadBlurSetting();
+  }, []);
+
+  const checkAdminStatus = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+      setIsAdmin(data === true);
+    }
+  };
+
+  const loadBlurSetting = async () => {
+    const { data } = await supabase
+      .from("site_settings")
+      .select("blur_names_for_public")
+      .single();
+    
+    if (data) {
+      setBlurNames(data.blur_names_for_public ?? true);
+    }
+  };
+
+  const shouldBlurNames = blurNames && !isAdmin;
 
   return (
     <>
@@ -193,9 +223,9 @@ export default function Leaderboard() {
                       className="hover:bg-muted/50 transition-colors"
                     >
                       <TableCell className="font-semibold">
-                        <span className="blur-sm select-none">{producer.name}</span>
+                        <span className={shouldBlurNames ? "blur-sm select-none" : ""}>{producer.name}</span>
                         {producer.company && (
-                          <div className="text-xs text-muted-foreground blur-sm select-none">{producer.company}</div>
+                          <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company}</div>
                         )}
                       </TableCell>
                       <TableCell className="text-center font-bold text-lg">

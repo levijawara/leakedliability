@@ -326,18 +326,21 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          blur_names_for_public: boolean
           id: string
           maintenance_message: string | null
           maintenance_mode: boolean
           updated_at: string | null
         }
         Insert: {
+          blur_names_for_public?: boolean
           id?: string
           maintenance_message?: string | null
           maintenance_mode?: boolean
           updated_at?: string | null
         }
         Update: {
+          blur_names_for_public?: boolean
           id?: string
           maintenance_message?: string | null
           maintenance_mode?: boolean
