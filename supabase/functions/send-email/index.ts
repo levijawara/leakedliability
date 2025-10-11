@@ -18,6 +18,7 @@ const corsHeaders = {
 };
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
+const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
   type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected';
@@ -105,7 +106,7 @@ serve(async (req) => {
 
     // Send email via Resend
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'PSCS <onboarding@resend.dev>',
+      from: FROM_EMAIL,
       to: [to],
       subject,
       html,
@@ -130,7 +131,7 @@ serve(async (req) => {
       console.error('Error logging email:', logError);
     }
 
-    console.log('Email sent successfully:', { type, to, subject });
+    console.log('Email sent successfully:', { type, to, from: FROM_EMAIL, subject });
 
     return new Response(
       JSON.stringify({ success: true, emailId: emailData?.id }),
