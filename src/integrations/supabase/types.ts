@@ -333,6 +333,7 @@ export type Database = {
           form_data: Json
           full_name: string
           id: string
+          report_id: string | null
           role_department: string | null
           status: string
           submission_type: string
@@ -348,6 +349,7 @@ export type Database = {
           form_data?: Json
           full_name: string
           id?: string
+          report_id?: string | null
           role_department?: string | null
           status?: string
           submission_type: string
@@ -363,6 +365,7 @@ export type Database = {
           form_data?: Json
           full_name?: string
           id?: string
+          report_id?: string | null
           role_department?: string | null
           status?: string
           submission_type?: string
@@ -401,6 +404,10 @@ export type Database = {
       calculate_pscs_score: {
         Args: { producer_uuid: string }
         Returns: number
+      }
+      generate_report_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       has_role: {
         Args: {
