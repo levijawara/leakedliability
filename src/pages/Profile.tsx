@@ -17,6 +17,15 @@ interface Profile {
   business_name: string | null;
 }
 
+interface SubmissionStats {
+  crew_report: number;
+  payment_confirmation: number;
+  counter_dispute: number;
+  payment_documentation: number;
+  report_explanation: number;
+  report_dispute: number;
+}
+
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,6 +33,14 @@ const Profile = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [submissionStats, setSubmissionStats] = useState<SubmissionStats>({
+    crew_report: 0,
+    payment_confirmation: 0,
+    counter_dispute: 0,
+    payment_documentation: 0,
+    report_explanation: 0,
+    report_dispute: 0,
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -36,6 +53,7 @@ const Profile = () => {
 
       setUser(session.user);
       await fetchProfile(session.user.id);
+      await fetchSubmissionStats(session.user.id);
       setLoading(false);
     };
 
@@ -59,6 +77,36 @@ const Profile = () => {
     }
 
     setProfile(data);
+  };
+
+  const fetchSubmissionStats = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("submissions")
+      .select("submission_type")
+      .eq("user_id", userId);
+
+    if (error) {
+      console.error("Failed to load submission stats:", error);
+      return;
+    }
+
+    const counts: SubmissionStats = {
+      crew_report: 0,
+      payment_confirmation: 0,
+      counter_dispute: 0,
+      payment_documentation: 0,
+      report_explanation: 0,
+      report_dispute: 0,
+    };
+
+    data?.forEach((submission) => {
+      const type = submission.submission_type as keyof SubmissionStats;
+      if (type in counts) {
+        counts[type]++;
+      }
+    });
+
+    setSubmissionStats(counts);
   };
 
   const handleSignOut = async () => {
@@ -189,6 +237,41 @@ const Profile = () => {
                   )}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Submission Statistics</CardTitle>
+              <CardDescription>Your submission counts across all types</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Crew Member Reports ⚠️</div>
+                  <div className="text-2xl font-bold">{submissionStats.crew_report}</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Payment Documentations 🧾</div>
+                  <div className="text-2xl font-bold">{submissionStats.payment_documentation}</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Payment Confirmations ✅</div>
+                  <div className="text-2xl font-bold">{submissionStats.payment_confirmation}</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Report Explanations ☮️</div>
+                  <div className="text-2xl font-bold">{submissionStats.report_explanation}</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Counter-Disputes ‼️</div>
+                  <div className="text-2xl font-bold">{submissionStats.counter_dispute}</div>
+                </div>
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Report Disputes ⁉️</div>
+                  <div className="text-2xl font-bold">{submissionStats.report_dispute}</div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
