@@ -3,11 +3,20 @@ import { z } from "zod";
 export const crewReportSchema = z.object({
   reportingType: z.enum(["producer", "production_company", "both"]),
   producerFirstName: z.string().trim().min(1, "First name is required").max(100),
-  producerLastName: z.string().trim().min(1, "Last name is required").max(100),
+  producerLastName: z.string().trim().max(100),
   producerEmail: z.string().trim().email("Invalid email address").max(255),
   producerCompany: z.string().trim().max(200).optional(),
   producerAliases: z.string().trim().max(500).optional(),
   amountOwed: z.number().positive("Amount must be positive").max(10000000, "Amount too large"),
+}).refine((data) => {
+  // Only require last name if reporting producer or both
+  if (data.reportingType === "production_company") {
+    return true;
+  }
+  return data.producerLastName.length > 0;
+}, {
+  message: "Last name is required when reporting a producer",
+  path: ["producerLastName"]
 });
 
 export const producerSubmissionSchema = z.object({

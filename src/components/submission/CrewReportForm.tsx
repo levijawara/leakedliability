@@ -102,7 +102,7 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
     }
   };
 
-  const isValid = producerName.firstName && producerName.email && amountOwed && invoiceFiles.length > 0;
+  const isValid = producerName.firstName && producerName.email && amountOwed && invoiceFiles.length > 0 && (reportingType === "production_company" || producerName.lastName);
 
   return (
     <Card className="p-8">
