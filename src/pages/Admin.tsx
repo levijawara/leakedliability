@@ -310,194 +310,178 @@ export default function Admin() {
         </div>
       </div>
 
-      <Tabs defaultValue="submissions" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="submissions">
-            Submissions ({submissions.filter(s => s.status === 'pending').length})
+      <Tabs defaultValue="crew_report" className="space-y-6">
+        <TabsList className="grid grid-cols-6 gap-2">
+          <TabsTrigger value="crew_report" className="flex items-center gap-2">
+            <span>⚠️</span>
+            <span className="hidden sm:inline">Crew Member Report</span>
+            <span className="sm:hidden">Crew</span>
           </TabsTrigger>
-          <TabsTrigger value="reports">
-            Payment Reports ({paymentReports.filter(r => !r.verified).length})
+          <TabsTrigger value="payment_confirmation" className="flex items-center gap-2">
+            <span>✅</span>
+            <span className="hidden sm:inline">Payment Confirmation</span>
+            <span className="sm:hidden">Payment</span>
           </TabsTrigger>
-          <TabsTrigger value="disputes">
-            Disputes ({disputes.filter(d => d.status === 'pending').length})
+          <TabsTrigger value="counter_dispute" className="flex items-center gap-2">
+            <span>‼️</span>
+            <span className="hidden sm:inline">Counter-Dispute</span>
+            <span className="sm:hidden">Counter</span>
+          </TabsTrigger>
+          <TabsTrigger value="payment_documentation" className="flex items-center gap-2">
+            <span>🧾</span>
+            <span className="hidden sm:inline">Payment Documentation</span>
+            <span className="sm:hidden">Docs</span>
+          </TabsTrigger>
+          <TabsTrigger value="report_explanation" className="flex items-center gap-2">
+            <span>☮️</span>
+            <span className="hidden sm:inline">Report Explanation</span>
+            <span className="sm:hidden">Explain</span>
+          </TabsTrigger>
+          <TabsTrigger value="report_dispute" className="flex items-center gap-2">
+            <span>⁉️</span>
+            <span className="hidden sm:inline">Report Dispute</span>
+            <span className="sm:hidden">Dispute</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="submissions" className="space-y-4">
-          <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {submissions.map((sub) => (
-                  <TableRow key={sub.id}>
-                    <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{sub.full_name}</TableCell>
-                    <TableCell>{sub.email}</TableCell>
-                    <TableCell className="capitalize">{sub.submission_type}</TableCell>
-                    <TableCell>
-                      <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
-                        {sub.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={async () => {
-                          setSelectedItem(sub);
-                          setAdminNotes(sub.admin_notes || "");
-                          await loadDocumentUrls(sub.document_urls || []);
-                        }}
-                      >
-                        Review
+        {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
+          const filteredSubmissions = submissions.filter(s => s.submission_type === type);
+          
+          return (
+            <TabsContent key={type} value={type} className="space-y-4">
+              <Card className="p-6">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubmissions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                          No submissions of this type
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredSubmissions.map((sub) => (
+                        <TableRow key={sub.id}>
+                          <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell>{sub.full_name}</TableCell>
+                          <TableCell>{sub.email}</TableCell>
+                          <TableCell>
+                            <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
+                              {sub.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                setSelectedItem(sub);
+                                setAdminNotes(sub.admin_notes || "");
+                                await loadDocumentUrls(sub.document_urls || []);
+                              }}
+                            >
+                              Review
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </Card>
+
+              {selectedItem && selectedItem.submission_type === type && (
+                <Card className="p-6">
+                  <h3 className="text-lg font-bold mb-4">Review Submission</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <p><strong>Name:</strong> {selectedItem.full_name}</p>
+                      <p><strong>Email:</strong> {selectedItem.email}</p>
+                      <p><strong>Type:</strong> {selectedItem.submission_type}</p>
+                      {selectedItem.role_department && (
+                        <p><strong>Role:</strong> {selectedItem.role_department}</p>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <strong>Form Data:</strong>
+                      <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto">
+                        {JSON.stringify(selectedItem.form_data, null, 2)}
+                      </pre>
+                    </div>
+
+                    {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <strong>Documents:</strong>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadAllAsZip(selectedItem.document_urls, selectedItem.id, 'submission')}
+                          >
+                            Download All as ZIP
+                          </Button>
+                        </div>
+                        {loadingUrls ? (
+                          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span>Loading documents...</span>
+                          </div>
+                        ) : (
+                          <ul className="mt-2 space-y-1">
+                            {documentSignedUrls.map((url: string, idx: number) => (
+                              <li key={idx}>
+                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                  Document {idx + 1}
+                                </a>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+
+                    <div>
+                      <label className="text-sm font-medium">Admin Notes</label>
+                      <Textarea
+                        value={adminNotes}
+                        onChange={(e) => setAdminNotes(e.target.value)}
+                        placeholder="Add notes about this submission..."
+                        className="mt-2"
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button onClick={() => handleVerifySubmission(selectedItem.id)}>
+                        Verify & Approve
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-
-          {selectedItem && (
-            <Card className="p-6">
-              <h3 className="text-lg font-bold mb-4">Review Submission</h3>
-              <div className="space-y-4">
-                <div>
-                  <p><strong>Name:</strong> {selectedItem.full_name}</p>
-                  <p><strong>Email:</strong> {selectedItem.email}</p>
-                  <p><strong>Type:</strong> {selectedItem.submission_type}</p>
-                  {selectedItem.role_department && (
-                    <p><strong>Role:</strong> {selectedItem.role_department}</p>
-                  )}
-                </div>
-                
-                <div>
-                  <strong>Form Data:</strong>
-                  <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto">
-                    {JSON.stringify(selectedItem.form_data, null, 2)}
-                  </pre>
-                </div>
-
-                {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <strong>Documents:</strong>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => downloadAllAsZip(selectedItem.document_urls, selectedItem.id, 'submission')}
+                      <Button 
+                        variant="destructive" 
+                        onClick={() => handleRejectSubmission(selectedItem.id)}
                       >
-                        Download All as ZIP
+                        Reject
+                      </Button>
+                      <Button variant="outline" onClick={() => {
+                        setSelectedItem(null);
+                        setAdminNotes("");
+                      }}>
+                        Cancel
                       </Button>
                     </div>
-                    {loadingUrls ? (
-                      <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Loading documents...</span>
-                      </div>
-                    ) : (
-                      <ul className="mt-2 space-y-1">
-                        {documentSignedUrls.map((url: string, idx: number) => (
-                          <li key={idx}>
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                              Document {idx + 1}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
                   </div>
-                )}
-
-                <div>
-                  <label className="text-sm font-medium">Admin Notes</label>
-                  <Textarea
-                    value={adminNotes}
-                    onChange={(e) => setAdminNotes(e.target.value)}
-                    placeholder="Add notes about this submission..."
-                    className="mt-2"
-                  />
-                </div>
-
-                <div className="flex gap-2">
-                  <Button onClick={() => handleVerifySubmission(selectedItem.id)}>
-                    Verify & Approve
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => handleRejectSubmission(selectedItem.id)}
-                  >
-                    Reject
-                  </Button>
-                  <Button variant="outline" onClick={() => {
-                    setSelectedItem(null);
-                    setAdminNotes("");
-                  }}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="reports" className="space-y-4">
-          <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Producer</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Days Overdue</TableHead>
-                  <TableHead>Verified</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paymentReports.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{report.project_name}</TableCell>
-                    <TableCell>{report.producer?.name || 'N/A'}</TableCell>
-                    <TableCell>${report.amount_owed.toLocaleString()}</TableCell>
-                    <TableCell>{report.days_overdue}</TableCell>
-                    <TableCell>
-                      <Badge variant={report.verified ? 'default' : 'secondary'}>
-                        {report.verified ? 'Yes' : 'No'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {!report.verified && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleVerifyPaymentReport(report.id)}
-                        >
-                          Verify
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="disputes" className="space-y-4">
-          <Card className="p-6">
-            <Table>
+                </Card>
+              )}
+            </TabsContent>
+          );
+        })}
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
