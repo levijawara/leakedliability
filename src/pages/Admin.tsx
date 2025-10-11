@@ -497,7 +497,7 @@ export default function Admin() {
               <TableBody>
                 {paymentReports.map((report) => (
                   <TableRow key={report.id}>
-                    <TableCell className="font-mono text-xs">{report.id.substring(0, 8)}</TableCell>
+                    <TableCell className="font-mono text-xs">N/A</TableCell>
                     <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>{report.project_name}</TableCell>
                     <TableCell>{report.producer?.name || 'N/A'}</TableCell>
@@ -542,7 +542,7 @@ export default function Admin() {
               <TableBody>
                 {disputes.map((dispute) => (
                   <TableRow key={dispute.id}>
-                    <TableCell className="font-mono text-xs">{dispute.id.substring(0, 8)}</TableCell>
+                    <TableCell className="font-mono text-xs">N/A</TableCell>
                     <TableCell>{new Date(dispute.created_at).toLocaleDateString()}</TableCell>
                     <TableCell className="capitalize">{dispute.dispute_type}</TableCell>
                     <TableCell>{dispute.payment_report?.project_name || 'N/A'}</TableCell>
