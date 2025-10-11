@@ -94,22 +94,29 @@ export function Navigation() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/how-it-works")}
-            >
-              <Info className="h-4 w-4 mr-2" />
-              How It Works
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/why-it-works")}
-            >
-              <Info className="h-4 w-4 mr-2" />
-              Why It Works
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm">
+                  <Menu className="h-4 w-4 mr-2" />
+                  Menu
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => navigate("/how-it-works")}>
+                  <Info className="h-4 w-4 mr-2" />
+                  How It Works
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/why-it-works")}>
+                  <Info className="h-4 w-4 mr-2" />
+                  Why It Works
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/disclaimer")}>
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Disclaimer
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            
             <Button
               variant="default"
               size="sm"
@@ -125,14 +132,6 @@ export function Navigation() {
             >
               <FileText className="h-4 w-4 mr-2" />
               Submission Forms
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/disclaimer")}
-            >
-              <AlertTriangle className="h-4 w-4 mr-2" />
-              Disclaimer
             </Button>
 
             {user ? (
