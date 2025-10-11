@@ -1,15 +1,27 @@
-import { Wrench } from "lucide-react";
+import { Wrench, LogIn } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface MaintenanceProps {
   message?: string;
 }
 
 const Maintenance = ({ message }: MaintenanceProps) => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex items-center gap-3">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/auth')}
+          className="gap-2"
+        >
+          <LogIn className="h-4 w-4" />
+          <span className="hidden sm:inline">Login / Sign Up</span>
+        </Button>
         <ThemeToggle />
       </div>
       
