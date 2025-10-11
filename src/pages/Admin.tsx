@@ -621,24 +621,24 @@ export default function Admin() {
       </Card>
 
       <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-1">
-          <TabsTrigger value="crew_report" className="text-xs sm:text-sm">
-            ⚠️ <span className="hidden sm:inline ml-1">Crew Report</span>
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-1">
+          <TabsTrigger value="crew_report">
+            Crew Member Report ⚠️
           </TabsTrigger>
-          <TabsTrigger value="payment_confirmation" className="text-xs sm:text-sm">
-            ✅ <span className="hidden sm:inline ml-1">Payment</span>
+          <TabsTrigger value="payment_confirmation">
+            Payment Confirmation ✅
           </TabsTrigger>
-          <TabsTrigger value="counter_dispute" className="text-xs sm:text-sm">
-            ‼️ <span className="hidden sm:inline ml-1">Counter</span>
+          <TabsTrigger value="counter_dispute">
+            Counter-Dispute ‼️
           </TabsTrigger>
-          <TabsTrigger value="payment_documentation" className="text-xs sm:text-sm">
-            🧾 <span className="hidden sm:inline ml-1">Docs</span>
+          <TabsTrigger value="payment_documentation">
+            Payment Documentation 🧾
           </TabsTrigger>
-          <TabsTrigger value="report_explanation" className="text-xs sm:text-sm">
-            ☮️ <span className="hidden sm:inline ml-1">Explain</span>
+          <TabsTrigger value="report_explanation">
+            Report Explanation ☮️
           </TabsTrigger>
-          <TabsTrigger value="report_dispute" className="text-xs sm:text-sm">
-            ⁉️ <span className="hidden sm:inline ml-1">Dispute</span>
+          <TabsTrigger value="report_dispute">
+            Report Dispute ⁉️
           </TabsTrigger>
         </TabsList>
 
