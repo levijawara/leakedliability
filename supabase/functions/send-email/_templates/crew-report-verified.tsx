@@ -9,7 +9,7 @@ import {
   Text,
   Section,
   Hr,
-} from 'https://esm.sh/@react-email/components@0.0.22';
+} from 'https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1';
 import * as React from 'https://esm.sh/react@18.3.1';
 
 interface CrewReportVerifiedProps {
@@ -50,7 +50,7 @@ export const CrewReportVerified = ({
             <strong>Project:</strong> {projectName}
           </Text>
           <Text style={detailsText}>
-            <strong>Amount:</strong> ${amount.toLocaleString()}
+            <strong>Amount:</strong> ${(typeof amount === 'number' && isFinite(amount) ? amount : 0).toLocaleString()}
           </Text>
           {verificationNotes && (
             <Text style={detailsText}>

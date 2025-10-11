@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
 import * as React from "https://esm.sh/react@18.3.1";
-import { renderAsync } from "https://esm.sh/@react-email/components@0.0.22";
+import { renderAsync } from "https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1";
 import { CrewReportConfirmation } from "./_templates/crew-report-confirmation.tsx";
 import { ProducerPaymentConfirmation } from "./_templates/producer-payment-confirmation.tsx";
 import { DisputeSubmission } from "./_templates/dispute-submission.tsx";

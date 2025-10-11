@@ -8,7 +8,7 @@ import {
   Preview,
   Section,
   Text,
-} from 'https://esm.sh/@react-email/components@0.0.22';
+} from 'https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1';
 import * as React from 'https://esm.sh/react@18.3.1';
 
 interface CrewReportConfirmationProps {
@@ -37,7 +37,7 @@ export const CrewReportConfirmation = ({
         <Section style={detailsBox}>
           <Text style={detailsText}><strong>Producer:</strong> {producerName}</Text>
           <Text style={detailsText}><strong>Project:</strong> {projectName}</Text>
-          <Text style={detailsText}><strong>Amount Owed:</strong> ${amountOwed.toLocaleString()}</Text>
+          <Text style={detailsText}><strong>Amount Owed:</strong> ${(typeof amountOwed === 'number' && isFinite(amountOwed) ? amountOwed : 0).toLocaleString()}</Text>
         </Section>
         <Text style={text}>
           Your report is now under review. We'll verify the information and update the leaderboard accordingly.
