@@ -3,41 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Power, PowerOff, Eye } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { getSignedUrls } from "@/lib/storage";
-import JSZip from "jszip";
 
 export default function Admin() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [submissions, setSubmissions] = useState<any[]>([]);
-  const [paymentReports, setPaymentReports] = useState<any[]>([]);
-  const [disputes, setDisputes] = useState<any[]>([]);
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [adminNotes, setAdminNotes] = useState("");
-  const [documentSignedUrls, setDocumentSignedUrls] = useState<string[]>([]);
-  const [loadingUrls, setLoadingUrls] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [blurNamesForPublic, setBlurNamesForPublic] = useState(true);
   const [settingsId, setSettingsId] = useState<string | null>(null);
-  const [paymentConfirmations, setPaymentConfirmations] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -91,342 +70,6 @@ export default function Admin() {
       setMaintenanceMessage(settings.maintenance_message || "");
       setBlurNamesForPublic(settings.blur_names_for_public ?? true);
       setSettingsId(settings.id);
-    }
-
-    // Load all submissions
-    const { data: subs } = await supabase
-      .from("submissions")
-      .select("*")
-      .order("created_at", { ascending: false });
-    
-    setSubmissions(subs || []);
-
-    // Load all payment reports
-    const { data: reports } = await supabase
-      .from("payment_reports")
-      .select(`
-        *,
-        producer:producers(name, company)
-      `)
-      .order("created_at", { ascending: false });
-    
-    setPaymentReports(reports || []);
-
-    // Load all disputes
-    const { data: disps } = await supabase
-      .from("disputes")
-      .select(`
-        *,
-        payment_report:payment_reports(project_name)
-      `)
-      .order("created_at", { ascending: false });
-    
-    setDisputes(disps || []);
-
-    // Load payment confirmations with crew member details
-    const { data: confirmations } = await supabase
-      .from("payment_confirmations")
-      .select(`
-        *,
-        payment_report:payment_reports!inner(
-          reporter_id
-        )
-      `)
-      .order("created_at", { ascending: false });
-
-    // Enrich with crew member details from submissions
-    const enrichedConfirmations = await Promise.all(
-      (confirmations || []).map(async (pc: any) => {
-        const { data: submission } = await supabase
-          .from("submissions")
-          .select("report_id, email, full_name")
-          .eq("user_id", pc.payment_report.reporter_id)
-          .eq("submission_type", "crew_report")
-          .maybeSingle();
-        
-        return {
-          ...pc,
-          report_id: submission?.report_id || "N/A",
-          full_name: submission?.full_name || "Unknown",
-          email: submission?.email || "Unknown"
-        };
-      })
-    );
-
-    setPaymentConfirmations(enrichedConfirmations);
-  };
-
-  const handleVerifySubmission = async (id: string) => {
-    const submission = submissions.find(s => s.id === id);
-    
-    const { error } = await supabase
-      .from("submissions")
-      .update({ 
-        verified: true, 
-        status: "verified",
-        admin_notes: adminNotes || null 
-      })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create payment report for crew reports
-    if (submission?.submission_type === 'crew_report') {
-      const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
-      
-      // Find or create the producer
-      let { data: existingProducer } = await supabase
-        .from('producers')
-        .select('id')
-        .ilike('name', producerName)
-        .maybeSingle();
-      
-      let producerId;
-      
-      if (!existingProducer) {
-        const { data: newProducer, error: producerError } = await supabase
-          .from('producers')
-          .insert({
-            name: producerName,
-            company: formData.producer_name?.company || null
-          })
-          .select('id')
-          .single();
-        
-        if (producerError) {
-          console.error('Error creating producer:', producerError);
-          toast({
-            title: "Error",
-            description: "Failed to create producer record",
-            variant: "destructive",
-          });
-          return;
-        }
-        producerId = newProducer.id;
-      } else {
-        producerId = existingProducer.id;
-      }
-      
-      // Create the payment report
-      const invoiceDate = formData.invoice_date || new Date().toISOString().split('T')[0];
-      const daysOverdue = Math.floor((new Date().getTime() - new Date(invoiceDate).getTime()) / (1000 * 60 * 60 * 24));
-      
-      const { error: reportError } = await supabase
-        .from('payment_reports')
-        .insert({
-          reporter_id: submission.user_id,
-          producer_id: producerId,
-          amount_owed: parseFloat(formData.amount_owed),
-          project_name: formData.project_name || 'Not specified',
-          invoice_date: invoiceDate,
-          days_overdue: daysOverdue,
-          city: formData.city || null,
-          status: 'pending',
-          verified: true
-        });
-      
-      if (reportError) {
-        console.error('Error creating payment report:', reportError);
-        toast({
-          title: "Warning",
-          description: "Submission verified but payment report creation failed",
-          variant: "default",
-        });
-      }
-
-      // Send verification email
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'crew_report_verified',
-          to: submission.email,
-          data: {
-            reportId: submission.report_id,
-            producerName,
-            amount: parseFloat(formData.amount_owed),
-            projectName: formData.project_name || "Not specified",
-            verificationNotes: adminNotes || undefined,
-          }
-        }
-      });
-
-      if (emailError) {
-        console.error('Email sending failed:', emailError);
-        toast({
-          title: "Warning",
-          description: "Submission verified but email notification failed",
-          variant: "default",
-        });
-      }
-    }
-
-    toast({
-      title: "Success",
-      description: "Submission verified successfully",
-    });
-    loadAdminData();
-    setSelectedItem(null);
-    setAdminNotes("");
-  };
-
-  const handleRejectSubmission = async (id: string) => {
-    if (!adminNotes.trim()) {
-      toast({
-        title: "Notes Required",
-        description: "Please provide a reason for rejection",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const submission = submissions.find(s => s.id === id);
-
-    const { error } = await supabase
-      .from("submissions")
-      .update({ 
-        status: "rejected",
-        admin_notes: adminNotes 
-      })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Send rejection email if it's a crew report
-    if (submission?.submission_type === 'crew_report') {
-      const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
-
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'crew_report_rejected',
-          to: submission.email,
-          data: {
-            reportId: submission.report_id,
-            producerName,
-            amount: parseFloat(formData.amount_owed),
-            projectName: formData.project_name || "Not specified",
-            rejectionReason: adminNotes,
-          }
-        }
-      });
-
-      if (emailError) {
-        console.error('Email sending failed:', emailError);
-        toast({
-          title: "Warning",
-          description: "Submission rejected but email notification failed",
-          variant: "default",
-        });
-      }
-    }
-
-    toast({
-      title: "Rejected",
-      description: "Submission rejected",
-    });
-    loadAdminData();
-    setSelectedItem(null);
-    setAdminNotes("");
-  };
-
-  const handleVerifyPaymentReport = async (id: string) => {
-    const { error } = await supabase
-      .from("payment_reports")
-      .update({ verified: true })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Payment report verified",
-      });
-      loadAdminData();
-    }
-  };
-
-  const loadDocumentUrls = async (documentUrls: string[]) => {
-    if (!documentUrls || documentUrls.length === 0) {
-      setDocumentSignedUrls([]);
-      return;
-    }
-
-    setLoadingUrls(true);
-    try {
-      const urls = await getSignedUrls(documentUrls, 3600); // 1 hour expiration
-      setDocumentSignedUrls(urls);
-    } catch (error: any) {
-      toast({
-        title: "Error Loading Documents",
-        description: error.message,
-        variant: "destructive",
-      });
-      setDocumentSignedUrls([]);
-    } finally {
-      setLoadingUrls(false);
-    }
-  };
-
-  const downloadAllAsZip = async (documentPaths: string[], itemId: string, itemType: string) => {
-    try {
-      toast({
-        title: "Preparing Download",
-        description: "Creating ZIP file...",
-      });
-
-      const urls = await getSignedUrls(documentPaths, 3600);
-      const zip = new JSZip();
-
-      // Fetch and add each file to the ZIP
-      for (let i = 0; i < urls.length; i++) {
-        const response = await fetch(urls[i]);
-        const blob = await response.blob();
-        const fileName = documentPaths[i].split('/').pop() || `document_${i + 1}`;
-        zip.file(fileName, blob);
-      }
-
-      // Generate and download the ZIP
-      const content = await zip.generateAsync({ type: "blob" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(content);
-      link.download = `${itemType}_${itemId}_documents.zip`;
-      link.click();
-      URL.revokeObjectURL(link.href);
-
-      toast({
-        title: "Success",
-        description: "Documents downloaded successfully",
-      });
-    } catch (error) {
-      console.error('Error creating ZIP:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create ZIP file",
-        variant: "destructive",
-      });
     }
   };
 
@@ -487,41 +130,6 @@ export default function Admin() {
     });
   };
 
-  const handleResolveDispute = async (id: string, resolution: string) => {
-    if (!adminNotes.trim()) {
-      toast({
-        title: "Notes Required",
-        description: "Please provide resolution notes",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { error } = await supabase
-      .from("disputes")
-      .update({ 
-        status: resolution,
-        resolution_notes: adminNotes 
-      })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Success",
-        description: "Dispute resolved",
-      });
-      loadAdminData();
-      setSelectedItem(null);
-      setAdminNotes("");
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -535,80 +143,47 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+      </div>
+
       {maintenanceMode && (
-        <Card className="mb-6 p-4 bg-yellow-500/10 border-yellow-500/50">
-          <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 font-semibold">
-            <PowerOff className="h-5 w-5" />
-            Maintenance Mode Active - Only you can see this
+        <Card className="p-4 mb-6 bg-warning/10 border-warning">
+          <div className="flex items-center gap-2">
+            <PowerOff className="h-5 w-5 text-warning" />
+            <span className="font-medium">Maintenance Mode Active</span>
           </div>
         </Card>
       )}
 
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Review and manage all submissions, reports, and disputes</p>
-          </div>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Home
-          </Button>
-        </div>
-      </div>
-
-      {/* Maintenance Mode Control */}
-      <Card className="mb-6 p-6">
+      <Card className="p-6 mb-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="maintenance-mode" className="text-lg font-semibold flex items-center gap-2">
-                {maintenanceMode ? <PowerOff className="h-5 w-5 text-destructive" /> : <Power className="h-5 w-5 text-primary" />}
+            <div className="space-y-0.5">
+              <Label htmlFor="maintenance-mode" className="text-base flex items-center gap-2">
+                {maintenanceMode ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
                 Maintenance Mode
               </Label>
               <p className="text-sm text-muted-foreground">
-                {maintenanceMode 
-                  ? "Site is currently in maintenance mode. Only admins can access it." 
-                  : "Site is accessible to everyone."}
+                Restrict site access to admins only
               </p>
             </div>
             <Switch
               id="maintenance-mode"
               checked={maintenanceMode}
               onCheckedChange={toggleMaintenanceMode}
-              className="data-[state=checked]:bg-destructive"
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="maintenance-message">Maintenance Message</Label>
-            <Textarea
-              id="maintenance-message"
-              placeholder="We're making improvements! Check back soon 🛠️"
-              value={maintenanceMessage}
-              onChange={(e) => setMaintenanceMessage(e.target.value)}
-              rows={2}
-            />
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={toggleMaintenanceMode}
-              disabled={!maintenanceMessage.trim()}
-            >
-              Update Message & Save
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="space-y-1">
-              <Label htmlFor="blur-names" className="text-lg font-semibold flex items-center gap-2">
-                <Eye className="h-5 w-5 text-muted-foreground" />
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="blur-names" className="text-base flex items-center gap-2">
+                <Eye className="h-4 w-4" />
                 Blur Names for Non-Admins
               </Label>
               <p className="text-sm text-muted-foreground">
-                {blurNamesForPublic 
-                  ? "Producer names are blurred on the leaderboard for non-admin users." 
-                  : "Producer names are visible to everyone on the leaderboard."}
+                Hide producer names on the leaderboard for non-admin users
               </p>
             </div>
             <Switch
@@ -620,17 +195,8 @@ export default function Admin() {
         </div>
       </Card>
 
-      <Tabs defaultValue="reports" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 gap-1">
-          <TabsTrigger value="reports" className="text-xs sm:text-sm">
-            📊 <span className="hidden sm:inline ml-1">Reports</span>
-          </TabsTrigger>
-          <TabsTrigger value="disputes" className="text-xs sm:text-sm">
-            ⚖️ <span className="hidden sm:inline ml-1">Disputes</span>
-          </TabsTrigger>
-          <TabsTrigger value="payment_confirmations_verified" className="text-xs sm:text-sm">
-            💰 <span className="hidden sm:inline ml-1">Payment ✅</span>
-          </TabsTrigger>
+      <Tabs defaultValue="crew_report" className="space-y-4">
+        <TabsList className="grid grid-cols-6 w-full">
           <TabsTrigger value="crew_report" className="text-xs sm:text-sm">
             ⚠️ <span className="hidden sm:inline ml-1">Crew Report</span>
           </TabsTrigger>
@@ -651,323 +217,40 @@ export default function Admin() {
           </TabsTrigger>
         </TabsList>
 
-        {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
-          const filteredSubmissions = submissions.filter(s => s.submission_type === type);
-          
-          return (
-            <TabsContent key={type} value={type} className="space-y-4">
-              <Card className="p-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Report ID</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredSubmissions.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
-                          No submissions of this type
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredSubmissions.map((sub) => (
-                        <TableRow key={sub.id}>
-                          <TableCell className="font-mono text-xs">{sub.report_id || 'N/A'}</TableCell>
-                          <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
-                          <TableCell>{sub.full_name}</TableCell>
-                          <TableCell>{sub.email}</TableCell>
-                          <TableCell>
-                            <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
-                              {sub.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={async () => {
-                                setSelectedItem(sub);
-                                setAdminNotes(sub.admin_notes || "");
-                                await loadDocumentUrls(sub.document_urls || []);
-                              }}
-                            >
-                              Review
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </Card>
-
-              {selectedItem && selectedItem.submission_type === type && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-bold mb-4">Review Submission</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p><strong>Name:</strong> {selectedItem.full_name}</p>
-                      <p><strong>Email:</strong> {selectedItem.email}</p>
-                      <p><strong>Type:</strong> {selectedItem.submission_type}</p>
-                      {selectedItem.role_department && (
-                        <p><strong>Role:</strong> {selectedItem.role_department}</p>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <strong>Form Data:</strong>
-                      <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto">
-                        {JSON.stringify(selectedItem.form_data, null, 2)}
-                      </pre>
-                    </div>
-
-                    {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <strong>Documents:</strong>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => downloadAllAsZip(selectedItem.document_urls, selectedItem.id, 'submission')}
-                          >
-                            Download All as ZIP
-                          </Button>
-                        </div>
-                        {loadingUrls ? (
-                          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Loading documents...</span>
-                          </div>
-                        ) : (
-                          <ul className="mt-2 space-y-1">
-                            {documentSignedUrls.map((url: string, idx: number) => (
-                              <li key={idx}>
-                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                  Document {idx + 1}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="text-sm font-medium">Admin Notes</label>
-                      <Textarea
-                        value={adminNotes}
-                        onChange={(e) => setAdminNotes(e.target.value)}
-                        placeholder="Add notes about this submission..."
-                        className="mt-2"
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button onClick={() => handleVerifySubmission(selectedItem.id)}>
-                        Verify & Approve
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        onClick={() => handleRejectSubmission(selectedItem.id)}
-                      >
-                        Reject
-                      </Button>
-                      <Button variant="outline" onClick={() => {
-                        setSelectedItem(null);
-                        setAdminNotes("");
-                      }}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </TabsContent>
-          );
-        })}
-
-        <TabsContent value="reports" className="space-y-4">
+        <TabsContent value="crew_report">
           <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Report ID</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Producer</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Days Overdue</TableHead>
-                  <TableHead>Verified</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paymentReports.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell className="font-mono text-xs">N/A</TableCell>
-                    <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{report.project_name}</TableCell>
-                    <TableCell>{report.producer?.name || 'N/A'}</TableCell>
-                    <TableCell>${report.amount_owed.toLocaleString()}</TableCell>
-                    <TableCell>{report.days_overdue}</TableCell>
-                    <TableCell>
-                      <Badge variant={report.verified ? 'default' : 'secondary'}>
-                        {report.verified ? 'Yes' : 'No'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {!report.verified && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleVerifyPaymentReport(report.id)}
-                        >
-                          Verify
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <p className="text-muted-foreground">Crew Report submissions will appear here</p>
           </Card>
         </TabsContent>
 
-        <TabsContent value="payment_confirmations_verified" className="space-y-4">
+        <TabsContent value="payment_confirmation">
           <Card className="p-6">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold">Payment Confirmations</h3>
-              <p className="text-sm text-muted-foreground">
-                Crew members who confirmed their producer paid them. Used for reward tracking.
-              </p>
-            </div>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Report ID</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paymentConfirmations.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground">
-                      No payment confirmations yet
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  paymentConfirmations.map((pc) => (
-                    <TableRow key={pc.id}>
-                      <TableCell className="font-mono text-xs">{pc.report_id}</TableCell>
-                      <TableCell>{new Date(pc.created_at).toLocaleDateString()}</TableCell>
-                      <TableCell>{pc.full_name}</TableCell>
-                      <TableCell>{pc.email}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <p className="text-muted-foreground">Payment confirmations will appear here</p>
           </Card>
         </TabsContent>
 
-        <TabsContent value="disputes" className="space-y-4">
+        <TabsContent value="counter_dispute">
           <Card className="p-6">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Report ID</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {disputes.map((dispute) => (
-                  <TableRow key={dispute.id}>
-                    <TableCell className="font-mono text-xs">N/A</TableCell>
-                    <TableCell>{new Date(dispute.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell className="capitalize">{dispute.dispute_type}</TableCell>
-                    <TableCell>{dispute.payment_report?.project_name || 'N/A'}</TableCell>
-                    <TableCell>
-                      <Badge variant={dispute.status === 'pending' ? 'secondary' : 'default'}>
-                        {dispute.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedItem(dispute);
-                          setAdminNotes(dispute.resolution_notes || "");
-                        }}
-                      >
-                        Review
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <p className="text-muted-foreground">Counter disputes will appear here</p>
           </Card>
+        </TabsContent>
 
-          {selectedItem && selectedItem.dispute_type && (
-            <Card className="p-6">
-              <h3 className="text-lg font-bold mb-4">Review Dispute</h3>
-              <div className="space-y-4">
-                <div>
-                  <p><strong>Type:</strong> {selectedItem.dispute_type}</p>
-                  <p><strong>Explanation:</strong> {selectedItem.explanation}</p>
-                  {selectedItem.evidence_url && (
-                    <p>
-                      <strong>Evidence:</strong>{' '}
-                      <a href={selectedItem.evidence_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                        View Evidence
-                      </a>
-                    </p>
-                  )}
-                </div>
+        <TabsContent value="payment_documentation">
+          <Card className="p-6">
+            <p className="text-muted-foreground">Payment documentation will appear here</p>
+          </Card>
+        </TabsContent>
 
-                <div>
-                  <label className="text-sm font-medium">Resolution Notes</label>
-                  <Textarea
-                    value={adminNotes}
-                    onChange={(e) => setAdminNotes(e.target.value)}
-                    placeholder="Add resolution notes..."
-                    className="mt-2"
-                  />
-                </div>
+        <TabsContent value="report_explanation">
+          <Card className="p-6">
+            <p className="text-muted-foreground">Report explanations will appear here</p>
+          </Card>
+        </TabsContent>
 
-                <div className="flex gap-2">
-                  <Button onClick={() => handleResolveDispute(selectedItem.id, 'resolved')}>
-                    Resolve (Approve)
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => handleResolveDispute(selectedItem.id, 'rejected')}
-                  >
-                    Reject Dispute
-                  </Button>
-                  <Button variant="outline" onClick={() => {
-                    setSelectedItem(null);
-                    setAdminNotes("");
-                  }}>
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          )}
+        <TabsContent value="report_dispute">
+          <Card className="p-6">
+            <p className="text-muted-foreground">Report disputes will appear here</p>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
