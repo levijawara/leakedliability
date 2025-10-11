@@ -11,6 +11,7 @@ import { ProducerSubmission } from "./_templates/producer-submission.tsx";
 import { AdminNotification } from "./_templates/admin-notification.tsx";
 import { CrewReportVerified } from "./_templates/crew-report-verified.tsx";
 import { CrewReportRejected } from "./_templates/crew-report-rejected.tsx";
+import { WelcomeEmail } from "./_templates/welcome.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +22,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome';
   to: string;
   data: any;
 }
@@ -98,6 +99,13 @@ serve(async (req) => {
           React.createElement(CrewReportRejected, data)
         );
         subject = 'Your Payment Report Requires Additional Information';
+        break;
+      
+      case 'welcome':
+        html = await renderAsync(
+          React.createElement(WelcomeEmail, data)
+        );
+        subject = 'Welcome to Leaked Liability - PSCS';
         break;
       
       default:

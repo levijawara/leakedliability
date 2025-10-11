@@ -93,6 +93,25 @@ export default function Auth() {
         });
 
         if (profileError) throw profileError;
+
+        // Send welcome email
+        try {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'welcome',
+              to: email,
+              data: {
+                userName: `${firstName} ${lastName}`,
+                accountType: accountType === 'crew' ? 'Crew Member' : 
+                            accountType === 'producer' ? 'Producer' : 
+                            'Production Company',
+              },
+            },
+          });
+        } catch (emailError) {
+          console.error('Welcome email failed:', emailError);
+          // Don't block signup if email fails
+        }
       }
 
       toast({
