@@ -145,8 +145,9 @@ export default function Admin() {
     // Send verification email if it's a crew report
     if (submission?.submission_type === 'crew_report') {
       const formData = submission.form_data;
-      const producerName = formData.producerCompany || 
-        `${formData.producerFirstName} ${formData.producerLastName}`.trim();
+      const producerName = formData.producer_name?.company || 
+        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
+        'Unknown Producer';
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
@@ -155,9 +156,9 @@ export default function Admin() {
           data: {
             reportId: submission.report_id,
             producerName,
-            amount: formData.amountOwed,
-            projectName: formData.projectName,
-            verificationNotes: adminNotes,
+            amount: parseFloat(formData.amount_owed),
+            projectName: formData.project_name || "Not specified",
+            verificationNotes: adminNotes || undefined,
           }
         }
       });
@@ -213,8 +214,9 @@ export default function Admin() {
     // Send rejection email if it's a crew report
     if (submission?.submission_type === 'crew_report') {
       const formData = submission.form_data;
-      const producerName = formData.producerCompany || 
-        `${formData.producerFirstName} ${formData.producerLastName}`.trim();
+      const producerName = formData.producer_name?.company || 
+        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
+        'Unknown Producer';
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
@@ -223,8 +225,8 @@ export default function Admin() {
           data: {
             reportId: submission.report_id,
             producerName,
-            amount: formData.amountOwed,
-            projectName: formData.projectName,
+            amount: parseFloat(formData.amount_owed),
+            projectName: formData.project_name || "Not specified",
             rejectionReason: adminNotes,
           }
         }
