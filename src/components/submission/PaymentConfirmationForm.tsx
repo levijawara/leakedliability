@@ -136,7 +136,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
   };
 
   const selectedReport = paymentReports.find(r => r.id === selectedReportId);
-  const isValid = selectedReportId && proofFiles.length > 0;
+  const isValid = selectedReportId; // Files are optional
 
   return (
     <>
@@ -172,8 +172,8 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
           )}
 
           <FileUploadZone
-            label="Payment Proof *"
-            description="Bank statements, payment confirmations, receipts, etc."
+            label="Payment Proof (Optional)"
+            description="Bank statements, payment confirmations, receipts, etc. Not required, but helpful for disputes."
             files={proofFiles}
             onFilesChange={setProofFiles}
             maxFiles={5}
