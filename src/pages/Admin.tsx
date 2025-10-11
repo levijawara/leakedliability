@@ -142,13 +142,74 @@ export default function Admin() {
       return;
     }
 
-    // Send verification email if it's a crew report
+    // Create payment report for crew reports
     if (submission?.submission_type === 'crew_report') {
       const formData = submission.form_data;
       const producerName = formData.producer_name?.company || 
         `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
         'Unknown Producer';
+      
+      // Find or create the producer
+      let { data: existingProducer } = await supabase
+        .from('producers')
+        .select('id')
+        .ilike('name', producerName)
+        .maybeSingle();
+      
+      let producerId;
+      
+      if (!existingProducer) {
+        const { data: newProducer, error: producerError } = await supabase
+          .from('producers')
+          .insert({
+            name: producerName,
+            company: formData.producer_name?.company || null
+          })
+          .select('id')
+          .single();
+        
+        if (producerError) {
+          console.error('Error creating producer:', producerError);
+          toast({
+            title: "Error",
+            description: "Failed to create producer record",
+            variant: "destructive",
+          });
+          return;
+        }
+        producerId = newProducer.id;
+      } else {
+        producerId = existingProducer.id;
+      }
+      
+      // Create the payment report
+      const invoiceDate = formData.invoice_date || new Date().toISOString().split('T')[0];
+      const daysOverdue = Math.floor((new Date().getTime() - new Date(invoiceDate).getTime()) / (1000 * 60 * 60 * 24));
+      
+      const { error: reportError } = await supabase
+        .from('payment_reports')
+        .insert({
+          reporter_id: submission.user_id,
+          producer_id: producerId,
+          amount_owed: parseFloat(formData.amount_owed),
+          project_name: formData.project_name || 'Not specified',
+          invoice_date: invoiceDate,
+          days_overdue: daysOverdue,
+          city: formData.city || null,
+          status: 'pending',
+          verified: true
+        });
+      
+      if (reportError) {
+        console.error('Error creating payment report:', reportError);
+        toast({
+          title: "Warning",
+          description: "Submission verified but payment report creation failed",
+          variant: "default",
+        });
+      }
 
+      // Send verification email
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
           type: 'crew_report_verified',
