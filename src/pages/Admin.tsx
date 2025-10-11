@@ -36,6 +36,7 @@ export default function Admin() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [paymentConfirmations, setPaymentConfirmations] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -119,6 +120,38 @@ export default function Admin() {
       .order("created_at", { ascending: false });
     
     setDisputes(disps || []);
+
+    // Load payment confirmations with crew member details
+    const { data: confirmations } = await supabase
+      .from("payment_confirmations")
+      .select(`
+        *,
+        payment_report:payment_reports!inner(
+          reporter_id
+        )
+      `)
+      .order("created_at", { ascending: false });
+
+    // Enrich with crew member details from submissions
+    const enrichedConfirmations = await Promise.all(
+      (confirmations || []).map(async (pc: any) => {
+        const { data: submission } = await supabase
+          .from("submissions")
+          .select("report_id, email, full_name")
+          .eq("user_id", pc.payment_report.reporter_id)
+          .eq("submission_type", "crew_report")
+          .maybeSingle();
+        
+        return {
+          ...pc,
+          report_id: submission?.report_id || "N/A",
+          full_name: submission?.full_name || "Unknown",
+          email: submission?.email || "Unknown"
+        };
+      })
+    );
+
+    setPaymentConfirmations(enrichedConfirmations);
   };
 
   const handleVerifySubmission = async (id: string) => {
@@ -540,12 +573,15 @@ export default function Admin() {
       </Card>
 
       <Tabs defaultValue="reports" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 gap-1">
           <TabsTrigger value="reports" className="text-xs sm:text-sm">
             📊 <span className="hidden sm:inline ml-1">Reports</span>
           </TabsTrigger>
           <TabsTrigger value="disputes" className="text-xs sm:text-sm">
             ⚖️ <span className="hidden sm:inline ml-1">Disputes</span>
+          </TabsTrigger>
+          <TabsTrigger value="payment_confirmations_verified" className="text-xs sm:text-sm">
+            💰 <span className="hidden sm:inline ml-1">Payment ✅</span>
           </TabsTrigger>
           <TabsTrigger value="crew_report" className="text-xs sm:text-sm">
             ⚠️ <span className="hidden sm:inline ml-1">Crew Report</span>
@@ -750,6 +786,45 @@ export default function Admin() {
                     </TableCell>
                   </TableRow>
                 ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="payment_confirmations_verified" className="space-y-4">
+          <Card className="p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold">Payment Confirmations</h3>
+              <p className="text-sm text-muted-foreground">
+                Crew members who confirmed their producer paid them. Used for reward tracking.
+              </p>
+            </div>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Report ID</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentConfirmations.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground">
+                      No payment confirmations yet
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paymentConfirmations.map((pc) => (
+                    <TableRow key={pc.id}>
+                      <TableCell className="font-mono text-xs">{pc.report_id}</TableCell>
+                      <TableCell>{new Date(pc.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>{pc.full_name}</TableCell>
+                      <TableCell>{pc.email}</TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </Card>
