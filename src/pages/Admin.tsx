@@ -5,8 +5,10 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Power, PowerOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -31,6 +33,9 @@ export default function Admin() {
   const [adminNotes, setAdminNotes] = useState("");
   const [documentSignedUrls, setDocumentSignedUrls] = useState<string[]>([]);
   const [loadingUrls, setLoadingUrls] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState("");
+  const [settingsId, setSettingsId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -73,6 +78,18 @@ export default function Admin() {
   };
 
   const loadAdminData = async () => {
+    // Load site settings
+    const { data: settings } = await supabase
+      .from("site_settings")
+      .select("*")
+      .single();
+    
+    if (settings) {
+      setMaintenanceMode(settings.maintenance_mode);
+      setMaintenanceMessage(settings.maintenance_message || "");
+      setSettingsId(settings.id);
+    }
+
     // Load all submissions
     const { data: subs } = await supabase
       .from("submissions")
@@ -249,6 +266,36 @@ export default function Admin() {
     }
   };
 
+  const toggleMaintenanceMode = async () => {
+    if (!settingsId) return;
+
+    const newMode = !maintenanceMode;
+    const { error } = await supabase
+      .from("site_settings")
+      .update({ 
+        maintenance_mode: newMode,
+        maintenance_message: maintenanceMessage || "We're making improvements! Check back soon 🛠️"
+      })
+      .eq("id", settingsId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setMaintenanceMode(newMode);
+    toast({
+      title: "Maintenance Mode " + (newMode ? "Enabled" : "Disabled"),
+      description: newMode 
+        ? "Site is now in maintenance mode. Only admins can access it." 
+        : "Site is now accessible to everyone.",
+    });
+  };
+
   const handleResolveDispute = async (id: string, resolution: string) => {
     if (!adminNotes.trim()) {
       toast({
@@ -298,6 +345,15 @@ export default function Admin() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {maintenanceMode && (
+        <Card className="mb-6 p-4 bg-yellow-500/10 border-yellow-500/50">
+          <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 font-semibold">
+            <PowerOff className="h-5 w-5" />
+            Maintenance Mode Active - Only you can see this
+          </div>
+        </Card>
+      )}
+
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
@@ -309,6 +365,50 @@ export default function Admin() {
           </Button>
         </div>
       </div>
+
+      {/* Maintenance Mode Control */}
+      <Card className="mb-6 p-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <Label htmlFor="maintenance-mode" className="text-lg font-semibold flex items-center gap-2">
+                {maintenanceMode ? <PowerOff className="h-5 w-5 text-destructive" /> : <Power className="h-5 w-5 text-primary" />}
+                Maintenance Mode
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {maintenanceMode 
+                  ? "Site is currently in maintenance mode. Only admins can access it." 
+                  : "Site is accessible to everyone."}
+              </p>
+            </div>
+            <Switch
+              id="maintenance-mode"
+              checked={maintenanceMode}
+              onCheckedChange={toggleMaintenanceMode}
+              className="data-[state=checked]:bg-destructive"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="maintenance-message">Maintenance Message</Label>
+            <Textarea
+              id="maintenance-message"
+              placeholder="We're making improvements! Check back soon 🛠️"
+              value={maintenanceMessage}
+              onChange={(e) => setMaintenanceMessage(e.target.value)}
+              rows={2}
+            />
+            <Button 
+              size="sm" 
+              variant="outline"
+              onClick={toggleMaintenanceMode}
+              disabled={!maintenanceMessage.trim()}
+            >
+              Update Message & Save
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       <Tabs defaultValue="reports" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1">

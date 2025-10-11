@@ -324,6 +324,27 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          id: string
+          maintenance_message: string | null
+          maintenance_mode: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          maintenance_message?: string | null
+          maintenance_mode?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          maintenance_message?: string | null
+          maintenance_mode?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       submissions: {
         Row: {
           admin_notes: string | null
