@@ -122,6 +122,8 @@ export default function Admin() {
   };
 
   const handleVerifySubmission = async (id: string) => {
+    const submission = submissions.find(s => s.id === id);
+    
     const { error } = await supabase
       .from("submissions")
       .update({ 
@@ -137,15 +139,46 @@ export default function Admin() {
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Success",
-        description: "Submission verified successfully",
-      });
-      loadAdminData();
-      setSelectedItem(null);
-      setAdminNotes("");
+      return;
     }
+
+    // Send verification email if it's a crew report
+    if (submission?.submission_type === 'crew_report') {
+      const formData = submission.form_data;
+      const producerName = formData.producerCompany || 
+        `${formData.producerFirstName} ${formData.producerLastName}`.trim();
+
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'crew_report_verified',
+          to: submission.email,
+          data: {
+            reportId: submission.report_id,
+            producerName,
+            amount: formData.amountOwed,
+            projectName: formData.projectName,
+            verificationNotes: adminNotes,
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Email sending failed:', emailError);
+        toast({
+          title: "Warning",
+          description: "Submission verified but email notification failed",
+          variant: "default",
+        });
+      }
+    }
+
+    toast({
+      title: "Success",
+      description: "Submission verified successfully",
+    });
+    loadAdminData();
+    setSelectedItem(null);
+    setAdminNotes("");
   };
 
   const handleRejectSubmission = async (id: string) => {
@@ -157,6 +190,8 @@ export default function Admin() {
       });
       return;
     }
+
+    const submission = submissions.find(s => s.id === id);
 
     const { error } = await supabase
       .from("submissions")
@@ -172,15 +207,46 @@ export default function Admin() {
         description: error.message,
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Rejected",
-        description: "Submission rejected",
-      });
-      loadAdminData();
-      setSelectedItem(null);
-      setAdminNotes("");
+      return;
     }
+
+    // Send rejection email if it's a crew report
+    if (submission?.submission_type === 'crew_report') {
+      const formData = submission.form_data;
+      const producerName = formData.producerCompany || 
+        `${formData.producerFirstName} ${formData.producerLastName}`.trim();
+
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'crew_report_rejected',
+          to: submission.email,
+          data: {
+            reportId: submission.report_id,
+            producerName,
+            amount: formData.amountOwed,
+            projectName: formData.projectName,
+            rejectionReason: adminNotes,
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Email sending failed:', emailError);
+        toast({
+          title: "Warning",
+          description: "Submission rejected but email notification failed",
+          variant: "default",
+        });
+      }
+    }
+
+    toast({
+      title: "Rejected",
+      description: "Submission rejected",
+    });
+    loadAdminData();
+    setSelectedItem(null);
+    setAdminNotes("");
   };
 
   const handleVerifyPaymentReport = async (id: string) => {

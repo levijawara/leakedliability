@@ -9,6 +9,8 @@ import { DisputeSubmission } from "./_templates/dispute-submission.tsx";
 import { CounterDisputeSubmission } from "./_templates/counter-dispute-submission.tsx";
 import { ProducerSubmission } from "./_templates/producer-submission.tsx";
 import { AdminNotification } from "./_templates/admin-notification.tsx";
+import { CrewReportVerified } from "./_templates/crew-report-verified.tsx";
+import { CrewReportRejected } from "./_templates/crew-report-rejected.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -18,7 +20,7 @@ const corsHeaders = {
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected';
   to: string;
   data: any;
 }
@@ -81,6 +83,20 @@ serve(async (req) => {
           React.createElement(AdminNotification, data)
         );
         subject = `New Submission: ${data.submissionType}`;
+        break;
+      
+      case 'crew_report_verified':
+        html = await renderAsync(
+          React.createElement(CrewReportVerified, data)
+        );
+        subject = 'Your Payment Report Has Been Verified ✓';
+        break;
+      
+      case 'crew_report_rejected':
+        html = await renderAsync(
+          React.createElement(CrewReportRejected, data)
+        );
+        subject = 'Your Payment Report Requires Additional Information';
         break;
       
       default:
