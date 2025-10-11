@@ -178,15 +178,15 @@ export default function Admin() {
 
     for (const type of submissionTypes) {
       // Get VERIFIED submission counts grouped by user_id
-      const { data } = await supabase
-        .from("submissions")
-        .select("user_id, full_name, email")
-        .eq("submission_type", type)
-        .eq("verified", true);
+      const { data: verifiedSubmissions } = await supabase
+        .from('submissions')
+        .select('user_id, full_name, email')
+        .eq('submission_type', type)
+        .eq('verified', true); // Only count verified submissions
 
-      if (data && data.length > 0) {
+      if (verifiedSubmissions && verifiedSubmissions.length > 0) {
         // Count submissions per user
-        const userCounts = data.reduce((acc: any, curr: any) => {
+        const userCounts = verifiedSubmissions.reduce((acc: any, curr: any) => {
           if (!acc[curr.user_id]) {
             acc[curr.user_id] = {
               count: 0,
