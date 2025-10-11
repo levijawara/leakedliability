@@ -127,13 +127,14 @@ export default function Admin() {
     
     setDisputes(disps || []);
 
-    // Load payment confirmations with crew member details
+    // Load payment confirmations with crew member details and report_id
     const { data: confirmations } = await supabase
       .from("payment_confirmations")
       .select(`
         *,
         payment_report:payment_reports!inner(
-          reporter_id
+          reporter_id,
+          report_id
         )
       `)
       .order("created_at", { ascending: false });
@@ -143,14 +144,14 @@ export default function Admin() {
       (confirmations || []).map(async (pc: any) => {
         const { data: submission } = await supabase
           .from("submissions")
-          .select("report_id, email, full_name")
+          .select("email, full_name")
           .eq("user_id", pc.payment_report.reporter_id)
           .eq("submission_type", "crew_report")
           .maybeSingle();
         
         return {
           ...pc,
-          report_id: submission?.report_id || "N/A",
+          report_id: pc.payment_report.report_id || "N/A",
           full_name: submission?.full_name || "Unknown",
           email: submission?.email || "Unknown"
         };
@@ -176,11 +177,12 @@ export default function Admin() {
     const leaders: Record<string, any> = {};
 
     for (const type of submissionTypes) {
-      // Get submission counts grouped by user_id
+      // Get VERIFIED submission counts grouped by user_id
       const { data } = await supabase
         .from("submissions")
         .select("user_id, full_name, email")
-        .eq("submission_type", type);
+        .eq("submission_type", type)
+        .eq("verified", true);
 
       if (data && data.length > 0) {
         // Count submissions per user
@@ -342,7 +344,8 @@ export default function Admin() {
           days_overdue: daysOverdue,
           city: formData.city || null,
           status: 'pending',
-          verified: true
+          verified: true,
+          report_id: submission.report_id
         });
       
       if (reportError) {
@@ -821,6 +824,55 @@ export default function Admin() {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
           const leadingUser = leadingUsers[type];
           
+          // Special handling for payment_confirmation tab
+          if (type === 'payment_confirmation') {
+            return (
+              <TabsContent key={type} value={type} className="space-y-4">
+                {leadingUser && (
+                  <Card className="p-4 bg-primary/5 border-primary/20">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Badge variant="outline" className="font-semibold">🏆 Leading User</Badge>
+                      <span className="font-medium">{leadingUser.name}</span>
+                      <span className="text-muted-foreground">({leadingUser.email})</span>
+                      <span className="ml-auto text-muted-foreground">{leadingUser.count} verified submissions</span>
+                    </div>
+                  </Card>
+                )}
+
+                <Card className="p-6">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Report ID</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paymentConfirmations.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground">
+                            No payment confirmations yet
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        paymentConfirmations.map((pc) => (
+                          <TableRow key={pc.id}>
+                            <TableCell className="font-mono text-xs">{pc.report_id}</TableCell>
+                            <TableCell>{new Date(pc.created_at).toLocaleDateString()}</TableCell>
+                            <TableCell>{pc.full_name}</TableCell>
+                            <TableCell>{pc.email}</TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </Card>
+              </TabsContent>
+            );
+          }
+          
           return (
             <TabsContent key={type} value={type} className="space-y-4">
               {leadingUser && (
@@ -829,7 +881,7 @@ export default function Admin() {
                     <Badge variant="outline" className="font-semibold">🏆 Leading User</Badge>
                     <span className="font-medium">{leadingUser.name}</span>
                     <span className="text-muted-foreground">({leadingUser.email})</span>
-                    <span className="ml-auto text-muted-foreground">{leadingUser.count} submissions</span>
+                    <span className="ml-auto text-muted-foreground">{leadingUser.count} verified submissions</span>
                   </div>
                 </Card>
               )}
@@ -849,7 +901,7 @@ export default function Admin() {
                   <TableBody>
                     {filteredSubmissions.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center text-muted-foreground">
                           No submissions of this type
                         </TableCell>
                       </TableRow>

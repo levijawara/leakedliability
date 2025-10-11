@@ -166,6 +166,7 @@ export type Database = {
           payment_date: string | null
           producer_id: string
           project_name: string
+          report_id: string | null
           reporter_id: string
           status: string
           updated_at: string
@@ -182,6 +183,7 @@ export type Database = {
           payment_date?: string | null
           producer_id: string
           project_name: string
+          report_id?: string | null
           reporter_id: string
           status?: string
           updated_at?: string
@@ -198,6 +200,7 @@ export type Database = {
           payment_date?: string | null
           producer_id?: string
           project_name?: string
+          report_id?: string | null
           reporter_id?: string
           status?: string
           updated_at?: string
@@ -206,6 +209,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "payment_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reports_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["report_id"]
+          },
+        ]
+      }
+      producer_account_links: {
+        Row: {
+          association_type: string
+          created_at: string | null
+          id: string
+          producer_id: string
+          user_id: string
+        }
+        Insert: {
+          association_type: string
+          created_at?: string | null
+          id?: string
+          producer_id: string
+          user_id: string
+        }
+        Update: {
+          association_type?: string
+          created_at?: string | null
+          id?: string
+          producer_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producer_account_links_producer_id_fkey"
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "producers"

@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff } from "lucide-react";
+import ProducerAssociationModal from "@/components/ProducerAssociationModal";
 
 type AccountType = 'crew' | 'producer' | 'production_company' | 'admin';
 
@@ -42,6 +43,8 @@ export default function Auth() {
   const [businessName, setBusinessName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showProducerModal, setShowProducerModal] = useState(false);
+  const [newUserId, setNewUserId] = useState<string>("");
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,8 +119,14 @@ export default function Auth() {
 
       toast({
         title: "Success!",
-        description: "Account created successfully. You can now sign in.",
+        description: "Account created successfully.",
       });
+
+      // Show producer association modal for producers and production companies
+      if (data.user && (accountType === 'producer' || accountType === 'production_company')) {
+        setNewUserId(data.user.id);
+        setShowProducerModal(true);
+      }
     } catch (error: any) {
       toast({
         title: "Error",
@@ -369,6 +378,13 @@ export default function Auth() {
           <p>Crew member identities remain anonymous, always. If you're a producer, known exploitation may cause career instability. Move with caution.</p>
         </div>
       </Card>
+
+      {/* Producer Association Modal */}
+      <ProducerAssociationModal
+        isOpen={showProducerModal}
+        onClose={() => setShowProducerModal(false)}
+        userId={newUserId}
+      />
     </div>
   );
 }
