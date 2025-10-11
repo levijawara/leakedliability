@@ -310,8 +310,14 @@ export default function Admin() {
         </div>
       </div>
 
-      <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-8 gap-1">
+      <Tabs defaultValue="reports" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1">
+          <TabsTrigger value="reports" className="text-xs sm:text-sm">
+            📊 <span className="hidden sm:inline ml-1">Reports</span>
+          </TabsTrigger>
+          <TabsTrigger value="disputes" className="text-xs sm:text-sm">
+            ⚖️ <span className="hidden sm:inline ml-1">Disputes</span>
+          </TabsTrigger>
           <TabsTrigger value="crew_report" className="text-xs sm:text-sm">
             ⚠️ <span className="hidden sm:inline ml-1">Crew Report</span>
           </TabsTrigger>
@@ -330,12 +336,6 @@ export default function Admin() {
           <TabsTrigger value="report_dispute" className="text-xs sm:text-sm">
             ⁉️ <span className="hidden sm:inline ml-1">Dispute</span>
           </TabsTrigger>
-          <TabsTrigger value="reports" className="text-xs sm:text-sm">
-            📊 <span className="hidden sm:inline ml-1">Reports</span>
-          </TabsTrigger>
-          <TabsTrigger value="disputes" className="text-xs sm:text-sm">
-            ⚖️ <span className="hidden sm:inline ml-1">Disputes</span>
-          </TabsTrigger>
         </TabsList>
 
         {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
@@ -347,6 +347,7 @@ export default function Admin() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead>Report ID</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
@@ -364,6 +365,7 @@ export default function Admin() {
                     ) : (
                       filteredSubmissions.map((sub) => (
                         <TableRow key={sub.id}>
+                          <TableCell className="font-mono text-xs">{sub.report_id || 'N/A'}</TableCell>
                           <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
                           <TableCell>{sub.full_name}</TableCell>
                           <TableCell>{sub.email}</TableCell>
@@ -482,6 +484,7 @@ export default function Admin() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Report ID</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Project</TableHead>
                   <TableHead>Producer</TableHead>
@@ -494,6 +497,7 @@ export default function Admin() {
               <TableBody>
                 {paymentReports.map((report) => (
                   <TableRow key={report.id}>
+                    <TableCell className="font-mono text-xs">{report.id.substring(0, 8)}</TableCell>
                     <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>{report.project_name}</TableCell>
                     <TableCell>{report.producer?.name || 'N/A'}</TableCell>
@@ -527,6 +531,7 @@ export default function Admin() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Report ID</TableHead>
                   <TableHead>Date</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Project</TableHead>
@@ -537,6 +542,7 @@ export default function Admin() {
               <TableBody>
                 {disputes.map((dispute) => (
                   <TableRow key={dispute.id}>
+                    <TableCell className="font-mono text-xs">{dispute.id.substring(0, 8)}</TableCell>
                     <TableCell>{new Date(dispute.created_at).toLocaleDateString()}</TableCell>
                     <TableCell className="capitalize">{dispute.dispute_type}</TableCell>
                     <TableCell>{dispute.payment_report?.project_name || 'N/A'}</TableCell>
