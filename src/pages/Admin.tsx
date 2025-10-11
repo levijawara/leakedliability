@@ -5,10 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -38,6 +39,9 @@ export default function Admin() {
   const [blurNamesForPublic, setBlurNamesForPublic] = useState(true);
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [paymentConfirmations, setPaymentConfirmations] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any>(null);
+  const [leadingUsers, setLeadingUsers] = useState<Record<string, any>>({});
 
   useEffect(() => {
     checkAdminAccess();
@@ -154,6 +158,112 @@ export default function Admin() {
     );
 
     setPaymentConfirmations(enrichedConfirmations);
+
+    // Load leading users for each submission type
+    await loadLeadingUsers();
+  };
+
+  const loadLeadingUsers = async () => {
+    const submissionTypes = [
+      'crew_report',
+      'payment_confirmation',
+      'counter_dispute',
+      'payment_documentation',
+      'report_explanation',
+      'report_dispute'
+    ];
+
+    const leaders: Record<string, any> = {};
+
+    for (const type of submissionTypes) {
+      // Get submission counts grouped by user_id
+      const { data } = await supabase
+        .from("submissions")
+        .select("user_id, full_name, email")
+        .eq("submission_type", type);
+
+      if (data && data.length > 0) {
+        // Count submissions per user
+        const userCounts = data.reduce((acc: any, curr: any) => {
+          if (!acc[curr.user_id]) {
+            acc[curr.user_id] = {
+              count: 0,
+              name: curr.full_name,
+              email: curr.email
+            };
+          }
+          acc[curr.user_id].count++;
+          return acc;
+        }, {});
+
+        // Find the user with the most submissions
+        const leadingUserData: any = Object.values(userCounts).reduce((max: any, user: any) => 
+          user.count > max.count ? user : max
+        , { count: 0, name: null, email: null });
+
+        if (leadingUserData.name && leadingUserData.email) {
+          leaders[type] = leadingUserData;
+        }
+      }
+    }
+
+    setLeadingUsers(leaders);
+  };
+
+  const handleUserSearch = async (query: string) => {
+    setSearchQuery(query);
+
+    if (!query.trim()) {
+      setSearchResults(null);
+      return;
+    }
+
+    // Search for user by name or email
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, legal_first_name, legal_last_name")
+      .or(`legal_first_name.ilike.%${query}%,legal_last_name.ilike.%${query}%`);
+
+    const { data: submissions } = await supabase
+      .from("submissions")
+      .select("user_id, full_name, email")
+      .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+      .limit(1);
+
+    if (!submissions || submissions.length === 0) {
+      setSearchResults({ notFound: true });
+      return;
+    }
+
+    const user = submissions[0];
+
+    // Get all submissions for this user
+    const { data: userSubmissions } = await supabase
+      .from("submissions")
+      .select("submission_type")
+      .eq("user_id", user.user_id);
+
+    // Count by type
+    const stats = {
+      crew_report: 0,
+      payment_confirmation: 0,
+      counter_dispute: 0,
+      payment_documentation: 0,
+      report_explanation: 0,
+      report_dispute: 0,
+    };
+
+    userSubmissions?.forEach((sub: any) => {
+      if (sub.submission_type in stats) {
+        stats[sub.submission_type as keyof typeof stats]++;
+      }
+    });
+
+    setSearchResults({
+      name: user.full_name,
+      email: user.email,
+      stats
+    });
   };
 
   const handleVerifySubmission = async (id: string) => {
@@ -620,6 +730,71 @@ export default function Admin() {
         </div>
       </Card>
 
+      {/* User Search */}
+      <Card className="mb-6 p-6">
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="user-search" className="text-lg font-semibold flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              User Search
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              Search by name or email to view submission statistics
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              id="user-search"
+              placeholder="Enter name or email..."
+              value={searchQuery}
+              onChange={(e) => handleUserSearch(e.target.value)}
+              className="max-w-md"
+            />
+          </div>
+
+          {searchResults && (
+            <Card className="p-4 bg-muted/50">
+              {searchResults.notFound ? (
+                <p className="text-muted-foreground">No user found matching your search.</p>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <p className="font-semibold">{searchResults.name}</p>
+                    <p className="text-sm text-muted-foreground">{searchResults.email}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Crew Member Reports ⚠️</div>
+                      <div className="text-2xl font-bold">{searchResults.stats.crew_report}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Payment Documentations 🧾</div>
+                      <div className="text-2xl font-bold">{searchResults.stats.payment_documentation}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Payment Confirmations ✅</div>
+                      <div className="text-2xl font-bold">{searchResults.stats.payment_confirmation}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Report Explanations ☮️</div>
+                      <div className="text-2xl font-bold">{searchResults.stats.report_explanation}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Counter-Disputes ‼️</div>
+                      <div className="text-2xl font-bold">{searchResults.stats.counter_dispute}</div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">Report Disputes ⁉️</div>
+                      <div className="text-2xl font-bold">{searchResults.stats.report_dispute}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Card>
+          )}
+        </div>
+      </Card>
+
       <Tabs defaultValue="crew_report" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-1">
           <TabsTrigger value="crew_report">
@@ -644,9 +819,21 @@ export default function Admin() {
 
         {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
+          const leadingUser = leadingUsers[type];
           
           return (
             <TabsContent key={type} value={type} className="space-y-4">
+              {leadingUser && (
+                <Card className="p-4 bg-primary/5 border-primary/20">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Badge variant="outline" className="font-semibold">🏆 Leading User</Badge>
+                    <span className="font-medium">{leadingUser.name}</span>
+                    <span className="text-muted-foreground">({leadingUser.email})</span>
+                    <span className="ml-auto text-muted-foreground">{leadingUser.count} submissions</span>
+                  </div>
+                </Card>
+              )}
+
               <Card className="p-6">
                 <Table>
                   <TableHeader>
