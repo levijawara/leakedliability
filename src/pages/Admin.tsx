@@ -1050,7 +1050,7 @@ export default function Admin() {
       </Card>
 
       <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 gap-2">
+        <TabsList className="grid grid-cols-1 md:grid-cols-3 gap-2 max-w-4xl mx-auto">
           {/* Row 1 */}
           <TabsTrigger value="crew_report">
             Crew Member Report ⚠️
