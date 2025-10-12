@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Award, CreditCard, Home, BookOpen, FileText } from "lucide-react";
+import { Lock, Award, CreditCard, Home, BookOpen, FileText, UserCircle } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,6 +60,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
         description: "The Leaked Liability™ Leaderboard has reached critical mass. Free contributor access has ended.",
         message: "All users now require a paid subscription to view the full leaderboard.",
         showCrewOption: false,
+        showSignupPrompt: false,
       };
     }
 
@@ -69,14 +70,26 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
         description: "Names are blurred until you unlock access.",
         message: "Choose one of the following options to view the full leaderboard:",
         showCrewOption: true,
+        showSignupPrompt: false,
+      };
+    }
+
+    if (!accessState.accountType) {
+      return {
+        title: "🔒 Leaderboard Access",
+        description: "Names are blurred. Create an account to unlock access.",
+        message: "Crew members: Get FREE permanent access by submitting a verified crew member payment report. Producers: Subscribe for $5.99/month.",
+        showCrewOption: false,
+        showSignupPrompt: true,
       };
     }
 
     return {
-      title: "🔒 Producer Access Required",
-      description: "Names are blurred. Purchase access to view full leaderboard data.",
+      title: "🔒 Paid Access Required",
+      description: "Names are blurred. Subscribe to view the full leaderboard.",
       message: null,
       showCrewOption: false,
+      showSignupPrompt: false,
     };
   };
 
@@ -116,7 +129,18 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
               Submission Forms
             </Button>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="default" 
+              size="sm"
+              onClick={() => navigate("/auth")}
+              className="gap-2"
+            >
+              <UserCircle className="h-4 w-4" />
+              Sign Up / Login
+            </Button>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
@@ -181,7 +205,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
             </div>
           )}
 
-          {!content.showCrewOption && (
+          {!content.showCrewOption && !content.showSignupPrompt && (
             <div className="text-center">
               <Button 
                 size="lg"
@@ -190,6 +214,20 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
               >
                 {loading ? "Processing..." : "Get Full Access - $5.99/month"}
               </Button>
+            </div>
+          )}
+
+          {content.showSignupPrompt && (
+            <div className="text-center space-y-4">
+              <Button 
+                size="lg"
+                onClick={() => navigate("/auth")}
+              >
+                Sign Up / Login to Continue
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Already have an account? Sign in to access your subscription or submit a crew report.
+              </p>
             </div>
           )}
 
