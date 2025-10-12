@@ -25,6 +25,7 @@ export default function SubmitReport() {
   const [participantType, setParticipantType] = useState<"crew" | "producer" | "production_company" | null>(null);
   const [submissionType, setSubmissionType] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState({ firstName: "", lastName: "", email: "", role: "" });
+  const [prefilledReportId, setPrefilledReportId] = useState<string>("");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -45,6 +46,13 @@ export default function SubmitReport() {
     };
 
     checkAuth();
+
+    // Check for reportId URL parameter
+    const searchParams = new URLSearchParams(window.location.search);
+    const reportIdParam = searchParams.get('reportId');
+    if (reportIdParam) {
+      setPrefilledReportId(reportIdParam);
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
@@ -183,13 +191,14 @@ export default function SubmitReport() {
                           submissionType === "report_explanation" || 
                           submissionType === "report_dispute") && 
            participantType !== "crew" && (
-            <ProducerSubmissionForm
-              userInfo={userInfo}
-              submissionType={submissionType}
-              participantType={participantType}
-              onBack={handleBack}
-              onSuccess={resetForm}
-            />
+          <ProducerSubmissionForm
+            userInfo={userInfo}
+            submissionType={submissionType}
+            participantType={participantType}
+            prefilledReportId={prefilledReportId}
+            onBack={handleBack}
+            onSuccess={resetForm}
+          />
           )}
 
           {/* Navigation Buttons */}

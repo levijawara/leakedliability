@@ -57,11 +57,32 @@ export default function ProducerDashboard() {
   const loadReports = async (email: string) => {
     setLoading(true);
     
-    const { data, error } = await supabase
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    // First, check if user has a producer account link
+    const { data: linkData } = await supabase
+      .from("producer_account_links")
+      .select("producer_id")
+      .eq("user_id", user.id)
+      .single();
+
+    let query = supabase
       .from("payment_reports")
       .select("*")
-      .eq("producer_email", email)
       .order("created_at", { ascending: false });
+
+    // If user has a linked producer account, use producer_id, otherwise fall back to email
+    if (linkData?.producer_id) {
+      query = query.eq("producer_id", linkData.producer_id);
+    } else {
+      query = query.eq("producer_email", email);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error("Error loading reports:", error);

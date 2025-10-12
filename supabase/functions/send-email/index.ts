@@ -118,6 +118,25 @@ serve(async (req) => {
         break;
       
       case 'producer_report_notification':
+        // Verify producer email ownership before sending
+        const { data: producerLink } = await supabase
+          .from('producer_account_links')
+          .select('producer_id, producers(name)')
+          .eq('producer_id', data.producerId)
+          .maybeSingle();
+        
+        // Only send if producer has a verified account link
+        if (!producerLink) {
+          console.log(`Skipping producer notification: No verified account for producer ${data.producerId}`);
+          return new Response(
+            JSON.stringify({ 
+              success: false, 
+              message: 'Producer email not verified - notification skipped' 
+            }),
+            { headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+          );
+        }
+
         html = await renderAsync(
           React.createElement(ProducerReportNotification, data)
         );

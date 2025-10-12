@@ -15,16 +15,19 @@ interface ProducerSubmissionFormProps {
   userInfo: { firstName: string; lastName: string; email: string };
   submissionType: string;
   participantType: "producer" | "production_company";
+  prefilledReportId?: string;
   onBack: () => void;
   onSuccess: () => void;
 }
 
-export function ProducerSubmissionForm({ userInfo, submissionType, participantType, onBack, onSuccess }: ProducerSubmissionFormProps) {
+export function ProducerSubmissionForm({ userInfo, submissionType, participantType, prefilledReportId, onBack, onSuccess }: ProducerSubmissionFormProps) {
   const [loading, setLoading] = useState(false);
-  const [reportId, setReportId] = useState("");
+  const [reportId, setReportId] = useState(prefilledReportId || "");
   const [crewMemberName, setCrewMemberName] = useState("");
   const [explanation, setExplanation] = useState("");
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+  const [linkedProducerId, setLinkedProducerId] = useState<string | null>(null);
+  const [availableReports, setAvailableReports] = useState<any[]>([]);
   const { toast } = useToast();
 
   const titles = {
@@ -38,6 +41,39 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
     report_explanation: "Acknowledge the debt and explain the delay or reason for non-payment",
     report_dispute: "Challenge a crew member's report with counter-evidence"
   };
+
+  // Load producer account links and available reports
+  useState(() => {
+    const loadProducerData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Check if user has a linked producer account
+      const { data: linkData } = await supabase
+        .from("producer_account_links")
+        .select("producer_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (linkData?.producer_id) {
+        setLinkedProducerId(linkData.producer_id);
+        
+        // Load reports filed against this producer
+        const { data: reports } = await supabase
+          .from("payment_reports")
+          .select("id, report_id, project_name, amount_owed, reporter_id")
+          .eq("producer_id", linkData.producer_id)
+          .neq("status", "paid")
+          .order("created_at", { ascending: false });
+        
+        if (reports) {
+          setAvailableReports(reports);
+        }
+      }
+    };
+
+    loadProducerData();
+  });
 
 
   const handleSubmit = async () => {
@@ -57,7 +93,7 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
       // Look up the payment report to link to
       const { data: paymentReport, error: lookupError } = await supabase
         .from('payment_reports')
-        .select('id, producer_email')
+        .select('id, producer_id, producer_email')
         .eq('report_id', reportId.trim())
         .maybeSingle();
 
@@ -75,6 +111,17 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
         toast({
           title: "Invalid Report ID",
           description: "The Report ID you entered does not exist. Please check and try again.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // If user has a linked producer account, verify this report is filed against them
+      if (linkedProducerId && paymentReport.producer_id !== linkedProducerId) {
+        toast({
+          title: "Invalid Report ID",
+          description: "This report was not filed against your linked producer account.",
           variant: "destructive"
         });
         setLoading(false);

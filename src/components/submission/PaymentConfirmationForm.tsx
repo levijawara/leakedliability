@@ -86,11 +86,35 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         return;
       }
 
-      const selectedReport = paymentReports.find(r => r.id === selectedReportId);
-      if (!selectedReport) {
+      // Re-verify ownership before submission
+      const { data: verifyReport, error: verifyError } = await supabase
+        .from('payment_reports')
+        .select('id, reporter_id, producer_id, amount_owed')
+        .eq('id', selectedReportId)
+        .eq('reporter_id', user.id)
+        .maybeSingle();
+
+      if (verifyError || !verifyReport) {
+        toast({
+          title: "Error",
+          description: "Could not verify ownership of this report",
+          variant: "destructive"
+        });
         setLoading(false);
         return;
       }
+
+      if (verifyReport.reporter_id !== user.id) {
+        toast({
+          title: "Error",
+          description: "You can only confirm payment for reports you submitted",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      const selectedReport = verifyReport;
 
       const documentUrls = await uploadFiles(proofFiles);
 
