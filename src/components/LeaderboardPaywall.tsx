@@ -1,10 +1,12 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Award, CreditCard } from "lucide-react";
+import { Lock, Award, CreditCard, Home, BookOpen, FileText } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type { LeaderboardAccessState } from "@/hooks/useLeaderboardAccess";
 
 interface LeaderboardPaywallProps {
@@ -14,6 +16,7 @@ interface LeaderboardPaywallProps {
 
 export const LeaderboardPaywall = ({ accessState, onAccessGranted }: LeaderboardPaywallProps) => {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubscribe = async () => {
     try {
@@ -80,8 +83,46 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
   const content = getPaywallContent();
 
   return (
-    <div className="container max-w-4xl mx-auto py-8">
-      <Card className="border-2">
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      {/* Navigation Header */}
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/")}
+              className="gap-2"
+            >
+              <Home className="h-4 w-4" />
+              Home
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/how-it-works")}
+              className="gap-2"
+            >
+              <BookOpen className="h-4 w-4" />
+              How It Works
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => navigate("/submit-report")}
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Submission Forms
+            </Button>
+          </div>
+          <ThemeToggle />
+        </div>
+      </div>
+
+      {/* Paywall Content */}
+      <div className="container max-w-4xl mx-auto py-8">
+        <Card className="border-2">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <Lock className="h-16 w-16 text-muted-foreground" />
@@ -159,6 +200,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
           </Alert>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
