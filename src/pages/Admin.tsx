@@ -1050,28 +1050,35 @@ export default function Admin() {
       </Card>
 
       <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-1 md:grid-cols-3 gap-2">
+          {/* Row 1 */}
           <TabsTrigger value="crew_report">
             Crew Member Report ⚠️
-          </TabsTrigger>
-          <TabsTrigger value="payment_reports">
-            Payment Reports 💰
-          </TabsTrigger>
-          <TabsTrigger value="payment_confirmation">
-            Payment Confirmation ✅
-          </TabsTrigger>
-          <TabsTrigger value="counter_dispute">
-            Counter-Dispute ‼️
           </TabsTrigger>
           <TabsTrigger value="payment_documentation">
             Payment Documentation 🧾
           </TabsTrigger>
+          <TabsTrigger value="payment_reports">
+            Payment Reports 💰
+          </TabsTrigger>
+          
+          {/* Row 2 */}
+          <TabsTrigger value="payment_confirmation">
+            Payment Confirmation ✅
+          </TabsTrigger>
           <TabsTrigger value="report_explanation">
             Report Explanation ☮️
+          </TabsTrigger>
+          <div className="invisible"></div>
+          
+          {/* Row 3 */}
+          <TabsTrigger value="counter_dispute">
+            Counter-Dispute ‼️
           </TabsTrigger>
           <TabsTrigger value="report_dispute">
             Report Dispute ⁉️
           </TabsTrigger>
+          <div className="invisible"></div>
         </TabsList>
 
         {/* Payment Reports Tab */}
