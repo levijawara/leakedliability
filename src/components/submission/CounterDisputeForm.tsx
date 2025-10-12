@@ -22,28 +22,92 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
   const [originalReportRef, setOriginalReportRef] = useState("");
   const [explanation, setExplanation] = useState("");
   const [evidenceFiles, setEvidenceFiles] = useState<File[]>([]);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [validatedReportId, setValidatedReportId] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
 
+  const validateReport = async (reportRef: string, userId: string) => {
+    // Query payment_reports to find the report
+    const { data: report, error: reportError } = await supabase
+      .from('payment_reports')
+      .select('id, reporter_id, report_id')
+      .eq('report_id', reportRef)
+      .maybeSingle();
+
+    if (reportError) throw reportError;
+    
+    if (!report) {
+      return { valid: false, error: "Report not found. Please check the Report ID." };
+    }
+
+    if (report.reporter_id !== userId) {
+      return { valid: false, error: "You can only counter-dispute your own reports." };
+    }
+
+    // Check if there's an active dispute against this report
+    const { data: dispute, error: disputeError } = await supabase
+      .from('disputes')
+      .select('id, status')
+      .eq('payment_report_id', report.id)
+      .eq('status', 'pending')
+      .maybeSingle();
+
+    if (disputeError) throw disputeError;
+
+    if (!dispute) {
+      return { valid: false, error: "No active dispute found for this report." };
+    }
+
+    // Check if user already submitted a counter-dispute
+    const { data: existingCounterDispute, error: counterError } = await supabase
+      .from('submissions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('submission_type', 'counter_dispute')
+      .contains('form_data', { original_report_ref: reportRef })
+      .maybeSingle();
+
+    if (counterError) throw counterError;
+
+    if (existingCounterDispute) {
+      return { valid: false, error: "You've already submitted a counter-dispute for this report." };
+    }
+
+    return { valid: true, error: null, reportId: report.id };
+  };
+
+  const handleReportRefChange = async (value: string) => {
+    setOriginalReportRef(value);
+    setValidationError(null);
+    setValidatedReportId(null);
+
+    if (!value.trim()) return;
+
+    setIsValidating(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const result = await validateReport(value.trim(), user.id);
+      
+      if (!result.valid) {
+        setValidationError(result.error);
+      } else {
+        setValidatedReportId(result.reportId!);
+      }
+    } catch (error: any) {
+      setValidationError("Error validating report. Please try again.");
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // Validate input
-      const validationResult = counterDisputeSchema.safeParse({
-        originalReportRef,
-        explanation,
-      });
-
-      if (!validationResult.success) {
-        toast({
-          title: "Validation Error",
-          description: validationResult.error.errors[0].message,
-          variant: "destructive"
-        });
-        setLoading(false);
-        return;
-      }
-
+      // Re-validate before submission
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -51,6 +115,35 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
           description: "You must be logged in to submit a counter-dispute",
           variant: "destructive"
         });
+        setLoading(false);
+        return;
+      }
+
+      const validationResult = await validateReport(originalReportRef.trim(), user.id);
+      
+      if (!validationResult.valid) {
+        toast({
+          title: "Validation Error",
+          description: validationResult.error,
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Validate text input
+      const textValidation = counterDisputeSchema.safeParse({
+        originalReportRef,
+        explanation,
+      });
+
+      if (!textValidation.success) {
+        toast({
+          title: "Validation Error",
+          description: textValidation.error.errors[0].message,
+          variant: "destructive"
+        });
+        setLoading(false);
         return;
       }
 
@@ -64,6 +157,7 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
         role_department: userInfo.role,
         form_data: {
           original_report_ref: originalReportRef,
+          payment_report_id: validationResult.reportId,
           explanation: explanation
         },
         document_urls: documentUrls
@@ -88,7 +182,11 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
     }
   };
 
-  const isValid = originalReportRef && explanation && evidenceFiles.length > 0;
+  const isValid = originalReportRef && 
+                  validatedReportId && 
+                  !validationError && 
+                  explanation && 
+                  evidenceFiles.length > 0;
 
   return (
     <Card className="p-8">
@@ -102,10 +200,31 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
           <Label htmlFor="reportRef">Original Report Reference *</Label>
           <Input
             id="reportRef"
-            placeholder="Report ID or reference number"
+            placeholder="e.g., CR-20250112-12345"
             value={originalReportRef}
-            onChange={(e) => setOriginalReportRef(e.target.value)}
+            onChange={(e) => handleReportRefChange(e.target.value)}
+            className={validationError ? "border-destructive" : validatedReportId ? "border-green-500" : ""}
           />
+          
+          {isValidating && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Validating report...
+            </p>
+          )}
+          
+          {validationError && (
+            <p className="text-xs text-destructive mt-1">
+              ⚠️ {validationError}
+            </p>
+          )}
+          
+          {validatedReportId && !validationError && (
+            <p className="text-xs text-green-600 mt-1">
+              ✓ Report verified
+            </p>
+          )}
+          
           <p className="text-xs text-muted-foreground mt-1">
             The reference number of your original crew member report
           </p>
