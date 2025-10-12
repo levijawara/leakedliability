@@ -12,6 +12,7 @@ import { AdminNotification } from "./_templates/admin-notification.tsx";
 import { CrewReportVerified } from "./_templates/crew-report-verified.tsx";
 import { CrewReportRejected } from "./_templates/crew-report-rejected.tsx";
 import { WelcomeEmail } from "./_templates/welcome.tsx";
+import { CrewReportPaymentConfirmed } from "./_templates/crew-report-payment-confirmed.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,7 +23,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed';
   to: string;
   data: any;
 }
@@ -106,6 +107,13 @@ serve(async (req) => {
           React.createElement(WelcomeEmail, data)
         );
         subject = 'Welcome to Leaked Liability - PSCS';
+        break;
+      
+      case 'crew_report_payment_confirmed':
+        html = await renderAsync(
+          React.createElement(CrewReportPaymentConfirmed, data)
+        );
+        subject = `✅ Payment Received - Report ${data.reportId}`;
         break;
       
       default:

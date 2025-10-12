@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { getSignedUrls } from "@/lib/storage";
 import JSZip from "jszip";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -42,6 +47,9 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
   const [leadingUsers, setLeadingUsers] = useState<Record<string, any>>({});
+  const [selectedPaymentReport, setSelectedPaymentReport] = useState<any>(null);
+  const [paymentDate, setPaymentDate] = useState<Date>();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -105,12 +113,13 @@ export default function Admin() {
     
     setSubmissions(subs || []);
 
-    // Load all payment reports
+    // Load all payment reports with crew member details
     const { data: reports } = await supabase
       .from("payment_reports")
       .select(`
         *,
-        producer:producers(name, company)
+        producer:producers(name, company),
+        profiles!payment_reports_reporter_id_fkey(legal_first_name, legal_last_name)
       `)
       .order("created_at", { ascending: false });
     
@@ -635,6 +644,75 @@ export default function Admin() {
     }
   };
 
+  const handleMarkAsPaid = async () => {
+    if (!selectedPaymentReport || !paymentDate) {
+      toast({
+        title: "Error",
+        description: "Please select a payment date",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const formattedDate = paymentDate.toISOString().split('T')[0];
+    
+    const { error } = await supabase
+      .from('payment_reports')
+      .update({
+        status: 'paid',
+        payment_date: formattedDate,
+        closed_date: formattedDate
+      })
+      .eq('id', selectedPaymentReport.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get crew member email from submissions
+    const { data: submission } = await supabase
+      .from('submissions')
+      .select('email')
+      .eq('user_id', selectedPaymentReport.reporter_id)
+      .eq('submission_type', 'crew_report')
+      .maybeSingle();
+
+    // Send confirmation email to crew member
+    if (submission) {
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'crew_report_payment_confirmed',
+          to: submission.email,
+          data: {
+            reportId: selectedPaymentReport.report_id,
+            producerName: selectedPaymentReport.producer?.name || 'Unknown',
+            amount: selectedPaymentReport.amount_owed,
+            paymentDate: formattedDate,
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Email failed:', emailError);
+      }
+    }
+
+    toast({
+      title: "Success",
+      description: "Payment report marked as paid and crew member notified",
+    });
+
+    setShowPaymentModal(false);
+    setSelectedPaymentReport(null);
+    setPaymentDate(undefined);
+    loadAdminData();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -799,9 +877,12 @@ export default function Admin() {
       </Card>
 
       <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6 gap-1">
+        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-7 gap-1">
           <TabsTrigger value="crew_report">
             Crew Member Report ⚠️
+          </TabsTrigger>
+          <TabsTrigger value="payment_reports">
+            Payment Reports 💰
           </TabsTrigger>
           <TabsTrigger value="payment_confirmation">
             Payment Confirmation ✅
@@ -819,6 +900,79 @@ export default function Admin() {
             Report Dispute ⁉️
           </TabsTrigger>
         </TabsList>
+
+        {/* Payment Reports Tab */}
+        <TabsContent value="payment_reports" className="space-y-4">
+          <Card className="p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">All Payment Reports</h3>
+              <Badge variant="outline">{paymentReports.length} total</Badge>
+            </div>
+            
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Report ID</TableHead>
+                  <TableHead>Crew Member</TableHead>
+                  <TableHead>Producer</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Days Overdue</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>City</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentReports.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center text-muted-foreground">
+                      No payment reports yet
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paymentReports.map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell className="font-mono text-xs">{report.report_id || 'N/A'}</TableCell>
+                      <TableCell>
+                        {report.profiles?.legal_first_name} {report.profiles?.legal_last_name}
+                      </TableCell>
+                      <TableCell>{report.producer?.name}</TableCell>
+                      <TableCell>{report.project_name}</TableCell>
+                      <TableCell>${report.amount_owed?.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Badge variant={report.days_overdue > 90 ? "destructive" : "outline"}>
+                          {report.days_overdue} days
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={report.status === 'paid' ? 'default' : 'secondary'}>
+                          {report.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{report.city || '-'}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          {report.status !== 'paid' && (
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedPaymentReport(report);
+                                setShowPaymentModal(true);
+                              }}
+                            >
+                              Mark as Paid
+                            </Button>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
 
         {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
@@ -1023,6 +1177,64 @@ export default function Admin() {
         })}
 
       </Tabs>
+
+      {/* Payment Date Modal */}
+      <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Mark Payment as Received</DialogTitle>
+            <DialogDescription>
+              Select the date when payment was received from the producer
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label>Payment Date</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !paymentDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {paymentDate ? format(paymentDate, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={paymentDate}
+                    onSelect={setPaymentDate}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            {selectedPaymentReport && (
+              <div className="space-y-2 text-sm">
+                <div><strong>Report ID:</strong> {selectedPaymentReport.report_id}</div>
+                <div><strong>Producer:</strong> {selectedPaymentReport.producer?.name}</div>
+                <div><strong>Amount:</strong> ${selectedPaymentReport.amount_owed?.toFixed(2)}</div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleMarkAsPaid} disabled={!paymentDate}>
+              Confirm Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

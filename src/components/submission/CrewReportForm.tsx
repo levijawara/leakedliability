@@ -8,9 +8,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FileUploadZone } from "./FileUploadZone";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, CalendarIcon } from "lucide-react";
 import { crewReportSchema } from "@/lib/validation";
 import { uploadFiles } from "@/lib/storage";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface CrewReportFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -24,6 +28,9 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
   const [producerName, setProducerName] = useState({ firstName: "", lastName: "", email: "" });
   const [producerAliases, setProducerAliases] = useState("");
   const [amountOwed, setAmountOwed] = useState("");
+  const [invoiceDate, setInvoiceDate] = useState<Date>();
+  const [projectName, setProjectName] = useState("");
+  const [city, setCity] = useState("");
   const [invoiceFiles, setInvoiceFiles] = useState<File[]>([]);
   const [communicationFiles, setCommunicationFiles] = useState<File[]>([]);
   const [jobDocFiles, setJobDocFiles] = useState<File[]>([]);
@@ -41,6 +48,9 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
         producerEmail: producerName.email,
         producerAliases,
         amountOwed: parseFloat(amountOwed),
+        invoiceDate,
+        projectName,
+        city,
       });
 
       if (!validationResult.success) {
@@ -78,7 +88,10 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
           reporting_type: reportingType,
           producer_name: producerName,
           producer_aliases: producerAliases,
-          amount_owed: amountOwed
+          amount_owed: amountOwed,
+          invoice_date: invoiceDate?.toISOString().split('T')[0],
+          project_name: projectName,
+          city: city || null
         },
         document_urls: documentUrls
       });
@@ -102,7 +115,7 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
     }
   };
 
-  const isValid = producerName.firstName && producerName.email && amountOwed && invoiceFiles.length > 0 && (reportingType === "production_company" || producerName.lastName);
+  const isValid = producerName.firstName && producerName.email && amountOwed && invoiceDate && projectName && invoiceFiles.length > 0 && (reportingType === "production_company" || producerName.lastName);
 
   return (
     <Card className="p-8">
@@ -176,6 +189,53 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
             placeholder="0.00"
             value={amountOwed}
             onChange={(e) => setAmountOwed(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label>Invoice Date *</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className={cn(
+                  "w-full justify-start text-left font-normal",
+                  !invoiceDate && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {invoiceDate ? format(invoiceDate, "PPP") : <span>Pick invoice date</span>}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={invoiceDate}
+                onSelect={setInvoiceDate}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
+          <Label htmlFor="projectName">Project Name *</Label>
+          <Input
+            id="projectName"
+            placeholder="Enter project/production name"
+            value={projectName}
+            onChange={(e) => setProjectName(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="city">City (Optional)</Label>
+          <Input
+            id="city"
+            placeholder="City where work was performed"
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
           />
         </div>
 

@@ -8,6 +8,9 @@ export const crewReportSchema = z.object({
   producerCompany: z.string().trim().max(200).optional(),
   producerAliases: z.string().trim().max(500).optional(),
   amountOwed: z.number().positive("Amount must be positive").max(10000000, "Amount too large"),
+  invoiceDate: z.date({ required_error: "Invoice date is required" }),
+  projectName: z.string().trim().min(1, "Project name is required").max(200),
+  city: z.string().trim().max(100).optional(),
 }).refine((data) => {
   // Only require last name if reporting producer or both
   if (data.reportingType === "production_company") {
