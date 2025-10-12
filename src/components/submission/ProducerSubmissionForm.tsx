@@ -8,7 +8,7 @@ import { FileUploadZone } from "./FileUploadZone";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { producerSubmissionSchema } from "@/lib/validation";
+import { producerSubmissionSchema, paymentDocumentationSchema } from "@/lib/validation";
 import { uploadFiles } from "@/lib/storage";
 
 interface ProducerSubmissionFormProps {
@@ -81,8 +81,12 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
         return;
       }
 
-      // Validate input
-      const validationResult = producerSubmissionSchema.safeParse({
+      // Validate input - choose schema based on submission type
+      const schema = submissionType === "payment_documentation" 
+        ? paymentDocumentationSchema 
+        : producerSubmissionSchema;
+
+      const validationResult = schema.safeParse({
         crewMemberName,
         explanation,
       });
@@ -145,7 +149,10 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
     }
   };
 
-  const isValid = reportId.trim() && crewMemberName && documentFiles.length > 0;
+  const isValid = reportId.trim() && 
+                  crewMemberName && 
+                  documentFiles.length > 0 &&
+                  (submissionType === "payment_documentation" || explanation.trim().length >= 10);
 
   return (
     <Card className="p-8">

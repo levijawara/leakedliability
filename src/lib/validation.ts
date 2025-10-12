@@ -22,6 +22,11 @@ export const crewReportSchema = z.object({
   path: ["producerLastName"]
 });
 
+export const paymentDocumentationSchema = z.object({
+  crewMemberName: z.string().trim().min(1, "Crew member name is required").max(100),
+  explanation: z.string().trim().max(5000).optional(),
+});
+
 export const producerSubmissionSchema = z.object({
   crewMemberName: z.string().trim().min(1, "Crew member name is required").max(100),
   explanation: z.string().trim().min(10, "Explanation must be at least 10 characters").max(5000),
