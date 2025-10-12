@@ -15,19 +15,29 @@ export default function Disclaimer() {
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none space-y-4 text-muted-foreground">
             <p>
-              Leaked Liability™ provides a platform for users to submit and view reports concerning payment practices in the production industry. We do not independently verify every claim, and we do not guarantee the accuracy, completeness, or legality of any report, response, or supporting documentation submitted by users.
+              Leaked Liability™ provides a public platform for users to share information about payment practices within the production industry. While we encourage transparency and accountability, we do not independently verify, investigate, or authenticate every submission. Content on this platform is provided "as is" for informational purposes only and should not be interpreted as fact without independent verification.
             </p>
 
             <p>
-              All reports and submissions are user-generated content. Crew Members and Producers/Production Companies are solely responsible for the truthfulness and accuracy of their submissions. By submitting a report or response, you represent and warrant that the information is accurate to the best of your knowledge and not misleading, fraudulent, or defamatory.
+              All reports, responses, and supporting materials are user-generated content. Crew Members, Producers, and Production Companies are solely responsible for the accuracy and legality of their submissions. By submitting content, you represent that it is true to the best of your knowledge and does not contain false, misleading, or defamatory material.
+            </p>
+
+            <p className="font-semibold text-foreground">
+              Leaked Liability™ is not:
+            </p>
+
+            <ul className="list-disc pl-6 space-y-2">
+              <li>A debt collection agency</li>
+              <li>A credit reporting agency</li>
+              <li>An arbitrator or mediator between parties</li>
+            </ul>
+
+            <p>
+              We do not provide legal advice or act on behalf of any user. Our Producer Social Credit Score (PSCS) and related metrics are proprietary opinion-based indicators, not legally recognized credit scores, and should not be relied upon as financial, reputational, or hiring criteria.
             </p>
 
             <p>
-              Leaked Liability™ does not act as a debt collector, credit reporting agency, or arbitrator. We are not a party to disputes between Crew Members and Producers/Production Companies, and we do not provide legal advice. Our scoring system is a proprietary opinion-based metric designed for informational purposes only; it is not equivalent to a legally recognized credit score and should not be relied upon as such.
-            </p>
-
-            <p>
-              We reserve the right to remove, edit, or decline to post submissions that appear false, defamatory, abusive, or unsupported by adequate documentation. However, our decision not to act on a submission does not imply endorsement or validation of its contents.
+              We reserve the right—but not the obligation—to remove, redact, or restrict content that appears false, defamatory, abusive, or unsupported by documentation. However, any decision not to remove content does not constitute endorsement, agreement, or validation of that content.
             </p>
 
             <p className="font-semibold text-foreground">
@@ -35,13 +45,21 @@ export default function Disclaimer() {
             </p>
 
             <ul className="list-disc pl-6 space-y-2">
-              <li>You assume full responsibility for any content you submit.</li>
-              <li>You may be held legally liable by third parties if your content is false, misleading, defamatory, or otherwise unlawful.</li>
-              <li>Leaked Liability™ disclaims all liability for damages or disputes arising out of user submissions or reliance on platform content, to the fullest extent permitted by law.</li>
+              <li>You assume full responsibility for the content you post.</li>
+              <li>You may be held legally liable by third parties for false, defamatory, or unlawful submissions.</li>
+              <li>Leaked Liability™ and its affiliates disclaim all responsibility and liability for damages, reputational loss, or disputes arising from user submissions or reliance on platform content, to the fullest extent permitted by law.</li>
             </ul>
 
+            <p className="font-semibold text-foreground pt-4">
+              Retaliation and Misuse:
+            </p>
+
+            <p>
+              Any attempt to intimidate, harass, or retaliate against users or Leaked Liability™ for lawful participation in this platform may constitute interference or bad-faith conduct and may be documented or disclosed as part of a transparency report.
+            </p>
+
             <p className="pt-4">
-              For specific disputes or claims, users should seek advice from a qualified legal professional.
+              For specific disputes or claims, users should seek independent legal counsel.
             </p>
           </CardContent>
         </Card>
