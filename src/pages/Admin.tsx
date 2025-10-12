@@ -828,6 +828,13 @@ export default function Admin() {
       return;
     }
 
+    // Delete queued notification if exists
+    await supabase
+      .from('queued_producer_notifications')
+      .delete()
+      .eq('payment_report_id', selectedPaymentReport.id)
+      .is('sent_at', null);
+
     // Get crew member email from submissions
     const { data: submission } = await supabase
       .from('submissions')

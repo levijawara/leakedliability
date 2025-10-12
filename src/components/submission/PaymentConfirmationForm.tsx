@@ -142,6 +142,17 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
 
       if (updateError) throw updateError;
 
+      // Delete queued producer notification if it exists (not yet sent)
+      const { error: deleteQueueError } = await supabase
+        .from('queued_producer_notifications')
+        .delete()
+        .eq('payment_report_id', selectedReportId)
+        .is('sent_at', null);
+
+      if (deleteQueueError) {
+        console.error('Could not delete queued notification:', deleteQueueError);
+      }
+
       toast({
         title: "Payment Confirmed!",
         description: "The leaderboard has been updated instantly"
