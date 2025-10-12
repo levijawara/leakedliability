@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,8 @@ export default function Admin() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [blurNamesForPublic, setBlurNamesForPublic] = useState(true);
+  const [sendProducerNotifications, setSendProducerNotifications] = useState(true);
+  const [queuedNotifications, setQueuedNotifications] = useState<any[]>([]);
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [paymentConfirmations, setPaymentConfirmations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -98,12 +100,20 @@ export default function Admin() {
       .select("*")
       .single();
     
-    if (settings) {
-      setMaintenanceMode(settings.maintenance_mode);
-      setMaintenanceMessage(settings.maintenance_message || "");
-      setBlurNamesForPublic(settings.blur_names_for_public ?? true);
-      setSettingsId(settings.id);
-    }
+      if (settings) {
+        setMaintenanceMode(settings.maintenance_mode);
+        setMaintenanceMessage(settings.maintenance_message || "");
+        setBlurNamesForPublic(settings.blur_names_for_public ?? true);
+        setSendProducerNotifications(settings.send_producer_notifications ?? true);
+        setSettingsId(settings.id);
+      }
+
+      // Load queued notifications count
+      const { data: queued } = await supabase
+        .from("queued_producer_notifications")
+        .select("*")
+        .is("sent_at", null);
+      setQueuedNotifications(queued || []);
 
     // Load all submissions
     const { data: subs } = await supabase
@@ -394,30 +404,67 @@ export default function Admin() {
         });
       }
 
-      // Send notification email to producer
-      if (producerEmail) {
-        const { error: producerEmailError } = await supabase.functions.invoke('send-email', {
-          body: {
-            type: 'producer_report_notification',
-            to: producerEmail,
-            data: {
-              reportId: submission.report_id,
-              amountOwed: parseFloat(formData.amount_owed),
-              daysOverdue: daysOverdue,
-              projectName: formData.project_name || "Not specified",
+        // Send notification email to producer (or queue it)
+        if (producerEmail) {
+          // Check if producer notifications are enabled
+          const { data: settings } = await supabase
+            .from("site_settings")
+            .select("send_producer_notifications")
+            .single();
+
+          const shouldSendNow = settings?.send_producer_notifications ?? true;
+
+          if (shouldSendNow) {
+            // Send immediately
+            const { error: producerEmailError } = await supabase.functions.invoke('send-email', {
+              body: {
+                type: 'producer_report_notification',
+                to: producerEmail,
+                data: {
+                  reportId: submission.report_id,
+                  amountOwed: parseFloat(formData.amount_owed),
+                  daysOverdue: daysOverdue,
+                  projectName: formData.project_name || "Not specified",
+                }
+              }
+            });
+
+            if (producerEmailError) {
+              console.error('Producer email sending failed:', producerEmailError);
+              toast({
+                title: "Warning",
+                description: "Submission verified but producer notification email failed",
+                variant: "default",
+              });
+            }
+          } else {
+            // Queue for later
+            const { data: paymentReport } = await supabase
+              .from('payment_reports')
+              .select('id')
+              .eq('report_id', submission.report_id)
+              .single();
+
+            if (paymentReport) {
+              await supabase
+                .from('queued_producer_notifications')
+                .insert({
+                  payment_report_id: paymentReport.id,
+                  producer_email: producerEmail,
+                  report_id: submission.report_id,
+                  amount_owed: parseFloat(formData.amount_owed),
+                  days_overdue: daysOverdue,
+                  project_name: formData.project_name || "Not specified",
+                });
+
+              toast({
+                title: "Notification Queued",
+                description: "Producer notification queued (toggle is OFF)",
+                variant: "default",
+              });
             }
           }
-        });
-
-        if (producerEmailError) {
-          console.error('Producer email sending failed:', producerEmailError);
-          toast({
-            title: "Warning",
-            description: "Submission verified but producer notification email failed",
-            variant: "default",
-          });
         }
-      }
     }
 
     toast({
@@ -638,6 +685,84 @@ export default function Admin() {
     });
   };
 
+  const handleProducerNotificationToggle = async (checked: boolean) => {
+    if (!settingsId) return;
+    
+    const { error } = await supabase
+      .from("site_settings")
+      .update({ send_producer_notifications: checked })
+      .eq("id", settingsId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSendProducerNotifications(checked);
+
+    // If turning ON, send all queued notifications
+    if (checked && queuedNotifications.length > 0) {
+      await sendQueuedNotifications();
+    }
+
+    toast({
+      title: "Success",
+      description: checked 
+        ? "Producer notifications enabled" 
+        : "Producer notifications paused",
+    });
+  };
+
+  const sendQueuedNotifications = async () => {
+    const { data: queued } = await supabase
+      .from("queued_producer_notifications")
+      .select("*")
+      .is("sent_at", null);
+
+    if (!queued || queued.length === 0) return;
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const notification of queued) {
+      const { error } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'producer_report_notification',
+          to: notification.producer_email,
+          data: {
+            reportId: notification.report_id,
+            amountOwed: notification.amount_owed,
+            daysOverdue: notification.days_overdue,
+            projectName: notification.project_name,
+          }
+        }
+      });
+
+      if (!error) {
+        // Mark as sent
+        await supabase
+          .from("queued_producer_notifications")
+          .update({ sent_at: new Date().toISOString() })
+          .eq("id", notification.id);
+        successCount++;
+      } else {
+        failCount++;
+        console.error('Failed to send queued notification:', error);
+      }
+    }
+
+    toast({
+      title: "Queued Emails Sent",
+      description: `Sent ${successCount} notifications${failCount > 0 ? `, ${failCount} failed` : ''}`,
+    });
+
+    loadAdminData(); // Refresh to show updated queue count
+  };
+
   const handleResolveDispute = async (id: string, resolution: string) => {
     if (!adminNotes.trim()) {
       toast({
@@ -835,6 +960,25 @@ export default function Admin() {
               id="blur-names"
               checked={blurNamesForPublic}
               onCheckedChange={toggleBlurNames}
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="space-y-1">
+              <Label htmlFor="producer-notifications" className="text-lg font-semibold flex items-center gap-2">
+                <Bell className="h-5 w-5 text-muted-foreground" />
+                Producer Notification Emails
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {sendProducerNotifications 
+                  ? "Producers receive emails when crew reports are verified" 
+                  : `Notifications paused (${queuedNotifications.length} queued)`}
+              </p>
+            </div>
+            <Switch
+              id="producer-notifications"
+              checked={sendProducerNotifications}
+              onCheckedChange={handleProducerNotificationToggle}
             />
           </div>
         </div>

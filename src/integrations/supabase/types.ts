@@ -369,12 +369,57 @@ export type Database = {
         }
         Relationships: []
       }
+      queued_producer_notifications: {
+        Row: {
+          amount_owed: number
+          created_at: string | null
+          days_overdue: number
+          id: string
+          payment_report_id: string
+          producer_email: string
+          project_name: string
+          report_id: string
+          sent_at: string | null
+        }
+        Insert: {
+          amount_owed: number
+          created_at?: string | null
+          days_overdue: number
+          id?: string
+          payment_report_id: string
+          producer_email: string
+          project_name: string
+          report_id: string
+          sent_at?: string | null
+        }
+        Update: {
+          amount_owed?: number
+          created_at?: string | null
+          days_overdue?: number
+          id?: string
+          payment_report_id?: string
+          producer_email?: string
+          project_name?: string
+          report_id?: string
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "queued_producer_notifications_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_settings: {
         Row: {
           blur_names_for_public: boolean
           id: string
           maintenance_message: string | null
           maintenance_mode: boolean
+          send_producer_notifications: boolean | null
           updated_at: string | null
         }
         Insert: {
@@ -382,6 +427,7 @@ export type Database = {
           id?: string
           maintenance_message?: string | null
           maintenance_mode?: boolean
+          send_producer_notifications?: boolean | null
           updated_at?: string | null
         }
         Update: {
@@ -389,6 +435,7 @@ export type Database = {
           id?: string
           maintenance_message?: string | null
           maintenance_mode?: boolean
+          send_producer_notifications?: boolean | null
           updated_at?: string | null
         }
         Relationships: []
