@@ -97,6 +97,33 @@ export type Database = {
         }
         Relationships: []
       }
+      leaderboard_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          locked_at: string | null
+          producer_count_at_lock: number | null
+          threshold_locked: boolean
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          locked_at?: string | null
+          producer_count_at_lock?: number | null
+          threshold_locked?: boolean
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          locked_at?: string | null
+          producer_count_at_lock?: number | null
+          threshold_locked?: boolean
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payment_confirmations: {
         Row: {
           amount_paid: number
@@ -488,6 +515,45 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verified?: boolean | null
+        }
+        Relationships: []
+      }
+      user_entitlements: {
+        Row: {
+          created_at: string | null
+          entitlement_type: string
+          id: string
+          source: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          subscription_end: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entitlement_type?: string
+          id?: string
+          source: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entitlement_type?: string
+          id?: string
+          source?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_end?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

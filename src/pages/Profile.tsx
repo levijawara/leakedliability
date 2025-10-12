@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, User as UserIcon } from "lucide-react";
+import { LeaderboardAccessStatus } from "@/components/LeaderboardAccessStatus";
 
 interface Profile {
   account_type: string;
@@ -237,6 +238,16 @@ const Profile = () => {
                   )}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Leaderboard Access</CardTitle>
+              <CardDescription>Your current access status</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <LeaderboardAccessStatus />
             </CardContent>
           </Card>
 

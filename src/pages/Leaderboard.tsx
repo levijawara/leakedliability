@@ -5,7 +5,11 @@ import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
+import { LeaderboardPaywall } from "@/components/LeaderboardPaywall";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 const getDaysColor = (days: number | null) => {
   if (!days || days < 0) return "bg-background text-foreground";
@@ -17,8 +21,8 @@ const getDaysColor = (days: number | null) => {
 };
 
 export default function Leaderboard() {
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [blurNames, setBlurNames] = useState(true);
+  const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess();
+  const [managingBilling, setManagingBilling] = useState(false);
 
   const { data: producers, isLoading } = useQuery({
     queryKey: ["producers"],
@@ -33,31 +37,31 @@ export default function Leaderboard() {
     },
   });
 
-  useEffect(() => {
-    checkAdminStatus();
-    loadBlurSetting();
-  }, []);
+  const handleManageBilling = async () => {
+    try {
+      setManagingBilling(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
 
-  const checkAdminStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
-      setIsAdmin(data === true);
+      const { data, error } = await supabase.functions.invoke('leaderboard-customer-portal', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+
+      if (error) throw error;
+      if (data?.url) window.open(data.url, '_blank');
+    } catch (error) {
+      console.error('Error opening customer portal:', error);
+    } finally {
+      setManagingBilling(false);
     }
   };
 
-  const loadBlurSetting = async () => {
-    const { data } = await supabase
-      .from("site_settings")
-      .select("blur_names_for_public")
-      .single();
-    
-    if (data) {
-      setBlurNames(data.blur_names_for_public ?? true);
-    }
-  };
+  // Show paywall if no access
+  if (!accessLoading && accessState && !accessState.hasAccess) {
+    return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} />;
+  }
 
-  const shouldBlurNames = blurNames && !isAdmin;
+  const shouldBlurNames = !accessState?.hasAccess;
 
   return (
     <>
@@ -75,6 +79,36 @@ export default function Leaderboard() {
           <p className="text-sm text-muted-foreground">
             Last Updated: {format(new Date(), "MM/dd/yy")}
           </p>
+          
+          {/* Access Status Badge */}
+          {accessState && (
+            <div className="flex justify-center gap-3 flex-wrap">
+              {accessState.reason === 'admin' && (
+                <Badge variant="default" className="text-lg px-4 py-2">Admin Access</Badge>
+              )}
+              {accessState.reason === 'contributor_free' && (
+                <Badge variant="default" className="text-lg px-4 py-2 bg-green-600">
+                  ✓ Contributor Access (Free)
+                </Badge>
+              )}
+              {accessState.reason === 'subscription_active' && (
+                <>
+                  <Badge variant="default" className="text-lg px-4 py-2">Subscribed</Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleManageBilling}
+                    disabled={managingBilling}
+                  >
+                    {managingBilling ? "Loading..." : "Manage Billing"}
+                  </Button>
+                </>
+              )}
+              {accessState.reason === 'admin_override' && (
+                <Badge variant="default" className="text-lg px-4 py-2">Special Access</Badge>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Alert Banner */}
