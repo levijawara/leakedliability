@@ -155,6 +155,7 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
                   id="permanent"
                   checked={isPermanent}
                   onCheckedChange={handleTogglePermanent}
+                  variant="status"
                 />
                 <div className="space-y-1 flex-1">
                   <Label htmlFor="permanent" className="text-sm font-medium cursor-pointer">
@@ -171,6 +172,7 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
                   id="temporary"
                   checked={isTemporary}
                   onCheckedChange={handleToggleTemporary}
+                  variant="status"
                 />
                 <div className="space-y-1 flex-1">
                   <Label htmlFor="temporary" className="text-sm font-medium cursor-pointer">

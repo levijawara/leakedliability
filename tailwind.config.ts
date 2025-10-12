@@ -68,6 +68,10 @@ export default {
           nuclear: "hsl(var(--status-nuclear))",
           "nuclear-text": "hsl(var(--status-nuclear-text))",
         },
+        switch: {
+          on: "hsl(var(--switch-on))",
+          off: "hsl(var(--switch-off))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

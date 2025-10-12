@@ -921,7 +921,7 @@ export default function Admin() {
               id="maintenance-mode"
               checked={maintenanceMode}
               onCheckedChange={toggleMaintenanceMode}
-              className="data-[state=checked]:bg-destructive"
+              variant="status-inverted"
             />
           </div>
           
@@ -960,6 +960,7 @@ export default function Admin() {
               id="blur-names"
               checked={blurNamesForPublic}
               onCheckedChange={toggleBlurNames}
+              variant="status"
             />
           </div>
 
@@ -979,6 +980,7 @@ export default function Admin() {
               id="producer-notifications"
               checked={sendProducerNotifications}
               onCheckedChange={handleProducerNotificationToggle}
+              variant="status"
             />
           </div>
         </div>

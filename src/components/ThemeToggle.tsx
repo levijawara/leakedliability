@@ -25,6 +25,7 @@ export function ThemeToggle() {
         checked={isDark}
         onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
         aria-label="Toggle dark mode"
+        variant="theme"
       />
       <Moon className="h-4 w-4 text-muted-foreground" />
     </div>

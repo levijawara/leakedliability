@@ -44,6 +44,10 @@ All colors MUST be HSL.
     --status-nuclear: 0 0% 10%;
     --status-nuclear-text: 0 84% 60%;
 
+    /* Switch Color System */
+    --switch-on: 120 60% 45%;
+    --switch-off: 0 84% 60%;
+
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
@@ -92,6 +96,10 @@ All colors MUST be HSL.
     --status-critical: 0 84% 65%;
     --status-nuclear: 0 0% 10%;
     --status-nuclear-text: 0 84% 70%;
+
+    /* Switch Color System - Dark Mode */
+    --switch-on: 120 60% 50%;
+    --switch-off: 0 84% 65%;
 
     --sidebar-background: 0 0% 10%;
     --sidebar-foreground: 0 0% 96%;
