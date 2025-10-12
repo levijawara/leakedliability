@@ -78,7 +78,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
       return {
         title: "🔒 Leaderboard Access",
         description: "Names are blurred. Create an account to unlock access.",
-        message: "Crew members: Get FREE permanent access by submitting a verified crew member payment report. Producers: Subscribe for $5.99/month.",
+        message: "Crew members: Get FREE temporary access by submitting a verified crew member payment report.\nProducers: Subscribe for $5.99/month.",
         showCrewOption: false,
         showSignupPrompt: true,
       };
@@ -157,7 +157,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
         <CardContent className="space-y-6">
           {content.message && (
             <Alert>
-              <AlertDescription>{content.message}</AlertDescription>
+              <AlertDescription className="text-center whitespace-pre-line">{content.message}</AlertDescription>
             </Alert>
           )}
 
@@ -170,15 +170,15 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
                   <CardDescription>Submit a verified Crew Member Report</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Get FREE permanent access by submitting a verified crew member payment report.
+                  <p className="text-sm text-muted-foreground mb-4 text-center">
+                    Get FREE temporary access by submitting a verified crew member payment report.
                   </p>
                   <Button 
                     variant="outline" 
                     className="w-full"
                     onClick={() => window.location.href = '/submit'}
                   >
-                    Submit Report (Free Forever)
+                    Submit Report (Free Access)
                   </Button>
                 </CardContent>
               </Card>
