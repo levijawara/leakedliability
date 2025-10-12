@@ -880,7 +880,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8 px-4 pb-20 space-y-8">
       {maintenanceMode && (
         <Card className="mb-6 p-4 bg-yellow-500/10 border-yellow-500/50">
           <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 font-semibold">
@@ -985,14 +985,14 @@ export default function Admin() {
       </Card>
 
       {/* User Search */}
-      <Card className="mb-6 p-6">
+      <Card className="p-6 shadow-sm hover:shadow-md transition-shadow">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="user-search" className="text-lg font-semibold flex items-center gap-2">
+            <h2 className="text-xl font-semibold mb-1 flex items-center gap-2">
               <Search className="h-5 w-5" />
               User Search
-            </Label>
-            <p className="text-sm text-muted-foreground mt-1">
+            </h2>
+            <p className="text-sm text-muted-foreground">
               Search by name or email to view submission statistics
             </p>
           </div>
@@ -1049,41 +1049,60 @@ export default function Admin() {
         </div>
       </Card>
 
-      <Tabs defaultValue="crew_report" className="space-y-6">
-        <TabsList className="grid grid-cols-1 md:grid-cols-3 gap-2 max-w-4xl mx-auto">
-          {/* Row 1 */}
-          <TabsTrigger value="crew_report">
-            Crew Member Report ⚠️
-          </TabsTrigger>
-          <TabsTrigger value="payment_documentation">
-            Payment Documentation 🧾
-          </TabsTrigger>
-          <TabsTrigger value="payment_reports">
-            Payment Reports 💰
-          </TabsTrigger>
-          
-          {/* Row 2 */}
-          <TabsTrigger value="payment_confirmation">
-            Payment Confirmation ✅
-          </TabsTrigger>
-          <TabsTrigger value="report_explanation">
-            Report Explanation ☮️
-          </TabsTrigger>
-          <div className="invisible"></div>
-          
-          {/* Row 3 */}
-          <TabsTrigger value="counter_dispute">
-            Counter-Dispute ‼️
-          </TabsTrigger>
-          <TabsTrigger value="report_dispute">
-            Report Dispute ⁉️
-          </TabsTrigger>
-          <div className="invisible"></div>
-        </TabsList>
+      <Card className="p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-1">Submissions & Reports</h2>
+          <p className="text-sm text-muted-foreground">Review all submission types</p>
+        </div>
 
-        {/* Payment Reports Tab */}
-        <TabsContent value="payment_reports" className="space-y-4">
-          <Card className="p-6">
+        <Tabs defaultValue="crew_report">
+          <TabsList className="inline-flex h-11 items-center justify-start rounded-lg bg-muted p-1 mb-6 flex-wrap">
+            <TabsTrigger 
+              value="crew_report"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Crew Member Report ⚠️
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payment_documentation"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Payment Documentation 🧾
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payment_reports"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Payment Reports 💰
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payment_confirmation"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Payment Confirmation ✅
+            </TabsTrigger>
+            <TabsTrigger 
+              value="report_explanation"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Report Explanation ☮️
+            </TabsTrigger>
+            <TabsTrigger 
+              value="counter_dispute"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Counter-Dispute ‼️
+            </TabsTrigger>
+            <TabsTrigger 
+              value="report_dispute"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Report Dispute ⁉️
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Payment Reports Tab */}
+          <TabsContent value="payment_reports">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">All Payment Reports</h3>
               <Badge variant="outline">{paymentReports.length} total</Badge>
@@ -1091,15 +1110,15 @@ export default function Admin() {
             
             <Table>
               <TableHeader>
-                <TableRow>
-                  <TableHead>Report ID</TableHead>
-                  <TableHead>Crew Member</TableHead>
-                  <TableHead>Producer</TableHead>
-                  <TableHead>Project</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Days Overdue</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>City</TableHead>
+                <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                  <TableHead className="font-semibold">Report ID</TableHead>
+                  <TableHead className="font-semibold">Crew Member</TableHead>
+                  <TableHead className="text-xs">Producer</TableHead>
+                  <TableHead className="text-xs">Project</TableHead>
+                  <TableHead className="font-semibold">Amount</TableHead>
+                  <TableHead className="text-xs">Days Overdue</TableHead>
+                  <TableHead className="font-semibold">Status</TableHead>
+                  <TableHead className="text-xs">City</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -1112,25 +1131,25 @@ export default function Admin() {
                   </TableRow>
                 ) : (
                   paymentReports.map((report) => (
-                    <TableRow key={report.id}>
-                      <TableCell className="font-mono text-xs">{report.report_id || 'N/A'}</TableCell>
-                      <TableCell>
+                    <TableRow key={report.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="font-mono text-xs text-muted-foreground">{report.report_id || 'N/A'}</TableCell>
+                      <TableCell className="text-sm font-medium">
                         {report.profiles?.legal_first_name} {report.profiles?.legal_last_name}
                       </TableCell>
-                      <TableCell>{report.producer?.name}</TableCell>
-                      <TableCell>{report.project_name}</TableCell>
-                      <TableCell>${report.amount_owed?.toFixed(2)}</TableCell>
-                      <TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{report.producer?.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{report.project_name}</TableCell>
+                      <TableCell className="text-sm font-medium">${report.amount_owed?.toFixed(2)}</TableCell>
+                      <TableCell className="text-xs">
                         <Badge variant={report.days_overdue > 90 ? "destructive" : "outline"}>
                           {report.days_overdue} days
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-sm font-medium">
                         <Badge variant={report.status === 'paid' ? 'default' : 'secondary'}>
                           {report.status}
                         </Badge>
                       </TableCell>
-                      <TableCell>{report.city || '-'}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">{report.city || '-'}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           {report.status !== 'paid' && (
@@ -1147,23 +1166,22 @@ export default function Admin() {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </TabsContent>
 
-        {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
+          {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
           const leadingUser = leadingUsers[type];
           
           // Special handling for payment_confirmation tab
           if (type === 'payment_confirmation') {
             return (
-              <TabsContent key={type} value={type} className="space-y-4">
+              <TabsContent key={type} value={type}>
                 {leadingUser && (
-                  <Card className="p-4 bg-primary/5 border-primary/20">
+                  <Card className="p-4 bg-primary/5 border-primary/20 mb-4">
                     <div className="flex items-center gap-2 text-sm">
                       <Badge variant="outline" className="font-semibold">🏆 Leading User</Badge>
                       <span className="font-medium">{leadingUser.name}</span>
@@ -1173,44 +1191,42 @@ export default function Admin() {
                   </Card>
                 )}
 
-                <Card className="p-6">
-                  <Table>
-                    <TableHeader>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Report ID</TableHead>
+                      <TableHead className="text-xs">Date</TableHead>
+                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="text-xs">Email</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paymentConfirmations.length === 0 ? (
                       <TableRow>
-                        <TableHead>Report ID</TableHead>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground">
+                          No payment confirmations yet
+                        </TableCell>
                       </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {paymentConfirmations.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-center text-muted-foreground">
-                            No payment confirmations yet
-                          </TableCell>
+                    ) : (
+                      paymentConfirmations.map((pc) => (
+                        <TableRow key={pc.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="font-mono text-xs text-muted-foreground">{pc.report_id}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{new Date(pc.created_at).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-sm font-medium">{pc.full_name}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{pc.email}</TableCell>
                         </TableRow>
-                      ) : (
-                        paymentConfirmations.map((pc) => (
-                          <TableRow key={pc.id}>
-                            <TableCell className="font-mono text-xs">{pc.report_id}</TableCell>
-                            <TableCell>{new Date(pc.created_at).toLocaleDateString()}</TableCell>
-                            <TableCell>{pc.full_name}</TableCell>
-                            <TableCell>{pc.email}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </Card>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </TabsContent>
             );
           }
           
           return (
-            <TabsContent key={type} value={type} className="space-y-4">
+            <TabsContent key={type} value={type}>
               {leadingUser && (
-                <Card className="p-4 bg-primary/5 border-primary/20">
+                <Card className="p-4 bg-primary/5 border-primary/20 mb-4">
                   <div className="flex items-center gap-2 text-sm">
                     <Badge variant="outline" className="font-semibold">🏆 Leading User</Badge>
                     <span className="font-medium">{leadingUser.name}</span>
@@ -1220,37 +1236,36 @@ export default function Admin() {
                 </Card>
               )}
 
-              <Card className="p-6">
-                <Table>
-                  <TableHeader>
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                    <TableHead className="font-semibold">Report ID</TableHead>
+                    <TableHead className="text-xs">Date</TableHead>
+                    <TableHead className="font-semibold">Name</TableHead>
+                    <TableHead className="text-xs">Email</TableHead>
+                    <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredSubmissions.length === 0 ? (
                     <TableRow>
-                      <TableHead>Report ID</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableCell colSpan={6} className="text-center text-muted-foreground">
+                        No submissions of this type
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredSubmissions.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center text-muted-foreground">
-                          No submissions of this type
+                  ) : (
+                    filteredSubmissions.map((sub) => (
+                      <TableRow key={sub.id} className="hover:bg-muted/50 transition-colors">
+                        <TableCell className="font-mono text-xs text-muted-foreground">{sub.report_id || 'N/A'}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{new Date(sub.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-sm font-medium">{sub.full_name}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">{sub.email}</TableCell>
+                        <TableCell className="text-sm font-medium">
+                          <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
+                            {sub.status}
+                          </Badge>
                         </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredSubmissions.map((sub) => (
-                        <TableRow key={sub.id}>
-                          <TableCell className="font-mono text-xs">{sub.report_id || 'N/A'}</TableCell>
-                          <TableCell>{new Date(sub.created_at).toLocaleDateString()}</TableCell>
-                          <TableCell>{sub.full_name}</TableCell>
-                          <TableCell>{sub.email}</TableCell>
-                          <TableCell>
-                            <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
-                              {sub.status}
-                            </Badge>
-                          </TableCell>
                           <TableCell>
                             <Button
                               variant="outline"
@@ -1265,11 +1280,10 @@ export default function Admin() {
                             </Button>
                           </TableCell>
                         </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </Card>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
 
               {selectedItem && selectedItem.submission_type === type && (
                 <Card className="p-6">
@@ -1355,8 +1369,8 @@ export default function Admin() {
             </TabsContent>
           );
         })}
-
-      </Tabs>
+        </Tabs>
+      </Card>
 
       {/* Payment Date Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
