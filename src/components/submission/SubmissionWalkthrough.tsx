@@ -14,7 +14,7 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
     <Card className="p-8">
       <div className="prose prose-sm max-w-none dark:prose-invert">
         <h2 className="text-2xl font-bold mb-4">LEAKED LIABILITY™ — WALK-THROUGH</h2>
-        <p className="text-sm text-muted-foreground mb-6">(version 1.3) (BETA) - Last updated: 10/10/2025</p>
+        <p className="text-sm text-muted-foreground mb-6">(version 1.4) (BETA) - Last updated 10/12/2025</p>
 
         <div className="space-y-6 text-sm">
           <section>
