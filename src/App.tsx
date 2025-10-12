@@ -18,6 +18,7 @@ import Admin from "./pages/Admin";
 import Disclaimer from "./pages/Disclaimer";
 import Maintenance from "./pages/Maintenance";
 import NotFound from "./pages/NotFound";
+import ProducerDashboard from "./pages/ProducerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -98,6 +99,7 @@ const AppContent = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/producer-dashboard" element={<ProducerDashboard />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

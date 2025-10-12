@@ -21,6 +21,7 @@ interface ProducerSubmissionFormProps {
 
 export function ProducerSubmissionForm({ userInfo, submissionType, participantType, onBack, onSuccess }: ProducerSubmissionFormProps) {
   const [loading, setLoading] = useState(false);
+  const [reportId, setReportId] = useState("");
   const [crewMemberName, setCrewMemberName] = useState("");
   const [explanation, setExplanation] = useState("");
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
@@ -42,6 +43,44 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
   const handleSubmit = async () => {
     setLoading(true);
     try {
+      // Validate Report ID first
+      if (!reportId.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Report ID is required",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Look up the payment report to link to
+      const { data: paymentReport, error: lookupError } = await supabase
+        .from('payment_reports')
+        .select('id, producer_email')
+        .eq('report_id', reportId.trim())
+        .maybeSingle();
+
+      if (lookupError) {
+        toast({
+          title: "Error",
+          description: "Failed to verify Report ID",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      if (!paymentReport) {
+        toast({
+          title: "Invalid Report ID",
+          description: "The Report ID you entered does not exist. Please check and try again.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       // Validate input
       const validationResult = producerSubmissionSchema.safeParse({
         crewMemberName,
@@ -78,6 +117,8 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
           : userInfo.firstName,
         email: userInfo.email,
         form_data: {
+          report_id: reportId.trim(),
+          payment_report_id: paymentReport.id,
           crew_member_name: crewMemberName,
           explanation: explanation,
           participant_type: participantType
@@ -104,7 +145,7 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
     }
   };
 
-  const isValid = crewMemberName && documentFiles.length > 0;
+  const isValid = reportId.trim() && crewMemberName && documentFiles.length > 0;
 
   return (
     <Card className="p-8">
@@ -114,6 +155,20 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
       </p>
 
       <div className="space-y-6">
+        <div>
+          <Label htmlFor="reportId">Report ID *</Label>
+          <Input
+            id="reportId"
+            placeholder="CR-YYYYMMDD-XXXXX"
+            value={reportId}
+            onChange={(e) => setReportId(e.target.value)}
+            className="font-mono"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Enter the Report ID from your notification email
+          </p>
+        </div>
+
         <div>
           <Label htmlFor="crewName">Crew Member Name *</Label>
           <Input

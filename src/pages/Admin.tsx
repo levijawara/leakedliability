@@ -342,6 +342,9 @@ export default function Admin() {
       const invoiceDate = formData.invoice_date || new Date().toISOString().split('T')[0];
       const daysOverdue = Math.floor((new Date().getTime() - new Date(invoiceDate).getTime()) / (1000 * 60 * 60 * 24));
       
+      // Extract producer email from form data
+      const producerEmail = formData.producer_name?.email || null;
+      
       const { error: reportError } = await supabase
         .from('payment_reports')
         .insert({
@@ -354,7 +357,8 @@ export default function Admin() {
           city: formData.city || null,
           status: 'pending',
           verified: true,
-          report_id: submission.report_id
+          report_id: submission.report_id,
+          producer_email: producerEmail
         });
       
       if (reportError) {
@@ -366,7 +370,7 @@ export default function Admin() {
         });
       }
 
-      // Send verification email
+      // Send verification email to crew member
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
           type: 'crew_report_verified',
@@ -382,12 +386,37 @@ export default function Admin() {
       });
 
       if (emailError) {
-        console.error('Email sending failed:', emailError);
+        console.error('Crew member email sending failed:', emailError);
         toast({
           title: "Warning",
-          description: "Submission verified but email notification failed",
+          description: "Submission verified but crew member email notification failed",
           variant: "default",
         });
+      }
+
+      // Send notification email to producer
+      if (producerEmail) {
+        const { error: producerEmailError } = await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'producer_report_notification',
+            to: producerEmail,
+            data: {
+              reportId: submission.report_id,
+              amountOwed: parseFloat(formData.amount_owed),
+              daysOverdue: daysOverdue,
+              projectName: formData.project_name || "Not specified",
+            }
+          }
+        });
+
+        if (producerEmailError) {
+          console.error('Producer email sending failed:', producerEmailError);
+          toast({
+            title: "Warning",
+            description: "Submission verified but producer notification email failed",
+            variant: "default",
+          });
+        }
       }
     }
 
