@@ -121,43 +121,64 @@ export default function Leaderboard() {
 
         {/* PSCS Formula */}
         <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
-          <h3 className="font-black text-lg mb-4 text-center">PSCS™ ROLLING FORMULA</h3>
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Left Half - Formula */}
-            <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center justify-center">
-              <div className="font-mono text-center space-y-3">
-                <div className="text-xs md:text-sm text-foreground">
-                  <span className="font-black">PSCS</span> = 
-                  <span className="inline-block mx-1">
-                    1000 × (1 − P) + F
-                  </span>
+          <h3 className="font-black text-lg mb-4 text-center">PSCS™ CREDIT SCORE MODEL</h3>
+          <div className="space-y-4">
+            <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
+              <h4 className="font-bold text-sm mb-3 text-center">Active Debt Penalty</h4>
+              <div className="text-xs text-muted-foreground space-y-2">
+                <div className="font-mono text-center">
+                  PSCS = 1000 - (Age Penalty + Amount Penalty + Repeat Penalty)
                 </div>
-                <div className="text-xs text-muted-foreground space-y-1">
-                  <div><span className="font-bold text-foreground">P</span> = weighted penalty</div>
-                  <div className="text-[10px]">
-                    = 0.35×F<sub>$</sub> + 0.35×F<sub>days</sub> + 0.10×F<sub>crew</sub><br/>
-                    + 0.10×F<sub>jobs</sub> + 0.10×F<sub>geo</sub>
+                <div className="grid md:grid-cols-3 gap-3 mt-3">
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground text-xs">Age (max -650)</div>
+                    <div className="text-[10px]">0-60d: -1/day</div>
+                    <div className="text-[10px]">60+: -60 + -2/day</div>
                   </div>
-                  <div className="pt-1"><span className="font-bold text-foreground">F</span> = forgiveness (if clean)</div>
-                  <div className="text-[10px]">
-                    = (1 − e<sup>−t/90</sup>) × (1000 − base)
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground text-xs">Amount (max -300)</div>
+                    <div className="text-[10px]">-0.06 per dollar</div>
+                    <div className="text-[10px]">Cap at $5,000</div>
+                  </div>
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground text-xs">Repeat (no cap)</div>
+                    <div className="text-[10px]">-10/crew, -10/job</div>
+                    <div className="text-[10px]">-5/city (after 1st)</div>
                   </div>
                 </div>
               </div>
             </div>
-            
-            {/* Right Half - Legend */}
-            <div className="bg-card/80 backdrop-blur-sm p-6 rounded-lg border-2 border-primary/20 shadow-lg flex items-center">
-              <div className="text-[11px] text-muted-foreground space-y-1.5 w-full">
-                <div className="font-bold text-foreground mb-2">Penalty Factors:</div>
-                <div>F<sub>$</sub> = min(1, amt / $5k)</div>
-                <div>F<sub>days</sub> = min(1, days / 180)</div>
-                <div>F<sub>crew</sub> = min(1, crew / 5)</div>
-                <div>F<sub>jobs</sub> = min(1, jobs / 5)</div>
-                <div>F<sub>geo</sub> = min(1, cities / 3)</div>
-                <div className="pt-2 font-bold text-foreground">Time Forgiveness:</div>
-                <div>t = days since last debt closed</div>
-                <div className="text-[10px] italic">Clean record → ~63% forgiven in 90d, ~95% in 270d</div>
+
+            <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
+              <h4 className="font-bold text-sm mb-3 text-center">Credit Recovery (When All Debts Paid)</h4>
+              <div className="text-xs text-muted-foreground space-y-2">
+                <div className="font-mono text-center text-[10px]">
+                  Recovery = 1000 - (250 × (1 - forgiveness_factor))
+                </div>
+                <div className="font-mono text-center text-[10px]">
+                  forgiveness_factor = 1 - e<sup>(-days_clean / 180 × ln(2))</sup>
+                </div>
+                <div className="grid grid-cols-4 gap-2 mt-3 text-center">
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground">6mo</div>
+                    <div className="text-[10px]">~50%</div>
+                  </div>
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground">1yr</div>
+                    <div className="text-[10px]">~75%</div>
+                  </div>
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground">2yr</div>
+                    <div className="text-[10px]">~94%</div>
+                  </div>
+                  <div className="bg-background/50 p-2 rounded">
+                    <div className="font-bold text-foreground">3yr+</div>
+                    <div className="text-[10px]">~100%</div>
+                  </div>
+                </div>
+                <div className="text-[10px] text-center italic mt-2">
+                  25% history penalty fades over time with clean behavior
+                </div>
               </div>
             </div>
           </div>
@@ -228,8 +249,17 @@ export default function Leaderboard() {
                           <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company}</div>
                         )}
                       </TableCell>
-                      <TableCell className="text-center font-bold text-lg">
-                        {Math.round(producer.pscs_score || 0)}
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="font-bold text-lg">
+                            {Math.round(producer.pscs_score || 0)}
+                          </span>
+                          {producer.total_amount_owed === 0 && producer.paid_jobs_count > 0 && (
+                            <span className="text-xs text-muted-foreground italic">
+                              (recovering)
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center font-semibold">
                         <span className="text-status-excellent">$</span>{producer.total_amount_owed?.toLocaleString() || "0"}

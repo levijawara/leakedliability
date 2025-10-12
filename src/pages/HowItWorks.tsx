@@ -259,46 +259,93 @@ const HowItWorks = () => {
           <h2 className="text-3xl font-bold mb-6">Producer/Production Company Social Credit Score (PSCS)</h2>
           <div className="space-y-6 text-muted-foreground leading-relaxed">
             <p>
-              Your Producer/Production Company Social Credit Score (PSCS) should be treated like your ACTUAL credit score: it reflects payment behavior, not gossip. Every producer starts at 1,000. Your score decreases based on transparent penalty calculations—no hidden algorithms, just clear math:
+              Your Producer/Production Company Social Credit Score (PSCS) should be treated like your ACTUAL credit score: it reflects payment behavior, not gossip. Like a real credit score, <strong>paying your debt doesn't erase your history</strong>—it fades over time through sustained good behavior.
             </p>
             
             <div className="space-y-4">
+              <h3 className="text-xl font-bold text-foreground mt-6 mb-3">Active Debt Penalties</h3>
+              <p className="text-sm">
+                Every producer starts at 1,000. Your score decreases based on transparent penalty calculations—no hidden algorithms, just clear math:
+              </p>
+
               <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
                 <h4 className="font-bold text-foreground mb-2">Age Penalty (max -650 points)</h4>
                 <ul className="space-y-1 ml-4 text-sm">
-                  <li>• Days 0-60: <strong>-8 points per day</strong> overdue</li>
-                  <li>• After 60 days: <strong>-300 base</strong> + <strong>-1.5 points per day</strong> beyond 60</li>
-                  <li>• Example: 755-day debt = -650 points (capped)</li>
+                  <li>• Days 0-60: <strong>-1 point per day</strong> overdue</li>
+                  <li>• After 60 days: <strong>-60 base</strong> + <strong>-2 points per day</strong> beyond 60</li>
+                  <li>• Example: 755-day debt = -650 points (capped at ~355 days)</li>
                 </ul>
               </div>
 
               <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
                 <h4 className="font-bold text-foreground mb-2">Amount Penalty (max -300 points)</h4>
                 <ul className="space-y-1 ml-4 text-sm">
-                  <li>• <strong>-0.15 points per dollar</strong> owed</li>
-                  <li>• Example: $500 owed = -75 points</li>
-                  <li>• Example: $2,000+ owed = -300 points (capped)</li>
+                  <li>• <strong>-0.06 points per dollar</strong> owed</li>
+                  <li>• Example: $500 owed = -30 points</li>
+                  <li>• Example: $5,000+ owed = -300 points (capped)</li>
                 </ul>
               </div>
 
               <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
                 <h4 className="font-bold text-foreground mb-2">Repeat Offender Penalty (no cap)</h4>
                 <ul className="space-y-1 ml-4 text-sm">
-                  <li>• <strong>-80 points</strong> per additional crew member owed (beyond first)</li>
-                  <li>• <strong>-60 points</strong> per additional project with debt (beyond first)</li>
-                  <li>• <strong>-40 points</strong> per additional city with debt (beyond first)</li>
-                  <li>• Example: Owing 3 crew + 2 jobs + 2 cities = -260 points</li>
+                  <li>• <strong>-10 points</strong> per additional crew member owed (beyond first)</li>
+                  <li>• <strong>-10 points</strong> per additional project with debt (beyond first)</li>
+                  <li>• <strong>-5 points</strong> per additional city with debt (beyond first)</li>
+                  <li>• Example: Owing 3 crew + 2 jobs + 2 cities = -30 points</li>
                 </ul>
               </div>
-            </div>
 
-            <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mt-4">
-              <p className="font-semibold text-foreground">
-                Final Score = 1,000 - (Age Penalty + Amount Penalty + Repeat Penalty)
+              <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mt-4">
+                <p className="font-semibold text-foreground">
+                  Active Debt Score = 1,000 - (Age Penalty + Amount Penalty + Repeat Penalty)
+                </p>
+              </div>
+
+              <h3 className="text-xl font-bold text-foreground mt-8 mb-3">Credit Recovery System</h3>
+              <p className="text-sm">
+                Once you pay all debts, your score doesn't magically jump to 1,000. Like a real credit score, negative history fades with time:
               </p>
-              <p className="text-sm mt-2">
-                Scores range from 0-1,000. Lower scores indicate worse payment behavior. The formula is fully transparent and matches industry-standard credit scoring principles.
-              </p>
+
+              <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
+                <h4 className="font-bold text-foreground mb-2">How Recovery Works</h4>
+                <ul className="space-y-1 ml-4 text-sm">
+                  <li>• When you pay all debts, your score immediately improves by removing current penalties</li>
+                  <li>• However, <strong>25% of max penalty (250 points) remains as "negative history"</strong></li>
+                  <li>• This history penalty gradually fades if you maintain zero unpaid debts</li>
+                  <li>• Any new unpaid debt <strong>resets the clock</strong> and applies full penalties</li>
+                </ul>
+              </div>
+
+              <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
+                <h4 className="font-bold text-foreground mb-2">Recovery Timeline (with clean behavior)</h4>
+                <ul className="space-y-1 ml-4 text-sm">
+                  <li>• <strong>6 months clean:</strong> ~50% of history forgiven (score ≈ 875)</li>
+                  <li>• <strong>1 year clean:</strong> ~75% of history forgiven (score ≈ 938)</li>
+                  <li>• <strong>2 years clean:</strong> ~94% of history forgiven (score ≈ 985)</li>
+                  <li>• <strong>3+ years clean:</strong> Full recovery to 1,000</li>
+                </ul>
+                <p className="text-xs mt-2 italic">
+                  Recovery uses exponential decay with a 180-day half-life
+                </p>
+              </div>
+
+              <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mt-4">
+                <h4 className="font-bold text-foreground mb-2">Example: Sergey's Recovery Path</h4>
+                <p className="text-sm">
+                  Sergey had a 755-day debt of $500 (PSCS ≈ 275). Here's what happens when he pays:
+                </p>
+                <ul className="space-y-1 ml-4 text-sm mt-2">
+                  <li>• <strong>Day 0 (payment):</strong> PSCS jumps to ~750 (debt cleared, but 25% history remains)</li>
+                  <li>• <strong>6 months clean:</strong> PSCS ≈ 875 (50% forgiveness)</li>
+                  <li>• <strong>1 year clean:</strong> PSCS ≈ 938 (75% forgiveness)</li>
+                  <li>• <strong>2 years clean:</strong> PSCS ≈ 985 (94% forgiveness)</li>
+                  <li>• <strong>3+ years clean:</strong> PSCS → 1000 (full recovery)</li>
+                </ul>
+                <p className="text-xs mt-2 font-semibold text-foreground">
+                  But if Sergey creates ANY new debt during recovery, the clock resets and current penalties apply.
+                </p>
+              </div>
             </div>
           </div>
         </Card>
