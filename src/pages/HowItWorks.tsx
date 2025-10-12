@@ -90,6 +90,56 @@ const HowItWorks = () => {
           </div>
         </Card>
 
+        {/* Producer Dashboard */}
+        <Card className="p-8 mb-8 border-primary/20 bg-primary/5">
+          <h2 className="text-3xl font-bold mb-6">Producer Dashboard:</h2>
+          <div className="space-y-4">
+            <p className="text-muted-foreground leading-relaxed">
+              Producers who link their account during signup gain access to a personalized dashboard where they can:
+            </p>
+            <ul className="space-y-2 ml-6">
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
+                <span className="text-muted-foreground">View all reports filed against them in real-time</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
+                <span className="text-muted-foreground">Track payment status, amounts owed, and days outstanding</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
+                <span className="text-muted-foreground">Submit responses directly (Payment Documentation, Disputes, or Explanations)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
+                <span className="text-muted-foreground">Monitor their Producer/Production Company Social Credit Score (PSCS)</span>
+              </li>
+            </ul>
+            <div className="bg-background/50 rounded-lg p-4 mt-4">
+              <h3 className="font-bold text-lg mb-2">Account Linking Options:</h3>
+              <p className="text-muted-foreground leading-relaxed mb-3">
+                Producers can choose between <span className="font-semibold text-foreground">Permanent</span> or <span className="font-semibold text-foreground">Temporary</span> account association:
+              </p>
+              <ul className="space-y-2 ml-6">
+                <li className="flex items-start gap-2">
+                  <span className="text-lg">🔗</span>
+                  <div>
+                    <span className="font-semibold text-foreground">Permanent:</span>
+                    <span className="text-muted-foreground"> Links your account to a specific producer/company name indefinitely. Best for established producers managing their ongoing reputation.</span>
+                  </div>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-lg">⏱️</span>
+                  <div>
+                    <span className="font-semibold text-foreground">Temporary:</span>
+                    <span className="text-muted-foreground"> Associates your account for a limited time (set duration). Useful for producers working under different company names or freelance aliases.</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </Card>
+
         <Separator className="my-12" />
 
         {/* Identification Rules */}
@@ -106,6 +156,9 @@ const HowItWorks = () => {
               <h3 className="font-bold text-xl mb-2">Producers/Production Companies:</h3>
               <p className="text-muted-foreground leading-relaxed">
                 Legal/Business name (or alias) + email required. Your name can/will appear on the leaderboard based on verified reports. That doesn't automatically make you a "bad" Producer/Production Company—it simply means a crew member(s) has sworn that you owe them money. Disclosure of owed debts is not illegal, nor is it defamation of any kind.
+              </p>
+              <p className="text-muted-foreground leading-relaxed mt-3">
+                <span className="font-semibold text-foreground">Producer Account Linking:</span> Producers can link their account to their business/producer name during signup (either permanently or temporarily). Linked producers gain access to the Producer Dashboard, where they can view all reports against them and respond directly. Account linking is optional but highly recommended for transparency and reputation management.
               </p>
             </div>
           </div>
@@ -177,7 +230,7 @@ const HowItWorks = () => {
                 Payment Documentation <span className="text-2xl">🧾</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Should include payment receipt(s), payment email confirmation(s), payment notification screen-shot(s), etc.
+                Should include payment receipt(s), payment email confirmation(s), payment notification screen-shot(s), etc. You must reference a specific Report ID when submitting payment documentation. Only producers with linked accounts can submit this form, and only for reports filed against them.
               </p>
             </div>
             <div>
@@ -185,7 +238,7 @@ const HowItWorks = () => {
                 Report Dispute <span className="text-2xl">⁉️</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Means you are *DISAGREEING* with any/all of the Crew Member's report, and you'll need to provide the appropriate counter-claims/supporting evidence.
+                Means you are *DISAGREEING* with any/all of the Crew Member's report, and you'll need to provide the appropriate counter-claims/supporting evidence. You must reference a specific Report ID when disputing. Only producers with linked accounts can submit this form, and only for reports filed against them.
               </p>
             </div>
             <div>
@@ -193,7 +246,7 @@ const HowItWorks = () => {
                 Report Explanation <span className="text-2xl">☮️</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                You are admitting the debt and explaining the delay, or the reason why the Crew Member(s) may not get paid at all. Including an honest apology might help your reputation, but it WILL NOT erase the debt.
+                You are admitting the debt and explaining the delay, or the reason why the Crew Member(s) may not get paid at all. Including an honest apology might help your reputation, but it WILL NOT erase the debt. You must reference a specific Report ID when providing an explanation. Only producers with linked accounts can submit this form, and only for reports filed against them.
               </p>
             </div>
           </div>
