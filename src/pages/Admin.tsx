@@ -11,6 +11,14 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
   Table,
   TableBody,
   TableCell,
@@ -52,6 +60,10 @@ export default function Admin() {
   const [selectedPaymentReport, setSelectedPaymentReport] = useState<any>(null);
   const [paymentDate, setPaymentDate] = useState<Date>();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [accountStats, setAccountStats] = useState({ crew: 0, producer: 0, company: 0 });
+  const [allUsers, setAllUsers] = useState<any[]>([]);
+  const [open, setOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -114,6 +126,12 @@ export default function Admin() {
         .select("*")
         .is("sent_at", null);
       setQueuedNotifications(queued || []);
+
+    // Load account statistics
+    await loadAccountStats();
+    
+    // Load all users for dropdown
+    await loadAllUsers();
 
     // Load all submissions
     const { data: subs } = await supabase
@@ -231,38 +249,70 @@ export default function Admin() {
     setLeadingUsers(leaders);
   };
 
-  const handleUserSearch = async (query: string) => {
-    setSearchQuery(query);
-
-    if (!query.trim()) {
-      setSearchResults(null);
-      return;
-    }
-
-    // Search for user by name or email
+  const loadAccountStats = async () => {
     const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, legal_first_name, legal_last_name")
-      .or(`legal_first_name.ilike.%${query}%,legal_last_name.ilike.%${query}%`);
+      .from('profiles')
+      .select('account_type, business_name');
+    
+    const stats = {
+      crew: profiles?.filter(p => p.account_type === 'crew').length || 0,
+      producer: profiles?.filter(p => p.account_type === 'producer').length || 0,
+      company: profiles?.filter(p => p.account_type === 'producer' && p.business_name).length || 0
+    };
+    
+    setAccountStats(stats);
+  };
 
+  const loadAllUsers = async () => {
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, legal_first_name, legal_last_name, business_name, account_type');
+    
     const { data: submissions } = await supabase
-      .from("submissions")
-      .select("user_id, full_name, email")
-      .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
-      .limit(1);
+      .from('submissions')
+      .select('user_id, email')
+      .limit(1000);
+    
+    // Create a map of user_id to email
+    const emailMap = new Map();
+    submissions?.forEach(sub => {
+      if (!emailMap.has(sub.user_id)) {
+        emailMap.set(sub.user_id, sub.email);
+      }
+    });
+    
+    // Combine profile + email data
+    const users = profiles?.map(p => ({
+      user_id: p.user_id,
+      name: `${p.legal_first_name} ${p.legal_last_name}`,
+      business_name: p.business_name,
+      account_type: p.account_type,
+      email: emailMap.get(p.user_id) || 'No email'
+    })) || [];
+    
+    // Sort alphabetically by last name, then first name
+    users.sort((a, b) => {
+      const aLast = a.name.split(' ').pop() || '';
+      const bLast = b.name.split(' ').pop() || '';
+      return aLast.localeCompare(bLast) || a.name.localeCompare(b.name);
+    });
+    
+    setAllUsers(users);
+  };
 
-    if (!submissions || submissions.length === 0) {
+  const handleUserSelect = async (userId: string) => {
+    // Get all submissions for this user
+    const { data: userSubmissions } = await supabase
+      .from("submissions")
+      .select("submission_type, full_name, email")
+      .eq("user_id", userId);
+
+    if (!userSubmissions || userSubmissions.length === 0) {
       setSearchResults({ notFound: true });
       return;
     }
 
-    const user = submissions[0];
-
-    // Get all submissions for this user
-    const { data: userSubmissions } = await supabase
-      .from("submissions")
-      .select("submission_type")
-      .eq("user_id", user.user_id);
+    const user = userSubmissions[0];
 
     // Count by type
     const stats = {
@@ -274,7 +324,7 @@ export default function Admin() {
       report_dispute: 0,
     };
 
-    userSubmissions?.forEach((sub: any) => {
+    userSubmissions.forEach((sub: any) => {
       if (sub.submission_type in stats) {
         stats[sub.submission_type as keyof typeof stats]++;
       }
@@ -1005,15 +1055,68 @@ export default function Admin() {
               Search by name or email to view submission statistics
             </p>
           </div>
-          <div className="flex gap-2">
-            <Input
-              id="user-search"
-              placeholder="Enter name or email..."
-              value={searchQuery}
-              onChange={(e) => handleUserSearch(e.target.value)}
-              className="max-w-md"
-            />
+
+          {/* Account Statistics */}
+          <div className="grid grid-cols-3 gap-4 mb-4">
+            <Card className="p-4">
+              <div className="text-sm text-muted-foreground mb-1">Crew Member Accounts</div>
+              <div className="text-3xl font-bold">📊 {accountStats.crew}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-sm text-muted-foreground mb-1">Producer Accounts</div>
+              <div className="text-3xl font-bold">🏢 {accountStats.producer}</div>
+            </Card>
+            <Card className="p-4">
+              <div className="text-sm text-muted-foreground mb-1">Production Company Accounts</div>
+              <div className="text-3xl font-bold">🎬 {accountStats.company}</div>
+            </Card>
           </div>
+
+          {/* User Dropdown */}
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full max-w-md justify-between"
+              >
+                {selectedUser 
+                  ? `${selectedUser.name} - ${selectedUser.email}`
+                  : "Select a user..."}
+                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[500px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Search by name or email..." />
+                <CommandEmpty>No user found.</CommandEmpty>
+                <CommandList>
+                  <CommandGroup>
+                    {allUsers.map((user) => (
+                      <CommandItem
+                        key={user.user_id}
+                        value={`${user.name} ${user.email}`}
+                        onSelect={() => {
+                          setSelectedUser(user);
+                          setOpen(false);
+                          handleUserSelect(user.user_id);
+                        }}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {user.email} • {user.account_type}
+                            {user.business_name && ` • ${user.business_name}`}
+                          </span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
 
           {searchResults && (
             <Card className="p-4 bg-muted/50">
