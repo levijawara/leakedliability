@@ -257,32 +257,49 @@ const HowItWorks = () => {
         {/* PSCS Score */}
         <Card className="p-8 mb-8 border-primary/20 bg-primary/5">
           <h2 className="text-3xl font-bold mb-6">Producer/Production Company Social Credit Score (PSCS)</h2>
-          <div className="space-y-4 text-muted-foreground leading-relaxed">
+          <div className="space-y-6 text-muted-foreground leading-relaxed">
             <p>
-              Your Producer/Production Company Social Credit Score (PSCS) should be treated like your ACTUAL credit score: it reflects payment behavior, not gossip. Modeled after ACTUAL credit reporting authorities, we use an in-house, weighted, logarithmic equation to calculate your PSCS. Scores will range from 0 to 1,000—the following details will be factored in:
+              Your Producer/Production Company Social Credit Score (PSCS) should be treated like your ACTUAL credit score: it reflects payment behavior, not gossip. Every producer starts at 1,000. Your score decreases based on transparent penalty calculations—no hidden algorithms, just clear math:
             </p>
-            <ul className="space-y-2 ml-6">
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
-                <span>TOTAL amount of money owed (in US dollars $$$).</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
-                <span>TOTAL # of UNIQUE crew members you're indebted to.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
-                <span>TOTAL # of UNIQUE productions that you still owe money on.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
-                <span>TOTAL # of UNIQUE cities where debt lingers.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary mt-2"></span>
-                <span>LONGEST outstanding debt (in DAYS).</span>
-              </li>
-            </ul>
+            
+            <div className="space-y-4">
+              <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
+                <h4 className="font-bold text-foreground mb-2">Age Penalty (max -650 points)</h4>
+                <ul className="space-y-1 ml-4 text-sm">
+                  <li>• Days 0-60: <strong>-8 points per day</strong> overdue</li>
+                  <li>• After 60 days: <strong>-300 base</strong> + <strong>-1.5 points per day</strong> beyond 60</li>
+                  <li>• Example: 755-day debt = -650 points (capped)</li>
+                </ul>
+              </div>
+
+              <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
+                <h4 className="font-bold text-foreground mb-2">Amount Penalty (max -300 points)</h4>
+                <ul className="space-y-1 ml-4 text-sm">
+                  <li>• <strong>-0.15 points per dollar</strong> owed</li>
+                  <li>• Example: $500 owed = -75 points</li>
+                  <li>• Example: $2,000+ owed = -300 points (capped)</li>
+                </ul>
+              </div>
+
+              <div className="bg-background/50 p-4 rounded-lg border border-primary/10">
+                <h4 className="font-bold text-foreground mb-2">Repeat Offender Penalty (no cap)</h4>
+                <ul className="space-y-1 ml-4 text-sm">
+                  <li>• <strong>-80 points</strong> per additional crew member owed (beyond first)</li>
+                  <li>• <strong>-60 points</strong> per additional project with debt (beyond first)</li>
+                  <li>• <strong>-40 points</strong> per additional city with debt (beyond first)</li>
+                  <li>• Example: Owing 3 crew + 2 jobs + 2 cities = -260 points</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-primary/10 p-4 rounded-lg border border-primary/20 mt-4">
+              <p className="font-semibold text-foreground">
+                Final Score = 1,000 - (Age Penalty + Amount Penalty + Repeat Penalty)
+              </p>
+              <p className="text-sm mt-2">
+                Scores range from 0-1,000. Lower scores indicate worse payment behavior. The formula is fully transparent and matches industry-standard credit scoring principles.
+              </p>
+            </div>
           </div>
         </Card>
 
