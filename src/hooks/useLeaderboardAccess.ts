@@ -60,6 +60,51 @@ export const useLeaderboardAccess = () => {
   };
 
   useEffect(() => {
+    const verifyStripeCheckout = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const sessionId = params.get('session_id');
+      
+      if (!sessionId) return;
+
+      try {
+        console.log('[LEADERBOARD] Verifying Stripe checkout session:', sessionId);
+        
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.log('[LEADERBOARD] No active session, skipping verification');
+          return;
+        }
+
+        const { data, error } = await supabase.functions.invoke(
+          'verify-leaderboard-checkout',
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+            method: 'GET',
+          }
+        );
+
+        if (error) {
+          console.error('[LEADERBOARD] Verification error:', error);
+        } else if (data?.ok) {
+          console.log('[LEADERBOARD] Checkout verified successfully');
+          // Clean up URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          // Force refresh access state
+          checkAccess();
+        } else {
+          console.log('[LEADERBOARD] Checkout not verified:', data);
+        }
+      } catch (err) {
+        console.error('[LEADERBOARD] Exception during verification:', err);
+      }
+    };
+
+    // Run verification on mount if session_id is present
+    verifyStripeCheckout();
+
+    // Initial access check
     checkAccess();
 
     // Refresh every 10 seconds to catch subscription changes faster
@@ -77,13 +122,6 @@ export const useLeaderboardAccess = () => {
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    // Check for Stripe return parameters
-    const params = new URLSearchParams(window.location.search);
-    if (params.has('session_id') || params.get('success') === 'true') {
-      // User just returned from Stripe checkout
-      checkAccess();
-    }
 
     return () => {
       clearInterval(interval);

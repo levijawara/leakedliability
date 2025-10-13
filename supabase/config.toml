@@ -9,6 +9,9 @@ verify_jwt = true
 [functions.create-leaderboard-checkout]
 verify_jwt = true
 
+[functions.verify-leaderboard-checkout]
+verify_jwt = true
+
 [functions.leaderboard-customer-portal]
 verify_jwt = true
 
