@@ -14,3 +14,6 @@ verify_jwt = true
 
 [functions.leaderboard-stripe-webhooks]
 verify_jwt = false
+
+[functions.stripe-setup-check]
+verify_jwt = true

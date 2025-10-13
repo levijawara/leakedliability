@@ -40,7 +40,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const stripe = new Stripe(stripeKey);
+    const stripe = new Stripe(stripeKey, { apiVersion: "2022-11-15" });
 
     // Get user's entitlement to find customer ID
     const { data: entitlement } = await supabaseClient

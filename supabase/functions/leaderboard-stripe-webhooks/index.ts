@@ -14,7 +14,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const stripe = new Stripe(stripeKey);
+    const stripe = new Stripe(stripeKey, { apiVersion: "2022-11-15" });
     const signature = req.headers.get("stripe-signature");
     if (!signature) throw new Error("No stripe-signature header");
 
@@ -22,8 +22,8 @@ serve(async (req) => {
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
     if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET is not set");
 
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-    logStep("Event verified", { type: event.type });
+    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
+    logStep("Event verified", { eventId: event.id, type: event.type });
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -46,7 +46,7 @@ serve(async (req) => {
         logStep("Checkout completed", { userId, customerId, subscriptionId });
 
         // Create or update entitlement
-        await supabaseClient
+        const { error: upsertError } = await supabaseClient
           .from('user_entitlements')
           .upsert({
             user_id: userId,
@@ -59,7 +59,11 @@ serve(async (req) => {
             onConflict: 'user_id,entitlement_type'
           });
 
-        logStep("Entitlement created/updated");
+        if (upsertError) {
+          logStep("ERROR upserting entitlement", { error: upsertError.message });
+        } else {
+          logStep("Entitlement created/updated successfully");
+        }
         break;
       }
 
@@ -83,7 +87,7 @@ serve(async (req) => {
         const status = subscription.status === 'active' ? 'active' : 'inactive';
         const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
-        await supabaseClient
+        const { error: updateError } = await supabaseClient
           .from('user_entitlements')
           .update({
             status,
@@ -93,7 +97,11 @@ serve(async (req) => {
           .eq('stripe_customer_id', customerId)
           .eq('entitlement_type', 'leaderboard');
 
-        logStep("Subscription updated", { status, subscriptionEnd });
+        if (updateError) {
+          logStep("ERROR updating subscription", { error: updateError.message });
+        } else {
+          logStep("Subscription updated successfully", { status, subscriptionEnd });
+        }
         break;
       }
 
@@ -101,7 +109,7 @@ serve(async (req) => {
         const subscription = event.data.object as Stripe.Subscription;
         const customerId = subscription.customer as string;
 
-        await supabaseClient
+        const { error: deleteError } = await supabaseClient
           .from('user_entitlements')
           .update({
             status: 'cancelled',
@@ -111,7 +119,11 @@ serve(async (req) => {
           .eq('entitlement_type', 'leaderboard')
           .eq('source', 'stripe_subscription');
 
-        logStep("Subscription cancelled", { customerId });
+        if (deleteError) {
+          logStep("ERROR cancelling subscription", { error: deleteError.message });
+        } else {
+          logStep("Subscription cancelled successfully", { customerId });
+        }
         break;
       }
 
@@ -119,7 +131,7 @@ serve(async (req) => {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
 
-        await supabaseClient
+        const { error: failError } = await supabaseClient
           .from('user_entitlements')
           .update({
             status: 'inactive',
@@ -128,7 +140,11 @@ serve(async (req) => {
           .eq('stripe_customer_id', customerId)
           .eq('entitlement_type', 'leaderboard');
 
-        logStep("Payment failed - entitlement deactivated", { customerId });
+        if (failError) {
+          logStep("ERROR deactivating after payment failure", { error: failError.message });
+        } else {
+          logStep("Payment failed - entitlement deactivated successfully", { customerId });
+        }
         break;
       }
 
