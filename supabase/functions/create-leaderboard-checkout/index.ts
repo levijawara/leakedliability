@@ -7,7 +7,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LEADERBOARD_PRICE_ID = "price_1SHfA5Rz59zW24vEEU67RvnU";
+const LEADERBOARD_PRICE_ID = Deno.env.get("STRIPE_LEADERBOARD_PRICE_ID");
+if (!LEADERBOARD_PRICE_ID) throw new Error("STRIPE_LEADERBOARD_PRICE_ID is not set");
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
@@ -41,7 +42,7 @@ serve(async (req) => {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
+    const stripe = new Stripe(stripeKey);
 
     // Check for existing Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
