@@ -37,8 +37,8 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
       if (error) throw error;
 
       if (data?.url) {
-        window.open(data.url, '_blank');
-        toast.success("Checkout opened in new tab");
+        window.location.href = data.url;
+        toast.success("Redirecting to checkout...");
         
         // Start polling for access after a delay
         setTimeout(() => {
