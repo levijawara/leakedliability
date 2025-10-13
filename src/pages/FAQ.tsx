@@ -201,9 +201,19 @@ const FAQ = () => {
                 <AccordionItem value="tech-4">
                   <AccordionTrigger>Who can I contact for support?</AccordionTrigger>
                   <AccordionContent>
-                    For technical issues, account problems, or general questions, please use the contact
-                    information provided in your account dashboard or reach out through our official
-                    communication channels.
+                    For technical issues, account problems, or general questions, you can reach us at:{" "}
+                    <a href="mailto:leakedliability@gmail.com" className="text-primary hover:underline">
+                      LEAKEDLIABILITY@GMAIL.COM
+                    </a>{" "}
+                    or send us a DM on Instagram:{" "}
+                    <a 
+                      href="https://instagram.com/LeakedLiability" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline"
+                    >
+                      @LeakedLiability
+                    </a>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
