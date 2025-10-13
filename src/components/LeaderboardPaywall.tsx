@@ -25,29 +25,34 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error("Please sign in to subscribe");
+        navigate("/auth");
         return;
       }
 
+      console.log("Invoking create-leaderboard-checkout function...");
       const { data, error } = await supabase.functions.invoke('create-leaderboard-checkout', {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (error) throw error;
+      console.log("Function response:", { data, error });
 
-      if (data?.url) {
-        window.location.href = data.url;
-        toast.success("Redirecting to checkout...");
-        
-        // Start polling for access after a delay
-        setTimeout(() => {
-          onAccessGranted?.();
-        }, 3000);
+      if (error) {
+        console.error("Function error:", error);
+        throw error;
       }
+
+      if (!data?.url) {
+        throw new Error("No checkout URL returned");
+      }
+
+      console.log("Redirecting to Stripe checkout:", data.url);
+      window.location.href = data.url;
     } catch (error) {
-      console.error('Error creating checkout:', error);
-      toast.error("Failed to start checkout process");
+      console.error('Checkout error details:', error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      toast.error(`Failed to start checkout: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
