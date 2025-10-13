@@ -16,6 +16,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Disclaimer from "./pages/Disclaimer";
+import FAQ from "./pages/FAQ";
 import Maintenance from "./pages/Maintenance";
 import NotFound from "./pages/NotFound";
 import ProducerDashboard from "./pages/ProducerDashboard";
@@ -95,6 +96,7 @@ const AppContent = () => {
       <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/why-it-works" element={<WhyItWorks />} />
       <Route path="/disclaimer" element={<Disclaimer />} />
+      <Route path="/faq" element={<FAQ />} />
       <Route path="/auth" element={<Auth />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/profile" element={<Profile />} />
