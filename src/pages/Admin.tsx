@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { mapDatabaseError } from "@/lib/errors";
 import {
   Command,
   CommandEmpty,
@@ -96,7 +97,7 @@ export default function Admin() {
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message,
+        description: mapDatabaseError(error),
         variant: "destructive",
       });
       navigate("/");
@@ -679,7 +680,7 @@ export default function Admin() {
     if (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: mapDatabaseError(error),
         variant: "destructive",
       });
       return;
@@ -706,7 +707,7 @@ export default function Admin() {
     if (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: mapDatabaseError(error),
         variant: "destructive",
       });
       return;
@@ -858,7 +859,7 @@ export default function Admin() {
     if (error) {
       toast({
         title: "Error",
-        description: error.message,
+        description: mapDatabaseError(error),
         variant: "destructive",
       });
       return;

@@ -40,6 +40,31 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Phase 3: Enforce authentication for email sending
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      console.error('Email request without authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: userData, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !userData.user) {
+      console.error('Invalid authentication token:', userError);
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    const authenticatedUserId = userData.user.id;
+    const authenticatedUserEmail = userData.user.email;
+    console.log('Email request from authenticated user:', authenticatedUserId);
+
     const { type, to, data }: EmailRequest = await req.json();
     
     let html: string;
