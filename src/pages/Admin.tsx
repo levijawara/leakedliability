@@ -266,28 +266,14 @@ export default function Admin() {
   const loadAllUsers = async () => {
     const { data: profiles } = await supabase
       .from('profiles')
-      .select('user_id, legal_first_name, legal_last_name, business_name, account_type');
+      .select('user_id, legal_first_name, legal_last_name, business_name, account_type, email');
     
-    const { data: submissions } = await supabase
-      .from('submissions')
-      .select('user_id, email')
-      .limit(1000);
-    
-    // Create a map of user_id to email
-    const emailMap = new Map();
-    submissions?.forEach(sub => {
-      if (!emailMap.has(sub.user_id)) {
-        emailMap.set(sub.user_id, sub.email);
-      }
-    });
-    
-    // Combine profile + email data
     const users = profiles?.map(p => ({
       user_id: p.user_id,
       name: `${p.legal_first_name} ${p.legal_last_name}`,
       business_name: p.business_name,
       account_type: p.account_type,
-      email: emailMap.get(p.user_id) || 'No email'
+      email: p.email || 'No email'
     })) || [];
     
     // Sort alphabetically by last name, then first name

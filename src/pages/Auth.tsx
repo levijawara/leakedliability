@@ -93,6 +93,7 @@ export default function Auth() {
           legal_first_name: firstName,
           legal_last_name: lastName,
           business_name: accountType === 'production_company' ? businessName : null,
+          email: email,
         });
 
         if (profileError) throw profileError;

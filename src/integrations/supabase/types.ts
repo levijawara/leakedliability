@@ -350,6 +350,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           business_name: string | null
           created_at: string
+          email: string | null
           id: string
           legal_first_name: string
           legal_last_name: string
@@ -360,6 +361,7 @@ export type Database = {
           account_type: Database["public"]["Enums"]["account_type"]
           business_name?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           legal_first_name: string
           legal_last_name: string
@@ -370,6 +372,7 @@ export type Database = {
           account_type?: Database["public"]["Enums"]["account_type"]
           business_name?: string | null
           created_at?: string
+          email?: string | null
           id?: string
           legal_first_name?: string
           legal_last_name?: string
