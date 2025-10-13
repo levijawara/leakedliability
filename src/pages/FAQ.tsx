@@ -30,7 +30,7 @@ const FAQ = () => {
                     Leaked Liability is a transparency platform that allows film and TV crew members to
                     anonymously report unpaid wages and unethical business practices by production companies.
                     We provide a public accountability system through our leaderboard, which tracks producers'
-                    Payment & Safety Compliance Score (PSCS).
+                    Producing Social Credit Score (PSCS).
                   </AccordionContent>
                 </AccordionItem>
 
@@ -55,9 +55,9 @@ const FAQ = () => {
                 <AccordionItem value="item-4">
                   <AccordionTrigger>Is this a credit reporting agency?</AccordionTrigger>
                   <AccordionContent>
-                    No. We are not a credit reporting agency. The PSCS scores displayed on our leaderboard
-                    are opinion-based metrics derived from user-submitted reports and do not constitute
-                    official credit ratings.
+                    No. We are not a credit reporting agency. The Producing Social Credit Score (PSCS) displayed on our leaderboard
+                    is an opinion-based metric derived from user-submitted reports and does not constitute
+                    an official credit rating.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -132,10 +132,10 @@ const FAQ = () => {
                 <AccordionItem value="prod-2">
                   <AccordionTrigger>What is the PSCS score?</AccordionTrigger>
                   <AccordionContent>
-                    The Payment & Safety Compliance Score (PSCS) is a metric (0-100) that reflects a
-                    producer's payment history based on verified reports and payment confirmations. Higher
-                    scores indicate better payment compliance. It's calculated using total amount owed,
-                    total paid, report count, and payment timeliness.
+                    The Producing Social Credit Score (PSCS) is a credit rating system (1-1,000) that measures a
+                    producer's reliability. Every producer starts at 1,000. The score decreases based on unpaid amounts
+                    (up to -300 points), how long debts remain unpaid (up to -650 points), and repeat offenses (unlimited penalty).
+                    Even after payment, 25% of the maximum penalty remains and fades over 3+ years.
                   </AccordionContent>
                 </AccordionItem>
 
