@@ -2,32 +2,40 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 
-const logStep = (step: string, details?: any) => {
-  const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
-  console.log(`[LEADERBOARD-WEBHOOKS] ${step}${detailsStr}`);
-};
+const log = (msg: string, extra?: unknown) =>
+  console.log(`[LEADERBOARD-WEBHOOKS] ${msg}`, extra ?? "");
 
 serve(async (req) => {
   try {
-    logStep("Webhook received");
+    if (req.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
+    }
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
+      apiVersion: "2022-11-15",
+    });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2022-11-15" });
-    const signature = req.headers.get("stripe-signature");
-    if (!signature) throw new Error("No stripe-signature header");
+    const sig = req.headers.get("stripe-signature");
+    if (!sig) return new Response("Missing signature", { status: 400 });
 
-    const body = await req.text();
-    const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
-    if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET is not set");
+    const whsec = Deno.env.get("STRIPE_WEBHOOK_SECRET");
+    if (!whsec) return new Response("Missing webhook secret", { status: 500 });
 
-    const event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-    logStep("Event verified", { eventId: event.id, type: event.type });
+    // Raw body + ASYNC verification is mandatory in Deno
+    const raw = await req.text();
 
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    let event: Stripe.Event;
+    try {
+      event = await stripe.webhooks.constructEventAsync(raw, sig, whsec);
+      log("verified", { id: event.id, type: event.type });
+    } catch (e) {
+      log("bad signature", String(e));
+      return new Response("Bad signature", { status: 400 });
+    }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       { auth: { persistSession: false } }
     );
 
@@ -35,131 +43,104 @@ serve(async (req) => {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.user_id;
-        const customerId = session.customer as string;
-        const subscriptionId = session.subscription as string;
+        const customerId = session.customer as string | null;
+        const subscriptionId = session.subscription as string | null;
 
-        if (!userId) {
-          logStep("ERROR: No user_id in metadata");
+        if (!userId || !customerId) {
+          log("missing userId or customerId", { userId, customerId });
           break;
         }
 
-        logStep("Checkout completed", { userId, customerId, subscriptionId });
+        const { error } = await supabase
+          .from("user_entitlements")
+          .upsert(
+            {
+              user_id: userId,
+              entitlement_type: "leaderboard",
+              source: "stripe_subscription",
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId ?? null,
+              status: "active",
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,entitlement_type" }
+          );
 
-        // Create or update entitlement
-        const { error: upsertError } = await supabaseClient
-          .from('user_entitlements')
-          .upsert({
-            user_id: userId,
-            entitlement_type: 'leaderboard',
-            source: 'stripe_subscription',
-            stripe_customer_id: customerId,
-            stripe_subscription_id: subscriptionId,
-            status: 'active',
-          }, {
-            onConflict: 'user_id,entitlement_type'
-          });
-
-        if (upsertError) {
-          logStep("ERROR upserting entitlement", { error: upsertError.message });
-        } else {
-          logStep("Entitlement created/updated successfully");
-        }
+        if (error) log("upsert error", error);
+        else log("entitlement upserted", { userId, customerId, subscriptionId });
         break;
       }
 
       case "customer.subscription.updated": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
+        const sub = event.data.object as Stripe.Subscription;
+        const customerId = sub.customer as string;
 
-        // Find user by customer ID
-        const { data: entitlement } = await supabaseClient
-          .from('user_entitlements')
-          .select('user_id')
-          .eq('stripe_customer_id', customerId)
-          .eq('entitlement_type', 'leaderboard')
-          .maybeSingle();
+        const status = sub.status === "active" ? "active" : "inactive";
+        const endIso = new Date(sub.current_period_end * 1000).toISOString();
 
-        if (!entitlement) {
-          logStep("No entitlement found for customer", { customerId });
-          break;
-        }
-
-        const status = subscription.status === 'active' ? 'active' : 'inactive';
-        const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-
-        const { error: updateError } = await supabaseClient
-          .from('user_entitlements')
+        const { error } = await supabase
+          .from("user_entitlements")
           .update({
             status,
-            subscription_end: subscriptionEnd,
+            subscription_end: endIso,
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
-          .eq('entitlement_type', 'leaderboard');
+          .eq("stripe_customer_id", customerId)
+          .eq("entitlement_type", "leaderboard");
 
-        if (updateError) {
-          logStep("ERROR updating subscription", { error: updateError.message });
-        } else {
-          logStep("Subscription updated successfully", { status, subscriptionEnd });
-        }
+        if (error) log("update error", error);
+        else log("subscription updated", { customerId, status, endIso });
         break;
       }
 
       case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-        const customerId = subscription.customer as string;
+        const sub = event.data.object as Stripe.Subscription;
+        const customerId = sub.customer as string;
 
-        const { error: deleteError } = await supabaseClient
-          .from('user_entitlements')
+        const { error } = await supabase
+          .from("user_entitlements")
           .update({
-            status: 'cancelled',
+            status: "cancelled",
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
-          .eq('entitlement_type', 'leaderboard')
-          .eq('source', 'stripe_subscription');
+          .eq("stripe_customer_id", customerId)
+          .eq("entitlement_type", "leaderboard")
+          .eq("source", "stripe_subscription");
 
-        if (deleteError) {
-          logStep("ERROR cancelling subscription", { error: deleteError.message });
-        } else {
-          logStep("Subscription cancelled successfully", { customerId });
-        }
+        if (error) log("cancel error", error);
+        else log("subscription cancelled", { customerId });
         break;
       }
 
       case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        const customerId = invoice.customer as string;
+        const inv = event.data.object as Stripe.Invoice;
+        const customerId = inv.customer as string;
 
-        const { error: failError } = await supabaseClient
-          .from('user_entitlements')
+        const { error } = await supabase
+          .from("user_entitlements")
           .update({
-            status: 'inactive',
+            status: "inactive",
             updated_at: new Date().toISOString(),
           })
-          .eq('stripe_customer_id', customerId)
-          .eq('entitlement_type', 'leaderboard');
+          .eq("stripe_customer_id", customerId)
+          .eq("entitlement_type", "leaderboard");
 
-        if (failError) {
-          logStep("ERROR deactivating after payment failure", { error: failError.message });
-        } else {
-          logStep("Payment failed - entitlement deactivated successfully", { customerId });
-        }
+        if (error) log("payment_failed update error", error);
+        else log("entitlement set inactive", { customerId });
         break;
       }
 
       default:
-        logStep("Unhandled event type", { type: event.type });
+        log("unhandled", { type: event.type });
     }
 
-    return new Response(JSON.stringify({ received: true }), {
+    return new Response(JSON.stringify({ ok: true }), {
       headers: { "Content-Type": "application/json" },
       status: 200,
     });
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+  } catch (e) {
+    log("fatal", String(e));
+    return new Response(JSON.stringify({ error: "webhook_error" }), {
       headers: { "Content-Type": "application/json" },
       status: 400,
     });

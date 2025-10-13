@@ -7,8 +7,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LEADERBOARD_PRICE_ID = Deno.env.get("STRIPE_LEADERBOARD_PRICE_ID");
-if (!LEADERBOARD_PRICE_ID) throw new Error("STRIPE_LEADERBOARD_PRICE_ID is not set");
+const LEADERBOARD_PRICE_ID = Deno.env.get("STRIPE_LEADERBOARD_PRICE_ID")!;
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
