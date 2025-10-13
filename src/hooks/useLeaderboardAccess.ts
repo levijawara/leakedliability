@@ -62,17 +62,33 @@ export const useLeaderboardAccess = () => {
   useEffect(() => {
     checkAccess();
 
-    // Refresh every 60 seconds to catch subscription changes
-    const interval = setInterval(checkAccess, 60000);
+    // Refresh every 10 seconds to catch subscription changes faster
+    const interval = setInterval(checkAccess, 10000);
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
       checkAccess();
     });
 
+    // Check access when tab becomes visible (user returns from checkout)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkAccess();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Check for Stripe return parameters
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('session_id') || params.get('success') === 'true') {
+      // User just returned from Stripe checkout
+      checkAccess();
+    }
+
     return () => {
       clearInterval(interval);
       subscription.unsubscribe();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 

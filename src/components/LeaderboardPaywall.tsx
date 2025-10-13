@@ -1,22 +1,38 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Award, CreditCard, Home, BookOpen, FileText, UserCircle } from "lucide-react";
-import { useState } from "react";
+import { Lock, Award, CreditCard, Home, BookOpen, FileText, UserCircle, RefreshCw } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { LeaderboardAccessState } from "@/hooks/useLeaderboardAccess";
+import type { User } from "@supabase/supabase-js";
 
 interface LeaderboardPaywallProps {
   accessState: LeaderboardAccessState;
   onAccessGranted?: () => void;
+  refreshAccess?: () => void;
 }
 
-export const LeaderboardPaywall = ({ accessState, onAccessGranted }: LeaderboardPaywallProps) => {
+export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess }: LeaderboardPaywallProps) => {
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleSubscribe = async () => {
     try {
@@ -135,15 +151,27 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
             </Button>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="default" 
-              size="sm"
-              onClick={() => navigate("/auth")}
-              className="gap-2"
-            >
-              <UserCircle className="h-4 w-4" />
-              Sign Up / Login
-            </Button>
+            {user ? (
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => navigate("/profile")}
+                className="gap-2"
+              >
+                <UserCircle className="h-4 w-4" />
+                Account
+              </Button>
+            ) : (
+              <Button 
+                variant="default" 
+                size="sm"
+                onClick={() => navigate("/auth")}
+                className="gap-2"
+              >
+                <UserCircle className="h-4 w-4" />
+                Sign Up / Login
+              </Button>
+            )}
             <ThemeToggle />
           </div>
         </div>
@@ -211,7 +239,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
           )}
 
           {!content.showCrewOption && !content.showSignupPrompt && (
-            <div className="text-center">
+            <div className="text-center space-y-4">
               <Button 
                 size="lg"
                 onClick={handleSubscribe}
@@ -219,6 +247,26 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted }: Leaderboard
               >
                 {loading ? "Processing..." : "Get Full Access - $5.99/month"}
               </Button>
+              
+              {refreshAccess && (
+                <div className="flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      setRefreshing(true);
+                      await refreshAccess();
+                      toast.success("Status refreshed");
+                      setRefreshing(false);
+                    }}
+                    disabled={refreshing}
+                    className="gap-2"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    {refreshing ? "Checking..." : "Just subscribed? Refresh status"}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 

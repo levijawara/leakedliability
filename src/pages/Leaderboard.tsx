@@ -58,7 +58,7 @@ export default function Leaderboard() {
 
   // Show paywall if no access
   if (!accessLoading && accessState && !accessState.hasAccess) {
-    return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} />;
+    return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
   }
 
   const shouldBlurNames = !accessState?.hasAccess;
