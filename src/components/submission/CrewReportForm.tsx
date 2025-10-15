@@ -42,9 +42,10 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
     try {
       // Validate input
       const validationResult = crewReportSchema.safeParse({
-        reportingType: reportingType as "individual" | "on_behalf",
+        reportingType: reportingType,
         producerFirstName: producerName.firstName,
         producerLastName: producerName.lastName,
+        producerCompany: reportingType === "production_company" ? producerName.firstName : undefined,
         producerEmail: producerName.email,
         producerAliases,
         amountOwed: parseFloat(amountOwed),
@@ -55,8 +56,8 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
 
       if (!validationResult.success) {
         toast({
-          title: "Validation Error",
-          description: validationResult.error.errors[0].message,
+          title: "Missing required fields",
+          description: validationResult.error.errors.map(e => e.message).join(", "),
           variant: "destructive"
         });
         setLoading(false);
