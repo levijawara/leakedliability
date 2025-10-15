@@ -86,13 +86,18 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
         email: userInfo.email,
         role_department: userInfo.role,
         form_data: {
+          // snake_case keys for Admin flow
           reporting_type: reportingType,
           producer_name: producerName,
           producer_aliases: producerAliases,
           amount_owed: amountOwed,
           invoice_date: invoiceDate?.toISOString().split('T')[0],
           project_name: projectName,
-          city: city || null
+          city: city || null,
+          // camelCase keys required by backend validation trigger
+          producerName: producerName,
+          amountOwed: parseFloat(amountOwed),
+          projectName: projectName
         },
         document_urls: documentUrls
       });
@@ -106,9 +111,10 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
       
       onSuccess();
     } catch (error: any) {
+      console.error("[CREW_REPORT_SUBMIT] insert error", error);
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Submission failed",
+        description: "Please review required fields and try again.",
         variant: "destructive"
       });
     } finally {
