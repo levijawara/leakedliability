@@ -164,17 +164,17 @@ export default function Leaderboard() {
                   PSCS = 1000 - (Age Penalty + Amount Penalty + Repeat Penalty)
                 </div>
                 <div className="grid md:grid-cols-3 gap-3 mt-3">
-                  <div className="bg-background/50 p-2 rounded">
+                  <div className="bg-background/50 p-2 rounded text-center">
                     <div className="font-bold text-foreground text-xs">Age (max -650)</div>
                     <div className="text-[10px]">0-60d: -1/day</div>
                     <div className="text-[10px]">60+: -60 + -2/day</div>
                   </div>
-                  <div className="bg-background/50 p-2 rounded">
+                  <div className="bg-background/50 p-2 rounded text-center">
                     <div className="font-bold text-foreground text-xs">Amount (max -300)</div>
                     <div className="text-[10px]">-0.06 per dollar</div>
                     <div className="text-[10px]">Cap at $5,000</div>
                   </div>
-                  <div className="bg-background/50 p-2 rounded">
+                  <div className="bg-background/50 p-2 rounded text-center">
                     <div className="font-bold text-foreground text-xs">Repeat (no cap)</div>
                     <div className="text-[10px]">-10/crew, -10/job</div>
                     <div className="text-[10px]">-5/city (after 1st)</div>
