@@ -180,7 +180,7 @@ export function Navigation() {
 
           {/* Mobile Navigation */}
           <div className="md:hidden flex items-center justify-between w-full">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <ThemeToggle />
               <a 
                 href="https://www.instagram.com/leakedliability/"
@@ -193,58 +193,81 @@ export function Navigation() {
               </a>
             </div>
             
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-64">
-                <div className="flex flex-col gap-4 mt-8">
-                  {menuItems.map((item) => (
-                    <Button
-                      key={item.path}
-                      variant="ghost"
-                      className="justify-start"
-                      onClick={() => handleNavigate(item.path)}
-                    >
-                      <item.icon className="h-4 w-4 mr-2" />
-                      {item.label}
+            <div className="flex items-center gap-2">
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <User className="h-5 w-5" />
                     </Button>
-                  ))}
-                  
-                  {user ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        className="justify-start"
-                        onClick={() => handleNavigate("/profile")}
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Profile
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="justify-start"
-                        onClick={handleSignOut}
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      className="justify-start"
-                      onClick={() => handleNavigate("/auth")}
-                    >
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleNavigate("/profile")}>
                       <User className="h-4 w-4 mr-2" />
-                      Sign In
-                    </Button>
-                  )}
-                </div>
-              </SheetContent>
-            </Sheet>
+                      Profile
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem onClick={handleSignOut}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate("/auth")}
+                >
+                  <User className="h-5 w-5" />
+                </Button>
+              )}
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => handleNavigate("/")}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Home
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/how-it-works")}>
+                    <Info className="h-4 w-4 mr-2" />
+                    How It Works
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/why-it-works")}>
+                    <Info className="h-4 w-4 mr-2" />
+                    Why It Works
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/leaderboard")}>
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Leaderboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/submit")}>
+                    <FileText className="h-4 w-4 mr-2" />
+                    Submission Forms
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/disclaimer")}>
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Disclaimer
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/faq")}>
+                    <HelpCircle className="h-4 w-4 mr-2" />
+                    FAQ
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </div>
       </div>
