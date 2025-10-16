@@ -1,14 +1,15 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Award, CreditCard, Home, BookOpen, FileText, UserCircle, RefreshCw } from "lucide-react";
+import { Lock, Award, CreditCard, RefreshCw, Instagram, Menu, User } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { LeaderboardAccessState } from "@/hooks/useLeaderboardAccess";
-import type { User } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface LeaderboardPaywallProps {
   accessState: LeaderboardAccessState;
@@ -19,20 +20,49 @@ interface LeaderboardPaywallProps {
 export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess }: LeaderboardPaywallProps) => {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      }
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        checkAdminStatus(session.user.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+      if (error) {
+        console.error('has_role error', error);
+        setIsAdmin(false);
+        return;
+      }
+      setIsAdmin(Boolean(data));
+    } catch (e) {
+      console.error('checkAdminStatus exception', e);
+      setIsAdmin(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
 
   const handleSubscribe = async () => {
     try {
@@ -118,49 +148,49 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Navigation Header */}
-      <div className="container mx-auto px-4 py-4">
+      {/* Desktop Navigation Header */}
+      <div className="hidden md:block container mx-auto px-4 py-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/")}
-              className="gap-2"
+            <ThemeToggle />
+            <a 
+              href="https://www.instagram.com/leakedliability/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xl font-black hover:opacity-80 transition-opacity flex items-center gap-2"
             >
-              <Home className="h-4 w-4" />
-              Home
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/how-it-works")}
-              className="gap-2"
-            >
-              <BookOpen className="h-4 w-4" />
-              How It Works
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate("/submit-report")}
-              className="gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Submission Forms
-            </Button>
+              @LeakedLiability
+              <Instagram className="h-5 w-5" />
+            </a>
           </div>
           <div className="flex items-center gap-2">
             {user ? (
-              <Button 
-                variant="default" 
-                size="sm"
-                onClick={() => navigate("/profile")}
-                className="gap-2"
-              >
-                <UserCircle className="h-4 w-4" />
-                Account
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    Account
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <User className="h-4 w-4 mr-2" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <User className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Button 
                 variant="default" 
@@ -168,11 +198,104 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
                 onClick={() => navigate("/auth")}
                 className="gap-2"
               >
-                <UserCircle className="h-4 w-4" />
+                <User className="h-4 w-4" />
                 Sign Up / Login
               </Button>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Navigation Header */}
+      <div className="md:hidden container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between w-full">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
+            <a 
+              href="https://www.instagram.com/leakedliability/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-black hover:opacity-80 transition-opacity flex items-center gap-2"
+            >
+              @LeakedLiability
+              <Instagram className="h-4 w-4" />
+            </a>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <User className="h-4 w-4 mr-2" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <User className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate("/auth")}
+              >
+                <User className="h-5 w-5" />
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate("/")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Home
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/how-it-works")}>
+                  <User className="h-4 w-4 mr-2" />
+                  How It Works
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/why-it-works")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Why It Works
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/leaderboard")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Leaderboard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/submit")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Submission Forms
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/disclaimer")}>
+                  <User className="h-4 w-4 mr-2" />
+                  Disclaimer
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/faq")}>
+                  <User className="h-4 w-4 mr-2" />
+                  FAQ
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
