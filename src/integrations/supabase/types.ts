@@ -59,6 +59,13 @@ export type Database = {
             referencedRelation: "payment_reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "disputes_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
         ]
       }
       email_logs: {
@@ -170,6 +177,13 @@ export type Database = {
             columns: ["payment_report_id"]
             isOneToOne: false
             referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_confirmations_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
             referencedColumns: ["id"]
           },
           {
@@ -450,6 +464,13 @@ export type Database = {
             referencedRelation: "payment_reports"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "queued_producer_notifications_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
         ]
       }
       site_settings: {
@@ -592,7 +613,78 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_payment_reports: {
+        Row: {
+          amount_owed: number | null
+          city: string | null
+          closed_date: string | null
+          created_at: string | null
+          days_overdue: number | null
+          id: string | null
+          invoice_date: string | null
+          payment_date: string | null
+          producer_id: string | null
+          project_name: string | null
+          report_id: string | null
+          reporter_id: string | null
+          reporter_type: string | null
+          status: string | null
+          updated_at: string | null
+          verified: boolean | null
+        }
+        Insert: {
+          amount_owed?: number | null
+          city?: string | null
+          closed_date?: string | null
+          created_at?: string | null
+          days_overdue?: number | null
+          id?: string | null
+          invoice_date?: string | null
+          payment_date?: string | null
+          producer_id?: string | null
+          project_name?: string | null
+          report_id?: string | null
+          reporter_id?: string | null
+          reporter_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Update: {
+          amount_owed?: number | null
+          city?: string | null
+          closed_date?: string | null
+          created_at?: string | null
+          days_overdue?: number | null
+          id?: string | null
+          invoice_date?: string | null
+          payment_date?: string | null
+          producer_id?: string | null
+          project_name?: string | null
+          report_id?: string | null
+          reporter_id?: string | null
+          reporter_type?: string | null
+          status?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reports_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["report_id"]
+          },
+        ]
+      }
     }
     Functions: {
       calculate_pscs_score: {

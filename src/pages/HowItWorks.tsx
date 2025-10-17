@@ -206,11 +206,11 @@ const HowItWorks = () => {
 
         {/* Crew Member Form Instructions */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">Crew Member Form Instructions:</h2>
+          <h2 className="text-3xl font-bold mb-6">Crew Member & Vendor Form Instructions:</h2>
           <div className="space-y-6">
             <div>
               <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
-                Crew Member Report <span className="text-2xl">⚠️</span>
+                Crew Member Report <span className="text-2xl">⚠️</span> (Crew Only)
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 One report per invoice. Build the habit of reporting the moment you send your invoice.
@@ -218,18 +218,26 @@ const HowItWorks = () => {
             </div>
             <div>
               <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
-                Counter-Dispute <span className="text-2xl">‼️</span>
+                Vendor Report <span className="text-2xl">⚠️</span> (Vendors Only)
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Fight back if a Producer disputes your claim with false or fabricated information. This MAY require sharing your identity directly to resolve disputes, but that decision will ALWAYS be up to you. Leaked Liability™ will never share your personal information without your consent.
+                Submit sworn statements for unpaid invoices related to equipment, services, or facilities. <strong>One report per invoice</strong> — include invoice number, PO/booking confirmation, or rental agreement.
               </p>
             </div>
             <div>
               <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
-                Payment Confirmation <span className="text-2xl">✅</span>
+                Counter-Dispute <span className="text-2xl">‼️</span> (Crew & Vendors)
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Confirm when you've been paid. Delay confirmations at your own risk—it could probably damage your credibility and freelance relationships. Abusing this system may result in account suspension, as consistent Payment Confirmation delays could be seen as defamatory.
+                Fight back if a Producer disputes your claim with false or fabricated information. Available to both crew members and vendors. This MAY require sharing your identity directly to resolve disputes, but that decision will ALWAYS be up to you. Leaked Liability™ will never share your personal information without your consent.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
+                Payment Confirmation <span className="text-2xl">✅</span> (Crew & Vendors)
+              </h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Confirm when you've been paid. Available to both crew members and vendors. Delay confirmations at your own risk—it could probably damage your credibility and freelance relationships. Abusing this system may result in account suspension, as consistent Payment Confirmation delays could be seen as defamatory.
               </p>
             </div>
             <div className="bg-status-warning/10 border border-status-warning/20 rounded-lg p-4">
@@ -237,7 +245,7 @@ const HowItWorks = () => {
                 WARNING <span className="text-2xl">🚨</span>
               </h3>
               <p className="text-muted-foreground leading-relaxed">
-                Once you've confirmed a payment, you cannot "re-report" or Counter-Dispute that same invoice. This is precisely why we only allow *ONE* invoice per report.
+                Once you've confirmed a payment, you cannot "re-report" or Counter-Dispute that same invoice. This is precisely why we only allow <strong>ONE</strong> invoice per report for both crew member reports and vendor reports.
               </p>
             </div>
           </div>
