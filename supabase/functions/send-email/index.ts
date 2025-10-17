@@ -14,6 +14,9 @@ import { CrewReportRejected } from "./_templates/crew-report-rejected.tsx";
 import { WelcomeEmail } from "./_templates/welcome.tsx";
 import { CrewReportPaymentConfirmed } from "./_templates/crew-report-payment-confirmed.tsx";
 import { ProducerReportNotification } from "./_templates/producer-report-notification.tsx";
+import { VendorReportConfirmation } from "./_templates/vendor-report-confirmation.tsx";
+import { VendorReportVerified } from "./_templates/vendor-report-verified.tsx";
+import { VendorReportRejected } from "./_templates/vendor-report-rejected.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,7 +27,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected';
   to: string;
   data: any;
 }
@@ -166,6 +169,27 @@ serve(async (req) => {
           React.createElement(ProducerReportNotification, data)
         );
         subject = `A Report Has Been Filed Involving Your Company – Report ID: ${data.reportId}`;
+        break;
+      
+      case 'vendor_report':
+        html = await renderAsync(
+          React.createElement(VendorReportConfirmation, data)
+        );
+        subject = 'Vendor Report Submitted Successfully';
+        break;
+      
+      case 'vendor_report_verified':
+        html = await renderAsync(
+          React.createElement(VendorReportVerified, data)
+        );
+        subject = 'Your Vendor Report Has Been Verified ✓';
+        break;
+      
+      case 'vendor_report_rejected':
+        html = await renderAsync(
+          React.createElement(VendorReportRejected, data)
+        );
+        subject = 'Your Vendor Report Requires Additional Information';
         break;
       
       default:

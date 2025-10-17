@@ -205,6 +205,7 @@ export default function Admin() {
   const loadLeadingUsers = async () => {
     const submissionTypes = [
       'crew_report',
+      'vendor_report',
       'payment_confirmation',
       'counter_dispute',
       'payment_documentation',
@@ -504,6 +505,134 @@ export default function Admin() {
         }
     }
 
+    // Create payment report for vendor reports  
+    if (submission?.submission_type === 'vendor_report') {
+      const formData = submission.form_data;
+      const producerName = formData.producer_name?.company || 
+        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
+        'Unknown Producer';
+      
+      // Find or create the producer
+      let { data: existingProducer } = await supabase
+        .from('producers')
+        .select('id')
+        .ilike('name', producerName)
+        .maybeSingle();
+      
+      let producerId;
+      
+      if (!existingProducer) {
+        const { data: newProducer, error: producerError } = await supabase
+          .from('producers')
+          .insert({
+            name: producerName,
+            company: formData.producer_name?.company || null
+          })
+          .select('id')
+          .single();
+        
+        if (producerError) {
+          console.error('Error creating producer:', producerError);
+          toast({
+            title: "Error",
+            description: "Failed to create producer record",
+            variant: "destructive",
+          });
+          return;
+        }
+        producerId = newProducer.id;
+      } else {
+        producerId = existingProducer.id;
+      }
+      
+      // Calculate days overdue from due_date or invoice_date + 30
+      const invoiceDate = formData.invoice_date || new Date().toISOString().split('T')[0];
+      const dueDate = formData.due_date || invoiceDate;
+      const daysOverdue = Math.floor((new Date().getTime() - new Date(dueDate).getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Extract producer email from form data
+      const producerEmail = formData.producer_name?.email || null;
+      
+      const { error: reportError } = await supabase
+        .from('payment_reports')
+        .insert({
+          reporter_id: submission.user_id,
+          producer_id: producerId,
+          amount_owed: parseFloat(formData.amount_owed),
+          project_name: formData.project_name || 'Not specified',
+          invoice_date: invoiceDate,
+          days_overdue: Math.max(0, daysOverdue),
+          city: formData.city || null,
+          status: 'pending',
+          verified: true,
+          producer_email: producerEmail
+        });
+      
+      if (reportError) {
+        console.error('Error creating payment report:', reportError);
+        toast({
+          title: "Warning",
+          description: "Submission verified but payment report creation failed",
+          variant: "default",
+        });
+      }
+
+      // Send verification email to vendor
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'vendor_report_verified',
+          to: submission.email,
+          data: {
+            vendorCompany: formData.vendor_company,
+            contactName: formData.contact_name,
+            producerName,
+            amountOwed: parseFloat(formData.amount_owed),
+            projectName: formData.project_name || "Not specified",
+            invoiceNumber: formData.invoice_number,
+            verificationNotes: adminNotes || undefined,
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Vendor email sending failed:', emailError);
+        toast({
+          title: "Warning",
+          description: "Submission verified but vendor email notification failed",
+          variant: "default",
+        });
+      }
+
+      // Send notification email to producer (or queue it) - same logic as crew reports
+      if (producerEmail) {
+        const { data: settings } = await supabase
+          .from("site_settings")
+          .select("send_producer_notifications")
+          .single();
+
+        const shouldSendNow = settings?.send_producer_notifications ?? true;
+
+        if (shouldSendNow) {
+          const { error: producerEmailError } = await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'producer_report_notification',
+              to: producerEmail,
+              data: {
+                reportId: 'Vendor Report',
+                amountOwed: parseFloat(formData.amount_owed),
+                daysOverdue: Math.max(0, daysOverdue),
+                projectName: formData.project_name || "Not specified",
+              }
+            }
+          });
+
+          if (producerEmailError) {
+            console.error('Producer email sending failed:', producerEmailError);
+          }
+        }
+      }
+    }
+
     toast({
       title: "Success",
       description: "Submission verified successfully",
@@ -558,6 +687,38 @@ export default function Admin() {
             producerName,
             amount: parseFloat(formData.amount_owed),
             projectName: formData.project_name || "Not specified",
+            rejectionReason: adminNotes,
+          }
+        }
+      });
+
+      if (emailError) {
+        console.error('Email sending failed:', emailError);
+        toast({
+          title: "Warning",
+          description: "Submission rejected but email notification failed",
+          variant: "default",
+        });
+      }
+    }
+
+    // Send rejection email if it's a vendor report
+    if (submission?.submission_type === 'vendor_report') {
+      const formData = submission.form_data;
+      const producerName = formData.producer_name?.company || 
+        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
+        'Unknown Producer';
+
+      const { error: emailError } = await supabase.functions.invoke('send-email', {
+        body: {
+          type: 'vendor_report_rejected',
+          to: submission.email,
+          data: {
+            vendorCompany: formData.vendor_company,
+            contactName: formData.contact_name,
+            producerName,
+            projectName: formData.project_name || "Not specified",
+            invoiceNumber: formData.invoice_number,
             rejectionReason: adminNotes,
           }
         }
@@ -1160,31 +1321,31 @@ export default function Admin() {
               value="crew_report"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Crew Member Report ⚠️
+              Crew Reports 📋
             </TabsTrigger>
             <TabsTrigger 
-              value="payment_documentation"
+              value="vendor_report"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Payment Documentation 🧾
-            </TabsTrigger>
-            <TabsTrigger 
-              value="payment_reports"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Payment Reports 💰
+              Vendor Reports 🏢
             </TabsTrigger>
             <TabsTrigger 
               value="payment_confirmation"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Payment Confirmation ✅
+              Payment Confirmation 💳
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payment_documentation"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Payment Documentation 📄
             </TabsTrigger>
             <TabsTrigger 
               value="report_explanation"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Report Explanation ☮️
+              Report Explanation 📝
             </TabsTrigger>
             <TabsTrigger 
               value="counter_dispute"
@@ -1271,7 +1432,7 @@ export default function Admin() {
           </Table>
         </TabsContent>
 
-          {['crew_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
+          {['crew_report', 'vendor_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
           const leadingUser = leadingUsers[type];
           
@@ -1393,13 +1554,66 @@ export default function Admin() {
                       <p><strong>Email:</strong> {selectedItem.email}</p>
                       <p><strong>Type:</strong> {selectedItem.submission_type}</p>
                       {selectedItem.role_department && (
-                        <p><strong>Role:</strong> {selectedItem.role_department}</p>
+                        <p><strong>Role/Vendor Type:</strong> {selectedItem.role_department}</p>
                       )}
                     </div>
                     
+                    {/* Vendor-specific fields display */}
+                    {selectedItem.submission_type === 'vendor_report' && selectedItem.form_data && (
+                      <div className="space-y-3 border-l-4 border-primary/30 pl-4">
+                        <h4 className="font-semibold text-sm uppercase text-muted-foreground">Vendor Information</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Company</p>
+                            <p className="font-medium">{selectedItem.form_data.vendor_company}</p>
+                          </div>
+                          {selectedItem.form_data.vendor_dba && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">DBA</p>
+                              <p className="font-medium">{selectedItem.form_data.vendor_dba}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs text-muted-foreground">Vendor Type</p>
+                            <p className="font-medium">{selectedItem.form_data.vendor_type === 'Other' ? selectedItem.form_data.vendor_type_other : selectedItem.form_data.vendor_type}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Contact</p>
+                            <p className="font-medium">{selectedItem.form_data.contact_name}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-muted-foreground">Invoice #</p>
+                            <p className="font-mono text-sm">{selectedItem.form_data.invoice_number}</p>
+                          </div>
+                          {selectedItem.form_data.purchase_order_number && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">PO #</p>
+                              <p className="font-mono text-sm">{selectedItem.form_data.purchase_order_number}</p>
+                            </div>
+                          )}
+                          {selectedItem.form_data.net_terms && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Net Terms</p>
+                              <p className="font-medium">{selectedItem.form_data.net_terms}</p>
+                            </div>
+                          )}
+                          {selectedItem.form_data.booking_method && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Booking Method</p>
+                              <p className="font-medium">{selectedItem.form_data.booking_method}</p>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground">Service Description</p>
+                          <p className="text-sm mt-1">{selectedItem.form_data.service_description}</p>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div>
                       <strong>Form Data:</strong>
-                      <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto">
+                      <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto max-h-96">
                         {JSON.stringify(selectedItem.form_data, null, 2)}
                       </pre>
                     </div>
