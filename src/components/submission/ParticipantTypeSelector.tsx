@@ -30,6 +30,16 @@ export function ParticipantTypeSelector({ value, onChange, onBack }: Participant
           </div>
 
           <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
+            <RadioGroupItem value="vendor" id="vendor" />
+            <Label htmlFor="vendor" className="flex-1 cursor-pointer">
+              <div className="font-semibold">Vendor / Service Provider</div>
+              <div className="text-sm text-muted-foreground">
+                Report unpaid invoices for rentals, locations, services, or supplies
+              </div>
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
             <RadioGroupItem value="producer" id="producer" />
             <Label htmlFor="producer" className="flex-1 cursor-pointer">
               <div className="font-semibold">Producer</div>
@@ -45,16 +55,6 @@ export function ParticipantTypeSelector({ value, onChange, onBack }: Participant
               <div className="font-semibold">Production Company</div>
               <div className="text-sm text-muted-foreground">
                 Submit payment documentation, explanations, or disputes
-              </div>
-            </Label>
-          </div>
-
-          <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
-            <RadioGroupItem value="vendor" id="vendor" />
-            <Label htmlFor="vendor" className="flex-1 cursor-pointer">
-              <div className="font-semibold">Vendor / Service Provider</div>
-              <div className="text-sm text-muted-foreground">
-                Report unpaid invoices for rentals, locations, services, or supplies
               </div>
             </Label>
           </div>
