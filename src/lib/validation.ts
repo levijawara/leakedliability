@@ -45,3 +45,56 @@ export const counterDisputeSchema = z.object({
 export const adminNotesSchema = z.object({
   adminNotes: z.string().trim().max(2000).optional(),
 });
+
+export const vendorReportSchema = z.object({
+  reportingType: z.enum(["producer", "production_company", "both"]),
+  vendorCompany: z.string().trim().min(1, "Company name is required").max(200),
+  vendorDBA: z.string().trim().max(200).optional(),
+  vendorWebsite: z.string().trim().url("Invalid URL").max(500).optional().or(z.literal("")),
+  contactName: z.string().trim().min(1, "Contact name is required").max(100),
+  contactEmail: z.string().trim().email("Invalid email address").max(255),
+  contactPhone: z.string().trim().max(50).optional(),
+  vendorType: z.string().min(1, "Vendor type is required"),
+  vendorTypeOther: z.string().trim().max(100).optional(),
+  producerFirstName: z.string().trim().min(1, "Producer first name is required").max(100),
+  producerLastName: z.string().trim().max(100),
+  producerEmail: z.string().trim().email("Invalid email address").max(255),
+  producerAliases: z.string().trim().max(500).optional(),
+  invoiceNumber: z.string().trim().min(1, "Invoice number is required").max(100),
+  invoiceDate: z.date({ required_error: "Invoice date is required" }),
+  amountOwed: z.number().positive("Amount must be positive").max(10000000, "Amount too large"),
+  projectName: z.string().trim().min(1, "Project name is required").max(200),
+  serviceDescription: z.string().trim().min(10, "Description must be at least 10 characters").max(500),
+  purchaseOrderNumber: z.string().trim().max(100).optional(),
+  netTerms: z.string().optional(),
+  dueDate: z.date().optional(),
+  depositAmount: z.number().nonnegative().max(10000000).optional(),
+  deliveryStartDate: z.date().optional(),
+  deliveryEndDate: z.date().optional(),
+  city: z.string().trim().max(100).optional(),
+  bookingMethod: z.string().max(100).optional(),
+}).refine((data) => {
+  if (data.reportingType === "production_company") {
+    return true;
+  }
+  return data.producerLastName.length > 0;
+}, {
+  message: "Producer last name is required when reporting a producer",
+  path: ["producerLastName"]
+}).refine((data) => {
+  if (data.vendorType === "Other") {
+    return data.vendorTypeOther && data.vendorTypeOther.length > 0;
+  }
+  return true;
+}, {
+  message: "Please specify vendor type",
+  path: ["vendorTypeOther"]
+}).refine((data) => {
+  if (data.deliveryStartDate && data.deliveryEndDate) {
+    return data.deliveryEndDate >= data.deliveryStartDate;
+  }
+  return true;
+}, {
+  message: "End date must be after start date",
+  path: ["deliveryEndDate"]
+});

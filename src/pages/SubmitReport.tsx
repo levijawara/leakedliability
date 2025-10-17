@@ -14,6 +14,8 @@ import { CrewReportForm } from "@/components/submission/CrewReportForm";
 import { PaymentConfirmationForm } from "@/components/submission/PaymentConfirmationForm";
 import { CounterDisputeForm } from "@/components/submission/CounterDisputeForm";
 import { ProducerSubmissionForm } from "@/components/submission/ProducerSubmissionForm";
+import { VendorIdentification } from "@/components/submission/VendorIdentification";
+import { VendorReportForm } from "@/components/submission/VendorReportForm";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SubmitReport() {
@@ -22,9 +24,9 @@ export default function SubmitReport() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
-  const [participantType, setParticipantType] = useState<"crew" | "producer" | "production_company" | null>(null);
+  const [participantType, setParticipantType] = useState<"crew" | "producer" | "production_company" | "vendor" | null>(null);
   const [submissionType, setSubmissionType] = useState<string | null>(null);
-  const [userInfo, setUserInfo] = useState({ firstName: "", lastName: "", email: "", role: "" });
+  const [userInfo, setUserInfo] = useState<any>({ firstName: "", lastName: "", email: "", role: "" });
   const [prefilledReportId, setPrefilledReportId] = useState<string>("");
 
   useEffect(() => {
@@ -70,7 +72,10 @@ export default function SubmitReport() {
     setStep(1);
     setParticipantType(null);
     setSubmissionType(null);
-    setUserInfo({ firstName: "", lastName: "", email: "", role: "" });
+    setUserInfo(participantType === "vendor" 
+      ? { vendorCompany: "", vendorDBA: "", vendorWebsite: "", contactName: "", contactEmail: "", contactPhone: "", vendorType: "", vendorTypeOther: "" }
+      : { firstName: "", lastName: "", email: "", role: "" }
+    );
   };
 
   if (loading) {
@@ -104,9 +109,9 @@ export default function SubmitReport() {
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-status-warning mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-semibold mb-1">Crew members, your identity is well-protected</p>
+                <p className="font-semibold mb-1">Crew members and vendors, your identity is well-protected</p>
                 <p className="text-muted-foreground">
-                  Legal name + email required. Your identity stays hidden from the producers you're reporting, as well as the general public.
+                  Legal name + email required. Your identity stays hidden from the producers you're reporting, as well as the general public. Business contact info required for vendor reports.
                 </p>
               </div>
             </div>
@@ -149,8 +154,25 @@ export default function SubmitReport() {
             />
           )}
 
-          {/* Step 4: Submission Type Selection */}
-          {step === 4 && (
+          {step === 3 && participantType === "vendor" && (
+            <VendorIdentification
+              value={userInfo}
+              onChange={setUserInfo}
+              onContinue={handleNext}
+              onBack={handleBack}
+            />
+          )}
+
+          {/* Step 4: Submission Type Selection (skip for vendors) */}
+          {step === 4 && participantType === "vendor" && (() => {
+            if (!submissionType) {
+              setSubmissionType("vendor_report");
+              handleNext();
+            }
+            return null;
+          })()}
+
+          {step === 4 && participantType !== "vendor" && (
             <SubmissionTypeSelector
               participantType={participantType!}
               value={submissionType}
@@ -190,7 +212,7 @@ export default function SubmitReport() {
           {step === 5 && (submissionType === "payment_documentation" || 
                           submissionType === "report_explanation" || 
                           submissionType === "report_dispute") && 
-           participantType !== "crew" && (
+           participantType !== "crew" && participantType !== "vendor" && (
           <ProducerSubmissionForm
             userInfo={userInfo}
             submissionType={submissionType}
@@ -199,6 +221,14 @@ export default function SubmitReport() {
             onBack={handleBack}
             onSuccess={resetForm}
           />
+          )}
+
+          {step === 5 && submissionType === "vendor_report" && (
+            <VendorReportForm
+              userInfo={userInfo}
+              onBack={handleBack}
+              onSuccess={resetForm}
+            />
           )}
 
           {/* Navigation Buttons */}

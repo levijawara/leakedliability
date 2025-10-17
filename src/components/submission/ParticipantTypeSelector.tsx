@@ -4,8 +4,8 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface ParticipantTypeSelectorProps {
-  value: "crew" | "producer" | "production_company" | null;
-  onChange: (type: "crew" | "producer" | "production_company") => void;
+  value: "crew" | "producer" | "production_company" | "vendor" | null;
+  onChange: (type: "crew" | "producer" | "production_company" | "vendor") => void;
   onBack: () => void;
 }
 
@@ -45,6 +45,16 @@ export function ParticipantTypeSelector({ value, onChange, onBack }: Participant
               <div className="font-semibold">Production Company</div>
               <div className="text-sm text-muted-foreground">
                 Submit payment documentation, explanations, or disputes
+              </div>
+            </Label>
+          </div>
+
+          <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-muted/50 cursor-pointer">
+            <RadioGroupItem value="vendor" id="vendor" />
+            <Label htmlFor="vendor" className="flex-1 cursor-pointer">
+              <div className="font-semibold">Vendor / Service Provider</div>
+              <div className="text-sm text-muted-foreground">
+                Report unpaid invoices for rentals, locations, services, or supplies
               </div>
             </Label>
           </div>
