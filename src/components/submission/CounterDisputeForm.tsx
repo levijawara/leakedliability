@@ -226,7 +226,7 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
           )}
           
           <p className="text-xs text-muted-foreground mt-1">
-            The reference number of your original crew member report
+            The reference number of your original report
           </p>
         </div>
 

@@ -245,7 +245,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
                 <li>Create another confirmation for this invoice</li>
               </ul>
               <p className="text-foreground font-medium">
-                Your crew member report is literally worth as much as the invoice attached to it. <strong>USE IT WISELY.</strong>
+                Your report is literally worth as much as the invoice attached to it. <strong>USE IT WISELY.</strong>
               </p>
               <p className="text-sm text-muted-foreground italic">
                 Abusing this system may result in account suspension, as inconsistent Payment Confirmations could be seen as defamatory.
