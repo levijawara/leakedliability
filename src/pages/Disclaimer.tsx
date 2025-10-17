@@ -15,11 +15,11 @@ export default function Disclaimer() {
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none space-y-4 text-muted-foreground">
             <p>
-              Leaked Liability™ provides a public platform for users to share information about payment practices within the production industry. While we encourage transparency and accountability, we do not independently verify, investigate, or authenticate every submission. Content on this platform is provided "as is" for informational purposes only and should not be interpreted as fact without independent verification.
+              Leaked Liability™ provides a public platform for users to share information about payment practices within the production industry, including freelance crew, vendors, and service providers. While we encourage transparency and accountability, we do not independently verify, investigate, or authenticate every submission. Content on this platform is provided "as is" for informational purposes only and should not be interpreted as fact without independent verification.
             </p>
 
             <p>
-              All reports, responses, and supporting materials are user-generated content. Crew Members, Producers, and Production Companies are solely responsible for the accuracy and legality of their submissions. By submitting content, you represent that it is true to the best of your knowledge and does not contain false, misleading, or defamatory material.
+              All reports, responses, and supporting materials are user-generated content. Crew Members, Producers, Production Companies, Vendors and Service Providers are solely responsible for the accuracy and legality of their submissions. By submitting content, you represent that it is true to the best of your knowledge and does not contain false, misleading, or defamatory material.
             </p>
 
             <p className="font-semibold text-foreground">
