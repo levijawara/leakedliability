@@ -218,7 +218,7 @@ const HowItWorks = () => {
             </div>
             <div>
               <h3 className="font-bold text-xl mb-2 flex items-center gap-2">
-                Vendor Report <span className="text-2xl">⚠️</span> (Vendors Only)
+                Vendor Report <span className="text-2xl">📋</span> (Vendors Only)
               </h3>
               <p className="text-muted-foreground leading-relaxed">
                 Submit sworn statements for unpaid invoices related to equipment, services, or facilities. <strong>One report per invoice</strong> — include invoice number, PO/booking confirmation, or rental agreement.
