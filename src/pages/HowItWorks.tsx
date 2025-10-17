@@ -15,28 +15,32 @@ const HowItWorks = () => {
 
         {/* Participants */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">PARTICIPANTS:</h2>
-          <ul className="space-y-2 text-lg">
-            <li className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary"></span>
-              Crew Members
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary"></span>
-              Producers
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary"></span>
-              Production Companies
-            </li>
-          </ul>
+        <h2 className="text-3xl font-bold mb-6">PARTICIPANTS:</h2>
+        <ul className="space-y-2 text-lg">
+          <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary"></span>
+            Crew Members
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary"></span>
+            Vendors & Service Providers
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary"></span>
+            Producers
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary"></span>
+            Production Companies
+          </li>
+        </ul>
         </Card>
 
         <Separator className="my-12" />
 
-        {/* Crew Member Submission Forms */}
+        {/* Crew Member & Vendor Submission Forms */}
         <Card className="p-8 mb-8">
-          <h2 className="text-3xl font-bold mb-6">Crew Member Submission Forms:</h2>
+          <h2 className="text-3xl font-bold mb-6">Crew Member & Vendor Submission Forms:</h2>
           <div className="space-y-4">
             <div className="flex gap-3">
               <span className="text-2xl">⚠️</span>
@@ -57,6 +61,16 @@ const HowItWorks = () => {
               <div>
                 <h3 className="font-bold text-lg">Counter-Disputes</h3>
                 <p className="text-muted-foreground">challenge a producer's dispute of your report</p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <span className="text-2xl">📋</span>
+              <div>
+                <h3 className="font-bold text-lg">Vendor Reports</h3>
+                <p className="text-muted-foreground">
+                  unpaid invoices from rental houses, locations, catering, transport, etc.
+                </p>
               </div>
             </div>
           </div>
@@ -152,6 +166,14 @@ const HowItWorks = () => {
                 Legal name + email required. Your identity stays hidden from producers and the public. We only contact you if clarification is needed.
               </p>
             </div>
+
+            <div>
+              <h3 className="font-bold text-xl mb-2">Vendors:</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Business name + contact info required. Vendor reports are NOT anonymous—your company name will appear on verified reports. This is standard B2B accountability. You must provide invoice number, PO/booking confirmation (if applicable), and commercial agreement or rental terms.
+              </p>
+            </div>
+
             <div>
               <h3 className="font-bold text-xl mb-2">Producers/Production Companies:</h3>
               <p className="text-muted-foreground leading-relaxed">
@@ -290,9 +312,11 @@ const HowItWorks = () => {
                 <h4 className="font-bold text-foreground mb-2">Repeat Offender Penalty (no cap)</h4>
                 <ul className="space-y-1 ml-4 text-sm">
                   <li>• <strong>-10 points</strong> per additional crew member owed (beyond first)</li>
+                  <li>• <strong>-20 points</strong> per additional vendor owed (beyond first) — heavier B2B impact</li>
                   <li>• <strong>-10 points</strong> per additional project with debt (beyond first)</li>
                   <li>• <strong>-5 points</strong> per additional city with debt (beyond first)</li>
-                  <li>• Example: Owing 3 crew + 2 jobs + 2 cities = -30 points</li>
+                  <li>• Example: Owing 3 crew + 2 vendors + 2 jobs + 2 cities = -65 points</li>
+                  <li>• <strong>Vendor debts count more:</strong> -20/vendor vs -10/crew (beyond first)</li>
                 </ul>
               </div>
 

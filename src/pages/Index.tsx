@@ -26,7 +26,7 @@ const Index = () => {
           </h1>
 
           <p className="text-2xl md:text-3xl font-bold text-muted-foreground max-w-2xl mx-auto">
-            A platform designed to enable and empower freelance crew members, by intrinsically motivating producers to be good people.
+            A platform designed to enable and empower freelance crew members and vendors, by intrinsically motivating producers to be good people.
           </p>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -71,9 +71,9 @@ const Index = () => {
             <div className="w-12 h-12 rounded-full bg-status-critical/10 flex items-center justify-center mx-auto">
               <Users className="h-6 w-6 text-status-critical" />
             </div>
-            <h3 className="text-xl font-bold">Crew Protection</h3>
+            <h3 className="text-xl font-bold">Crew & Vendor Protection</h3>
             <p className="text-muted-foreground">
-              Your identity stays anonymous. We only need it for documentation, corroboration, and verification purposes.
+              Your identity stays anonymous (crew) or documented (vendors). We verify all reports for accuracy.
             </p>
           </Card>
 

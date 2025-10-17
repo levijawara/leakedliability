@@ -36,9 +36,9 @@ export default function WhyItWorks() {
           </section>
 
           <section>
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">THE CREW</h2>
+            <h2 className="text-2xl md:text-3xl font-bold mb-4">THE CREW & VENDORS</h2>
             <p className="text-lg leading-relaxed">
-              For the first time, a lot of crew members don't have to scream into a void, hoping that dodgy producer texts them back. They can whisper into Leaked Liability™ instead—quietly, safely, and collectively. They'll watch their factual data speak louder than they ever could alone, and they can do all of it ANONYMOUSLY. We want to protect those who have never had the courage to speak out, because "show business" made them feel as though they'd just be ignored (or blacklisted).
+              For the first time, crew members don't have to scream into a void, and vendors don't have to choose between repo and reputation damage. They can submit verified reports to Leaked Liability™—crew anonymously, vendors publicly—and watch their factual data speak louder than they ever could alone. Vendors finally have leverage beyond collections: public accountability that other productions will see before signing contracts.
             </p>
           </section>
 

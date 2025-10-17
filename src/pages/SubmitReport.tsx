@@ -109,9 +109,12 @@ export default function SubmitReport() {
             <div className="flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-status-warning mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-semibold mb-1">Crew members and vendors, your identity is well-protected</p>
+                <p className="font-semibold mb-1">Identity Protection</p>
                 <p className="text-muted-foreground">
-                  Legal name + email required. Your identity stays hidden from the producers you're reporting, as well as the general public. Business contact info required for vendor reports.
+                  <strong>Crew members:</strong> your identity is well-protected unless you choose to reveal it. <strong>Vendors:</strong> your business contact info is required and will appear on verified reports (standard B2B accountability).
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  All reports are reviewed and verified. Fake reports result in account suspension and potential legal action.
                 </p>
               </div>
             </div>

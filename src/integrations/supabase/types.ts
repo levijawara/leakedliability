@@ -196,6 +196,7 @@ export type Database = {
           project_name: string
           report_id: string | null
           reporter_id: string
+          reporter_type: string | null
           status: string
           updated_at: string
           verified: boolean | null
@@ -214,6 +215,7 @@ export type Database = {
           project_name: string
           report_id?: string | null
           reporter_id: string
+          reporter_type?: string | null
           status?: string
           updated_at?: string
           verified?: boolean | null
@@ -232,6 +234,7 @@ export type Database = {
           project_name?: string
           report_id?: string | null
           reporter_id?: string
+          reporter_type?: string | null
           status?: string
           updated_at?: string
           verified?: boolean | null
@@ -303,6 +306,8 @@ export type Database = {
           total_crew_owed: number | null
           total_jobs_owed: number | null
           total_payments: number | null
+          total_vendor_debt: number | null
+          total_vendors_owed: number | null
           updated_at: string
         }
         Insert: {
@@ -322,6 +327,8 @@ export type Database = {
           total_crew_owed?: number | null
           total_jobs_owed?: number | null
           total_payments?: number | null
+          total_vendor_debt?: number | null
+          total_vendors_owed?: number | null
           updated_at?: string
         }
         Update: {
@@ -341,6 +348,8 @@ export type Database = {
           total_crew_owed?: number | null
           total_jobs_owed?: number | null
           total_payments?: number | null
+          total_vendor_debt?: number | null
+          total_vendors_owed?: number | null
           updated_at?: string
         }
         Relationships: []

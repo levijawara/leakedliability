@@ -27,19 +27,20 @@ const FAQ = () => {
                 <AccordionItem value="item-1">
                   <AccordionTrigger>What is Leaked Liability?</AccordionTrigger>
                   <AccordionContent>
-                    Leaked Liability is a transparency platform that allows film and TV crew members to
-                    anonymously report unpaid wages and unethical business practices by production companies.
-                    We provide a public accountability system through our leaderboard, which tracks producers'
-                    Producing Social Credit Score (PSCS).
+                    Leaked Liability is a transparency platform that allows film and TV crew members 
+                    and vendors to report unpaid invoices and unethical business practices by production 
+                    companies. We provide a public accountability system through our leaderboard, which 
+                    tracks producers' Producing Social Credit Score (PSCS).
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-2">
                   <AccordionTrigger>Who can use this platform?</AccordionTrigger>
                   <AccordionContent>
-                    Anyone who has worked in film and television production can submit reports about unpaid
-                    wages. Producers can respond to reports and submit payment confirmations. Anyone can view
-                    the public leaderboard (with an active subscription) to check producer payment histories.
+                    Freelance crew, vendors, and service providers who have worked in film and television 
+                    production can submit reports about unpaid invoices. Vendors include rental houses, 
+                    location providers, catering, transportation, and equipment companies. Producers and 
+                    production companies can also submit documentation to dispute reports or confirm payments.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -214,6 +215,51 @@ const FAQ = () => {
                     >
                       @LeakedLiability
                     </a>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+
+            {/* Vendor FAQs */}
+            <div>
+              <h2 className="text-2xl font-semibold mb-4">For Vendors</h2>
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="vendor-1">
+                  <AccordionTrigger>Can vendors submit reports?</AccordionTrigger>
+                  <AccordionContent>
+                    Yes! Rental houses, location providers, catering companies, transportation vendors, 
+                    and all B2B service providers can report unpaid producer debts. Vendor reports include 
+                    invoice numbers, PO references, net terms, and contract documentation.
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="vendor-2">
+                  <AccordionTrigger>What's different about vendor reports?</AccordionTrigger>
+                  <AccordionContent>
+                    Vendor reports require business contact information (not anonymous), invoice/PO numbers, 
+                    net payment terms, and commercial agreements. Vendor debts carry heavier PSCS penalties 
+                    (50% more impact) because unpaid vendors can block future productions from accessing 
+                    critical equipment and services.
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="vendor-3">
+                  <AccordionTrigger>What documentation do vendors need?</AccordionTrigger>
+                  <AccordionContent>
+                    Vendors must provide: (1) Invoice as submitted, (2) At least one of: PO/booking 
+                    confirmation, signed rental agreement, or contract, (3) Optional but recommended: 
+                    email acceptance, delivery receipts, payment attempt records. Strong documentation = 
+                    faster verification.
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="vendor-4">
+                  <AccordionTrigger>Will my company name be public?</AccordionTrigger>
+                  <AccordionContent>
+                    Unlike crew reports (which are anonymous), verified vendor reports will show your 
+                    company name on the leaderboard alongside the debt details. This is standard B2B 
+                    accountability—the same transparency producers expect from collection agencies, except 
+                    here it's public and preventative.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
