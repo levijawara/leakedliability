@@ -21,6 +21,7 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
             <h3 className="font-bold text-base mb-2">PARTICIPANTS:</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li>Crew Members</li>
+              <li>Vendors / Service Providers</li>
               <li>Producers</li>
               <li>Production Companies</li>
             </ul>
@@ -36,17 +37,25 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
           </section>
 
           <section>
+            <h3 className="font-bold text-base mb-2">What Vendors Can Submit:</h3>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Vendor Reports ⚠️</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
+            </ul>
+          </section>
+
+          <section>
             <h3 className="font-bold text-base mb-2">What Producers/Production Companies Can Submit:</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>Payment Documentation 🧾</strong> - receipts, confirmations, bank proof</li>
               <li><strong>Report Explanations ☮️</strong> - acknowledge & explain why payment is delayed</li>
-              <li><strong>Report Disputes ⁉️</strong> - challenge a crew member's report</li>
+              <li><strong>Report Disputes ⁉️</strong> - challenge a crew member's or vendor's report</li>
             </ul>
           </section>
 
           <section>
             <h3 className="font-bold text-base mb-2">Identification Rules:</h3>
             <p><strong>Crew Members:</strong> Legal name + email required. Your identity stays hidden from producers and the public.</p>
+            <p><strong>Vendors:</strong> Business/Legal name + email required. Your identity stays hidden from producers and the public.</p>
             <p><strong>Producers/Production Companies:</strong> Legal/Business name + email required. Your name may appear on the leaderboard based on verified reports.</p>
           </section>
 
