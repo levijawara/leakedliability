@@ -61,7 +61,7 @@ export default function Admin() {
   const [selectedPaymentReport, setSelectedPaymentReport] = useState<any>(null);
   const [paymentDate, setPaymentDate] = useState<Date>();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [accountStats, setAccountStats] = useState({ crew: 0, producer: 0, company: 0 });
+  const [accountStats, setAccountStats] = useState({ crew: 0, vendor: 0, producer: 0, company: 0 });
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -258,6 +258,7 @@ export default function Admin() {
     
     const stats = {
       crew: profiles?.filter(p => p.account_type === 'crew').length || 0,
+      vendor: profiles?.filter(p => p.account_type === 'vendor').length || 0,
       producer: profiles?.filter(p => p.account_type === 'producer').length || 0,
       company: profiles?.filter(p => p.account_type === 'producer' && p.business_name).length || 0
     };
@@ -1205,15 +1206,22 @@ export default function Admin() {
           </div>
 
           {/* Account Statistics */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-4 gap-4 mb-4">
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">Crew Member Accounts</div>
-              <div className="text-3xl font-bold">📊 {accountStats.crew}</div>
+              <div className="text-3xl font-bold">⚠️ {accountStats.crew}</div>
             </Card>
+            
+            <Card className="p-4">
+              <div className="text-sm text-muted-foreground mb-1">Vendor / Service Provider Accounts</div>
+              <div className="text-3xl font-bold">🛠️ {accountStats.vendor}</div>
+            </Card>
+            
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">Producer Accounts</div>
               <div className="text-3xl font-bold">🏢 {accountStats.producer}</div>
             </Card>
+            
             <Card className="p-4">
               <div className="text-sm text-muted-foreground mb-1">Production Company Accounts</div>
               <div className="text-3xl font-bold">🎬 {accountStats.company}</div>
@@ -1321,31 +1329,31 @@ export default function Admin() {
               value="crew_report"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Crew Reports 📋
+              Crew Reports ⚠️
             </TabsTrigger>
             <TabsTrigger 
               value="vendor_report"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Vendor Reports 🏢
+              Vendor Reports 📋
             </TabsTrigger>
             <TabsTrigger 
               value="payment_confirmation"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Payment Confirmation 💳
+              Payment Confirmation ✅
             </TabsTrigger>
             <TabsTrigger 
               value="payment_documentation"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Payment Documentation 📄
+              Payment Documentation 🧾
             </TabsTrigger>
             <TabsTrigger 
               value="report_explanation"
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
-              Report Explanation 📝
+              Report Explanation ☮️
             </TabsTrigger>
             <TabsTrigger 
               value="counter_dispute"

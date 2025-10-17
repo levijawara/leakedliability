@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Eye, EyeOff } from "lucide-react";
 import ProducerAssociationModal from "@/components/ProducerAssociationModal";
 
-type AccountType = 'crew' | 'producer' | 'production_company' | 'admin';
+type AccountType = 'crew' | 'vendor' | 'producer' | 'production_company' | 'admin';
 
 const validatePassword = (password: string): { isValid: boolean; message?: string } => {
   if (password.length < 12) {
@@ -107,6 +107,7 @@ export default function Auth() {
               data: {
                 userName: `${firstName} ${lastName}`,
                 accountType: accountType === 'crew' ? 'Crew Member' : 
+                            accountType === 'vendor' ? 'Vendor / Service Provider' :
                             accountType === 'producer' ? 'Producer' : 
                             'Production Company',
               },
@@ -286,6 +287,7 @@ export default function Auth() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="crew">Crew Member</SelectItem>
+                    <SelectItem value="vendor">Vendor / Service Provider</SelectItem>
                     <SelectItem value="producer">Producer</SelectItem>
                     <SelectItem value="production_company">Production Company</SelectItem>
                   </SelectContent>
