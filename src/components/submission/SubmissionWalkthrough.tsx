@@ -14,7 +14,7 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
     <Card className="p-8">
       <div className="prose prose-sm max-w-none dark:prose-invert">
         <h2 className="text-2xl font-bold mb-4">LEAKED LIABILITY™ — WALK-THROUGH</h2>
-        <p className="text-sm text-muted-foreground mb-6">(version 1.4) (BETA) - Last updated 10/12/2025</p>
+        <p className="text-sm text-muted-foreground mb-6">(version 1.5) (BETA) - Last updated 10/17/2025</p>
 
         <div className="space-y-6 text-sm">
           <section>
@@ -28,18 +28,12 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
           </section>
 
           <section>
-            <h3 className="font-bold text-base mb-2">What Crew Members Can Submit:</h3>
+            <h3 className="font-bold text-base mb-2">What Crew Members & Vendors / Service Providers Can Submit:</h3>
             <ul className="list-disc pl-5 space-y-1">
               <li><strong>Crew Member Reports ⚠️</strong> - sworn statements of unpaid invoices</li>
+              <li><strong>Vendor Reports ⚠️</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
               <li><strong>Payment Confirmations ✅</strong> - verify a producer actually paid you</li>
               <li><strong>Counter-Disputes ‼️</strong> - challenge a producer's dispute of your report</li>
-            </ul>
-          </section>
-
-          <section>
-            <h3 className="font-bold text-base mb-2">What Vendors Can Submit:</h3>
-            <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Vendor Reports ⚠️</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
             </ul>
           </section>
 
