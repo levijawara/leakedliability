@@ -10,7 +10,7 @@ const HowItWorks = () => {
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         <h1 className="text-5xl md:text-6xl font-black text-center mb-4">How It Works</h1>
         <p className="text-center text-muted-foreground text-lg mb-12 max-w-3xl mx-auto">
-          Understanding the submission process, rules, and accountability measures. Users submit either Crew Member forms or Producer/Production Company forms.
+          Understanding the submission process, rules, and accountability measures. Users submit either Crew Member forms, Vendor & Service Provider forms, Producer forms, or Production Company forms.
         </p>
 
         {/* Participants */}
