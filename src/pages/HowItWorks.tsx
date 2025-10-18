@@ -1,6 +1,8 @@
 import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Home } from "lucide-react";
 
 const HowItWorks = () => {
   return (
@@ -393,6 +395,18 @@ const HowItWorks = () => {
             </p>
           </div>
         </Card>
+      </div>
+
+      {/* Home Button - Fixed position at bottom */}
+      <div className="fixed bottom-8 right-8 z-50">
+        <Button 
+          onClick={() => window.location.href = '/'} 
+          size="lg"
+          className="shadow-lg hover:shadow-xl transition-all"
+        >
+          <Home className="mr-2 h-5 w-5" />
+          Home
+        </Button>
       </div>
     </div>
   );

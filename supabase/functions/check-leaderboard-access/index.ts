@@ -122,12 +122,12 @@ serve(async (req) => {
     const accountType = profile?.account_type || 'crew';
     logStep("User profile", { accountType });
 
-    // 6. Check for verified crew report
+    // 6. Check for verified crew OR vendor report
     const { data: verifiedReport } = await supabaseClient
       .from('submissions')
       .select('id')
       .eq('user_id', user.id)
-      .eq('submission_type', 'crew_report')
+      .in('submission_type', ['crew_report', 'vendor_report'])
       .eq('status', 'verified')
       .maybeSingle();
 
@@ -150,9 +150,9 @@ serve(async (req) => {
       });
     }
 
-    // 8. Pre-threshold: Check contributor access (crew with verified report)
-    if (accountType === 'crew' && hasVerifiedReport) {
-      logStep("Contributor access granted");
+    // 8. Pre-threshold: Check contributor access (crew OR vendor with verified report)
+    if ((accountType === 'crew' || accountType === 'vendor') && hasVerifiedReport) {
+      logStep("Contributor access granted", { accountType });
       return new Response(JSON.stringify({ 
         hasAccess: true, 
         canPurchase: false, 
@@ -168,7 +168,7 @@ serve(async (req) => {
     // 9. Default: no access, can purchase
     const reason = accountType === 'producer' || accountType === 'production_company' 
       ? 'producer_unpaid' 
-      : 'crew_no_report_unpaid';
+      : (accountType === 'vendor' ? 'vendor_no_report_unpaid' : 'crew_no_report_unpaid');
 
     logStep("No access - can purchase", { reason });
     return new Response(JSON.stringify({ 

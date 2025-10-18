@@ -63,10 +63,11 @@ export const LeaderboardAccessStatus = () => {
         };
 
       case 'contributor_free':
+        const contributorType = accessState.accountType === 'vendor' ? 'vendor' : 'crew';
         return {
           icon: <Gift className="h-8 w-8 text-green-600" />,
           badge: <Badge variant="default" className="bg-green-600">Free Contributor Access</Badge>,
-          description: "You have free access for submitting a verified crew member report. This access is permanent.",
+          description: `You have free access for submitting a verified ${contributorType} report. This access is temporary and subject to platform policy changes.`,
           action: null,
         };
 

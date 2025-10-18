@@ -37,6 +37,20 @@ export default function Leaderboard() {
     },
   });
 
+  // Fetch threshold lock status to determine if names should be blurred
+  const { data: config } = useQuery({
+    queryKey: ["leaderboard_config"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leaderboard_config")
+        .select("threshold_locked")
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleManageBilling = async () => {
     try {
       setManagingBilling(true);
@@ -61,7 +75,10 @@ export default function Leaderboard() {
     return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
   }
 
-  const shouldBlurNames = !accessState?.hasAccess;
+  // Only blur names if user lacks access AND threshold is NOT locked
+  // After threshold locks (20 producers), names are visible to everyone
+  const thresholdLocked = config?.threshold_locked || false;
+  const shouldBlurNames = !accessState?.hasAccess && !thresholdLocked;
 
   return (
     <>

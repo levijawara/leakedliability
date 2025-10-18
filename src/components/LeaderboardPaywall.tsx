@@ -115,7 +115,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
       };
     }
 
-    if (accessState.accountType === 'crew' && !accessState.hasVerifiedReport) {
+    if ((accessState.accountType === 'crew' || accessState.accountType === 'vendor') && !accessState.hasVerifiedReport) {
       return {
         title: "🔒 Full Access Required",
         description: "Names are blurred until you unlock access.",
@@ -129,7 +129,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
       return {
         title: "🔒 Leaderboard Access",
         description: "Names are blurred. Create an account to unlock access.",
-        message: "Crew members: Get FREE temporary access by submitting a verified crew member payment report.\nProducers: Subscribe for $5.99/month.",
+        message: "Crew members: Get FREE temporary access by submitting a verified crew member payment report.\nVendors & Service Providers: Get FREE temporary access by submitting a verified vendor report.\nProducers: Subscribe for $5.99/month.",
         showCrewOption: false,
         showSignupPrompt: true,
       };
@@ -327,14 +327,14 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-4 text-center">
-                    Get FREE temporary access by submitting a verified crew member payment report.
+                    Get FREE temporary access by submitting a verified {accessState.accountType === 'vendor' ? 'vendor' : 'crew member'} report.
                   </p>
                   <Button 
                     variant="outline" 
                     className="w-full"
                     onClick={() => window.location.href = '/submit'}
                   >
-                    Submit Report (Free Access)
+                    Submit {accessState.accountType === 'vendor' ? 'Vendor' : 'Crew'} Report (Free Access)
                   </Button>
                 </CardContent>
               </Card>
