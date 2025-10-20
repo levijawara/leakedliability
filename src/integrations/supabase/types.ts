@@ -551,6 +551,33 @@ export type Database = {
         }
         Relationships: []
       }
+      suggestions: {
+        Row: {
+          client_ip: unknown | null
+          created_at: string
+          id: string
+          meta: Json | null
+          suggestion: string
+          user_id: string | null
+        }
+        Insert: {
+          client_ip?: unknown | null
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          suggestion: string
+          user_id?: string | null
+        }
+        Update: {
+          client_ip?: unknown | null
+          created_at?: string
+          id?: string
+          meta?: Json | null
+          suggestion?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_entitlements: {
         Row: {
           created_at: string | null
@@ -684,6 +711,23 @@ export type Database = {
             referencedColumns: ["report_id"]
           },
         ]
+      }
+      suggestions_with_profile: {
+        Row: {
+          account_type: Database["public"]["Enums"]["account_type"] | null
+          business_name: string | null
+          client_ip: unknown | null
+          created_at: string | null
+          email: string | null
+          id: string | null
+          legal_first_name: string | null
+          legal_last_name: string | null
+          meta: Json | null
+          suggestion: string | null
+          total_suggestions_by_user: number | null
+          user_id: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {

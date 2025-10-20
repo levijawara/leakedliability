@@ -65,6 +65,7 @@ export default function Admin() {
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -197,6 +198,13 @@ export default function Admin() {
     );
 
     setPaymentConfirmations(enrichedConfirmations);
+
+    // Load suggestions with profile data
+    const { data: suggs } = await supabase
+      .from('suggestions_with_profile')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setSuggestions(suggs || []);
 
     // Load leading users for each submission type
     await loadLeadingUsers();
@@ -1367,6 +1375,12 @@ export default function Admin() {
             >
               Report Dispute ⁉️
             </TabsTrigger>
+            <TabsTrigger 
+              value="suggestions"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Suggestions 💡
+            </TabsTrigger>
           </TabsList>
 
           {/* Payment Reports Tab */}
@@ -1690,6 +1704,62 @@ export default function Admin() {
             </TabsContent>
           );
         })}
+
+        {/* Suggestions Tab */}
+        <TabsContent value="suggestions">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">User Suggestions</h3>
+            <Badge variant="outline">{suggestions.length} total</Badge>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                <TableHead className="font-semibold">Date</TableHead>
+                <TableHead className="font-semibold">User</TableHead>
+                <TableHead className="font-semibold">Suggestion</TableHead>
+                <TableHead className="text-xs">Total by User</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {suggestions.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    No suggestions yet
+                  </TableCell>
+                </TableRow>
+              ) : (
+                suggestions.map((suggestion) => (
+                  <TableRow key={suggestion.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {new Date(suggestion.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {suggestion.user_id ? (
+                        <div>
+                          <div className="font-medium">
+                            {suggestion.legal_first_name} {suggestion.legal_last_name}
+                            {suggestion.business_name && ` (${suggestion.business_name})`}
+                          </div>
+                          <div className="text-xs text-muted-foreground">{suggestion.email}</div>
+                          <Badge variant="outline" className="text-xs mt-1">{suggestion.account_type}</Badge>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground italic">Anonymous</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="max-w-md">
+                      <p className="text-sm whitespace-pre-wrap">{suggestion.suggestion}</p>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground text-center">
+                      {suggestion.total_suggestions_by_user || 1}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TabsContent>
         </Tabs>
       </Card>
 

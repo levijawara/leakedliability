@@ -20,6 +20,7 @@ import FAQ from "./pages/FAQ";
 import Maintenance from "./pages/Maintenance";
 import NotFound from "./pages/NotFound";
 import ProducerDashboard from "./pages/ProducerDashboard";
+import SuggestionBox from "./pages/SuggestionBox";
 
 const queryClient = new QueryClient();
 
@@ -102,6 +103,7 @@ const AppContent = () => {
       <Route path="/profile" element={<Profile />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/producer-dashboard" element={<ProducerDashboard />} />
+      <Route path="/suggestions" element={<SuggestionBox />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
