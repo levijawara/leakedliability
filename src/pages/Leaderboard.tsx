@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
 import { LeaderboardPaywall } from "@/components/LeaderboardPaywall";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ const getDaysColor = (days: number | null) => {
 export default function Leaderboard() {
   const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess();
   const [managingBilling, setManagingBilling] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const { data: producers, isLoading } = useQuery({
     queryKey: ["producers"],
@@ -37,19 +38,36 @@ export default function Leaderboard() {
     },
   });
 
-  // Fetch threshold lock status to determine if names should be blurred
-  const { data: config } = useQuery({
-    queryKey: ["leaderboard_config"],
+  // Fetch site settings for blur toggle
+  const { data: settings } = useQuery({
+    queryKey: ["site_settings"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("leaderboard_config")
-        .select("threshold_locked")
+        .from("site_settings")
+        .select("blur_names_for_public")
         .single();
       
       if (error) throw error;
       return data;
     },
   });
+
+  // Check admin status
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data, error } = await supabase.rpc('has_role', {
+          _user_id: user.id,
+          _role: 'admin'
+        });
+        if (!error) {
+          setIsAdmin(!!data);
+        }
+      }
+    };
+    checkAdmin();
+  }, []);
 
   const handleManageBilling = async () => {
     try {
@@ -75,10 +93,10 @@ export default function Leaderboard() {
     return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
   }
 
-  // Only blur names if user lacks access AND threshold is NOT locked
-  // After threshold locks (20 producers), names are visible to everyone
-  const thresholdLocked = config?.threshold_locked || false;
-  const shouldBlurNames = !accessState?.hasAccess && !thresholdLocked;
+  // Blur names based on admin toggle and user role
+  // Admins always see unblurred, non-admins see based on toggle
+  const blurNamesForPublic = settings?.blur_names_for_public ?? true;
+  const shouldBlurNames = blurNamesForPublic && !isAdmin;
 
   return (
     <>
