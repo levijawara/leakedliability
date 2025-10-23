@@ -946,6 +946,7 @@ export type Database = {
       }
     }
     Functions: {
+      add_to_confirmation_pool: { Args: { amount: number }; Returns: undefined }
       calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
       generate_report_id: { Args: never; Returns: string }
       has_role: {
