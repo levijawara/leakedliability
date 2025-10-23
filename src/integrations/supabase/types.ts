@@ -679,12 +679,40 @@ export type Database = {
           },
         ]
       }
+      site_notices: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string | null
+          visible_to: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string | null
+          visible_to?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string | null
+          visible_to?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           blur_names_for_public: boolean
           id: string
           maintenance_message: string | null
           maintenance_mode: boolean
+          public_leaderboard_ready: boolean | null
           send_producer_notifications: boolean | null
           updated_at: string | null
         }
@@ -693,6 +721,7 @@ export type Database = {
           id?: string
           maintenance_message?: string | null
           maintenance_mode?: boolean
+          public_leaderboard_ready?: boolean | null
           send_producer_notifications?: boolean | null
           updated_at?: string | null
         }
@@ -701,6 +730,7 @@ export type Database = {
           id?: string
           maintenance_message?: string | null
           maintenance_mode?: boolean
+          public_leaderboard_ready?: boolean | null
           send_producer_notifications?: boolean | null
           updated_at?: string | null
         }

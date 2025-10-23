@@ -38,13 +38,13 @@ export default function Leaderboard() {
     },
   });
 
-  // Fetch site settings for blur toggle
+  // Fetch site settings for blur toggle and public readiness flag
   const { data: settings } = useQuery({
     queryKey: ["site_settings"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("blur_names_for_public")
+        .select("blur_names_for_public, public_leaderboard_ready")
         .single();
       
       if (error) throw error;
@@ -93,10 +93,11 @@ export default function Leaderboard() {
     return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
   }
 
-  // Blur names based on admin toggle and user role
-  // Admins always see unblurred, non-admins see based on toggle
-  const blurNamesForPublic = settings?.blur_names_for_public ?? true;
-  const shouldBlurNames = blurNamesForPublic && !isAdmin;
+  // Two-tier blur system:
+  // Stage 1: Names blurred until public_leaderboard_ready = TRUE
+  // Stage 2: Names visible to all when admin flips the flag
+  // Admins always see unblurred regardless of flag
+  const shouldBlurNames = !settings?.public_leaderboard_ready && !isAdmin;
 
   return (
     <>
