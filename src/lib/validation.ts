@@ -46,6 +46,11 @@ export const adminNotesSchema = z.object({
   adminNotes: z.string().trim().max(2000).optional(),
 });
 
+export const suggestionSchema = z.object({
+  suggestion: z.string().trim().min(5, "Suggestion must be at least 5 characters").max(4000, "Suggestion must be less than 4000 characters"),
+  meta: z.record(z.unknown()).optional(),
+});
+
 export const vendorReportSchema = z.object({
   reportingType: z.enum(["producer", "production_company", "both"]),
   vendorCompany: z.string().trim().min(1, "Company name is required").max(200),

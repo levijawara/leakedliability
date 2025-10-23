@@ -121,13 +121,16 @@ export default function Auth() {
 
       toast({
         title: "Success!",
-        description: "Account created successfully.",
+        description: "Account created! Check your email to verify before submitting reports.",
       });
 
       // Show producer association modal for producers and production companies
       if (data.user && (accountType === 'producer' || accountType === 'production_company')) {
         setNewUserId(data.user.id);
         setShowProducerModal(true);
+      } else {
+        // For non-producer accounts, show verification reminder
+        navigate("/verify-email");
       }
     } catch (error: any) {
       toast({

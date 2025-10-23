@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { producerSubmissionSchema, paymentDocumentationSchema } from "@/lib/validation";
 import { uploadFiles } from "@/lib/storage";
+import { sanitizeText } from "@/lib/sanitize";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 interface ProducerSubmissionFormProps {
   userInfo: { firstName: string; lastName: string; email: string };
@@ -28,6 +31,7 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
   const [linkedProducerId, setLinkedProducerId] = useState<string | null>(null);
   const [availableReports, setAvailableReports] = useState<any[]>([]);
+  const [emailVerified, setEmailVerified] = useState(true);
   const { toast } = useToast();
 
   const titles = {
@@ -47,6 +51,11 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
     const loadProducerData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // Check email verification
+      if (!user.email_confirmed_at) {
+        setEmailVerified(false);
+      }
 
       // Check if user has a linked producer account
       const { data: linkData } = await supabase
@@ -158,6 +167,17 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
         return;
       }
 
+      // Check email verification
+      if (!user.email_confirmed_at) {
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email before submitting",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       const documentUrls = await uploadFiles(documentFiles);
 
       const { error } = await supabase.from('submissions').insert({
@@ -171,7 +191,7 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
           report_id: reportId.trim(),
           payment_report_id: paymentReport.id,
           crew_member_name: crewMemberName,
-          explanation: explanation,
+          explanation: sanitizeText(explanation),
           participant_type: participantType
         },
         document_urls: documentUrls
@@ -207,6 +227,16 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
       <p className="text-sm text-muted-foreground mb-6">
         {descriptions[submissionType as keyof typeof descriptions]}
       </p>
+
+      {!emailVerified && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Your email is not verified. Please verify your email before submitting.
+            <a href="/verify-email" className="underline ml-1">Go to verification page</a>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-6">
         <div>
@@ -269,7 +299,7 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
         <Button variant="outline" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button onClick={handleSubmit} disabled={!isValid || loading}>
+        <Button onClick={handleSubmit} disabled={!isValid || loading || !emailVerified}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Submit
         </Button>

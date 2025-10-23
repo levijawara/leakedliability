@@ -16,6 +16,9 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { sanitizeText } from "@/lib/sanitize";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 interface VendorReportFormProps {
   userInfo: {
@@ -74,8 +77,20 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
   const [contractFiles, setContractFiles] = useState<File[]>([]);
   const [communicationFiles, setCommunicationFiles] = useState<File[]>([]);
   const [deliveryProofFiles, setDeliveryProofFiles] = useState<File[]>([]);
+  const [emailVerified, setEmailVerified] = useState(true);
   
   const { toast } = useToast();
+
+  // Check email verification status on mount
+  useState(() => {
+    const checkEmailVerification = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && !user.email_confirmed_at) {
+        setEmailVerified(false);
+      }
+    };
+    checkEmailVerification();
+  });
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -129,6 +144,16 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
         return;
       }
 
+      // Check email verification
+      if (!user.email_confirmed_at) {
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email before submitting reports",
+          variant: "destructive"
+        });
+        return;
+      }
+
       // Upload all files
       const allFiles = [...invoiceFiles, ...poFiles, ...contractFiles, ...communicationFiles, ...deliveryProofFiles];
       const documentUrls = await uploadFiles(allFiles);
@@ -151,12 +176,12 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
           vendor_type_other: userInfo.vendorTypeOther,
           reporting_type: reportingType,
           producer_name: producerName,
-          producer_aliases: producerAliases,
+          producer_aliases: sanitizeText(producerAliases),
           invoice_number: invoiceNumber,
           invoice_date: invoiceDate?.toISOString().split('T')[0],
           amount_owed: amountOwed,
           project_name: projectName,
-          service_description: serviceDescription,
+          service_description: sanitizeText(serviceDescription),
           purchase_order_number: purchaseOrderNumber,
           net_terms: netTerms,
           due_date: dueDate?.toISOString().split('T')[0],
@@ -205,6 +230,16 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
       <p className="text-sm text-destructive mb-6 font-semibold">
         Please don't lie about anything. Please don't lie about anything. Please don't lie about anything.
       </p>
+
+      {!emailVerified && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Your email is not verified. Please verify your email before submitting reports.
+            <a href="/verify-email" className="underline ml-1">Go to verification page</a>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-6">
         <div>
@@ -528,7 +563,7 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
         <Button variant="outline" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button onClick={handleSubmit} disabled={!isValid || loading}>
+        <Button onClick={handleSubmit} disabled={!isValid || loading || !emailVerified}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Submit Vendor Report
         </Button>

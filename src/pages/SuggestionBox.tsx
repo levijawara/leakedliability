@@ -6,6 +6,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { MessageSquare, ArrowLeft } from "lucide-react";
+import { suggestionSchema } from "@/lib/validation";
+import { sanitizeText } from "@/lib/sanitize";
 
 export default function SuggestionBox() {
   const navigate = useNavigate();
@@ -14,22 +16,32 @@ export default function SuggestionBox() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (suggestion.trim().length < 5) {
-      toast.error("Suggestion must be at least 5 characters");
-      return;
-    }
 
     setIsSubmitting(true);
 
     try {
+      // Validate input with Zod
+      const validationResult = suggestionSchema.safeParse({
+        suggestion: suggestion,
+        meta: { path: "/suggestions" }
+      });
+
+      if (!validationResult.success) {
+        toast.error(validationResult.error.errors[0].message);
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
+      
+      // Sanitize input before storing
+      const sanitizedSuggestion = sanitizeText(suggestion);
       
       const { error } = await supabase
         .from("suggestions")
         .insert({
           user_id: user?.id || null,
-          suggestion: suggestion.trim(),
+          suggestion: sanitizedSuggestion,
           meta: { path: "/suggestions" }
         });
 

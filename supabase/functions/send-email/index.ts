@@ -68,7 +68,17 @@ serve(async (req) => {
     const authenticatedUserEmail = userData.user.email;
     console.log('Email request from authenticated user:', authenticatedUserId);
 
+    // Get request body and check email type
     const { type, to, data }: EmailRequest = await req.json();
+    
+    // Check email verification (except for welcome emails)
+    if (type !== 'welcome' && !userData.user.email_confirmed_at) {
+      console.log('User email not verified, blocking email send');
+      return new Response(
+        JSON.stringify({ error: 'Please verify your email before performing this action' }),
+        { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
     
     let html: string;
     let subject: string;

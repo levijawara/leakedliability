@@ -21,6 +21,7 @@ import Maintenance from "./pages/Maintenance";
 import NotFound from "./pages/NotFound";
 import ProducerDashboard from "./pages/ProducerDashboard";
 import SuggestionBox from "./pages/SuggestionBox";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const queryClient = new QueryClient();
 
@@ -104,6 +105,7 @@ const AppContent = () => {
       <Route path="/admin" element={<Admin />} />
       <Route path="/producer-dashboard" element={<ProducerDashboard />} />
       <Route path="/suggestions" element={<SuggestionBox />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

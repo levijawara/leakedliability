@@ -10,6 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { counterDisputeSchema } from "@/lib/validation";
 import { uploadFiles } from "@/lib/storage";
+import { sanitizeText } from "@/lib/sanitize";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 interface CounterDisputeFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
@@ -25,7 +28,19 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
   const [validationError, setValidationError] = useState<string | null>(null);
   const [validatedReportId, setValidatedReportId] = useState<string | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(true);
   const { toast } = useToast();
+
+  // Check email verification status on mount
+  useState(() => {
+    const checkEmailVerification = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && !user.email_confirmed_at) {
+        setEmailVerified(false);
+      }
+    };
+    checkEmailVerification();
+  });
 
   const validateReport = async (reportRef: string, userId: string) => {
     // Query payment_reports to find the report
@@ -119,6 +134,17 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
         return;
       }
 
+      // Check email verification
+      if (!user.email_confirmed_at) {
+        toast({
+          title: "Email Not Verified",
+          description: "Please verify your email before submitting",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       const validationResult = await validateReport(originalReportRef.trim(), user.id);
       
       if (!validationResult.valid) {
@@ -158,7 +184,7 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
         form_data: {
           original_report_ref: originalReportRef,
           payment_report_id: validationResult.reportId,
-          explanation: explanation
+          explanation: sanitizeText(explanation)
         },
         document_urls: documentUrls
       });
@@ -194,6 +220,16 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
       <p className="text-sm text-muted-foreground mb-6">
         Challenge a producer's dispute of your original report with evidence.
       </p>
+
+      {!emailVerified && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Your email is not verified. Please verify your email before submitting.
+            <a href="/verify-email" className="underline ml-1">Go to verification page</a>
+          </AlertDescription>
+        </Alert>
+      )}
 
       <div className="space-y-6">
         <div>
@@ -254,7 +290,7 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
         <Button variant="outline" onClick={onBack} disabled={loading}>
           Back
         </Button>
-        <Button onClick={handleSubmit} disabled={!isValid || loading}>
+        <Button onClick={handleSubmit} disabled={!isValid || loading || !emailVerified}>
           {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Submit Counter-Dispute
         </Button>
