@@ -23,6 +23,7 @@ import ProducerDashboard from "./pages/ProducerDashboard";
 import SuggestionBox from "./pages/SuggestionBox";
 import VerifyEmail from "./pages/VerifyEmail";
 import LeaderboardAnalytics from "./pages/LeaderboardAnalytics";
+import Sitemap from "./pages/Sitemap";
 
 const queryClient = new QueryClient();
 
@@ -108,6 +109,7 @@ const AppContent = () => {
       <Route path="/suggestions" element={<SuggestionBox />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
+      <Route path="/sitemap" element={<Sitemap />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, FileText, Info, AlertTriangle, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare } from "lucide-react";
+import { Home, TrendingUp, FileText, Info, AlertTriangle, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare, Map } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -123,6 +123,10 @@ export function Navigation() {
                 <DropdownMenuItem onClick={() => navigate("/suggestions")}>
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Suggestion Box
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/sitemap")}>
+                  <Map className="h-4 w-4 mr-2" />
+                  Sitemap
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -280,6 +284,10 @@ export function Navigation() {
                   <DropdownMenuItem onClick={() => handleNavigate("/suggestions")}>
                     <MessageSquare className="h-4 w-4 mr-2" />
                     Suggestion Box
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/sitemap")}>
+                    <Map className="h-4 w-4 mr-2" />
+                    Sitemap
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
