@@ -43,6 +43,7 @@ serve(async (req) => {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.user_id;
+        const producerId = session.metadata?.producer_id;
         const customerId = session.customer as string | null;
         const subscriptionId = session.subscription as string | null;
 
@@ -51,6 +52,7 @@ serve(async (req) => {
           break;
         }
 
+        // Grant leaderboard entitlement
         const { error } = await supabase
           .from("user_entitlements")
           .upsert(
@@ -68,6 +70,42 @@ serve(async (req) => {
 
         if (error) log("upsert error", error);
         else log("entitlement upserted", { userId, customerId, subscriptionId });
+
+        // If this is a producer subscription, track it and add to pool
+        if (producerId && subscriptionId) {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId as string);
+          const priceId = sub.items.data[0]?.price.id;
+          const amount = (sub.items.data[0]?.price.unit_amount || 0) / 100;
+          const contribution = amount * 0.30;
+
+          let tier = "tier_1";
+          if (priceId === Deno.env.get("STRIPE_TIER_2_PRICE_ID")) tier = "tier_2";
+          if (priceId === Deno.env.get("STRIPE_TIER_3_PRICE_ID")) tier = "tier_3";
+
+          const { error: subError } = await supabase
+            .from("producer_subscriptions")
+            .insert({
+              producer_id: producerId,
+              stripe_customer_id: customerId,
+              stripe_subscription_id: subscriptionId as string,
+              tier,
+              status: "active",
+              monthly_amount: amount,
+              contribution_to_pool: contribution,
+              current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+              current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+            });
+
+          if (subError) log("producer subscription error", subError);
+          else {
+            // Add contribution to pool
+            const { error: poolError } = await supabase.rpc("add_to_confirmation_pool", {
+              amount: contribution,
+            });
+            if (poolError) log("pool update error", poolError);
+            else log("added to pool", { contribution });
+          }
+        }
         break;
       }
 
@@ -78,6 +116,7 @@ serve(async (req) => {
         const status = sub.status === "active" ? "active" : "inactive";
         const endIso = new Date(sub.current_period_end * 1000).toISOString();
 
+        // Update entitlement
         const { error } = await supabase
           .from("user_entitlements")
           .update({
@@ -90,6 +129,19 @@ serve(async (req) => {
 
         if (error) log("update error", error);
         else log("subscription updated", { customerId, status, endIso });
+
+        // Update producer subscription if exists
+        const { error: prodError } = await supabase
+          .from("producer_subscriptions")
+          .update({
+            status: sub.status === "active" ? "active" : sub.status === "past_due" ? "past_due" : "cancelled",
+            current_period_start: new Date(sub.current_period_start * 1000).toISOString(),
+            current_period_end: new Date(sub.current_period_end * 1000).toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", sub.id);
+
+        if (prodError) log("producer subscription update error", prodError);
         break;
       }
 
@@ -97,6 +149,7 @@ serve(async (req) => {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
 
+        // Update entitlement
         const { error } = await supabase
           .from("user_entitlements")
           .update({
@@ -109,6 +162,17 @@ serve(async (req) => {
 
         if (error) log("cancel error", error);
         else log("subscription cancelled", { customerId });
+
+        // Cancel producer subscription if exists
+        const { error: prodError } = await supabase
+          .from("producer_subscriptions")
+          .update({
+            status: "cancelled",
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_subscription_id", sub.id);
+
+        if (prodError) log("producer subscription cancel error", prodError);
         break;
       }
 

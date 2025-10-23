@@ -38,6 +38,78 @@ export type Database = {
         }
         Relationships: []
       }
+      confirmation_cash_transactions: {
+        Row: {
+          amount: number
+          confirmation_speed: string | null
+          created_at: string
+          id: string
+          metadata: Json | null
+          payment_report_id: string
+          transaction_type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          confirmation_speed?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_report_id: string
+          transaction_type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          confirmation_speed?: string | null
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          payment_report_id?: string
+          transaction_type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "confirmation_cash_transactions_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "confirmation_cash_transactions_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      confirmation_pool: {
+        Row: {
+          available_balance: number
+          id: string
+          total_collected: number
+          total_distributed: number
+          updated_at: string
+        }
+        Insert: {
+          available_balance?: number
+          id?: string
+          total_collected?: number
+          total_distributed?: number
+          updated_at?: string
+        }
+        Update: {
+          available_balance?: number
+          id?: string
+          total_collected?: number
+          total_distributed?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       disputes: {
         Row: {
           created_at: string | null
@@ -254,6 +326,8 @@ export type Database = {
           amount_owed: number
           city: string | null
           closed_date: string | null
+          confirmation_count: number | null
+          confirmation_deadline: string | null
           created_at: string
           days_overdue: number
           id: string
@@ -265,7 +339,10 @@ export type Database = {
           report_id: string | null
           reporter_id: string
           reporter_type: string | null
+          score_update_executed: boolean | null
+          score_update_scheduled_for: string | null
           status: string
+          total_crew: number | null
           updated_at: string
           verified: boolean | null
         }
@@ -273,6 +350,8 @@ export type Database = {
           amount_owed: number
           city?: string | null
           closed_date?: string | null
+          confirmation_count?: number | null
+          confirmation_deadline?: string | null
           created_at?: string
           days_overdue: number
           id?: string
@@ -284,7 +363,10 @@ export type Database = {
           report_id?: string | null
           reporter_id: string
           reporter_type?: string | null
+          score_update_executed?: boolean | null
+          score_update_scheduled_for?: string | null
           status?: string
+          total_crew?: number | null
           updated_at?: string
           verified?: boolean | null
         }
@@ -292,6 +374,8 @@ export type Database = {
           amount_owed?: number
           city?: string | null
           closed_date?: string | null
+          confirmation_count?: number | null
+          confirmation_deadline?: string | null
           created_at?: string
           days_overdue?: number
           id?: string
@@ -303,7 +387,10 @@ export type Database = {
           report_id?: string | null
           reporter_id?: string
           reporter_type?: string | null
+          score_update_executed?: boolean | null
+          score_update_scheduled_for?: string | null
           status?: string
+          total_crew?: number | null
           updated_at?: string
           verified?: boolean | null
         }
@@ -356,6 +443,59 @@ export type Database = {
           },
         ]
       }
+      producer_subscriptions: {
+        Row: {
+          contribution_to_pool: number
+          created_at: string
+          current_period_end: string
+          current_period_start: string
+          id: string
+          monthly_amount: number
+          producer_id: string
+          status: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          contribution_to_pool: number
+          created_at?: string
+          current_period_end: string
+          current_period_start: string
+          id?: string
+          monthly_amount: number
+          producer_id: string
+          status?: string
+          stripe_customer_id: string
+          stripe_subscription_id: string
+          tier: string
+          updated_at?: string
+        }
+        Update: {
+          contribution_to_pool?: number
+          created_at?: string
+          current_period_end?: string
+          current_period_start?: string
+          id?: string
+          monthly_amount?: number
+          producer_id?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_subscription_id?: string
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producer_subscriptions_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       producers: {
         Row: {
           average_days_to_pay: number | null
@@ -369,11 +509,14 @@ export type Database = {
           paid_crew_count: number | null
           paid_jobs_count: number | null
           pscs_score: number | null
+          subscription_status: string | null
+          subscription_tier: string | null
           total_amount_owed: number | null
           total_cities_owed: number | null
           total_crew_owed: number | null
           total_jobs_owed: number | null
           total_payments: number | null
+          total_pool_contributions: number | null
           total_vendor_debt: number | null
           total_vendors_owed: number | null
           updated_at: string
@@ -390,11 +533,14 @@ export type Database = {
           paid_crew_count?: number | null
           paid_jobs_count?: number | null
           pscs_score?: number | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
           total_amount_owed?: number | null
           total_cities_owed?: number | null
           total_crew_owed?: number | null
           total_jobs_owed?: number | null
           total_payments?: number | null
+          total_pool_contributions?: number | null
           total_vendor_debt?: number | null
           total_vendors_owed?: number | null
           updated_at?: string
@@ -411,11 +557,14 @@ export type Database = {
           paid_crew_count?: number | null
           paid_jobs_count?: number | null
           pscs_score?: number | null
+          subscription_status?: string | null
+          subscription_tier?: string | null
           total_amount_owed?: number | null
           total_cities_owed?: number | null
           total_crew_owed?: number | null
           total_jobs_owed?: number | null
           total_payments?: number | null
+          total_pool_contributions?: number | null
           total_vendor_debt?: number | null
           total_vendors_owed?: number | null
           updated_at?: string
@@ -426,6 +575,7 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"]
           business_name: string | null
+          confirmation_cash_balance: number | null
           created_at: string
           email: string | null
           id: string
@@ -437,6 +587,7 @@ export type Database = {
         Insert: {
           account_type: Database["public"]["Enums"]["account_type"]
           business_name?: string | null
+          confirmation_cash_balance?: number | null
           created_at?: string
           email?: string | null
           id?: string
@@ -448,6 +599,7 @@ export type Database = {
         Update: {
           account_type?: Database["public"]["Enums"]["account_type"]
           business_name?: string | null
+          confirmation_cash_balance?: number | null
           created_at?: string
           email?: string | null
           id?: string
@@ -694,6 +846,15 @@ export type Database = {
       }
     }
     Views: {
+      confirmation_cash_balances: {
+        Row: {
+          available_balance: number | null
+          total_earned: number | null
+          total_redeemed: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       public_payment_reports: {
         Row: {
           amount_owed: number | null
