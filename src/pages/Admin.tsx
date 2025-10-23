@@ -67,10 +67,44 @@ export default function Admin() {
   const [open, setOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const [auditSearchQuery, setAuditSearchQuery] = useState("");
 
   useEffect(() => {
     checkAdminAccess();
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    // Set up real-time subscriptions
+    const moderationChannel = supabase
+      .channel('moderation_logs_changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'moderation_logs'
+      }, (payload) => {
+        setModerationLogs(prev => [payload.new as any, ...prev]);
+      })
+      .subscribe();
+
+    const auditChannel = supabase
+      .channel('audit_logs_changes')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'audit_logs'
+      }, (payload) => {
+        setAuditLogs(prev => [payload.new as any, ...prev]);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(moderationChannel);
+      supabase.removeChannel(auditChannel);
+    };
+  }, [isAdmin]);
 
   const checkAdminAccess = async () => {
     try {
@@ -137,6 +171,14 @@ export default function Admin() {
         .order('created_at', { ascending: false })
         .limit(100);
       setModerationLogs(modLogs || []);
+
+      // Load audit logs
+      const { data: auditData } = await supabase
+        .from('audit_logs')
+        .select('*, profiles!audit_logs_user_id_fkey(legal_first_name, legal_last_name, email)')
+        .order('created_at', { ascending: false })
+        .limit(200);
+      setAuditLogs(auditData || []);
 
     // Load account statistics
     await loadAccountStats();
@@ -651,6 +693,18 @@ export default function Admin() {
       }
     }
 
+    // Log the verification event
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'submission_verified',
+        payload: {
+          submission_id: id,
+          submission_type: submission.submission_type,
+          report_id: submission.report_id
+        }
+      }
+    });
+
     toast({
       title: "Success",
       description: "Submission verified successfully",
@@ -751,6 +805,18 @@ export default function Admin() {
         });
       }
     }
+
+    // Log the rejection event
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'submission_rejected',
+        payload: {
+          submission_id: id,
+          submission_type: submission.submission_type,
+          reason: adminNotes
+        }
+      }
+    });
 
     toast({
       title: "Rejected",
@@ -866,6 +932,18 @@ export default function Admin() {
     }
 
     setMaintenanceMode(newMode);
+
+    // Log the maintenance mode toggle
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'maintenance_mode_toggled',
+        payload: {
+          enabled: newMode,
+          message: maintenanceMessage || "We're making improvements! Check back soon 🛠️"
+        }
+      }
+    });
+
     toast({
       title: "Maintenance Mode " + (newMode ? "Enabled" : "Disabled"),
       description: newMode 
@@ -920,6 +998,17 @@ export default function Admin() {
 
     setSendProducerNotifications(checked);
 
+    // Log the notification toggle
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'producer_notification_toggled',
+        payload: {
+          enabled: checked,
+          queued_count: queuedNotifications.length
+        }
+      }
+    });
+
     // If turning ON, send all queued notifications
     if (checked && queuedNotifications.length > 0) {
       await sendQueuedNotifications();
@@ -970,6 +1059,18 @@ export default function Admin() {
         console.error('Failed to send queued notification:', error);
       }
     }
+
+    // Log the batch send event
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'producer_notifications_sent',
+        payload: {
+          success_count: successCount,
+          fail_count: failCount,
+          total: queued.length
+        }
+      }
+    });
 
     toast({
       title: "Queued Emails Sent",
@@ -1078,6 +1179,19 @@ export default function Admin() {
         console.error('Email failed:', emailError);
       }
     }
+
+    // Log the payment marked as paid event
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'payment_marked_paid',
+        payload: {
+          payment_report_id: selectedPaymentReport.id,
+          amount: selectedPaymentReport.amount_owed,
+          payment_date: formattedDate,
+          report_id: selectedPaymentReport.report_id
+        }
+      }
+    });
 
     toast({
       title: "Success",
@@ -1395,6 +1509,12 @@ export default function Admin() {
               className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
             >
               Moderation 🛡️
+            </TabsTrigger>
+            <TabsTrigger 
+              value="audit"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Audit Logs 🧾
             </TabsTrigger>
           </TabsList>
 
@@ -1815,6 +1935,106 @@ export default function Admin() {
                     </TableCell>
                   </TableRow>
                 ))
+              )}
+            </TableBody>
+          </Table>
+        </TabsContent>
+
+        {/* Audit Logs Tab */}
+        <TabsContent value="audit">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-lg font-semibold">Audit Logs</h3>
+              <p className="text-sm text-muted-foreground">Complete history of all admin actions</p>
+            </div>
+            <Badge variant="outline">{auditLogs.length} logs</Badge>
+          </div>
+          
+          <div className="mb-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="Search by event type or user..."
+                value={auditSearchQuery}
+                onChange={(e) => setAuditSearchQuery(e.target.value)}
+                className="max-w-sm"
+              />
+            </div>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Timestamp</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Event Type</TableHead>
+                <TableHead>Details</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {auditLogs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    No audit logs yet
+                  </TableCell>
+                </TableRow>
+              ) : (
+                auditLogs
+                  .filter(log => {
+                    if (!auditSearchQuery) return true;
+                    const query = auditSearchQuery.toLowerCase();
+                    const userName = log.profiles 
+                      ? `${log.profiles.legal_first_name} ${log.profiles.legal_last_name}`.toLowerCase()
+                      : '';
+                    return log.event_type.toLowerCase().includes(query) || userName.includes(query);
+                  })
+                  .map((log) => {
+                    const eventTypeColors: Record<string, string> = {
+                      'submission_verified': 'bg-green-500/10 text-green-700 dark:text-green-400',
+                      'submission_rejected': 'bg-red-500/10 text-red-700 dark:text-red-400',
+                      'payment_marked_paid': 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+                      'maintenance_mode_toggled': 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400',
+                      'producer_notification_toggled': 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+                      'producer_notifications_sent': 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400',
+                    };
+
+                    return (
+                      <TableRow key={log.id}>
+                        <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                          {new Date(log.created_at).toLocaleString()}
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {log.profiles ? (
+                            <div>
+                              <div className="font-medium">
+                                {log.profiles.legal_first_name} {log.profiles.legal_last_name}
+                              </div>
+                              <div className="text-xs text-muted-foreground">{log.profiles.email}</div>
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground italic">Unknown</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant="outline" 
+                            className={eventTypeColors[log.event_type] || ''}
+                          >
+                            {log.event_type.replace(/_/g, ' ')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="max-w-md">
+                          <details className="cursor-pointer group">
+                            <summary className="text-sm text-muted-foreground group-hover:text-foreground">
+                              View payload →
+                            </summary>
+                            <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto max-h-40">
+                              {JSON.stringify(log.payload, null, 2)}
+                            </pre>
+                          </details>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
               )}
             </TableBody>
           </Table>
