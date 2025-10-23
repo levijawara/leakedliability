@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +57,60 @@ interface RoutesData {
 const Sitemap = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    checkAdminAccess();
+  }, []);
+
+  const checkAdminAccess = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      const { data, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
+
+      if (error || !data) {
+        toast({
+          title: "Access Denied",
+          description: "Admin privileges required to view sitemap.",
+          variant: "destructive",
+        });
+        navigate("/");
+        return;
+      }
+
+      setIsAdmin(true);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to verify admin access.",
+        variant: "destructive",
+      });
+      navigate("/");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   const routes: RoutesData = {
     public: [

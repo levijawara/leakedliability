@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -1233,9 +1233,15 @@ export default function Admin() {
             <h1 className="text-4xl font-black mb-2">Admin Dashboard</h1>
             <p className="text-muted-foreground">Review and manage all submissions, reports, and disputes</p>
           </div>
-          <Button variant="outline" onClick={() => navigate("/")}>
-            Home
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => navigate("/sitemap")}>
+              <Map className="h-4 w-4 mr-2" />
+              Sitemap
+            </Button>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              Home
+            </Button>
+          </div>
         </div>
       </div>
 
