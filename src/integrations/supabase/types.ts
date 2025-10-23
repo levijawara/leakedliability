@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       disputes: {
         Row: {
           created_at: string | null
@@ -128,6 +152,36 @@ export type Database = {
           producer_count_at_lock?: number | null
           threshold_locked?: boolean
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      moderation_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          notes: string | null
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          target_id: string
+          target_type: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          target_id?: string
+          target_type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -553,7 +607,7 @@ export type Database = {
       }
       suggestions: {
         Row: {
-          client_ip: unknown | null
+          client_ip: unknown
           created_at: string
           id: string
           meta: Json | null
@@ -561,7 +615,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          client_ip?: unknown | null
+          client_ip?: unknown
           created_at?: string
           id?: string
           meta?: Json | null
@@ -569,7 +623,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          client_ip?: unknown | null
+          client_ip?: unknown
           created_at?: string
           id?: string
           meta?: Json | null
@@ -716,7 +770,7 @@ export type Database = {
         Row: {
           account_type: Database["public"]["Enums"]["account_type"] | null
           business_name: string | null
-          client_ip: unknown | null
+          client_ip: unknown
           created_at: string | null
           email: string | null
           id: string | null
@@ -731,14 +785,8 @@ export type Database = {
       }
     }
     Functions: {
-      calculate_pscs_score: {
-        Args: { producer_uuid: string }
-        Returns: number
-      }
-      generate_report_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
+      generate_report_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -746,10 +794,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      refresh_all_producer_stats: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      refresh_all_producer_stats: { Args: never; Returns: undefined }
     }
     Enums: {
       account_type:

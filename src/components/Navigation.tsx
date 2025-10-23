@@ -160,10 +160,16 @@ export function Navigation() {
                     Profile
                   </DropdownMenuItem>
                   {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate("/admin")}>
-                      <Shield className="h-4 w-4 mr-2" />
-                      Admin Dashboard
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/admin")}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/leaderboard-analytics")}>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Analytics
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />

@@ -44,6 +44,7 @@ export default function Admin() {
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [paymentReports, setPaymentReports] = useState<any[]>([]);
   const [disputes, setDisputes] = useState<any[]>([]);
+  const [moderationLogs, setModerationLogs] = useState<any[]>([]);
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [documentSignedUrls, setDocumentSignedUrls] = useState<string[]>([]);
@@ -128,6 +129,14 @@ export default function Admin() {
         .select("*")
         .is("sent_at", null);
       setQueuedNotifications(queued || []);
+
+      // Load moderation logs
+      const { data: modLogs } = await supabase
+        .from('moderation_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      setModerationLogs(modLogs || []);
 
     // Load account statistics
     await loadAccountStats();
@@ -1381,6 +1390,12 @@ export default function Admin() {
             >
               Suggestions 💡
             </TabsTrigger>
+            <TabsTrigger 
+              value="moderation"
+              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Moderation 🛡️
+            </TabsTrigger>
           </TabsList>
 
           {/* Payment Reports Tab */}
@@ -1753,6 +1768,50 @@ export default function Admin() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground text-center">
                       {suggestion.total_suggestions_by_user || 1}
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TabsContent>
+
+        {/* Moderation Logs Tab */}
+        <TabsContent value="moderation">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-semibold">Moderation Logs</h3>
+            <Badge variant="outline">{moderationLogs.length} logs</Badge>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Action</TableHead>
+                <TableHead>Target Type</TableHead>
+                <TableHead>Target ID</TableHead>
+                <TableHead>Notes</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {moderationLogs.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
+                    No moderation logs yet
+                  </TableCell>
+                </TableRow>
+              ) : (
+                moderationLogs.map((log) => (
+                  <TableRow key={log.id}>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(log.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{log.action}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">{log.target_type}</TableCell>
+                    <TableCell className="text-xs font-mono">{log.target_id.substring(0, 8)}...</TableCell>
+                    <TableCell className="text-sm max-w-md">
+                      {log.notes || <span className="text-muted-foreground">No notes</span>}
                     </TableCell>
                   </TableRow>
                 ))
