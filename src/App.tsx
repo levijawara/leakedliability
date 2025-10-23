@@ -110,6 +110,7 @@ const AppContent = () => {
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
       <Route path="/sitemap" element={<Sitemap />} />
+      <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
