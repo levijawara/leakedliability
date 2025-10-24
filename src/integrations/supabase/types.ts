@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_bans: {
+        Row: {
+          appeal_email: string | null
+          banned_by: string
+          created_at: string
+          id: string
+          reason: string
+          revoked_at: string | null
+          revoked_by: string | null
+          revoked_reason: string | null
+          target_display_name: string | null
+          target_email: string | null
+          target_user_id: string
+        }
+        Insert: {
+          appeal_email?: string | null
+          banned_by: string
+          created_at?: string
+          id?: string
+          reason: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          revoked_reason?: string | null
+          target_display_name?: string | null
+          target_email?: string | null
+          target_user_id: string
+        }
+        Update: {
+          appeal_email?: string | null
+          banned_by?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          revoked_at?: string | null
+          revoked_by?: string | null
+          revoked_reason?: string | null
+          target_display_name?: string | null
+          target_email?: string | null
+          target_user_id?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           created_at: string
@@ -35,6 +77,30 @@ export type Database = {
           id?: string
           payload?: Json
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      ban_pages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -498,6 +564,7 @@ export type Database = {
       }
       producers: {
         Row: {
+          account_status: string | null
           average_days_to_pay: number | null
           company: string | null
           created_at: string
@@ -522,6 +589,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_status?: string | null
           average_days_to_pay?: number | null
           company?: string | null
           created_at?: string
@@ -546,6 +614,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_status?: string | null
           average_days_to_pay?: number | null
           company?: string | null
           created_at?: string
@@ -573,6 +642,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string | null
           account_type: Database["public"]["Enums"]["account_type"]
           business_name: string | null
           confirmation_cash_balance: number | null
@@ -585,6 +655,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: string | null
           account_type: Database["public"]["Enums"]["account_type"]
           business_name?: string | null
           confirmation_cash_balance?: number | null
@@ -597,6 +668,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: string | null
           account_type?: Database["public"]["Enums"]["account_type"]
           business_name?: string | null
           confirmation_cash_balance?: number | null
@@ -977,8 +1049,19 @@ export type Database = {
     }
     Functions: {
       add_to_confirmation_pool: { Args: { amount: number }; Returns: undefined }
+      ban_account: {
+        Args: { _reason: string; _target_user_id: string }
+        Returns: Json
+      }
       calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
       generate_report_id: { Args: never; Returns: string }
+      get_ban_page: {
+        Args: never
+        Returns: {
+          body: string
+          title: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -987,6 +1070,7 @@ export type Database = {
         Returns: boolean
       }
       refresh_all_producer_stats: { Args: never; Returns: undefined }
+      revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }
     }
     Enums: {
       account_type:

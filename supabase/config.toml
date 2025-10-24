@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.stripe-setup-check]
 verify_jwt = true
+
+[functions.admin-ban-account]
+verify_jwt = true
+
+[functions.admin-revoke-ban]
+verify_jwt = true
