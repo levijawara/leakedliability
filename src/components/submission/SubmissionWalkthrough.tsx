@@ -14,7 +14,7 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
     <Card className="p-8">
       <div className="prose prose-sm max-w-none dark:prose-invert">
         <h2 className="text-2xl font-bold mb-4">LEAKED LIABILITY™ — WALK-THROUGH</h2>
-        <p className="text-sm text-muted-foreground mb-6">(version 1.5) (BETA) - Last updated 10/17/2025</p>
+        <p className="text-sm text-muted-foreground mb-6">(version 1.6) (BETA) - Last updated 10/23/2025</p>
 
         <div className="space-y-6 text-sm">
           <section>
@@ -33,6 +33,10 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
               <li><strong>Crew Member Reports ⚠️</strong> - sworn statements of unpaid invoices</li>
               <li><strong>Vendor Reports ⚠️</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
               <li><strong>Payment Confirmations ✅</strong> - verify a producer actually paid you</li>
+              <p className="text-xs italic text-muted-foreground ml-6">
+                *Verified confirmations earn Confirmation Cash — in-platform credit redeemable for site perks and merch.*
+              </p>
+              <li><strong>Crew/Vendor Corroboration 🔗</strong> - confirm a producer's <em>self-reported</em> unpaid debt through their shared link (no login required)</li>
               <li><strong>Counter-Disputes ‼️</strong> - challenge a producer's dispute of your report</li>
             </ul>
           </section>
@@ -40,10 +44,14 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
           <section>
             <h3 className="font-bold text-base mb-2">What Producers/Production Companies Can Submit:</h3>
             <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Producer Self-Report 🎉</strong> - voluntarily disclose outstanding debts to earn Transparency Credit and boost PSCS score once corroborated by at least 3 crew/vendor confirmations</li>
               <li><strong>Payment Documentation 🧾</strong> - receipts, confirmations, bank proof</li>
               <li><strong>Report Explanations ☮️</strong> - acknowledge & explain why payment is delayed</li>
               <li><strong>Report Disputes ⁉️</strong> - challenge a crew member's or vendor's report</li>
             </ul>
+            <p className="text-sm text-muted-foreground mt-3">
+              Verified reports, self-reports, and confirmations all contribute to a producer's PSCS and may trigger short-term <span className="text-orange-500 font-semibold">Good Standing Momentum 🔥</span> periods.
+            </p>
           </section>
 
           <section>
