@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import {
   Form,
@@ -31,6 +32,8 @@ type SelfReportFormValues = z.infer<typeof selfReportSchema>;
 
 export default function ProducerSelfReportForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<SelfReportFormValues>({
@@ -74,8 +77,8 @@ export default function ProducerSelfReportForm() {
         return;
       }
 
-      // Insert self-report
-      const { error: insertError } = await supabase
+      // Insert self-report and retrieve share_link
+      const { data, error: insertError } = await supabase
         .from("producer_self_reports")
         .insert([{
           producer_id: linkData.producer_id,
@@ -83,7 +86,9 @@ export default function ProducerSelfReportForm() {
           amount_owed: parseFloat(values.amountOwed),
           reason: values.reason || null,
           evidence_url: values.evidenceUrl || null,
-        }]);
+        }])
+        .select('share_link')
+        .single();
 
       if (insertError) {
         console.error("Self-report error:", insertError);
@@ -95,10 +100,15 @@ export default function ProducerSelfReportForm() {
         return;
       }
 
-      toast({
-        title: "Self-Report Submitted",
-        description: "Your transparency disclosure has been recorded. Awaiting verification.",
-      });
+      // Display share link
+      if (data?.share_link) {
+        setShareLink(data.share_link);
+        setCopied(false);
+        toast({
+          title: "Self-Report Submitted",
+          description: "Copy your confirmation link below to share with collaborators.",
+        });
+      }
 
       form.reset();
     } catch (error) {
@@ -186,6 +196,36 @@ export default function ProducerSelfReportForm() {
           Submit Self-Report
         </Button>
       </form>
+
+      {shareLink && (
+        <Card className="mt-4 p-4 bg-muted/30 border-primary/20">
+          <h4 className="font-semibold mb-2 flex items-center gap-2">
+            <span>✅</span> Crew/Vendor Confirmation Link
+          </h4>
+          <p className="text-sm text-muted-foreground mb-3">
+            Share this link with at least three collaborators who can confirm this debt. 
+            After 3 confirmations, your report will be eligible for verification.
+          </p>
+          <div className="flex items-center gap-2">
+            <Input
+              type="text"
+              readOnly
+              value={shareLink}
+              className="text-xs font-mono bg-background"
+            />
+            <Button 
+              size="sm"
+              onClick={() => {
+                navigator.clipboard.writeText(shareLink);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+            >
+              {copied ? '✓ Copied!' : 'Copy Link'}
+            </Button>
+          </div>
+        </Card>
+      )}
     </Form>
   );
 }

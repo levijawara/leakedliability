@@ -25,6 +25,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import LeaderboardAnalytics from "./pages/LeaderboardAnalytics";
 import Sitemap from "./pages/Sitemap";
 import BanPage from "./pages/BanPage";
+import ConfirmReport from "./pages/ConfirmReport";
 
 const queryClient = new QueryClient();
 
@@ -113,6 +114,7 @@ const AppContent = () => {
       <Route path="/sitemap" element={<Sitemap />} />
       <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
       <Route path="/ban/:banId" element={<BanPage />} />
+      <Route path="/confirm" element={<ConfirmReport />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>

@@ -520,6 +520,7 @@ export type Database = {
           producer_id: string
           project_title: string
           reason: string | null
+          share_link: string | null
           status: string | null
         }
         Insert: {
@@ -532,6 +533,7 @@ export type Database = {
           producer_id: string
           project_title: string
           reason?: string | null
+          share_link?: string | null
           status?: string | null
         }
         Update: {
@@ -544,6 +546,7 @@ export type Database = {
           producer_id?: string
           project_title?: string
           reason?: string | null
+          share_link?: string | null
           status?: string | null
         }
         Relationships: [
@@ -1118,6 +1121,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_corroboration: {
+        Args: { report_id: string }
+        Returns: undefined
       }
       refresh_all_producer_stats: { Args: never; Returns: undefined }
       revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }
