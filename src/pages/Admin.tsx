@@ -5,7 +5,13 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -70,6 +76,7 @@ export default function Admin() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [auditSearchQuery, setAuditSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("crew_report");
 
   useEffect(() => {
     checkAdminAccess();
@@ -1456,74 +1463,64 @@ export default function Admin() {
       </Card>
 
       <Card className="p-6 shadow-sm hover:shadow-md transition-shadow">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-1">Submissions & Reports</h2>
-          <p className="text-sm text-muted-foreground">Review all submission types</p>
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-semibold mb-1">Submissions & Reports</h2>
+            <p className="text-sm text-muted-foreground">Review all submission types</p>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="min-w-[200px] justify-between">
+                {activeTab === "crew_report" && "Crew Reports ⚠️"}
+                {activeTab === "vendor_report" && "Vendor Reports 📋"}
+                {activeTab === "payment_confirmation" && "Payment Confirmation ✅"}
+                {activeTab === "payment_documentation" && "Payment Documentation 🧾"}
+                {activeTab === "report_explanation" && "Report Explanation ☮️"}
+                {activeTab === "counter_dispute" && "Counter-Dispute ‼️"}
+                {activeTab === "report_dispute" && "Report Dispute ⁉️"}
+                {activeTab === "suggestions" && "Suggestions 💡"}
+                {activeTab === "moderation" && "Moderation 🛡️"}
+                {activeTab === "audit" && "Audit Logs 🧾"}
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[220px] bg-background">
+              <DropdownMenuItem onClick={() => setActiveTab("crew_report")}>
+                Crew Reports ⚠️
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("vendor_report")}>
+                Vendor Reports 📋
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("payment_confirmation")}>
+                Payment Confirmation ✅
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("payment_documentation")}>
+                Payment Documentation 🧾
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("report_explanation")}>
+                Report Explanation ☮️
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("counter_dispute")}>
+                Counter-Dispute ‼️
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("report_dispute")}>
+                Report Dispute ⁉️
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("suggestions")}>
+                Suggestions 💡
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("moderation")}>
+                Moderation 🛡️
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("audit")}>
+                Audit Logs 🧾
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <Tabs defaultValue="crew_report">
-          <TabsList className="inline-flex h-11 items-center justify-start rounded-lg bg-muted p-1 mb-6 flex-wrap">
-            <TabsTrigger 
-              value="crew_report"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Crew Reports ⚠️
-            </TabsTrigger>
-            <TabsTrigger 
-              value="vendor_report"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Vendor Reports 📋
-            </TabsTrigger>
-            <TabsTrigger 
-              value="payment_confirmation"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Payment Confirmation ✅
-            </TabsTrigger>
-            <TabsTrigger 
-              value="payment_documentation"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Payment Documentation 🧾
-            </TabsTrigger>
-            <TabsTrigger 
-              value="report_explanation"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Report Explanation ☮️
-            </TabsTrigger>
-            <TabsTrigger 
-              value="counter_dispute"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Counter-Dispute ‼️
-            </TabsTrigger>
-            <TabsTrigger 
-              value="report_dispute"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Report Dispute ⁉️
-            </TabsTrigger>
-            <TabsTrigger 
-              value="suggestions"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Suggestions 💡
-            </TabsTrigger>
-            <TabsTrigger 
-              value="moderation"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Moderation 🛡️
-            </TabsTrigger>
-            <TabsTrigger 
-              value="audit"
-              className="data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Audit Logs 🧾
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
 
           {/* Payment Reports Tab */}
           <TabsContent value="payment_reports">
