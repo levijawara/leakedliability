@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import ProducerSelfReportForm from "@/components/ProducerSelfReportForm";
 import {
   Table,
   TableBody,
@@ -224,6 +225,20 @@ export default function ProducerDashboard() {
           >
             Submit Response
           </Button>
+        </Card>
+
+        <Card className="mt-6 p-6">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            Self-Report Outstanding Debt
+            <span className="text-sm font-normal text-muted-foreground">
+              (Transparency Credit)
+            </span>
+          </h3>
+          <p className="text-sm text-muted-foreground mb-4">
+            Voluntarily disclose debts to earn transparency credit. Requires 3 crew/vendor 
+            corroborations for verification.
+          </p>
+          <ProducerSelfReportForm />
         </Card>
       </div>
     </div>

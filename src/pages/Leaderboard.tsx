@@ -319,10 +319,23 @@ export default function Leaderboard() {
                       className="hover:bg-muted/50 transition-colors"
                     >
                       <TableCell className="font-semibold">
-                        <span className={shouldBlurNames ? "blur-sm select-none" : ""}>{producer.name}</span>
-                        {producer.company && (
-                          <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company}</div>
-                        )}
+                        <div className="flex items-center gap-2">
+                          <div>
+                            <span className={shouldBlurNames ? "blur-sm select-none" : ""}>{producer.name}</span>
+                            {producer.company && (
+                              <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company}</div>
+                            )}
+                          </div>
+                          {producer.momentum_active_until && 
+                           new Date(producer.momentum_active_until) > new Date() && (
+                            <span 
+                              title="Good Standing Momentum (7-day grace period)" 
+                              className="text-xl"
+                            >
+                              🔥
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">

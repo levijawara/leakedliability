@@ -509,6 +509,53 @@ export type Database = {
           },
         ]
       }
+      producer_self_reports: {
+        Row: {
+          amount_owed: number
+          corroboration_count: number | null
+          created_at: string | null
+          evidence_url: string | null
+          expires_at: string | null
+          id: string
+          producer_id: string
+          project_title: string
+          reason: string | null
+          status: string | null
+        }
+        Insert: {
+          amount_owed: number
+          corroboration_count?: number | null
+          created_at?: string | null
+          evidence_url?: string | null
+          expires_at?: string | null
+          id?: string
+          producer_id: string
+          project_title: string
+          reason?: string | null
+          status?: string | null
+        }
+        Update: {
+          amount_owed?: number
+          corroboration_count?: number | null
+          created_at?: string | null
+          evidence_url?: string | null
+          expires_at?: string | null
+          id?: string
+          producer_id?: string
+          project_title?: string
+          reason?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "producer_self_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       producer_subscriptions: {
         Row: {
           contribution_to_pool: number
@@ -570,6 +617,7 @@ export type Database = {
           created_at: string
           id: string
           last_closed_date: string | null
+          momentum_active_until: string | null
           name: string
           oldest_debt_date: string | null
           oldest_debt_days: number | null
@@ -595,6 +643,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_closed_date?: string | null
+          momentum_active_until?: string | null
           name: string
           oldest_debt_date?: string | null
           oldest_debt_days?: number | null
@@ -620,6 +669,7 @@ export type Database = {
           created_at?: string
           id?: string
           last_closed_date?: string | null
+          momentum_active_until?: string | null
           name?: string
           oldest_debt_date?: string | null
           oldest_debt_days?: number | null
