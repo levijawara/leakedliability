@@ -376,11 +376,11 @@ export default function HowItWorks() {
                   <div>
                     <h3 className="text-xl font-bold mb-3">For Producers</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li><strong>Tier 1 ($5.99/mo):</strong> When you receive payment confirmation from crew, your PSCS will update sometime within a NET30 window.</li>
+              <li><strong>Tier 1 (<span className="font-bold text-green-600 dark:text-green-400">$5.99</span>/mo):</strong> When you receive payment confirmation from crew, your PSCS will update sometime within a NET30 window.</li>
               <p className="text-red-500 font-bold mt-2">
                 (...DO YOU SEE HOW FUCKING STUPID THAT SOUNDS???)
               </p>
-              <li><strong>Tier 2 ($9.99/mo):</strong> Real-time updates, advanced analytics, export reports</li>
+              <li><strong>Tier 2 (<span className="font-bold text-green-600 dark:text-green-400">$9.99</span>/mo):</strong> Real-time updates, advanced analytics, export reports</li>
                       <li><strong>OR:</strong> Pay with Confirmation Cash (future feature)</li>
                     </ul>
                   </div>
