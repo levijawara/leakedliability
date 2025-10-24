@@ -26,7 +26,7 @@ const Index = () => {
           </h1>
 
           <p className="text-2xl md:text-3xl font-bold text-muted-foreground max-w-2xl mx-auto">
-            A platform designed to enable and empower freelance crew members and vendors, by intrinsically motivating producers to be good people.
+            A platform designed to enable and empower freelance crew members and vendors, by intrinsically motivating producers to be good people. We reward integrity, and expose the exploiters.
           </p>
 
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
