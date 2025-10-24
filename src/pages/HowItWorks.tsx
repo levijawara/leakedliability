@@ -26,7 +26,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣ Overview</CardTitle>
+                  <CardTitle>Overview</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -44,7 +44,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>2️⃣ Who Uses Leaked Liability™</CardTitle>
+                  <CardTitle>Who Uses Leaked Liability™</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -77,7 +77,7 @@ export default function HowItWorks() {
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>3️⃣ Confirmation Cash 💰</CardTitle>
+                  <CardTitle>Confirmation Cash 💰</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -117,7 +117,7 @@ export default function HowItWorks() {
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>4️⃣ Producer Self-Reports 🎉</CardTitle>
+                  <CardTitle>Producer Self-Reports 🎉</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -164,7 +164,7 @@ export default function HowItWorks() {
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>5️⃣ The Wildfire System (Corroboration Links) 🔗</CardTitle>
+                  <CardTitle>The Wildfire System (Corroboration Links) 🔗</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -205,7 +205,7 @@ export default function HowItWorks() {
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>6️⃣ Momentum Status 🔥</CardTitle>
+                  <CardTitle>Momentum Status 🔥</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -254,7 +254,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>7️⃣ PSCS (Producer Social Credit Score)</CardTitle>
+                  <CardTitle>PSCS (Producer Social Credit Score)</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -354,7 +354,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>8️⃣ Leaderboard Access</CardTitle>
+                  <CardTitle>Leaderboard Access</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -395,7 +395,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>9️⃣ Submission Forms Guide</CardTitle>
+                  <CardTitle>Submission Forms Guide</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -429,7 +429,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>🔟 Producer Dashboard</CardTitle>
+                  <CardTitle>Producer Dashboard</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -463,7 +463,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣1️⃣ Identification Rules</CardTitle>
+                  <CardTitle>Identification Rules</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -504,7 +504,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣2️⃣ Verification & Liability</CardTitle>
+                  <CardTitle>Verification & Liability</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -527,7 +527,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣3️⃣ Report Lifecycle</CardTitle>
+                  <CardTitle>Report Lifecycle</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -550,7 +550,7 @@ export default function HowItWorks() {
             <Card className="border-destructive/20 bg-destructive/5">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣5️⃣ Ban Policy 🚫</CardTitle>
+                  <CardTitle>Ban Policy 🚫</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -591,7 +591,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣6️⃣ Security & Privacy</CardTitle>
+                  <CardTitle>Security & Privacy</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -614,7 +614,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣7️⃣ Disclaimers & Legal</CardTitle>
+                  <CardTitle>Disclaimers & Legal</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -636,7 +636,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣8️⃣ Future Amendments</CardTitle>
+                  <CardTitle>Future Amendments</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
