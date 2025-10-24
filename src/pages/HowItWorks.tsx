@@ -34,9 +34,6 @@ export default function HowItWorks() {
                   <p className="text-lg">
                     Leaked Liability™ is a transparency platform designed to protect freelance crew, vendors, and service providers — while motivating producers and companies to act with integrity. <strong>We reward honesty. We verify facts. We track patterns.</strong>
                   </p>
-                  <p className="text-lg font-semibold">
-                    We reward integrity, and expose the exploiters.
-                  </p>
                 </CardContent>
               </AccordionContent>
             </Card>
@@ -77,7 +74,7 @@ export default function HowItWorks() {
 
           {/* 3️⃣ CONFIRMATION CASH */}
           <AccordionItem value="confirmation-cash">
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
                   <CardTitle>3️⃣ Confirmation Cash 💰</CardTitle>
@@ -117,7 +114,7 @@ export default function HowItWorks() {
 
           {/* 4️⃣ PRODUCER SELF-REPORTS */}
           <AccordionItem value="self-reports">
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
                   <CardTitle>4️⃣ Producer Self-Reports 🤝</CardTitle>
@@ -164,7 +161,7 @@ export default function HowItWorks() {
 
           {/* 5️⃣ THE WILDFIRE SYSTEM */}
           <AccordionItem value="wildfire">
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
                   <CardTitle>5️⃣ The Wildfire System (Corroboration Links) 🔥</CardTitle>
@@ -205,7 +202,7 @@ export default function HowItWorks() {
 
           {/* 6️⃣ MOMENTUM STATUS */}
           <AccordionItem value="momentum">
-            <Card className="border-primary/20 bg-primary/5">
+            <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
                   <CardTitle>6️⃣ Momentum Status 🔥</CardTitle>
