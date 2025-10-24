@@ -15,26 +15,25 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 
 const selfReportSchema = z.object({
-  projectTitle: z.string().min(3, "Project title must be at least 3 characters"),
+  projectTitle: z.string().min(2, "Project title must be at least 2 characters"),
   amountOwed: z.string().refine(
     (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
-    "Must be a valid positive amount"
+    "Amount must be a positive number"
   ),
   reason: z.string().optional(),
-  evidenceUrl: z.string().url("Must be a valid URL").optional().or(z.literal("")),
+  evidenceUrl: z.string().url().optional().or(z.literal("")),
 });
 
-type SelfReportFormData = z.infer<typeof selfReportSchema>;
+type SelfReportFormValues = z.infer<typeof selfReportSchema>;
 
 export default function ProducerSelfReportForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const form = useForm<SelfReportFormData>({
+  const form = useForm<SelfReportFormValues>({
     resolver: zodResolver(selfReportSchema),
     defaultValues: {
       projectTitle: "",
@@ -44,7 +43,7 @@ export default function ProducerSelfReportForm() {
     },
   });
 
-  const onSubmit = async (values: SelfReportFormData) => {
+  const onSubmit = async (values: SelfReportFormValues) => {
     setIsSubmitting(true);
 
     try {
@@ -66,9 +65,9 @@ export default function ProducerSelfReportForm() {
         .eq("user_id", user.id)
         .single();
 
-      if (linkError || !linkData) {
+      if (linkError || !linkData?.producer_id) {
         toast({
-          title: "No Producer Account",
+          title: "Producer Account Required",
           description: "You must have a linked producer account to submit self-reports",
           variant: "destructive",
         });
@@ -76,7 +75,7 @@ export default function ProducerSelfReportForm() {
       }
 
       // Insert self-report
-      const { error } = await supabase
+      const { error: insertError } = await supabase
         .from("producer_self_reports")
         .insert([{
           producer_id: linkData.producer_id,
@@ -86,22 +85,24 @@ export default function ProducerSelfReportForm() {
           evidence_url: values.evidenceUrl || null,
         }]);
 
-      if (error) {
-        console.error("Self-report submission error:", error);
+      if (insertError) {
+        console.error("Self-report error:", insertError);
         toast({
           title: "Submission Failed",
-          description: "An error occurred while submitting your self-report",
+          description: "Unable to submit self-report. Please try again.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Self-Report Submitted",
-          description: "Your self-report has been submitted. Awaiting verification from crew/vendors.",
-        });
-        form.reset();
+        return;
       }
-    } catch (err) {
-      console.error("Unexpected error:", err);
+
+      toast({
+        title: "Self-Report Submitted",
+        description: "Your transparency disclosure has been recorded. Awaiting verification.",
+      });
+
+      form.reset();
+    } catch (error) {
+      console.error("Unexpected error:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -122,7 +123,7 @@ export default function ProducerSelfReportForm() {
             <FormItem>
               <FormLabel>Project Title</FormLabel>
               <FormControl>
-                <Input placeholder="e.g., Feature Film XYZ" {...field} />
+                <Input placeholder="Project name" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -134,14 +135,9 @@ export default function ProducerSelfReportForm() {
           name="amountOwed"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Amount Owed ($)</FormLabel>
+              <FormLabel>Amount Owed (USD)</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  step="0.01" 
-                  placeholder="0.00" 
-                  {...field} 
-                />
+                <Input type="number" step="0.01" placeholder="0.00" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -156,14 +152,12 @@ export default function ProducerSelfReportForm() {
               <FormLabel>Reason (Optional)</FormLabel>
               <FormControl>
                 <Textarea 
-                  placeholder="Explain why this debt exists and your plan to resolve it..."
+                  placeholder="Explain the circumstances or reason for delayed payment"
+                  className="resize-none"
                   rows={3}
-                  {...field} 
+                  {...field}
                 />
               </FormControl>
-              <FormDescription>
-                Providing context shows transparency and good faith
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -178,27 +172,18 @@ export default function ProducerSelfReportForm() {
               <FormControl>
                 <Input 
                   type="url" 
-                  placeholder="https://..." 
-                  {...field} 
+                  placeholder="https://example.com/evidence"
+                  {...field}
                 />
               </FormControl>
-              <FormDescription>
-                Link to payment plan, correspondence, or other supporting documents
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
 
         <Button type="submit" disabled={isSubmitting} className="w-full">
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Submitting...
-            </>
-          ) : (
-            "Submit Self-Report"
-          )}
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Submit Self-Report
         </Button>
       </form>
     </Form>
