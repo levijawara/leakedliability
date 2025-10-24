@@ -32,10 +32,7 @@ export default function HowItWorks() {
               <AccordionContent>
                 <CardContent className="space-y-4">
                   <p className="text-lg">
-                    Leaked Liability™ is a transparency platform designed to protect freelance crew, vendors, and service providers — while motivating producers and companies to act with integrity.
-                  </p>
-                  <p className="text-lg font-semibold">
-                    We reward honesty. We verify facts. We track patterns.
+                    Leaked Liability™ is a transparency platform designed to protect freelance crew, vendors, and service providers — while motivating producers and companies to act with integrity. <strong>We reward honesty. We verify facts. We track patterns.</strong>
                   </p>
                   <p className="text-lg font-semibold">
                     We reward integrity, and expose the exploiters.
@@ -546,28 +543,6 @@ export default function HowItWorks() {
                     <li><strong>Late or false data</strong> → penalties applied</li>
                     <li><strong>Immutable audit log</strong> ensures integrity</li>
                   </ol>
-                </CardContent>
-              </AccordionContent>
-            </Card>
-          </AccordionItem>
-
-          {/* 1️⃣4️⃣ THE CONFIRMATION POOL */}
-          <AccordionItem value="confirmation-pool">
-            <Card className="border-muted-foreground/20">
-              <CardHeader>
-                <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>1️⃣4️⃣ The Confirmation Pool (Admin Only)</CardTitle>
-                </AccordionTrigger>
-              </CardHeader>
-              <AccordionContent>
-                <CardContent className="space-y-4">
-                  <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                    <li>Hidden, simulated balance (seeded at $1,000)</li>
-                    <li>Funds "Confirmation Cash" rewards for users</li>
-                    <li>Visible only in admin dashboard</li>
-                    <li>Never public-facing</li>
-                    <li>Purpose: Track symbolic reward distribution without real money exchange</li>
-                  </ul>
                 </CardContent>
               </AccordionContent>
             </Card>
