@@ -101,9 +101,7 @@ export default function SuggestionBox() {
             </div>
 
             <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-              We accept anonymous ideas. If you're signed in, your account info is attached to help us 
-              follow up and prioritize signal over noise. We never sell submissions. Keep sensitive 
-              personal data out of your message.
+              You can be honest. We don't bite. If we like and approve of your idea, you *COULD* get *PAID* for it after implementation. 👀
             </div>
 
             <Button
