@@ -7,6 +7,7 @@ import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import ProducerSelfReportForm from "@/components/ProducerSelfReportForm";
+import { Footer } from "@/components/Footer";
 import {
   Table,
   TableBody,
@@ -241,6 +242,8 @@ export default function ProducerDashboard() {
           <ProducerSelfReportForm />
         </Card>
       </div>
+      
+      <Footer />
     </div>
   );
 }

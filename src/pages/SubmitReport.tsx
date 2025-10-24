@@ -17,6 +17,7 @@ import { ProducerSubmissionForm } from "@/components/submission/ProducerSubmissi
 import { VendorIdentification } from "@/components/submission/VendorIdentification";
 import { VendorReportForm } from "@/components/submission/VendorReportForm";
 import { useToast } from "@/hooks/use-toast";
+import { Footer } from "@/components/Footer";
 
 export default function SubmitReport() {
   const navigate = useNavigate();
@@ -245,6 +246,8 @@ export default function SubmitReport() {
           )}
         </div>
       </div>
+      
+      <Footer />
     </>
   );
 }

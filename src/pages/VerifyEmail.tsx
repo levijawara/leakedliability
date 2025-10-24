@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Mail, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export default function VerifyEmail() {
   const navigate = useNavigate();
@@ -92,6 +93,8 @@ export default function VerifyEmail() {
           </Card>
         </div>
       </div>
+      
+      <Footer />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -679,6 +680,8 @@ export default function HowItWorks() {
           <Home className="h-5 w-5" />
         </Button>
       </Link>
+      
+      <Footer />
     </div>
   );
 }

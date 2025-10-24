@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, TrendingUp, DollarSign, Users, FileText, Lock, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Footer } from "@/components/Footer";
 
 export default function LeaderboardAnalytics() {
   const navigate = useNavigate();
@@ -201,6 +202,8 @@ export default function LeaderboardAnalytics() {
           )}
         </Card>
       </div>
+      
+      <Footer />
     </div>
   );
 }

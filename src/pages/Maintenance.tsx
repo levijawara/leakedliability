@@ -2,6 +2,7 @@ import { Wrench, LogIn } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Footer } from "@/components/Footer";
 
 interface MaintenanceProps {
   message?: string;
@@ -62,6 +63,8 @@ const Maintenance = ({ message }: MaintenanceProps) => {
           </div>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

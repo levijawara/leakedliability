@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, CheckCircle2 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export default function ConfirmReport() {
   const [searchParams] = useSearchParams();
@@ -215,6 +216,8 @@ export default function ConfirmReport() {
           </CardContent>
         </Card>
       </div>
+      
+      <Footer />
     </div>
   );
 }

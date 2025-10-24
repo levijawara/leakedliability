@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { useState, useEffect } from "react";
 import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
 import { LeaderboardPaywall } from "@/components/LeaderboardPaywall";
@@ -394,6 +395,8 @@ export default function Leaderboard() {
 
         </div>
       </div>
+      
+      <Footer />
     </>
   );
 }

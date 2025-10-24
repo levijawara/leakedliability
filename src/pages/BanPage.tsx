@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Footer } from "@/components/Footer";
 
 interface BanRecord {
   id: string;
@@ -127,6 +128,8 @@ export default function BanPage() {
           </div>
         </div>
       </article>
+      
+      <Footer />
     </main>
   );
 }

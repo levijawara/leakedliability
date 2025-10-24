@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, FileText, Users, TrendingUp, Info } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -115,6 +116,8 @@ const Index = () => {
           </Button>
         </Card>
       </div>
+      
+      <Footer />
     </div>
   );
 };

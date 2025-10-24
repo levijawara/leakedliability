@@ -39,6 +39,7 @@ import {
   ScrollText,
   ChevronRight,
 } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 interface RouteInfo {
   path: string;
@@ -347,6 +348,8 @@ const Sitemap = () => {
           </Card>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

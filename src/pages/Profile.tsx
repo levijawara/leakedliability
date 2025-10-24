@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, LogOut, User as UserIcon } from "lucide-react";
 import { LeaderboardAccessStatus } from "@/components/LeaderboardAccessStatus";
+import { Footer } from "@/components/Footer";
 
 interface Profile {
   account_type: string;
@@ -287,6 +288,8 @@ const Profile = () => {
           </Card>
         </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };

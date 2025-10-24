@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { MessageSquare, ArrowLeft } from "lucide-react";
 import { suggestionSchema } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
+import { Footer } from "@/components/Footer";
 
 export default function SuggestionBox() {
   const navigate = useNavigate();
@@ -114,6 +115,8 @@ export default function SuggestionBox() {
           </form>
         </Card>
       </div>
+      
+      <Footer />
     </div>
   );
 }

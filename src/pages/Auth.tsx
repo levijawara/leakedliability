@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff } from "lucide-react";
 import ProducerAssociationModal from "@/components/ProducerAssociationModal";
+import { Footer } from "@/components/Footer";
 
 type AccountType = 'crew' | 'vendor' | 'producer' | 'production_company' | 'admin';
 
@@ -391,6 +392,8 @@ export default function Auth() {
         onClose={() => setShowProducerModal(false)}
         userId={newUserId}
       />
+      
+      <Footer />
     </div>
   );
 }
