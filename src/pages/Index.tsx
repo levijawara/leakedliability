@@ -25,11 +25,11 @@ const Index = () => {
             Leaked Liability™
           </h1>
 
-          <p className="text-2xl md:text-3xl font-bold text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-2xl md:text-xl font-bold text-muted-foreground max-w-2xl mx-auto">
             A platform designed to enable and empower freelance crew members and vendors, by intrinsically motivating producers to be good people. We reward integrity, and expose the exploiters.
           </p>
 
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-base text-muted-foreground max-w-2xl mx-auto">
             NET30+ was created as a means to assist businesses with monthly cash-flow BEFORE bank transactions became automated, but humanity has come a VERY long way—so has our technology. There's no need to pretend anymore. Humanity's undisciplined greed is the only reason why NET30+ still lingers, so we've decided to do something about it.
           </p>
 
