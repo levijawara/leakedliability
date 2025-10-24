@@ -117,7 +117,7 @@ export default function HowItWorks() {
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>4️⃣ Producer Self-Reports 🤝</CardTitle>
+                  <CardTitle>4️⃣ Producer Self-Reports 🎉</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -164,7 +164,7 @@ export default function HowItWorks() {
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>5️⃣ The Wildfire System (Corroboration Links) 🔥</CardTitle>
+                  <CardTitle>5️⃣ The Wildfire System (Corroboration Links) 🔗</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -254,7 +254,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>7️⃣ PSCS (Producer Social Credit Score) 🧠</CardTitle>
+                  <CardTitle>7️⃣ PSCS (Producer Social Credit Score)</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -354,7 +354,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>8️⃣ Leaderboard Access 🪶</CardTitle>
+                  <CardTitle>8️⃣ Leaderboard Access</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
