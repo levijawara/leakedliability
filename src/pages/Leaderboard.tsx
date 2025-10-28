@@ -27,12 +27,11 @@ export default function Leaderboard() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const { data: producers, isLoading } = useQuery({
-    queryKey: ["producers"],
+    queryKey: ["public_leaderboard"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("producers")
-        .select("*")
-        .order("pscs_score", { ascending: false });
+        .from("public_leaderboard")
+        .select("*");
       
       if (error) throw error;
       return data;

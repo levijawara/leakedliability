@@ -362,44 +362,51 @@ export type Database = {
             referencedRelation: "producers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "past_debts_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
         ]
       }
       payment_confirmations: {
         Row: {
           amount_paid: number
-          confirmation_type: string
+          confirmation_type: Database["public"]["Enums"]["confirmation_type_enum"]
           confirmer_id: string
           created_at: string | null
           id: string
           notes: string | null
           payment_proof_url: string | null
-          payment_report_id: string | null
+          payment_report_id: string
           producer_id: string | null
           updated_at: string | null
           verified: boolean | null
         }
         Insert: {
           amount_paid: number
-          confirmation_type: string
+          confirmation_type: Database["public"]["Enums"]["confirmation_type_enum"]
           confirmer_id: string
           created_at?: string | null
           id?: string
           notes?: string | null
           payment_proof_url?: string | null
-          payment_report_id?: string | null
+          payment_report_id: string
           producer_id?: string | null
           updated_at?: string | null
           verified?: boolean | null
         }
         Update: {
           amount_paid?: number
-          confirmation_type?: string
+          confirmation_type?: Database["public"]["Enums"]["confirmation_type_enum"]
           confirmer_id?: string
           created_at?: string | null
           id?: string
           notes?: string | null
           payment_proof_url?: string | null
-          payment_report_id?: string | null
+          payment_report_id?: string
           producer_id?: string | null
           updated_at?: string | null
           verified?: boolean | null
@@ -426,6 +433,13 @@ export type Database = {
             referencedRelation: "producers"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "payment_confirmations_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
         ]
       }
       payment_reports: {
@@ -448,7 +462,7 @@ export type Database = {
           reporter_type: string | null
           score_update_executed: boolean | null
           score_update_scheduled_for: string | null
-          status: string
+          status: Database["public"]["Enums"]["payment_status"]
           total_crew: number | null
           updated_at: string
           verified: boolean | null
@@ -472,7 +486,7 @@ export type Database = {
           reporter_type?: string | null
           score_update_executed?: boolean | null
           score_update_scheduled_for?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["payment_status"]
           total_crew?: number | null
           updated_at?: string
           verified?: boolean | null
@@ -496,7 +510,7 @@ export type Database = {
           reporter_type?: string | null
           score_update_executed?: boolean | null
           score_update_scheduled_for?: string | null
-          status?: string
+          status?: Database["public"]["Enums"]["payment_status"]
           total_crew?: number | null
           updated_at?: string
           verified?: boolean | null
@@ -508,6 +522,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "producers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
           },
           {
             foreignKeyName: "payment_reports_report_id_fkey"
@@ -547,6 +568,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "producers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producer_account_links_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
           },
         ]
       }
@@ -597,6 +625,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "producers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producer_self_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
           },
         ]
       }
@@ -650,6 +685,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "producers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "producer_subscriptions_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
           },
         ]
       }
@@ -1042,12 +1084,70 @@ export type Database = {
       }
     }
     Views: {
+      app_flags: {
+        Row: {
+          maintenance_mode: boolean | null
+          notifications_enabled: boolean | null
+        }
+        Relationships: []
+      }
       confirmation_cash_balances: {
         Row: {
           available_balance: number | null
           total_earned: number | null
           total_redeemed: number | null
           user_id: string | null
+        }
+        Relationships: []
+      }
+      public_leaderboard: {
+        Row: {
+          company_name: string | null
+          momentum_active_until: string | null
+          oldest_debt_date: string | null
+          oldest_debt_days: number | null
+          paid_crew_count: number | null
+          paid_jobs_count: number | null
+          producer_id: string | null
+          producer_name: string | null
+          pscs_score: number | null
+          total_amount_owed: number | null
+          total_cities_owed: number | null
+          total_crew_owed: number | null
+          total_jobs_owed: number | null
+          total_vendors_owed: number | null
+        }
+        Insert: {
+          company_name?: string | null
+          momentum_active_until?: string | null
+          oldest_debt_date?: string | null
+          oldest_debt_days?: number | null
+          paid_crew_count?: number | null
+          paid_jobs_count?: number | null
+          producer_id?: string | null
+          producer_name?: string | null
+          pscs_score?: number | null
+          total_amount_owed?: number | null
+          total_cities_owed?: number | null
+          total_crew_owed?: number | null
+          total_jobs_owed?: number | null
+          total_vendors_owed?: number | null
+        }
+        Update: {
+          company_name?: string | null
+          momentum_active_until?: string | null
+          oldest_debt_date?: string | null
+          oldest_debt_days?: number | null
+          paid_crew_count?: number | null
+          paid_jobs_count?: number | null
+          producer_id?: string | null
+          producer_name?: string | null
+          pscs_score?: number | null
+          total_amount_owed?: number | null
+          total_cities_owed?: number | null
+          total_crew_owed?: number | null
+          total_jobs_owed?: number | null
+          total_vendors_owed?: number | null
         }
         Relationships: []
       }
@@ -1066,7 +1166,7 @@ export type Database = {
           report_id: string | null
           reporter_id: string | null
           reporter_type: string | null
-          status: string | null
+          status: Database["public"]["Enums"]["payment_status"] | null
           updated_at: string | null
           verified: boolean | null
         }
@@ -1084,7 +1184,7 @@ export type Database = {
           report_id?: string | null
           reporter_id?: string | null
           reporter_type?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -1102,7 +1202,7 @@ export type Database = {
           report_id?: string | null
           reporter_id?: string | null
           reporter_type?: string | null
-          status?: string | null
+          status?: Database["public"]["Enums"]["payment_status"] | null
           updated_at?: string | null
           verified?: boolean | null
         }
@@ -1113,6 +1213,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "producers"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
           },
           {
             foreignKeyName: "payment_reports_report_id_fkey"
@@ -1179,6 +1286,11 @@ export type Database = {
         | "admin"
         | "vendor"
       app_role: "admin" | "user"
+      confirmation_type_enum:
+        | "crew_confirmation"
+        | "producer_documentation"
+        | "admin_verification"
+      payment_status: "pending" | "paid" | "disputed" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1314,6 +1426,12 @@ export const Constants = {
         "vendor",
       ],
       app_role: ["admin", "user"],
+      confirmation_type_enum: [
+        "crew_confirmation",
+        "producer_documentation",
+        "admin_verification",
+      ],
+      payment_status: ["pending", "paid", "disputed", "verified", "rejected"],
     },
   },
 } as const
