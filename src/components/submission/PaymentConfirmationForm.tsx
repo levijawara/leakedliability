@@ -132,7 +132,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
 
       if (confirmError) throw confirmError;
 
-      // Validate selectedReportId before UPDATE (strengthened guard)
+      // Validate selectedReportId before INSERT
       if (!selectedReportId || selectedReportId === "null" || selectedReportId === "undefined") {
         console.error('[PaymentConfirm] Invalid report ID:', selectedReportId);
         toast({
@@ -144,36 +144,40 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         return;
       }
 
-      // Log diagnostic info before UPDATE
+      // Log diagnostic info before INSERT
       console.log('[PaymentConfirm] selectedReportId:', selectedReportId);
       console.log('[PaymentConfirm] selectedReport:', selectedReport);
 
-      // Update payment report status to 'paid' - this triggers PSCS recalculation
-      const { data: updateData, error: updateError } = await supabase
-        .from('payment_reports')
-        .update({ 
-          status: 'paid',
-          payment_date: new Date().toISOString().split('T')[0]
+      // Insert payment confirmation record - triggers auto-verification via database trigger
+      const { data: confirmData, error: confirmError } = await supabase
+        .from('payment_confirmations')
+        .insert({
+          payment_report_id: selectedReportId,
+          producer_id: selectedReport.producer_id,
+          confirmer_id: user.id,
+          amount_paid: selectedReport.amount_owed,
+          confirmation_type: 'producer_confirmation',
+          payment_proof_url: proofUrls.length > 0 ? proofUrls[0] : null,
+          notes: `Self-service confirmation submitted on ${new Date().toISOString()}`
         })
-        .eq('id', selectedReportId)
-        .select('id');
+        .select('id')
+        .single();
 
-      console.log('[PaymentConfirm] update result:', { updateData, updateError });
+      console.log('[PaymentConfirm] insert result:', { confirmData, confirmError });
 
-      if (updateError) {
-        console.error('[PaymentConfirm] Supabase updateError:', updateError);
+      if (confirmError) {
+        console.error('[PaymentConfirm] confirmError:', confirmError);
         toast({
           title: "Error",
-          description: mapDatabaseError(updateError),
+          description: mapDatabaseError(confirmError),
           variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
-      // Check if update succeeded but no rows returned (RLS rejection or invalid ID)
-      if (!updateData || updateData.length === 0) {
-        console.warn('[PaymentConfirm] No rows updated — possible RLS rejection or invalid ID');
+      if (!confirmData) {
+        console.warn('[PaymentConfirm] No confirmation created');
         toast({
           title: "Error",
           description: "Your confirmation couldn't be recorded. Please try again or contact support.",
