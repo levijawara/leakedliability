@@ -197,6 +197,8 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         return;
       }
 
+      console.log("[PaymentConfirm] about to insert, payload:", payload);
+
       // Insert payment confirmation record - triggers auto-verification via database trigger
       const { data: confirmData, error: insertError } = await supabase
         .from("payment_confirmations")
@@ -204,6 +206,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         .select("id")
         .single();
 
+      console.log("[PaymentConfirm] post-insert reached, data:", confirmData);
       console.log('[PaymentConfirm] insert result:', { confirmData, insertError });
 
       if (insertError) {
