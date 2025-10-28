@@ -177,15 +177,27 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         console.error('Could not delete queued notification:', deleteQueueError);
       }
 
-      toast({
-        title: "Payment Confirmed!",
-        description: "The leaderboard has been updated instantly"
-      });
-      
-      onSuccess();
+      // Wrap success-side UI actions to prevent false error toasts
+      try {
+        console.log("[PaymentConfirm] Success branch reached — showing success toast and calling onSuccess");
+        toast({
+          title: "Success",
+          description: "Payment confirmed successfully!",
+          variant: "default",
+        });
+        onSuccess?.();
+        setProofFiles([]);
+        setSelectedReportId("");
+      } catch (uiError) {
+        console.error("[PaymentConfirm] UI or callback error:", uiError);
+      }
     } catch (error: any) {
-      console.error('[PaymentConfirm] Unexpected error:', error);
-      // Errors are now handled inline, this is just a safety net
+      console.error("[PaymentConfirm] Fatal error:", error);
+      toast({
+        title: "Error",
+        description: mapDatabaseError(error),
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
