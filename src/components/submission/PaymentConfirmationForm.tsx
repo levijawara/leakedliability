@@ -210,7 +210,13 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       console.log('[PaymentConfirm] insert result:', { confirmData, insertError });
 
       if (insertError) {
-        console.error('[PaymentConfirm] insertError:', insertError);
+        console.error('[PaymentConfirm] ===== INSERT ERROR DETAILS =====');
+        console.error('[PaymentConfirm] error.message:', insertError.message);
+        console.error('[PaymentConfirm] error.details:', insertError.details);
+        console.error('[PaymentConfirm] error.hint:', insertError.hint);
+        console.error('[PaymentConfirm] error.code:', insertError.code);
+        console.error('[PaymentConfirm] Full error object:', JSON.stringify(insertError, null, 2));
+        console.error('[PaymentConfirm] =============================');
         toast({
           title: "Error",
           description: mapDatabaseError(insertError),
