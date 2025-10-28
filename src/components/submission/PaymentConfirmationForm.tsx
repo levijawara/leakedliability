@@ -132,34 +132,51 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
 
       if (confirmError) throw confirmError;
 
-      // Validate selectedReportId before UPDATE
-      if (!selectedReportId || typeof selectedReportId !== 'string') {
-        console.error('[PaymentConfirm] Invalid selectedReportId:', selectedReportId);
+      // Validate selectedReportId before UPDATE (strengthened guard)
+      if (!selectedReportId || selectedReportId === "null" || selectedReportId === "undefined") {
+        console.error('[PaymentConfirm] Invalid report ID:', selectedReportId);
         toast({
           title: "Error",
-          description: "Report ID is missing. Please refresh and try again.",
+          description: "Invalid report ID. Please refresh the page and select again.",
           variant: "destructive"
         });
         setLoading(false);
         return;
       }
 
-      console.log('[PaymentConfirm] Updating report:', selectedReportId);
+      // Log diagnostic info before UPDATE
+      console.log('[PaymentConfirm] selectedReportId:', selectedReportId);
+      console.log('[PaymentConfirm] selectedReport:', selectedReport);
 
       // Update payment report status to 'paid' - this triggers PSCS recalculation
-      const { error: updateError } = await supabase
+      const { data: updateData, error: updateError } = await supabase
         .from('payment_reports')
         .update({ 
           status: 'paid',
           payment_date: new Date().toISOString().split('T')[0]
         })
-        .eq('id', selectedReportId);
+        .eq('id', selectedReportId)
+        .select('id');
+
+      console.log('[PaymentConfirm] update result:', { updateData, updateError });
 
       if (updateError) {
         console.error('[PaymentConfirm] Supabase updateError:', updateError);
         toast({
           title: "Error",
           description: mapDatabaseError(updateError),
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if update succeeded but no rows returned (RLS rejection or invalid ID)
+      if (!updateData || updateData.length === 0) {
+        console.warn('[PaymentConfirm] No rows updated — possible RLS rejection or invalid ID');
+        toast({
+          title: "Error",
+          description: "Your confirmation couldn't be recorded. Please try again or contact support.",
           variant: "destructive"
         });
         setLoading(false);
