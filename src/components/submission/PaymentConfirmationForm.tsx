@@ -135,11 +135,25 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       console.log('[PaymentConfirm] selectedReportId:', selectedReportId);
       console.log('[PaymentConfirm] selectedReport:', selectedReport);
 
+      // Validate UUID format before proceeding
+      const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+      
+      if (!selectedReport?.id || !uuidRegex.test(selectedReport.id)) {
+        console.error("[PaymentConfirm] Invalid payment_report_id:", selectedReport?.id);
+        toast({
+          title: "Error",
+          description: "Invalid payment reference. Please refresh and reselect the report.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Build a clean, type-safe payload for the insert
       const payload = {
-        payment_report_id: selectedReport?.id ?? null, // Use DB UUID, not UI state
-        producer_id: selectedReport?.producer_id ?? null,
-        confirmer_id: user?.id ?? null,
+        payment_report_id: selectedReport.id, // Now guaranteed valid UUID
+        producer_id: selectedReport.producer_id,
+        confirmer_id: user.id,
         amount_paid:
           typeof selectedReport?.amount_owed === "number"
             ? selectedReport.amount_owed
