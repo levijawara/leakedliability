@@ -323,6 +323,47 @@ export type Database = {
         }
         Relationships: []
       }
+      past_debts: {
+        Row: {
+          amount_owed: number
+          created_at: string | null
+          date_resolved: string
+          days_overdue: number
+          id: string
+          producer_id: string
+          reporter_type: string
+          total_reports_at_time: number
+        }
+        Insert: {
+          amount_owed: number
+          created_at?: string | null
+          date_resolved?: string
+          days_overdue: number
+          id?: string
+          producer_id: string
+          reporter_type?: string
+          total_reports_at_time?: number
+        }
+        Update: {
+          amount_owed?: number
+          created_at?: string | null
+          date_resolved?: string
+          days_overdue?: number
+          id?: string
+          producer_id?: string
+          reporter_type?: string
+          total_reports_at_time?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "past_debts_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_confirmations: {
         Row: {
           amount_paid: number
@@ -1107,6 +1148,7 @@ export type Database = {
         Returns: Json
       }
       calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
+      cleanup_old_past_debts: { Args: never; Returns: undefined }
       generate_report_id: { Args: never; Returns: string }
       get_ban_page: {
         Args: never
