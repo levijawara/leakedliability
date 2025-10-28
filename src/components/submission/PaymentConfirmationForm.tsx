@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { paymentConfirmationSchema } from "@/lib/validation";
 import { uploadFiles } from "@/lib/storage";
+import { mapDatabaseError } from "@/lib/errors";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,6 +132,20 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
 
       if (confirmError) throw confirmError;
 
+      // Validate selectedReportId before UPDATE
+      if (!selectedReportId || typeof selectedReportId !== 'string') {
+        console.error('[PaymentConfirm] Invalid selectedReportId:', selectedReportId);
+        toast({
+          title: "Error",
+          description: "Report ID is missing. Please refresh and try again.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('[PaymentConfirm] Updating report:', selectedReportId);
+
       // Update payment report status to 'paid' - this triggers PSCS recalculation
       const { error: updateError } = await supabase
         .from('payment_reports')
@@ -160,9 +175,10 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       
       onSuccess();
     } catch (error: any) {
+      console.error('[PaymentConfirm] Error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: mapDatabaseError(error),
         variant: "destructive"
       });
     } finally {
