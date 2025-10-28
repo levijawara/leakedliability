@@ -149,15 +149,30 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         return;
       }
 
+      // Sanitize amount_paid: remove commas, currency symbols, whitespace
+      const rawAmount = selectedReport?.amount_owed;
+      const amountPaid = typeof rawAmount === "number"
+        ? rawAmount
+        : Number(String(rawAmount || "0").replace(/[^0-9.-]/g, ""));
+      
+      // Validate the sanitized amount
+      if (!Number.isFinite(amountPaid) || amountPaid < 0) {
+        console.error("[PaymentConfirm] Invalid amount after sanitization:", { rawAmount, amountPaid });
+        toast({
+          title: "Error",
+          description: "Invalid amount format. Please contact support.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Build a clean, type-safe payload for the insert
       const payload = {
         payment_report_id: selectedReport.id, // Now guaranteed valid UUID
         producer_id: selectedReport.producer_id,
         confirmer_id: user.id,
-        amount_paid:
-          typeof selectedReport?.amount_owed === "number"
-            ? selectedReport.amount_owed
-            : parseFloat(selectedReport?.amount_owed || "0"),
+        amount_paid: amountPaid,
         confirmation_type: "producer_documentation" as const, // Must match DB ENUM
         payment_proof_url:
           documentUrls?.length && typeof documentUrls[0] === "string"
@@ -238,7 +253,13 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         console.error("[PaymentConfirm] UI or callback error:", uiError);
       }
     } catch (error: any) {
-      console.error("[PaymentConfirm] Fatal error:", error);
+      console.error("[PaymentConfirm] Fatal error:", {
+        message: error?.message,
+        details: error?.details,
+        hint: error?.hint,
+        code: error?.code,
+        error
+      });
       toast({
         title: "Error",
         description: mapDatabaseError(error),

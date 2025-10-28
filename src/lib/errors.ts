@@ -29,8 +29,20 @@ export function mapDatabaseError(error: any): string {
     return 'Invalid value provided';
   }
   
+  if (message.includes('invalid input syntax for type numeric')) {
+    return 'Invalid amount format. Please check the payment amount.';
+  }
+  
   if (message.includes('invalid input syntax')) {
     return 'Invalid data format';
+  }
+  
+  if (message.includes('payment_report_id cannot be null')) {
+    return 'Invalid payment reference. Please refresh and try again.';
+  }
+  
+  if (message.includes('failed to decode') || message.includes('cannot cast')) {
+    return 'Invalid data format. Please refresh and try again.';
   }
   
   if (message.includes('permission denied')) {
