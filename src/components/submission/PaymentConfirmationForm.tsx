@@ -143,7 +143,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
           producer_id: selectedReport.producer_id,
           confirmer_id: user.id,
           amount_paid: selectedReport.amount_owed,
-          confirmation_type: 'producer_confirmation',
+          confirmation_type: 'producer_documentation',
           payment_proof_url: documentUrls.length > 0 ? documentUrls[0] : null,
           notes: `Self-service confirmation submitted on ${new Date().toISOString()}`
         })
