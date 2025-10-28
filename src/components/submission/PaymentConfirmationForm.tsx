@@ -155,7 +155,16 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
         })
         .eq('id', selectedReportId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('[PaymentConfirm] Supabase updateError:', updateError);
+        toast({
+          title: "Error",
+          description: mapDatabaseError(updateError),
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
 
       // Delete queued producer notification if it exists (not yet sent)
       const { error: deleteQueueError } = await supabase
@@ -175,12 +184,8 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       
       onSuccess();
     } catch (error: any) {
-      console.error('[PaymentConfirm] Error:', error);
-      toast({
-        title: "Error",
-        description: mapDatabaseError(error),
-        variant: "destructive"
-      });
+      console.error('[PaymentConfirm] Unexpected error:', error);
+      // Errors are now handled inline, this is just a safety net
     } finally {
       setLoading(false);
     }
