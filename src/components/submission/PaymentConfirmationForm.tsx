@@ -135,19 +135,44 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       console.log('[PaymentConfirm] selectedReportId:', selectedReportId);
       console.log('[PaymentConfirm] selectedReport:', selectedReport);
 
+      // Build a clean, type-safe payload for the insert
+      const payload = {
+        payment_report_id: selectedReport?.id ?? null, // Use DB UUID, not UI state
+        producer_id: selectedReport?.producer_id ?? null,
+        confirmer_id: user?.id ?? null,
+        amount_paid:
+          typeof selectedReport?.amount_owed === "number"
+            ? selectedReport.amount_owed
+            : parseFloat(selectedReport?.amount_owed || "0"),
+        confirmation_type: "producer_documentation" as const, // Must match DB ENUM
+        payment_proof_url:
+          documentUrls?.length && typeof documentUrls[0] === "string"
+            ? documentUrls[0]
+            : null,
+        notes: `Self-service confirmation submitted on ${new Date().toISOString()}`,
+      };
+
+      // Log outgoing payload for debugging
+      console.log("[PaymentConfirm] Payload:", payload);
+
+      // Guard clause: ensure critical UUIDs are present
+      if (!payload.payment_report_id || !payload.confirmer_id) {
+        console.error("[PaymentConfirm] Invalid IDs in payload:", payload);
+        toast({
+          title: "Error",
+          description:
+            "Missing or invalid report ID. Please refresh the page and try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Insert payment confirmation record - triggers auto-verification via database trigger
       const { data: confirmData, error: insertError } = await supabase
-        .from('payment_confirmations')
-        .insert({
-          payment_report_id: selectedReportId,
-          producer_id: selectedReport.producer_id,
-          confirmer_id: user.id,
-          amount_paid: selectedReport.amount_owed,
-          confirmation_type: 'producer_documentation',
-          payment_proof_url: documentUrls.length > 0 ? documentUrls[0] : null,
-          notes: `Self-service confirmation submitted on ${new Date().toISOString()}`
-        })
-        .select('id')
+        .from("payment_confirmations")
+        .insert(payload)
+        .select("id")
         .single();
 
       console.log('[PaymentConfirm] insert result:', { confirmData, insertError });
