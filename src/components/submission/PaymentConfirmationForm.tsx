@@ -119,19 +119,6 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
 
       const documentUrls = await uploadFiles(proofFiles);
 
-      // Insert payment confirmation
-      const { error: confirmError } = await supabase.from('payment_confirmations').insert({
-        confirmer_id: user.id,
-        payment_report_id: selectedReportId,
-        producer_id: selectedReport.producer_id,
-        amount_paid: selectedReport.amount_owed,
-        confirmation_type: 'crew_confirmation',
-        payment_proof_url: documentUrls.length > 0 ? documentUrls[0] : null,
-        verified: true
-      });
-
-      if (confirmError) throw confirmError;
-
       // Validate selectedReportId before INSERT
       if (!selectedReportId || selectedReportId === "null" || selectedReportId === "undefined") {
         console.error('[PaymentConfirm] Invalid report ID:', selectedReportId);
@@ -149,7 +136,7 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       console.log('[PaymentConfirm] selectedReport:', selectedReport);
 
       // Insert payment confirmation record - triggers auto-verification via database trigger
-      const { data: confirmData, error: confirmError } = await supabase
+      const { data: confirmData, error: insertError } = await supabase
         .from('payment_confirmations')
         .insert({
           payment_report_id: selectedReportId,
@@ -157,19 +144,19 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
           confirmer_id: user.id,
           amount_paid: selectedReport.amount_owed,
           confirmation_type: 'producer_confirmation',
-          payment_proof_url: proofUrls.length > 0 ? proofUrls[0] : null,
+          payment_proof_url: documentUrls.length > 0 ? documentUrls[0] : null,
           notes: `Self-service confirmation submitted on ${new Date().toISOString()}`
         })
         .select('id')
         .single();
 
-      console.log('[PaymentConfirm] insert result:', { confirmData, confirmError });
+      console.log('[PaymentConfirm] insert result:', { confirmData, insertError });
 
-      if (confirmError) {
-        console.error('[PaymentConfirm] confirmError:', confirmError);
+      if (insertError) {
+        console.error('[PaymentConfirm] insertError:', insertError);
         toast({
           title: "Error",
-          description: mapDatabaseError(confirmError),
+          description: mapDatabaseError(insertError),
           variant: "destructive"
         });
         setLoading(false);
@@ -202,9 +189,8 @@ export function PaymentConfirmationForm({ userInfo, onBack, onSuccess }: Payment
       try {
         console.log("[PaymentConfirm] Success branch reached — showing success toast and calling onSuccess");
         toast({
-          title: "Success",
-          description: "Payment confirmed successfully!",
-          variant: "default",
+          title: "Confirmation Submitted",
+          description: "Your payment confirmation has been recorded and will update the leaderboard.",
         });
         onSuccess?.();
         setProofFiles([]);
