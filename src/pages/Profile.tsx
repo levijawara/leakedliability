@@ -82,28 +82,39 @@ const Profile = () => {
   };
 
   const fetchSubmissionStats = async (userId: string) => {
-    const { data, error } = await supabase
+    const { data: submissionsData, error: submissionsError } = await supabase
       .from("submissions")
       .select("submission_type")
       .eq("user_id", userId);
 
-    if (error) {
-      console.error("Failed to load submission stats:", error);
+    if (submissionsError) {
+      console.error("Failed to load submission stats:", submissionsError);
       return;
+    }
+
+    // Query payment_confirmations table
+    const { data: confirmationsData, error: confirmationsError } = await supabase
+      .from("payment_confirmations")
+      .select("id")
+      .eq("confirmer_id", userId);
+
+    if (confirmationsError) {
+      console.error("Failed to load payment confirmations:", confirmationsError);
     }
 
     const counts: SubmissionStats = {
       crew_report: 0,
-      payment_confirmation: 0,
+      payment_confirmation: confirmationsData?.length || 0,
       counter_dispute: 0,
       payment_documentation: 0,
       report_explanation: 0,
       report_dispute: 0,
     };
 
-    data?.forEach((submission) => {
+    // Count other submission types from submissions table
+    submissionsData?.forEach((submission) => {
       const type = submission.submission_type as keyof SubmissionStats;
-      if (type in counts) {
+      if (type in counts && type !== 'payment_confirmation') {
         counts[type]++;
       }
     });
