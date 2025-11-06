@@ -315,15 +315,15 @@ export default function Leaderboard() {
                 ) : producers && producers.length > 0 ? (
                   producers.map((producer) => (
                     <TableRow 
-                      key={producer.id}
+                      key={producer.producer_id}
                       className="hover:bg-muted/50 transition-colors"
                     >
                       <TableCell className="font-semibold">
                         <div className="flex items-center gap-2">
                           <div>
-                            <span className={shouldBlurNames ? "blur-sm select-none" : ""}>{producer.name}</span>
-                            {producer.company && (
-                              <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company}</div>
+                            <span className={shouldBlurNames ? "blur-sm select-none" : ""}>{producer.producer_name || '—'}</span>
+                            {producer.company_name && (
+                              <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company_name}</div>
                             )}
                           </div>
                           {producer.momentum_active_until && 
