@@ -704,9 +704,11 @@ export type Database = {
       producers: {
         Row: {
           account_status: string | null
+          admin_creator_id: string | null
           average_days_to_pay: number | null
           company: string | null
           created_at: string
+          created_by_admin: boolean | null
           id: string
           last_closed_date: string | null
           momentum_active_until: string | null
@@ -730,9 +732,11 @@ export type Database = {
         }
         Insert: {
           account_status?: string | null
+          admin_creator_id?: string | null
           average_days_to_pay?: number | null
           company?: string | null
           created_at?: string
+          created_by_admin?: boolean | null
           id?: string
           last_closed_date?: string | null
           momentum_active_until?: string | null
@@ -756,9 +760,11 @@ export type Database = {
         }
         Update: {
           account_status?: string | null
+          admin_creator_id?: string | null
           average_days_to_pay?: number | null
           company?: string | null
           created_at?: string
+          created_by_admin?: boolean | null
           id?: string
           last_closed_date?: string | null
           momentum_active_until?: string | null

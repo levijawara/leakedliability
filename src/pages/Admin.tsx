@@ -87,7 +87,10 @@ export default function Admin() {
     project_name: '',
     invoice_date: '',
     city: '',
-    notes: ''
+    notes: '',
+    new_producer_name: '',
+    new_producer_company: '',
+    new_producer_email: ''
   });
   const [producers, setProducers] = useState<any[]>([]);
 
@@ -1252,6 +1255,16 @@ export default function Admin() {
         return;
       }
 
+      // Validate new producer name if "new_producer" selected
+      if (createUserForm.producer_id === 'new_producer' && !createUserForm.new_producer_name.trim()) {
+        toast({
+          title: "Missing Producer Name",
+          description: "Please enter a name for the new producer",
+          variant: "destructive"
+        });
+        return;
+      }
+
       setLoading(true);
 
       const { data, error } = await supabase.functions.invoke('admin-create-user', {
@@ -1265,7 +1278,13 @@ export default function Admin() {
           project_name: createUserForm.project_name.trim(),
           invoice_date: createUserForm.invoice_date,
           city: createUserForm.city.trim() || null,
-          notes: createUserForm.notes.trim() || null
+          notes: createUserForm.notes.trim() || null,
+          // Include new producer fields only if new_producer selected
+          ...(createUserForm.producer_id === 'new_producer' && {
+            new_producer_name: createUserForm.new_producer_name.trim(),
+            new_producer_company: createUserForm.new_producer_company.trim() || null,
+            new_producer_email: createUserForm.new_producer_email.trim() || null
+          })
         }
       });
 
@@ -1291,7 +1310,10 @@ export default function Admin() {
         project_name: '',
         invoice_date: '',
         city: '',
-        notes: ''
+        notes: '',
+        new_producer_name: '',
+        new_producer_company: '',
+        new_producer_email: ''
       });
 
       await loadAdminData();
@@ -2206,7 +2228,7 @@ export default function Admin() {
               <div className="border-l-4 border-destructive/30 pl-4 space-y-4">
                 <h4 className="font-semibold text-sm uppercase text-muted-foreground">Report Details</h4>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="col-span-2">
                     <Label htmlFor="create-producer">Producer *</Label>
                     <select
                       id="create-producer"
@@ -2220,7 +2242,61 @@ export default function Admin() {
                           {p.name} {p.company && `(${p.company})`}
                         </option>
                       ))}
+                      <option value="new_producer">➕ New Producer / Company</option>
                     </select>
+
+                    {/* Conditional inline form for new producer */}
+                    {createUserForm.producer_id === 'new_producer' && (
+                      <div className="mt-4 space-y-3 border border-primary/20 p-4 rounded-md bg-primary/5">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase">New Producer Details</p>
+                        
+                        <div>
+                          <Label htmlFor="new-producer-name">Producer Name *</Label>
+                          <Input
+                            id="new-producer-name"
+                            placeholder="Jane Smith / Production Company LLC"
+                            value={createUserForm.new_producer_name}
+                            onChange={(e) =>
+                              setCreateUserForm({
+                                ...createUserForm,
+                                new_producer_name: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="new-producer-company">Company (Optional)</Label>
+                          <Input
+                            id="new-producer-company"
+                            placeholder="Big Budget Productions"
+                            value={createUserForm.new_producer_company}
+                            onChange={(e) =>
+                              setCreateUserForm({
+                                ...createUserForm,
+                                new_producer_company: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="new-producer-email">Email (Optional)</Label>
+                          <Input
+                            id="new-producer-email"
+                            type="email"
+                            placeholder="producer@example.com"
+                            value={createUserForm.new_producer_email}
+                            onChange={(e) =>
+                              setCreateUserForm({
+                                ...createUserForm,
+                                new_producer_email: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="create-amount">Amount Owed * ($)</Label>
@@ -2287,7 +2363,10 @@ export default function Admin() {
                       project_name: '',
                       invoice_date: '',
                       city: '',
-                      notes: ''
+                      notes: '',
+                      new_producer_name: '',
+                      new_producer_company: '',
+                      new_producer_email: ''
                     });
                   }}
                 >

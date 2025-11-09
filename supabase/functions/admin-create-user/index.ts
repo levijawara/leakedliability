@@ -17,6 +17,9 @@ interface CreateUserRequest {
   invoice_date: string;
   city?: string;
   notes?: string;
+  new_producer_name?: string;
+  new_producer_company?: string;
+  new_producer_email?: string;
 }
 
 serve(async (req) => {
@@ -124,7 +127,37 @@ serve(async (req) => {
         throw profileError;
       }
 
-      console.log('[admin-create-user] Profile created');
+    console.log('[admin-create-user] Profile created');
+    }
+
+    // Handle new producer creation
+    let producerId = requestData.producer_id;
+
+    if (requestData.producer_id === 'new_producer') {
+      console.log('[admin-create-user] Creating new producer');
+      
+      if (!requestData.new_producer_name) {
+        throw new Error('Producer name is required for new producer');
+      }
+
+      const { data: newProducer, error: producerError } = await supabaseAdmin
+        .from('producers')
+        .insert({
+          name: requestData.new_producer_name,
+          company: requestData.new_producer_company || null,
+          created_by_admin: true,
+          admin_creator_id: user.id
+        })
+        .select('id')
+        .single();
+
+      if (producerError) {
+        console.error('[admin-create-user] Producer creation error:', producerError);
+        throw new Error(`Failed to create producer: ${producerError.message}`);
+      }
+
+      producerId = newProducer.id;
+      console.log('[admin-create-user] New producer created:', producerId);
     }
 
     // Create payment report
@@ -140,7 +173,7 @@ serve(async (req) => {
       .insert({
         reporter_id: newUserId,
         reporter_type: requestData.account_type,
-        producer_id: requestData.producer_id,
+        producer_id: producerId,
         amount_owed: requestData.amount_owed,
         project_name: requestData.project_name,
         invoice_date: requestData.invoice_date,
@@ -172,8 +205,13 @@ serve(async (req) => {
           report_id: report.id,
           email: requestData.email,
           account_type: requestData.account_type,
-          producer_id: requestData.producer_id,
-          amount_owed: requestData.amount_owed
+          producer_id: producerId,
+          amount_owed: requestData.amount_owed,
+          // Track if we created a producer
+          ...(requestData.producer_id === 'new_producer' && {
+            created_new_producer: true,
+            new_producer_name: requestData.new_producer_name
+          })
         }
       });
 
