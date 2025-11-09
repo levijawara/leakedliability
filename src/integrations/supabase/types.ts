@@ -444,12 +444,14 @@ export type Database = {
       }
       payment_reports: {
         Row: {
+          admin_creator_id: string | null
           amount_owed: number
           city: string | null
           closed_date: string | null
           confirmation_count: number | null
           confirmation_deadline: string | null
           created_at: string
+          created_by_admin: boolean | null
           days_overdue: number
           id: string
           invoice_date: string
@@ -468,12 +470,14 @@ export type Database = {
           verified: boolean | null
         }
         Insert: {
+          admin_creator_id?: string | null
           amount_owed: number
           city?: string | null
           closed_date?: string | null
           confirmation_count?: number | null
           confirmation_deadline?: string | null
           created_at?: string
+          created_by_admin?: boolean | null
           days_overdue: number
           id?: string
           invoice_date: string
@@ -492,12 +496,14 @@ export type Database = {
           verified?: boolean | null
         }
         Update: {
+          admin_creator_id?: string | null
           amount_owed?: number
           city?: string | null
           closed_date?: string | null
           confirmation_count?: number | null
           confirmation_deadline?: string | null
           created_at?: string
+          created_by_admin?: boolean | null
           days_overdue?: number
           id?: string
           invoice_date?: string
@@ -783,6 +789,8 @@ export type Database = {
           business_name: string | null
           confirmation_cash_balance: number | null
           created_at: string
+          created_by_admin: boolean | null
+          created_by_admin_id: string | null
           email: string | null
           id: string
           legal_first_name: string
@@ -796,6 +804,8 @@ export type Database = {
           business_name?: string | null
           confirmation_cash_balance?: number | null
           created_at?: string
+          created_by_admin?: boolean | null
+          created_by_admin_id?: string | null
           email?: string | null
           id?: string
           legal_first_name: string
@@ -809,6 +819,8 @@ export type Database = {
           business_name?: string | null
           confirmation_cash_balance?: number | null
           created_at?: string
+          created_by_admin?: boolean | null
+          created_by_admin_id?: string | null
           email?: string | null
           id?: string
           legal_first_name?: string

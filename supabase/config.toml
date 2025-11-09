@@ -26,3 +26,6 @@ verify_jwt = true
 
 [functions.admin-revoke-ban]
 verify_jwt = true
+
+[functions.admin-create-user]
+verify_jwt = true

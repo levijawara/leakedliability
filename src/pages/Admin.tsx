@@ -77,6 +77,19 @@ export default function Admin() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [auditSearchQuery, setAuditSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("crew_report");
+  const [createUserForm, setCreateUserForm] = useState({
+    email: '',
+    legal_first_name: '',
+    legal_last_name: '',
+    account_type: 'crew',
+    producer_id: '',
+    amount_owed: '',
+    project_name: '',
+    invoice_date: '',
+    city: '',
+    notes: ''
+  });
+  const [producers, setProducers] = useState<any[]>([]);
 
   useEffect(() => {
     checkAdminAccess();
@@ -1212,6 +1225,81 @@ export default function Admin() {
     loadAdminData();
   };
 
+  const handleCreateUserAndReport = async () => {
+    try {
+      if (!createUserForm.email || !createUserForm.legal_first_name || !createUserForm.legal_last_name) {
+        toast({
+          title: "Missing Required Fields",
+          description: "Please fill in all required fields",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!createUserForm.producer_id || !createUserForm.amount_owed || !createUserForm.project_name || !createUserForm.invoice_date) {
+        toast({
+          title: "Missing Report Fields",
+          description: "Please fill in all report details",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setLoading(true);
+
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: {
+          email: createUserForm.email.trim(),
+          legal_first_name: createUserForm.legal_first_name.trim(),
+          legal_last_name: createUserForm.legal_last_name.trim(),
+          account_type: createUserForm.account_type,
+          producer_id: createUserForm.producer_id,
+          amount_owed: parseFloat(createUserForm.amount_owed),
+          project_name: createUserForm.project_name.trim(),
+          invoice_date: createUserForm.invoice_date,
+          city: createUserForm.city.trim() || null,
+          notes: createUserForm.notes.trim() || null
+        }
+      });
+
+      if (error) throw error;
+
+      const resultMessage = data.user_existed 
+        ? `Report created for existing user. Report ID: ${data.report_number || data.report_id}`
+        : `Account created and report submitted! Temp password: ${data.temp_password}. Report ID: ${data.report_number || data.report_id}`;
+
+      toast({
+        title: "Success",
+        description: resultMessage,
+      });
+
+      // Reset form
+      setCreateUserForm({
+        email: '',
+        legal_first_name: '',
+        legal_last_name: '',
+        account_type: 'crew',
+        producer_id: '',
+        amount_owed: '',
+        project_name: '',
+        invoice_date: '',
+        city: '',
+        notes: ''
+      });
+
+      await loadAdminData();
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: mapDatabaseError(error),
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1482,6 +1570,7 @@ export default function Admin() {
                 {activeTab === "suggestions" && "Suggestions 💡"}
                 {activeTab === "moderation" && "Moderation 🛡️"}
                 {activeTab === "audit" && "Audit Logs 🧾"}
+                {activeTab === "create_user" && "Create User + Report 👤"}
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -1515,6 +1604,9 @@ export default function Admin() {
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setActiveTab("audit")}>
                 Audit Logs 🧾
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveTab("create_user")}>
+                Create User + Report 👤
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -2043,6 +2135,175 @@ export default function Admin() {
             </TableBody>
           </Table>
         </TabsContent>
+
+        {/* Create User + Report Tab */}
+        <TabsContent value="create_user">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">Create Account & Submit Report</h3>
+              <p className="text-sm text-muted-foreground">
+                Create a new crew member or vendor account and file a report on their behalf.
+                The user will receive an email with their credentials.
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* User Information Section */}
+              <div className="border-l-4 border-primary/30 pl-4 space-y-4">
+                <h4 className="font-semibold text-sm uppercase text-muted-foreground">User Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="create-email">Email *</Label>
+                    <Input
+                      id="create-email"
+                      type="email"
+                      placeholder="user@example.com"
+                      value={createUserForm.email}
+                      onChange={(e) => setCreateUserForm({...createUserForm, email: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-account-type">Account Type *</Label>
+                    <select
+                      id="create-account-type"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={createUserForm.account_type}
+                      onChange={(e) => setCreateUserForm({...createUserForm, account_type: e.target.value})}
+                    >
+                      <option value="crew">Crew Member</option>
+                      <option value="vendor">Vendor</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="create-first-name">Legal First Name *</Label>
+                    <Input
+                      id="create-first-name"
+                      placeholder="John"
+                      value={createUserForm.legal_first_name}
+                      onChange={(e) => setCreateUserForm({...createUserForm, legal_first_name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-last-name">Legal Last Name *</Label>
+                    <Input
+                      id="create-last-name"
+                      placeholder="Doe"
+                      value={createUserForm.legal_last_name}
+                      onChange={(e) => setCreateUserForm({...createUserForm, legal_last_name: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Report Information Section */}
+              <div className="border-l-4 border-destructive/30 pl-4 space-y-4">
+                <h4 className="font-semibold text-sm uppercase text-muted-foreground">Report Details</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="create-producer">Producer *</Label>
+                    <select
+                      id="create-producer"
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                      value={createUserForm.producer_id}
+                      onChange={(e) => setCreateUserForm({...createUserForm, producer_id: e.target.value})}
+                    >
+                      <option value="">Select a producer...</option>
+                      {producers.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} {p.company && `(${p.company})`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label htmlFor="create-amount">Amount Owed * ($)</Label>
+                    <Input
+                      id="create-amount"
+                      type="number"
+                      step="0.01"
+                      placeholder="2500.00"
+                      value={createUserForm.amount_owed}
+                      onChange={(e) => setCreateUserForm({...createUserForm, amount_owed: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-project">Project Name *</Label>
+                    <Input
+                      id="create-project"
+                      placeholder="Project Title"
+                      value={createUserForm.project_name}
+                      onChange={(e) => setCreateUserForm({...createUserForm, project_name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-invoice-date">Invoice Date *</Label>
+                    <Input
+                      id="create-invoice-date"
+                      type="date"
+                      value={createUserForm.invoice_date}
+                      onChange={(e) => setCreateUserForm({...createUserForm, invoice_date: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="create-city">City (Optional)</Label>
+                    <Input
+                      id="create-city"
+                      placeholder="Los Angeles"
+                      value={createUserForm.city}
+                      onChange={(e) => setCreateUserForm({...createUserForm, city: e.target.value})}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="create-notes">Additional Notes (Optional)</Label>
+                  <Textarea
+                    id="create-notes"
+                    placeholder="Any additional context about this report..."
+                    rows={3}
+                    value={createUserForm.notes}
+                    onChange={(e) => setCreateUserForm({...createUserForm, notes: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setCreateUserForm({
+                      email: '',
+                      legal_first_name: '',
+                      legal_last_name: '',
+                      account_type: 'crew',
+                      producer_id: '',
+                      amount_owed: '',
+                      project_name: '',
+                      invoice_date: '',
+                      city: '',
+                      notes: ''
+                    });
+                  }}
+                >
+                  Clear Form
+                </Button>
+                <Button
+                  onClick={handleCreateUserAndReport}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    'Create Account & Report'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
         </Tabs>
       </Card>
 

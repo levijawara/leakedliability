@@ -17,6 +17,7 @@ import { ProducerReportNotification } from "./_templates/producer-report-notific
 import { VendorReportConfirmation } from "./_templates/vendor-report-confirmation.tsx";
 import { VendorReportVerified } from "./_templates/vendor-report-verified.tsx";
 import { VendorReportRejected } from "./_templates/vendor-report-rejected.tsx";
+import { AdminCreatedAccount } from "./_templates/admin-created-account.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,7 +28,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account';
   to: string;
   data: any;
 }
@@ -200,6 +201,13 @@ serve(async (req) => {
           React.createElement(VendorReportRejected, data)
         );
         subject = 'Your Vendor Report Requires Additional Information';
+        break;
+      
+      case 'admin_created_account':
+        html = await renderAsync(
+          React.createElement(AdminCreatedAccount, data)
+        );
+        subject = 'Your Leaked Liability Account Has Been Created';
         break;
       
       default:
