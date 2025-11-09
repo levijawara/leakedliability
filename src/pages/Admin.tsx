@@ -278,6 +278,13 @@ export default function Admin() {
       .order('created_at', { ascending: false });
     setSuggestions(suggs || []);
 
+    // Load all producers for the create user form dropdown
+    const { data: producersList } = await supabase
+      .from('producers')
+      .select('id, name, company')
+      .order('name', { ascending: true });
+    setProducers(producersList || []);
+
     // Load leading users for each submission type
     await loadLeadingUsers();
   };
