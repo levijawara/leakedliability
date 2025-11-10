@@ -78,6 +78,7 @@ export default function Admin() {
   const [auditSearchQuery, setAuditSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("crew_report");
   const [newSearchCount, setNewSearchCount] = useState(0);
+  const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
     legal_first_name: '',
@@ -235,7 +236,8 @@ export default function Admin() {
       .select(`
         *,
         producer:producers(name, company),
-        profiles!payment_reports_reporter_id_fkey(legal_first_name, legal_last_name)
+        profiles!payment_reports_reporter_id_fkey(legal_first_name, legal_last_name),
+        admin_creator:profiles!payment_reports_admin_creator_id_fkey(legal_first_name, legal_last_name, email)
       `)
       .order("created_at", { ascending: false });
     
@@ -1681,7 +1683,32 @@ export default function Admin() {
           <TabsContent value="payment_reports">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold">All Payment Reports</h3>
-              <Badge variant="outline">{paymentReports.length} total</Badge>
+              <div className="flex gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      Filter: {reportFilter === 'all' ? 'All' : reportFilter === 'proxy' ? 'Admin Created' : 'User Submitted'}
+                      <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={() => setReportFilter('all')}>
+                      All Reports
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setReportFilter('proxy')}>
+                      Admin Created Only
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setReportFilter('user')}>
+                      User Submitted Only
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Badge variant="outline">{paymentReports.filter(report => {
+                  if (reportFilter === 'proxy') return report.created_by_admin === true;
+                  if (reportFilter === 'user') return report.created_by_admin !== true;
+                  return true;
+                }).length} shown</Badge>
+              </div>
             </div>
             
             <Table>
@@ -1695,18 +1722,27 @@ export default function Admin() {
                   <TableHead className="text-xs">Days Overdue</TableHead>
                   <TableHead className="font-semibold">Status</TableHead>
                   <TableHead className="text-xs">City</TableHead>
+                  <TableHead className="text-xs">Submitted By</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paymentReports.length === 0 ? (
+                {paymentReports.filter(report => {
+                  if (reportFilter === 'proxy') return report.created_by_admin === true;
+                  if (reportFilter === 'user') return report.created_by_admin !== true;
+                  return true;
+                }).length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center text-muted-foreground">
-                      No payment reports yet
+                    <TableCell colSpan={10} className="text-center text-muted-foreground">
+                      No payment reports match this filter
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paymentReports.map((report) => (
+                  paymentReports.filter(report => {
+                    if (reportFilter === 'proxy') return report.created_by_admin === true;
+                    if (reportFilter === 'user') return report.created_by_admin !== true;
+                    return true;
+                  }).map((report) => (
                     <TableRow key={report.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-mono text-xs text-muted-foreground">{report.report_id || 'N/A'}</TableCell>
                       <TableCell className="text-sm font-medium">
@@ -1726,6 +1762,24 @@ export default function Admin() {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{report.city || '-'}</TableCell>
+                      <TableCell className="text-xs">
+                        {report.created_by_admin ? (
+                          <div className="flex flex-col gap-1">
+                            <Badge variant="secondary" className="w-fit">
+                              Admin Created
+                            </Badge>
+                            {report.admin_creator && (
+                              <span className="text-[10px] text-muted-foreground">
+                                by {report.admin_creator.legal_first_name} {report.admin_creator.legal_last_name}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="w-fit">
+                            User
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           {report.status !== 'paid' && (
@@ -1820,13 +1874,14 @@ export default function Admin() {
                     <TableHead className="font-semibold">Name</TableHead>
                     <TableHead className="text-xs">Email</TableHead>
                     <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead className="text-xs">Source</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredSubmissions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center text-muted-foreground">
                         No submissions of this type
                       </TableCell>
                     </TableRow>
@@ -1841,6 +1896,17 @@ export default function Admin() {
                           <Badge variant={sub.status === 'pending' ? 'secondary' : sub.status === 'verified' ? 'default' : 'destructive'}>
                             {sub.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">
+                          {sub.created_by_admin ? (
+                            <Badge variant="secondary" className="w-fit">
+                              Admin
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="w-fit">
+                              User
+                            </Badge>
+                          )}
                         </TableCell>
                           <TableCell>
                             <Button
