@@ -302,7 +302,6 @@ export default function Leaderboard() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              list="producer-names"
             />
             {searchTerm && (
               <button
@@ -314,11 +313,6 @@ export default function Leaderboard() {
               </button>
             )}
           </div>
-          <datalist id="producer-names">
-            {producers?.map((p) => (
-              <option key={p.producer_id} value={p.producer_name || ""} />
-            ))}
-          </datalist>
         </div>
 
         {/* Leaderboard Table */}
@@ -384,11 +378,11 @@ export default function Leaderboard() {
                   const filteredProducers = producers?.filter((producer) => {
                     if (!searchTerm.trim()) return true; // Show all if no search
                     
-                    const search = searchTerm.toLowerCase();
+                    const search = searchTerm.trim().toLowerCase();
                     const name = (producer.producer_name || "").toLowerCase();
                     const company = (producer.company_name || "").toLowerCase();
                     
-                    return name.includes(search) || company.includes(search);
+                    return name === search || company === search;
                   }) || [];
                   
                   return filteredProducers.length > 0 ? (
@@ -463,7 +457,7 @@ export default function Leaderboard() {
                     <TableRow>
                       <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
                         {searchTerm 
-                          ? `No producers found matching "${searchTerm}"`
+                          ? `No exact match found for "${searchTerm}". Try the full name as shown on the leaderboard.`
                           : "No producers on the leaderboard yet."}
                       </TableCell>
                     </TableRow>
