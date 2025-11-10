@@ -223,10 +223,10 @@ export default function Leaderboard() {
               <h4 className="font-bold text-sm mb-3 text-center">Credit Recovery (When All Debts Paid)</h4>
               <div className="text-xs text-muted-foreground space-y-2">
                 <div className="font-mono text-center text-[10px]">
-                  Recovery = 1000 - (250 × (1 - forgiveness_factor))
+                  Recovery = 1000 - (250 × forgiveness_factor)
                 </div>
                 <div className="font-mono text-center text-[10px]">
-                  forgiveness_factor = 1 - e<sup>(-days_clean / 30 × ln(2))</sup>
+                  forgiveness_factor = e<sup>(-days_clean / 30 × ln(2))</sup>
                 </div>
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <div className="bg-background/50 p-2 rounded">
