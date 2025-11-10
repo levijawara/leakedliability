@@ -226,28 +226,28 @@ export default function Leaderboard() {
                   Recovery = 1000 - (250 × (1 - forgiveness_factor))
                 </div>
                 <div className="font-mono text-center text-[10px]">
-                  forgiveness_factor = 1 - e<sup>(-days_clean / 180 × ln(2))</sup>
+                  forgiveness_factor = 1 - e<sup>(-days_clean / 30 × ln(2))</sup>
                 </div>
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">6mo</div>
+                    <div className="font-bold text-foreground">1mo</div>
                     <div className="text-[10px]">~50%</div>
                   </div>
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">1yr</div>
+                    <div className="font-bold text-foreground">2mo</div>
                     <div className="text-[10px]">~75%</div>
                   </div>
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">2yr</div>
+                    <div className="font-bold text-foreground">4mo</div>
                     <div className="text-[10px]">~94%</div>
                   </div>
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">3yr+</div>
+                    <div className="font-bold text-foreground">6mo+</div>
                     <div className="text-[10px]">~100%</div>
                   </div>
                 </div>
                 <div className="text-[10px] text-center italic mt-2">
-                  25% history penalty fades over time with clean behavior
+                  25% history penalty fades over 6 months with clean payment behavior
                 </div>
               </div>
             </div>
