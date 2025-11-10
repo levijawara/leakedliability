@@ -25,6 +25,7 @@ export default function Leaderboard() {
   const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess();
   const [managingBilling, setManagingBilling] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: producers, isLoading } = useQuery({
     queryKey: ["public_leaderboard"],
@@ -254,6 +255,34 @@ export default function Leaderboard() {
           </div>
         </Card>
 
+        {/* Producer Search Filter */}
+        <div className="mb-4 flex items-center gap-3">
+          <div className="relative flex-1 max-w-md">
+            <input
+              type="text"
+              placeholder="Search by producer name or company..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+              list="producer-names"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <datalist id="producer-names">
+            {producers?.map((p) => (
+              <option key={p.producer_id} value={p.producer_name || ""} />
+            ))}
+          </datalist>
+        </div>
+
         {/* Leaderboard Table */}
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
@@ -312,8 +341,20 @@ export default function Leaderboard() {
                       Loading producers...
                     </TableCell>
                   </TableRow>
-                ) : producers && producers.length > 0 ? (
-                  producers.map((producer) => (
+                ) : (() => {
+                  // Filter producers based on search term
+                  const filteredProducers = producers?.filter((producer) => {
+                    if (!searchTerm.trim()) return true; // Show all if no search
+                    
+                    const search = searchTerm.toLowerCase();
+                    const name = (producer.producer_name || "").toLowerCase();
+                    const company = (producer.company_name || "").toLowerCase();
+                    
+                    return name.includes(search) || company.includes(search);
+                  }) || [];
+                  
+                  return filteredProducers.length > 0 ? (
+                    filteredProducers.map((producer) => (
                     <TableRow 
                       key={producer.producer_id}
                       className="hover:bg-muted/50 transition-colors"
@@ -379,14 +420,17 @@ export default function Leaderboard() {
                         {producer.total_cities_owed || 0}
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                      No producers on the leaderboard yet.
-                    </TableCell>
-                  </TableRow>
-                )}
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                        {searchTerm 
+                          ? `No producers found matching "${searchTerm}"`
+                          : "No producers on the leaderboard yet."}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })()}
               </TableBody>
             </Table>
           </div>
