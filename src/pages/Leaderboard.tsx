@@ -226,28 +226,28 @@ export default function Leaderboard() {
                   Recovery = 1000 - (250 × forgiveness_factor)
                 </div>
                 <div className="font-mono text-center text-[10px]">
-                  forgiveness_factor = e<sup>(-days_clean / 30 × ln(2))</sup>
+                  forgiveness_factor = (1 - days_clean / 30) if &lt; 30 days, else 0
                 </div>
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">1mo</div>
-                    <div className="text-[10px]">~50%</div>
+                    <div className="font-bold text-foreground">0d</div>
+                    <div className="text-[10px]">0%</div>
                   </div>
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">2mo</div>
-                    <div className="text-[10px]">~75%</div>
+                    <div className="font-bold text-foreground">15d</div>
+                    <div className="text-[10px]">50%</div>
                   </div>
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">4mo</div>
-                    <div className="text-[10px]">~94%</div>
+                    <div className="font-bold text-foreground">30d</div>
+                    <div className="text-[10px]">100%</div>
                   </div>
                   <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">6mo+</div>
-                    <div className="text-[10px]">~100%</div>
+                    <div className="font-bold text-foreground">30d+</div>
+                    <div className="text-[10px]">100%</div>
                   </div>
                 </div>
                 <div className="text-[10px] text-center italic mt-2">
-                  25% history penalty fades over 6 months with clean payment behavior
+                  25% history penalty drops to zero after 30 days clean
                 </div>
               </div>
             </div>
