@@ -26,6 +26,7 @@ import LeaderboardAnalytics from "./pages/LeaderboardAnalytics";
 import Sitemap from "./pages/Sitemap";
 import BanPage from "./pages/BanPage";
 import ConfirmReport from "./pages/ConfirmReport";
+import AdminSearchInsights from "./pages/AdminSearchInsights";
 
 const queryClient = new QueryClient();
 
@@ -107,6 +108,7 @@ const AppContent = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/admin" element={<Admin />} />
+      <Route path="/admin/search-insights" element={<AdminSearchInsights />} />
       <Route path="/producer-dashboard" element={<ProducerDashboard />} />
       <Route path="/suggestions" element={<SuggestionBox />} />
       <Route path="/verify-email" element={<VerifyEmail />} />

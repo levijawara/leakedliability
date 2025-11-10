@@ -905,6 +905,45 @@ export type Database = {
           },
         ]
       }
+      search_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          matched_producer_id: string | null
+          searched_name: string
+          user_ip: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          matched_producer_id?: string | null
+          searched_name: string
+          user_ip?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          matched_producer_id?: string | null
+          searched_name?: string
+          user_ip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "search_logs_matched_producer_id_fkey"
+            columns: ["matched_producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "search_logs_matched_producer_id_fkey"
+            columns: ["matched_producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+        ]
+      }
       site_notices: {
         Row: {
           content: string
@@ -1280,6 +1319,16 @@ export type Database = {
         Returns: {
           body: string
           title: string
+        }[]
+      }
+      get_top_searches: {
+        Args: never
+        Returns: {
+          last_searched: string
+          matched_producer_name: string
+          recent_searches_7d: number
+          search_count: number
+          searched_name: string
         }[]
       }
       has_role: {

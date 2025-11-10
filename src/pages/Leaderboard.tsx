@@ -6,7 +6,7 @@ import { AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
 import { LeaderboardPaywall } from "@/components/LeaderboardPaywall";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export default function Leaderboard() {
   const [managingBilling, setManagingBilling] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: producers, isLoading } = useQuery({
     queryKey: ["public_leaderboard"],
@@ -69,6 +70,43 @@ export default function Leaderboard() {
     };
     checkAdmin();
   }, []);
+
+  // Log search terms with debouncing
+  useEffect(() => {
+    if (searchLogTimeoutRef.current) {
+      clearTimeout(searchLogTimeoutRef.current);
+    }
+    
+    if (searchTerm.trim().length >= 2) {
+      searchLogTimeoutRef.current = setTimeout(async () => {
+        try {
+          // Find matched producer
+          const matchedProducer = producers?.find((p) => {
+            const search = searchTerm.toLowerCase();
+            const name = (p.producer_name || "").toLowerCase();
+            const company = (p.company_name || "").toLowerCase();
+            return name.includes(search) || company.includes(search);
+          });
+          
+          // Log search asynchronously
+          await supabase.from('search_logs').insert({
+            searched_name: searchTerm.trim(),
+            matched_producer_id: matchedProducer?.producer_id || null,
+            user_ip: null
+          });
+        } catch (error) {
+          // Fail silently - don't disrupt user experience
+          console.debug('Search logging failed:', error);
+        }
+      }, 1500); // Log after 1.5 seconds of inactivity
+    }
+    
+    return () => {
+      if (searchLogTimeoutRef.current) {
+        clearTimeout(searchLogTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, producers]);
 
   const handleManageBilling = async () => {
     try {
