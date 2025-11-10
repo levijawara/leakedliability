@@ -77,6 +77,7 @@ export default function Admin() {
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [auditSearchQuery, setAuditSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("crew_report");
+  const [newSearchCount, setNewSearchCount] = useState(0);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
     legal_first_name: '',
@@ -195,6 +196,16 @@ export default function Admin() {
         .order('created_at', { ascending: false })
         .limit(100);
       setModerationLogs(modLogs || []);
+
+      // Check for new searches since last admin visit
+      const lastVisit = localStorage.getItem('admin_last_inquiries_visit');
+      if (lastVisit) {
+        const { count } = await supabase
+          .from('search_logs')
+          .select('*', { count: 'exact', head: true })
+          .gte('created_at', lastVisit);
+        setNewSearchCount(count || 0);
+      }
 
       // Load audit logs
       const { data: auditData } = await supabase
@@ -1359,6 +1370,29 @@ export default function Admin() {
             <p className="text-muted-foreground">Review and manage all submissions, reports, and disputes</p>
           </div>
           <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                localStorage.setItem('admin_last_inquiries_visit', new Date().toISOString());
+                setNewSearchCount(0);
+                navigate("/admin/search-insights");
+              }}
+              className={cn(
+                "flex items-center gap-2 relative",
+                newSearchCount > 0 && "animate-pulse ring-2 ring-orange-500/50"
+              )}
+            >
+              <Search className="h-4 w-4" />
+              Inquiries
+              {newSearchCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                >
+                  {newSearchCount > 99 ? '99+' : newSearchCount}
+                </Badge>
+              )}
+            </Button>
             <Button variant="outline" onClick={() => navigate("/sitemap")}>
               <Map className="h-4 w-4 mr-2" />
               Sitemap

@@ -142,8 +142,8 @@ export default function AdminSearchInsights() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Admin
               </Button>
-              <h1 className="text-3xl font-bold text-foreground">Search Analytics</h1>
-              <p className="text-muted-foreground mt-1">Track which producers people are looking up</p>
+              <h1 className="text-3xl font-bold text-foreground">Inquiries</h1>
+              <p className="text-muted-foreground mt-1">See who's been searched, when, and how often.</p>
             </div>
             <Button onClick={fetchData} disabled={refreshing} variant="outline">
               <RefreshCw className={cn("mr-2 h-4 w-4", refreshing && "animate-spin")} />
