@@ -194,6 +194,47 @@ serve(async (req) => {
 
     console.log('[admin-create-user] Report created:', report.id);
 
+    // Also create submission entry for crew/vendor report visibility
+    console.log('[admin-create-user] Creating submission entry');
+    
+    const { data: producerData } = await supabaseAdmin
+      .from('producers')
+      .select('name')
+      .eq('id', producerId)
+      .single();
+
+    const submissionData = {
+      user_id: newUserId,
+      submission_type: requestData.account_type === 'vendor' ? 'vendor_report' : 'crew_report',
+      full_name: `${requestData.legal_first_name} ${requestData.legal_last_name}`,
+      email: requestData.email,
+      form_data: {
+        producerName: producerData?.name || '',
+        projectName: requestData.project_name,
+        amountOwed: requestData.amount_owed,
+        invoiceDate: requestData.invoice_date,
+        city: requestData.city || '',
+        ...(requestData.account_type === 'vendor' ? {
+          vendorCompany: `${requestData.legal_first_name} ${requestData.legal_last_name}`,
+          invoiceNumber: report.report_id || report.id
+        } : {})
+      },
+      status: 'verified',
+      admin_notes: 'Created by admin',
+      verified: true
+    };
+
+    const { error: submissionError } = await supabaseAdmin
+      .from('submissions')
+      .insert(submissionData);
+
+    if (submissionError) {
+      console.error('[admin-create-user] Submission insert error:', submissionError);
+      // Don't throw - payment_report already created successfully
+    } else {
+      console.log('[admin-create-user] Submission entry created');
+    }
+
     // Log to audit_logs
     await supabaseAdmin
       .from('audit_logs')
