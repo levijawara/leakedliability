@@ -97,15 +97,21 @@ export default {
         },
         "glow-red": {
           "0%, 100%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
-          "50%": { boxShadow: "0 0 25px 3px rgba(255,77,77,0.25)" },
+          "12.5%": { boxShadow: "0 0 25px 3px rgba(255,77,77,0.5)" },
+          "37.5%": { boxShadow: "0 0 25px 3px rgba(255,77,77,0.5)" },
+          "50%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
         },
         "glow-yellow": {
           "0%, 100%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
-          "50%": { boxShadow: "0 0 25px 3px rgba(255,221,51,0.25)" },
+          "12.5%": { boxShadow: "0 0 25px 3px rgba(255,221,51,0.5)" },
+          "37.5%": { boxShadow: "0 0 25px 3px rgba(255,221,51,0.5)" },
+          "50%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
         },
         "glow-green": {
           "0%, 100%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
-          "50%": { boxShadow: "0 0 25px 3px rgba(51,255,153,0.25)" },
+          "12.5%": { boxShadow: "0 0 25px 3px rgba(51,255,153,0.5)" },
+          "37.5%": { boxShadow: "0 0 25px 3px rgba(51,255,153,0.5)" },
+          "50%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
         },
       },
       animation: {

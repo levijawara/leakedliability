@@ -108,7 +108,7 @@ const Index = () => {
       </div>
 
       {/* Search/Inquiry Box */}
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
           <div className="bg-[#141414] rounded-2xl p-6 shadow-lg border border-neutral-800">
             <div className="text-center mb-4 space-y-2">
@@ -135,7 +135,7 @@ const Index = () => {
       </div>
 
       {/* Features Section */}
-      <div className="container mx-auto px-4 py-10">
+      <div className="container mx-auto px-4 py-6">
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <Card className="p-6 text-center space-y-4 border-foreground animate-glow-red transition-shadow duration-700">
             <div className="w-12 h-12 rounded-full bg-status-critical/10 flex items-center justify-center mx-auto">
@@ -170,7 +170,7 @@ const Index = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="container mx-auto px-4 py-20">
+      <div className="container mx-auto px-4 py-6">
         <Card className="max-w-4xl mx-auto p-12 text-center bg-gradient-to-br from-card to-muted/20 border-foreground">
           <h2 className="text-4xl font-black mb-4">Ready to Change the Industry?</h2>
           <p className="text-lg text-muted-foreground mb-8">
