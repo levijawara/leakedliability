@@ -375,10 +375,13 @@ export type Database = {
         Row: {
           amount_paid: number
           confirmation_type: Database["public"]["Enums"]["confirmation_type_enum"]
+          confirmed_by_admin: boolean | null
+          confirmed_by_user_id: string | null
           confirmer_id: string
           created_at: string | null
           id: string
           notes: string | null
+          paid_by: string | null
           payment_proof_url: string | null
           payment_report_id: string
           producer_id: string | null
@@ -388,10 +391,13 @@ export type Database = {
         Insert: {
           amount_paid: number
           confirmation_type: Database["public"]["Enums"]["confirmation_type_enum"]
+          confirmed_by_admin?: boolean | null
+          confirmed_by_user_id?: string | null
           confirmer_id: string
           created_at?: string | null
           id?: string
           notes?: string | null
+          paid_by?: string | null
           payment_proof_url?: string | null
           payment_report_id: string
           producer_id?: string | null
@@ -401,10 +407,13 @@ export type Database = {
         Update: {
           amount_paid?: number
           confirmation_type?: Database["public"]["Enums"]["confirmation_type_enum"]
+          confirmed_by_admin?: boolean | null
+          confirmed_by_user_id?: string | null
           confirmer_id?: string
           created_at?: string | null
           id?: string
           notes?: string | null
+          paid_by?: string | null
           payment_proof_url?: string | null
           payment_report_id?: string
           producer_id?: string | null

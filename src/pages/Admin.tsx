@@ -69,6 +69,8 @@ export default function Admin() {
   const [selectedPaymentReport, setSelectedPaymentReport] = useState<any>(null);
   const [paymentDate, setPaymentDate] = useState<Date>();
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paidBy, setPaidBy] = useState("");
+  const [confirmationNote, setConfirmationNote] = useState("");
   const [accountStats, setAccountStats] = useState({ crew: 0, vendor: 0, producer: 0, company: 0 });
   const [allUsers, setAllUsers] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
@@ -1187,92 +1189,54 @@ export default function Admin() {
   };
 
   const handleMarkAsPaid = async () => {
-    if (!selectedPaymentReport || !paymentDate) {
+    if (!selectedPaymentReport || !paymentDate || !paidBy.trim()) {
       toast({
-        title: "Error",
-        description: "Please select a payment date",
+        title: "Missing Required Fields",
+        description: "Please fill in payment date and who paid",
         variant: "destructive",
       });
       return;
     }
 
-    const formattedDate = paymentDate.toISOString().split('T')[0];
-    
-    const { error } = await supabase
-      .from('payment_reports')
-      .update({
-        status: 'paid',
-        payment_date: formattedDate,
-        closed_date: formattedDate
-      })
-      .eq('id', selectedPaymentReport.id);
+    try {
+      const formattedDate = paymentDate.toISOString().split('T')[0];
+      
+      // Call the edge function to handle payment confirmation
+      const { data, error: invokeError } = await supabase.functions.invoke('admin-confirm-payment', {
+        body: {
+          payment_report_id: selectedPaymentReport.id,
+          paid_by: paidBy.trim(),
+          payment_date: formattedDate,
+          note: confirmationNote.trim() || null,
+        },
+      });
 
-    if (error) {
+      if (invokeError) throw invokeError;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: "✅ Payment Confirmed",
+        description: "Payment confirmation recorded and reporter notified",
+      });
+
+      // Reset modal state
+      setShowPaymentModal(false);
+      setSelectedPaymentReport(null);
+      setPaymentDate(undefined);
+      setPaidBy('');
+      setConfirmationNote('');
+      
+      // Reload data
+      await loadAdminData();
+
+    } catch (error: any) {
+      console.error('Payment confirmation error:', error);
       toast({
         title: "Error",
         description: mapDatabaseError(error),
         variant: "destructive",
       });
-      return;
     }
-
-    // Delete queued notification if exists
-    await supabase
-      .from('queued_producer_notifications')
-      .delete()
-      .eq('payment_report_id', selectedPaymentReport.id)
-      .is('sent_at', null);
-
-    // Get crew member email from submissions
-    const { data: submission } = await supabase
-      .from('submissions')
-      .select('email')
-      .eq('user_id', selectedPaymentReport.reporter_id)
-      .eq('submission_type', 'crew_report')
-      .maybeSingle();
-
-    // Send confirmation email to crew member
-    if (submission) {
-      const { error: emailError } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'crew_report_payment_confirmed',
-          to: submission.email,
-          data: {
-            reportId: selectedPaymentReport.report_id,
-            producerName: selectedPaymentReport.producer?.name || 'Unknown',
-            amount: selectedPaymentReport.amount_owed,
-            paymentDate: formattedDate,
-          }
-        }
-      });
-
-      if (emailError) {
-        console.error('Email failed:', emailError);
-      }
-    }
-
-    // Log the payment marked as paid event
-    await supabase.functions.invoke('log-event', {
-      body: {
-        event_type: 'payment_marked_paid',
-        payload: {
-          payment_report_id: selectedPaymentReport.id,
-          amount: selectedPaymentReport.amount_owed,
-          payment_date: formattedDate,
-          report_id: selectedPaymentReport.report_id
-        }
-      }
-    });
-
-    toast({
-      title: "Success",
-      description: "Payment report marked as paid and crew member notified",
-    });
-
-    setShowPaymentModal(false);
-    setSelectedPaymentReport(null);
-    setPaymentDate(undefined);
-    loadAdminData();
   };
 
   const handleCreateUserAndReport = async () => {
@@ -1832,6 +1796,9 @@ export default function Admin() {
                               size="sm"
                               onClick={() => {
                                 setSelectedPaymentReport(report);
+                                setPaidBy(report.producer?.name || '');
+                                setConfirmationNote('');
+                                setPaymentDate(undefined);
                                 setShowPaymentModal(true);
                               }}
                             >
@@ -2538,17 +2505,45 @@ export default function Admin() {
         </Tabs>
       </Card>
 
-      {/* Payment Date Modal */}
+      {/* Payment Confirmation Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
-        <DialogContent>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Mark Payment as Received</DialogTitle>
+            <DialogTitle>Confirm Payment Received</DialogTitle>
             <DialogDescription>
-              Select the date when payment was received from the producer
+              Confirm that payment has been received from the producer
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
+            {/* Report Summary */}
+            {selectedPaymentReport && (
+              <Card className="p-3 bg-muted/50">
+                <div className="space-y-1 text-sm">
+                  <div><strong>Report ID:</strong> {selectedPaymentReport.report_id}</div>
+                  <div><strong>Crew/Vendor:</strong> {selectedPaymentReport.profiles?.legal_first_name} {selectedPaymentReport.profiles?.legal_last_name}</div>
+                  <div><strong>Producer:</strong> {selectedPaymentReport.producer?.name}</div>
+                  <div><strong>Project:</strong> {selectedPaymentReport.project_name}</div>
+                  <div><strong>Amount:</strong> ${selectedPaymentReport.amount_owed?.toFixed(2)}</div>
+                </div>
+              </Card>
+            )}
+
+            {/* Paid By Field */}
+            <div>
+              <Label htmlFor="paid-by">Paid By</Label>
+              <Input
+                id="paid-by"
+                placeholder="e.g. Satien Mehta"
+                value={paidBy}
+                onChange={(e) => setPaidBy(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Who made the payment (defaults to producer name)
+              </p>
+            </div>
+
+            {/* Payment Date */}
             <div>
               <Label>Payment Date</Label>
               <Popover>
@@ -2575,21 +2570,30 @@ export default function Admin() {
                 </PopoverContent>
               </Popover>
             </div>
-            
-            {selectedPaymentReport && (
-              <div className="space-y-2 text-sm">
-                <div><strong>Report ID:</strong> {selectedPaymentReport.report_id}</div>
-                <div><strong>Producer:</strong> {selectedPaymentReport.producer?.name}</div>
-                <div><strong>Amount:</strong> ${selectedPaymentReport.amount_owed?.toFixed(2)}</div>
-              </div>
-            )}
+
+            {/* Note Field */}
+            <div>
+              <Label htmlFor="confirmation-note">Note (Optional)</Label>
+              <Textarea
+                id="confirmation-note"
+                placeholder="Confirmed by admin on behalf of crew member..."
+                value={confirmationNote}
+                onChange={(e) => setConfirmationNote(e.target.value)}
+                rows={3}
+              />
+            </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowPaymentModal(false)}>
+            <Button variant="outline" onClick={() => {
+              setShowPaymentModal(false);
+              setPaidBy("");
+              setConfirmationNote("");
+              setPaymentDate(undefined);
+            }}>
               Cancel
             </Button>
-            <Button onClick={handleMarkAsPaid} disabled={!paymentDate}>
+            <Button onClick={handleMarkAsPaid} disabled={!paymentDate || !paidBy}>
               Confirm Payment
             </Button>
           </DialogFooter>
