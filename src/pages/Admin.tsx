@@ -79,6 +79,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("crew_report");
   const [newSearchCount, setNewSearchCount] = useState(0);
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
+  const [backfillLoading, setBackfillLoading] = useState(false);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
     legal_first_name: '',
@@ -367,6 +368,32 @@ export default function Admin() {
     };
     
     setAccountStats(stats);
+  };
+
+  const handleBackfillSubmissions = async () => {
+    setBackfillLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('backfill-missing-submissions');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `✅ All admin-created payment reports synced with submissions. Inserted: ${data?.inserted || 0}`,
+      });
+
+      // Refresh data
+      await loadAdminData();
+    } catch (error: any) {
+      console.error('Backfill error:', error);
+      toast({
+        title: "Error",
+        description: "⚠️ Backfill failed — check logs.",
+        variant: "destructive",
+      });
+    } finally {
+      setBackfillLoading(false);
+    }
   };
 
   const loadAllUsers = async () => {
@@ -1622,7 +1649,24 @@ export default function Admin() {
             <p className="text-sm text-muted-foreground">Review all submission types</p>
           </div>
           
-          <DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleBackfillSubmissions}
+              disabled={backfillLoading}
+            >
+              {backfillLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Syncing...
+                </>
+              ) : (
+                'Backfill Missing Submissions'
+              )}
+            </Button>
+            
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="min-w-[200px] justify-between">
                 {activeTab === "crew_report" && "Crew Reports ⚠️"}
@@ -1675,6 +1719,7 @@ export default function Admin() {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
