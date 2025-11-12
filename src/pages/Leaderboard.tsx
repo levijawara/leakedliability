@@ -92,6 +92,7 @@ export default function Leaderboard() {
           await supabase.from('search_logs').insert({
             searched_name: searchTerm.trim(),
             matched_producer_id: matchedProducer?.producer_id || null,
+            source: 'leaderboard',
             user_ip: null
           });
         } catch (error) {

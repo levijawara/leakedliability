@@ -1,12 +1,54 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, FileText, Users, TrendingUp, Info } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { AlertTriangle, FileText, Users, TrendingUp, Info, Search } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { useState, useEffect, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Handle search submission
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/leaderboard?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
+
+  // Debounced search logging
+  useEffect(() => {
+    if (searchLogTimeoutRef.current) {
+      clearTimeout(searchLogTimeoutRef.current);
+    }
+    
+    if (searchTerm.trim().length >= 2) {
+      searchLogTimeoutRef.current = setTimeout(async () => {
+        try {
+          // Log search asynchronously (no producer matching on homepage)
+          await supabase.from('search_logs').insert({
+            searched_name: searchTerm.trim(),
+            matched_producer_id: null,
+            source: 'homepage'
+          });
+        } catch (error) {
+          // Fail silently - don't disrupt user experience
+          console.debug('Search logging failed:', error);
+        }
+      }, 1500); // 1.5s debounce
+    }
+    
+    return () => {
+      if (searchLogTimeoutRef.current) {
+        clearTimeout(searchLogTimeoutRef.current);
+      }
+    };
+  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-muted/10 to-background">
@@ -65,10 +107,37 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Search/Inquiry Box */}
+      <div className="container mx-auto px-4 py-10">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-[#141414] rounded-2xl p-6 shadow-lg border border-neutral-800">
+            <div className="text-center mb-4 space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">
+                Looking to see if someone's already been reported?
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Search any producer or production company name to find out.
+              </p>
+            </div>
+            
+            <form onSubmit={handleSearch} className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-pulse" />
+              <Input
+                type="text"
+                placeholder="Search producer or company…"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-12 bg-neutral-900 border-neutral-700 rounded-xl px-4 py-3 text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              />
+            </form>
+          </div>
+        </div>
+      </div>
+
       {/* Features Section */}
-      <div className="container mx-auto px-4 py-20">
+      <div className="container mx-auto px-4 py-10">
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <Card className="p-6 text-center space-y-4 border-foreground">
+          <Card className="p-6 text-center space-y-4 border-foreground animate-glow-red transition-shadow duration-700">
             <div className="w-12 h-12 rounded-full bg-status-critical/10 flex items-center justify-center mx-auto">
               <Users className="h-6 w-6 text-status-critical" />
             </div>
@@ -78,7 +147,7 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 text-center space-y-4 border-foreground">
+          <Card className="p-6 text-center space-y-4 border-foreground animate-glow-yellow transition-shadow duration-700">
             <div className="w-12 h-12 rounded-full bg-status-warning/10 flex items-center justify-center mx-auto">
               <AlertTriangle className="h-6 w-6 text-status-warning" />
             </div>
@@ -88,7 +157,7 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 text-center space-y-4 border-foreground">
+          <Card className="p-6 text-center space-y-4 border-foreground animate-glow-green transition-shadow duration-700">
             <div className="w-12 h-12 rounded-full bg-status-excellent/10 flex items-center justify-center mx-auto">
               <TrendingUp className="h-6 w-6 text-status-excellent" />
             </div>

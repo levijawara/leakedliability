@@ -95,10 +95,25 @@ export default {
             height: "0",
           },
         },
+        "glow-red": {
+          "0%, 100%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
+          "50%": { boxShadow: "0 0 25px 3px rgba(255,77,77,0.25)" },
+        },
+        "glow-yellow": {
+          "0%, 100%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
+          "50%": { boxShadow: "0 0 25px 3px rgba(255,221,51,0.25)" },
+        },
+        "glow-green": {
+          "0%, 100%": { boxShadow: "0 0 0 rgba(0,0,0,0)" },
+          "50%": { boxShadow: "0 0 25px 3px rgba(51,255,153,0.25)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "glow-red": "glow-red 4s ease-in-out infinite",
+        "glow-yellow": "glow-yellow 4s ease-in-out infinite",
+        "glow-green": "glow-green 4s ease-in-out infinite",
       },
     },
   },

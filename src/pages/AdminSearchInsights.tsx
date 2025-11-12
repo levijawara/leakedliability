@@ -23,6 +23,7 @@ interface RecentSearch {
   searched_name: string;
   created_at: string;
   matched_producer_name?: string;
+  source?: string;
 }
 
 export default function AdminSearchInsights() {
@@ -91,6 +92,7 @@ export default function AdminSearchInsights() {
           searched_name,
           created_at,
           matched_producer_id,
+          source,
           producers (
             name
           )
@@ -104,7 +106,8 @@ export default function AdminSearchInsights() {
         recentData?.map((s: any) => ({
           searched_name: s.searched_name,
           created_at: s.created_at,
-          matched_producer_name: s.producers?.name
+          matched_producer_name: s.producers?.name,
+          source: s.source || 'leaderboard'
         })) || []
       );
     } catch (error) {
@@ -232,6 +235,7 @@ export default function AdminSearchInsights() {
                     <TableRow>
                       <TableHead>Search Term</TableHead>
                       <TableHead>Matched Producer</TableHead>
+                      <TableHead>Source</TableHead>
                       <TableHead>Timestamp</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -247,6 +251,17 @@ export default function AdminSearchInsights() {
                               <span className="text-muted-foreground text-sm">No match</span>
                             )}
                           </TableCell>
+                          <TableCell>
+                            {search.source === 'homepage' ? (
+                              <Badge variant="outline" className="bg-neutral-800 text-neutral-300">
+                                Homepage
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="bg-blue-900/30 text-blue-300">
+                                Leaderboard
+                              </Badge>
+                            )}
+                          </TableCell>
                           <TableCell className="text-sm text-muted-foreground">
                             {new Date(search.created_at).toLocaleString()}
                           </TableCell>
@@ -254,7 +269,7 @@ export default function AdminSearchInsights() {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
                           No recent searches
                         </TableCell>
                       </TableRow>

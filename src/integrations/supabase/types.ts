@@ -911,6 +911,7 @@ export type Database = {
           id: string
           matched_producer_id: string | null
           searched_name: string
+          source: string | null
           user_ip: string | null
         }
         Insert: {
@@ -918,6 +919,7 @@ export type Database = {
           id?: string
           matched_producer_id?: string | null
           searched_name: string
+          source?: string | null
           user_ip?: string | null
         }
         Update: {
@@ -925,6 +927,7 @@ export type Database = {
           id?: string
           matched_producer_id?: string | null
           searched_name?: string
+          source?: string | null
           user_ip?: string | null
         }
         Relationships: [
