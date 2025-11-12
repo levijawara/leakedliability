@@ -121,14 +121,16 @@ const Index = () => {
             </div>
             
             <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-pulse" />
-            <Input
-              type="text"
-              placeholder="Search for producers or production companies..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-14 bg-neutral-900 border-neutral-700 rounded-xl px-4 py-3 text-white placeholder:text-center placeholder:text-neutral-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
-            />
+              <div className="absolute left-0 top-0 bottom-0 w-14 flex items-center justify-center border-r border-neutral-700/50">
+                <Search className="h-5 w-5 text-muted-foreground animate-pulse" />
+              </div>
+              <Input
+                type="text"
+                placeholder="Search for producers or production companies..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-16 bg-neutral-900 border-neutral-700 rounded-xl px-4 py-3 text-white placeholder:text-center placeholder:text-neutral-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              />
             </form>
           </div>
         </div>
