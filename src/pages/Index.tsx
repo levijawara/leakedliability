@@ -124,10 +124,10 @@ const Index = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-pulse" />
             <Input
               type="text"
-              placeholder="Search producer or company…"
+              placeholder="Search for producers or production companies..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-14 bg-neutral-900 border-neutral-700 rounded-xl px-4 py-3 text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              className="pl-14 bg-neutral-900 border-neutral-700 rounded-xl px-4 py-3 text-white placeholder:text-center placeholder:text-neutral-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
             />
             </form>
           </div>
