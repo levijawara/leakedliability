@@ -177,18 +177,24 @@ export default function Auth() {
     setLoading(true);
 
     try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+      console.log('[AUTH] Sending reset email:', { email, redirectUrl });
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
 
       toast({
         title: "Check your email",
-        description: "We've sent you a password reset link.",
+        description: `We've sent a password reset link to ${email}. The link expires in 60 minutes.`,
       });
+      
+      console.log('[AUTH] Reset email sent successfully');
       setShowForgotPassword(false);
     } catch (error: any) {
+      console.error('[AUTH] Reset email failed:', error);
       toast({
         title: "Error",
         description: error.message,
