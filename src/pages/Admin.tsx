@@ -1799,6 +1799,13 @@ export default function Admin() {
                       </TableCell>
                       <TableCell>
                         <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => navigate(`/admin/edit-report/${report.id}`)}
+                          >
+                            Edit
+                          </Button>
                           {report.status !== 'paid' && (
                             <Button
                               size="sm"
