@@ -9,6 +9,11 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { Footer } from "@/components/Footer";
 
+const isInstagramBrowser = () => {
+  const ua = navigator.userAgent || navigator.vendor;
+  return ua.indexOf('Instagram') > -1;
+};
+
 const validatePassword = (password: string): { isValid: boolean; message?: string } => {
   if (password.length < 12) {
     return { isValid: false, message: "Password must be at least 12 characters" };
@@ -35,17 +40,38 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isIGBrowser, setIsIGBrowser] = useState(false);
+  const [email, setEmail] = useState("");
+  const [showResend, setShowResend] = useState(false);
+  const [resending, setResending] = useState(false);
 
   useEffect(() => {
+    // Detect Instagram browser
+    setIsIGBrowser(isInstagramBrowser());
+    
     // Check if user has valid session from password reset link
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      console.log('[RESET] Session check:', { 
+        hasSession: !!session, 
+        error: error?.message,
+        userAgent: navigator.userAgent,
+        origin: window.location.origin,
+        hash: window.location.hash
+      });
+      
       if (!session) {
+        const errorReason = error?.message || 'No active session found';
         toast({
           title: "Invalid or expired link",
-          description: "Please request a new password reset link.",
+          description: `${errorReason}. Please request a new password reset link.`,
           variant: "destructive",
         });
-        navigate("/auth");
+        
+        // Log for debugging
+        console.error('[RESET] Failed:', errorReason);
+        
+        // Delay navigation to allow toast to show
+        setTimeout(() => navigate("/auth"), 2000);
       }
     });
   }, [navigate, toast]);
@@ -100,8 +126,44 @@ export default function ResetPassword() {
     }
   };
 
+  const handleResendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResending(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "New link sent!",
+        description: "Check your email for a fresh password reset link.",
+      });
+      setShowResend(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
+      {isIGBrowser && (
+        <div className="max-w-md w-full mb-4 p-4 bg-destructive/10 border border-destructive rounded-lg">
+          <p className="text-sm text-destructive font-semibold">⚠️ Instagram Browser Detected</p>
+          <p className="text-xs text-destructive/80 mt-1">
+            Password resets don't work in Instagram's browser. Tap the "..." menu and select "Open in Safari/Chrome" to continue.
+          </p>
+        </div>
+      )}
+      
       <Card className="w-full max-w-md p-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black mb-2">Reset Password</h1>
@@ -162,6 +224,47 @@ export default function ResetPassword() {
             {loading ? "Updating password..." : "Update Password"}
           </Button>
         </form>
+
+        <div className="mt-4 text-center">
+          {!showResend ? (
+            <Button
+              variant="link"
+              onClick={() => setShowResend(true)}
+              className="text-sm text-muted-foreground"
+            >
+              Link expired? Request a new one
+            </Button>
+          ) : (
+            <form onSubmit={handleResendReset} className="space-y-2">
+              <Input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="text-sm"
+              />
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={resending}
+                  className="flex-1"
+                >
+                  {resending ? "Sending..." : "Send New Link"}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowResend(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
       </Card>
       
       <Footer />
