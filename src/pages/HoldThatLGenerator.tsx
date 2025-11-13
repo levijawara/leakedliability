@@ -95,16 +95,18 @@ export default function HoldThatLGenerator() {
       // Log to database (fire-and-forget)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        await supabase.from("image_generations").insert({
-          user_id: user.id,
-          producer_name: formData.name,
-          ig_handle: formData.igHandle.replace(/^@/, ""),
-          pscs_score: pscs,
-          debt_amount: debt,
-          debt_age: age,
-        }).catch(() => {
+        try {
+          await supabase.from("image_generations").insert({
+            user_id: user.id,
+            producer_name: formData.name,
+            ig_handle: formData.igHandle.replace(/^@/, ""),
+            pscs_score: pscs,
+            debt_amount: debt,
+            debt_age: age,
+          });
+        } catch (_) {
           // Silent fail - don't block UX
-        });
+        }
       }
 
     } catch (error: any) {

@@ -110,7 +110,7 @@ const Index = () => {
       {/* Search/Inquiry Box */}
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-[#141414] rounded-2xl p-6 shadow-lg border border-neutral-800">
+          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
             <div className="text-center mb-4 space-y-2">
               <h3 className="text-lg font-semibold text-foreground">
                 Looking to see if someone's already been reported?
@@ -122,10 +122,10 @@ const Index = () => {
             
             <form onSubmit={handleSearch} className="w-full">
               <div className="flex items-center gap-3">
-                <div
-                  className="h-12 w-12 rounded-xl bg-neutral-900 border border-neutral-700 flex items-center justify-center flex-shrink-0"
-                  aria-hidden="true"
-                >
+            <div
+              className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
+              aria-hidden="true"
+            >
                   <Search className="h-5 w-5 text-muted-foreground animate-pulse" />
                 </div>
 
@@ -135,7 +135,7 @@ const Index = () => {
                   placeholder="Search for producers or production companies..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-neutral-900 border-neutral-700 rounded-xl px-4 py-3 text-white placeholder:text-neutral-500 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
+                  className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
                 />
               </div>
             </form>
