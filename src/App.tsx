@@ -27,6 +27,7 @@ import Sitemap from "./pages/Sitemap";
 import BanPage from "./pages/BanPage";
 import ConfirmReport from "./pages/ConfirmReport";
 import AdminSearchInsights from "./pages/AdminSearchInsights";
+import HoldThatLGenerator from "./pages/HoldThatLGenerator";
 
 const queryClient = new QueryClient();
 
@@ -109,6 +110,7 @@ const AppContent = () => {
       <Route path="/profile" element={<Profile />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin/search-insights" element={<AdminSearchInsights />} />
+      <Route path="/hold-that-l" element={<HoldThatLGenerator />} />
       <Route path="/producer-dashboard" element={<ProducerDashboard />} />
       <Route path="/suggestions" element={<SuggestionBox />} />
       <Route path="/verify-email" element={<VerifyEmail />} />

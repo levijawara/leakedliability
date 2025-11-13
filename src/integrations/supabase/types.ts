@@ -266,6 +266,39 @@ export type Database = {
         }
         Relationships: []
       }
+      image_generations: {
+        Row: {
+          created_at: string | null
+          debt_age: number
+          debt_amount: number
+          id: string
+          ig_handle: string
+          producer_name: string
+          pscs_score: number
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          debt_age: number
+          debt_amount: number
+          id?: string
+          ig_handle: string
+          producer_name: string
+          pscs_score: number
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          debt_age?: number
+          debt_amount?: number
+          id?: string
+          ig_handle?: string
+          producer_name?: string
+          pscs_score?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       leaderboard_config: {
         Row: {
           created_at: string | null
