@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1389,6 +1389,14 @@ export default function Admin() {
             <Button variant="outline" onClick={() => navigate("/sitemap")}>
               <Map className="h-4 w-4 mr-2" />
               Sitemap
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/hold-that-l")}
+              className="flex items-center gap-2"
+            >
+              <Image className="h-4 w-4" />
+              Generate #HoldThatL
             </Button>
             <Button variant="outline" onClick={() => navigate("/")}>
               Home
