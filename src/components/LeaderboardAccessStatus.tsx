@@ -1,7 +1,7 @@
 import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, Crown, Gift, CreditCard } from "lucide-react";
+import { Loader2, CheckCircle, Crown, Gift, CreditCard, Unlock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -54,11 +54,35 @@ export const LeaderboardAccessStatus = () => {
 
   const getAccessContent = () => {
     switch (accessState.reason) {
+      case 'free_access_period':
+        return {
+          icon: <Unlock className="h-8 w-8 text-green-600" />,
+          badge: <Badge variant="default" className="bg-green-600">Free Access Period</Badge>,
+          description: "The leaderboard is currently free for all users during our launch period.",
+          action: null,
+        };
+
+      case 'owner_account':
+        return {
+          icon: <Crown className="h-8 w-8 text-yellow-600" />,
+          badge: <Badge variant="default" className="bg-yellow-600">Company Account</Badge>,
+          description: "You have full access to all leaderboard features.",
+          action: null,
+        };
+
       case 'admin':
         return {
           icon: <Crown className="h-8 w-8 text-yellow-600" />,
           badge: <Badge variant="default" className="bg-yellow-600">Admin Access</Badge>,
           description: "You have full administrative access to the leaderboard.",
+          action: null,
+        };
+
+      case 'report_unlock':
+        return {
+          icon: <CheckCircle className="h-8 w-8 text-green-600" />,
+          badge: <Badge variant="default" className="bg-green-600">Access Granted</Badge>,
+          description: "You have permanent access for contributing a verified report to the platform.",
           action: null,
         };
 
@@ -100,6 +124,7 @@ export const LeaderboardAccessStatus = () => {
       case 'threshold_locked':
       case 'producer_unpaid':
       case 'crew_no_report_unpaid':
+      case 'vendor_no_report_unpaid':
         return {
           icon: <CreditCard className="h-8 w-8 text-muted-foreground" />,
           badge: <Badge variant="outline">No Access</Badge>,

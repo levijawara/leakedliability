@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -62,6 +62,8 @@ export default function Admin() {
   const [sendProducerNotifications, setSendProducerNotifications] = useState(true);
   const [queuedNotifications, setQueuedNotifications] = useState<any[]>([]);
   const [settingsId, setSettingsId] = useState<string | null>(null);
+  const [freeAccessEnabled, setFreeAccessEnabled] = useState(true);
+  const [leaderboardConfigId, setLeaderboardConfigId] = useState<string | null>(null);
   const [paymentConfirmations, setPaymentConfirmations] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
@@ -184,6 +186,17 @@ export default function Admin() {
         setBlurNamesForPublic(settings.blur_names_for_public ?? true);
         setSendProducerNotifications(settings.send_producer_notifications ?? true);
         setSettingsId(settings.id);
+      }
+
+      // Load leaderboard config
+      const { data: leaderboardConfig } = await supabase
+        .from("leaderboard_config")
+        .select("*")
+        .single();
+      
+      if (leaderboardConfig) {
+        setFreeAccessEnabled(leaderboardConfig.free_access_enabled ?? true);
+        setLeaderboardConfigId(leaderboardConfig.id);
       }
 
       // Load queued notifications count
@@ -1095,6 +1108,44 @@ export default function Admin() {
     });
   };
 
+  const toggleFreeAccess = async () => {
+    if (!leaderboardConfigId) return;
+
+    const newFreeAccess = !freeAccessEnabled;
+    const { error } = await supabase
+      .from("leaderboard_config")
+      .update({ free_access_enabled: newFreeAccess })
+      .eq("id", leaderboardConfigId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: mapDatabaseError(error),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setFreeAccessEnabled(newFreeAccess);
+
+    // Log the toggle
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'leaderboard_free_access_toggled',
+        payload: {
+          enabled: newFreeAccess
+        }
+      }
+    });
+
+    toast({
+      title: newFreeAccess ? "Free Access Enabled" : "Free Access Disabled",
+      description: newFreeAccess 
+        ? "All users now have free leaderboard access" 
+        : "Normal access rules now apply",
+    });
+  };
+
   const sendQueuedNotifications = async () => {
     const { data: queued } = await supabase
       .from("queued_producer_notifications")
@@ -1491,6 +1542,26 @@ export default function Admin() {
               id="producer-notifications"
               checked={sendProducerNotifications}
               onCheckedChange={handleProducerNotificationToggle}
+              variant="status"
+            />
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="space-y-1">
+              <Label htmlFor="free-access" className="text-lg font-semibold flex items-center gap-2">
+                <Unlock className="h-5 w-5 text-muted-foreground" />
+                Global Free Leaderboard Access
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {freeAccessEnabled 
+                  ? "All users currently have free leaderboard access (for testing/launch)" 
+                  : "Normal access rules apply (subscriptions, report unlocks, etc.)"}
+              </p>
+            </div>
+            <Switch
+              id="free-access"
+              checked={freeAccessEnabled}
+              onCheckedChange={toggleFreeAccess}
               variant="status"
             />
           </div>
