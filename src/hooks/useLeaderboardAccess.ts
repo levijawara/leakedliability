@@ -4,7 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 export interface LeaderboardAccessState {
   hasAccess: boolean;
   canPurchase: boolean;
-  reason: 'admin' | 'admin_override' | 'subscription_active' | 'contributor_free' | 'threshold_locked' | 'producer_unpaid' | 'crew_no_report_unpaid' | 'no_access';
+  reason: 
+    | 'free_access_period'     // Global override
+    | 'owner_account'          // Owner email
+    | 'admin' 
+    | 'admin_override' 
+    | 'report_unlock'          // Earned unlock
+    | 'subscription_active' 
+    | 'contributor_free'       // Legacy
+    | 'threshold_locked' 
+    | 'producer_unpaid' 
+    | 'crew_no_report_unpaid'
+    | 'vendor_no_report_unpaid'
+    | 'no_access';
   accountType?: string;
   hasVerifiedReport?: boolean;
   subscriptionEnd?: string;

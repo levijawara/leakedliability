@@ -302,6 +302,7 @@ export type Database = {
       leaderboard_config: {
         Row: {
           created_at: string | null
+          free_access_enabled: boolean | null
           id: string
           locked_at: string | null
           producer_count_at_lock: number | null
@@ -310,6 +311,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          free_access_enabled?: boolean | null
           id?: string
           locked_at?: string | null
           producer_count_at_lock?: number | null
@@ -318,6 +320,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          free_access_enabled?: boolean | null
           id?: string
           locked_at?: string | null
           producer_count_at_lock?: number | null
@@ -841,6 +844,7 @@ export type Database = {
           created_by_admin_id: string | null
           email: string | null
           id: string
+          leaderboard_report_unlock: boolean | null
           legal_first_name: string
           legal_last_name: string
           updated_at: string
@@ -856,6 +860,7 @@ export type Database = {
           created_by_admin_id?: string | null
           email?: string | null
           id?: string
+          leaderboard_report_unlock?: boolean | null
           legal_first_name: string
           legal_last_name: string
           updated_at?: string
@@ -871,6 +876,7 @@ export type Database = {
           created_by_admin_id?: string | null
           email?: string | null
           id?: string
+          leaderboard_report_unlock?: boolean | null
           legal_first_name?: string
           legal_last_name?: string
           updated_at?: string
