@@ -35,3 +35,6 @@ verify_jwt = true
 
 [functions.admin-confirm-payment]
 verify_jwt = true
+
+[functions.merge-producers]
+verify_jwt = true
