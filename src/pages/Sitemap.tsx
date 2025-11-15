@@ -52,7 +52,9 @@ interface RouteInfo {
 interface RoutesData {
   public: RouteInfo[];
   authenticated: RouteInfo[];
+  leaderboard: RouteInfo[];
   admin: RouteInfo[];
+  edgeFunctions: RouteInfo[];
 }
 
 const Sitemap = () => {
@@ -115,22 +117,19 @@ const Sitemap = () => {
 
   const routes: RoutesData = {
     public: [
-      { path: "/", name: "Home", icon: Home, description: "Landing page with hero section and platform overview" },
-      { path: "/auth", name: "Authentication", icon: LogIn, description: "Sign in or sign up for an account" },
-      { path: "/reset-password", name: "Reset Password", icon: Key, description: "Reset your account password" },
-      { path: "/verify-email", name: "Email Verification", icon: Mail, description: "Verify your email address" },
-      { path: "/how-it-works", name: "How It Works", icon: Info, description: "Learn how the platform operates" },
-      { path: "/why-it-works", name: "Why It Works", icon: Info, description: "Understand the reasoning behind our approach" },
-      { path: "/disclaimer", name: "Disclaimer", icon: AlertTriangle, description: "Legal disclaimers and terms" },
-      { path: "/faq", name: "FAQ", icon: HelpCircle, description: "Frequently asked questions" },
-      { path: "/suggestions", name: "Suggestion Box", icon: MessageSquare, description: "Submit feedback and suggestions" },
-      { path: "/maintenance", name: "Maintenance Mode", icon: Settings, description: "Shown when site is under maintenance (admin-only bypass)" },
+      { path: "/", name: "Home", icon: Home, description: "Overview of Leaked Liability; primary CTA to submit reports" },
+      { path: "/how-it-works", name: "How It Works", icon: Info, description: "Full breakdown of reporting → verification → leaderboard" },
+      { path: "/terms", name: "Terms of Service", icon: ScrollText, description: "Platform terms and conditions" },
+      { path: "/privacy", name: "Privacy Policy", icon: ShieldAlert, description: "Privacy policy and data handling" },
     ],
     authenticated: [
-      { path: "/profile", name: "User Profile", icon: User, description: "Manage your account settings and information" },
-      { path: "/submit", name: "Submit Report", icon: FileText, description: "Multi-step report submission walkthrough" },
-      { path: "/producer-dashboard", name: "Producer Dashboard", icon: LayoutDashboard, description: "View reports associated with your production company" },
-      { path: "/leaderboard", name: "Leaderboard", icon: TrendingUp, description: "View ranking of reported producers (paywall protected)" },
+      { path: "/submission-form/crew", name: "Crew Report Form", icon: FileText, description: "Submit unpaid invoice report as a crew member" },
+      { path: "/submission-form/vendor", name: "Vendor Report Form", icon: FileCheck, description: "Submit unpaid invoice report as a vendor/service provider" },
+    ],
+    leaderboard: [
+      { path: "/leaderboard", name: "Leaderboard", icon: TrendingUp, description: "Public-facing producer debt rankings; requires access check" },
+      { path: "/leaderboard/paywall", name: "Leaderboard Paywall", icon: Lock, description: "Shows reason for access denial; CTAs to subscribe or submit reports" },
+      { path: "/subscription", name: "Subscription", icon: DollarSign, description: "Stripe-subscription checkout" },
     ],
     admin: [
       {
@@ -149,9 +148,18 @@ const Sitemap = () => {
           "💡 Suggestions",
           "🛡️ Moderation",
           "🧾 Audit Logs",
+          "📧 Producer Notification Emails",
         ],
       },
-      { path: "/leaderboard-analytics", name: "Analytics Dashboard", icon: BarChart3, description: "View leaderboard subscription and revenue analytics" },
+      { path: "/admin/merge-producers", name: "Merge Producers", icon: Users, description: "Manual tool to merge duplicate producers safely" },
+      { path: "/leaderboard-analytics", name: "Analytics Dashboard", icon: BarChart3, description: "View leaderboard subscription + usage analytics" },
+    ],
+    edgeFunctions: [
+      { path: "check-leaderboard-access", name: "check-leaderboard-access", icon: Settings, description: "Edge function reference - not a user route" },
+      { path: "send-producer-notifications", name: "send-producer-notifications", icon: Settings, description: "Edge function reference - not a user route" },
+      { path: "send-email", name: "send-email", icon: Settings, description: "Edge function reference - not a user route" },
+      { path: "admin-create-user", name: "admin-create-user", icon: Settings, description: "Edge function reference - not a user route" },
+      { path: "admin-merge-producers", name: "admin-merge-producers", icon: Settings, description: "Edge function reference - not a user route" },
     ],
   };
 
@@ -165,36 +173,47 @@ const Sitemap = () => {
     );
   };
 
-  const RouteCard = ({ route, variant }: { route: RouteInfo; variant: "public" | "authenticated" | "admin" }) => {
+  const RouteCard = ({ route, variant }: { route: RouteInfo; variant: "public" | "authenticated" | "leaderboard" | "admin" | "edgeFunctions" }) => {
     const Icon = route.icon;
     const isCurrentPage = location.pathname === route.path;
+    const isEdgeFunction = variant === "edgeFunctions";
 
     const variantStyles = {
       public: "border-green-500/20 hover:border-green-500/40",
       authenticated: "border-blue-500/20 hover:border-blue-500/40",
+      leaderboard: "border-purple-500/20 hover:border-purple-500/40",
       admin: "border-red-500/20 hover:border-red-500/40",
+      edgeFunctions: "border-gray-500/20 hover:border-gray-500/40",
     };
 
     const badgeVariants = {
       public: "bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20",
       authenticated: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+      leaderboard: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
       admin: "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20",
+      edgeFunctions: "bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20",
     };
 
     return (
-      <Card className={`${variantStyles[variant]} transition-all cursor-pointer hover:shadow-md ${isCurrentPage ? "ring-2 ring-primary" : ""}`} onClick={() => navigate(route.path)}>
+      <Card 
+        className={`${variantStyles[variant]} transition-all ${isEdgeFunction ? "opacity-75" : "cursor-pointer hover:shadow-md"} ${isCurrentPage ? "ring-2 ring-primary" : ""}`} 
+        onClick={() => !isEdgeFunction && navigate(route.path)}
+      >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
               <Icon className="h-5 w-5" />
               <CardTitle className="text-lg">{route.name}</CardTitle>
               {isCurrentPage && <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />}
+              {isEdgeFunction && <Badge variant="secondary" className="ml-2 text-xs">Reference Only</Badge>}
             </div>
             <Badge variant="outline" className={badgeVariants[variant]}>
               {variant === "public" && <Globe className="h-3 w-3 mr-1" />}
               {variant === "authenticated" && <Lock className="h-3 w-3 mr-1" />}
+              {variant === "leaderboard" && <TrendingUp className="h-3 w-3 mr-1" />}
               {variant === "admin" && <Shield className="h-3 w-3 mr-1" />}
-              {variant.charAt(0).toUpperCase() + variant.slice(1)}
+              {variant === "edgeFunctions" && <Settings className="h-3 w-3 mr-1" />}
+              {variant === "edgeFunctions" ? "Edge Function" : variant.charAt(0).toUpperCase() + variant.slice(1)}
             </Badge>
           </div>
           <CardDescription className="text-sm">{route.description}</CardDescription>
@@ -223,10 +242,12 @@ const Sitemap = () => {
 
   const filteredPublicRoutes = filterRoutes(routes.public);
   const filteredAuthRoutes = filterRoutes(routes.authenticated);
+  const filteredLeaderboardRoutes = filterRoutes(routes.leaderboard);
   const filteredAdminRoutes = filterRoutes(routes.admin);
+  const filteredEdgeFunctions = filterRoutes(routes.edgeFunctions);
 
-  const totalRoutes = routes.public.length + routes.authenticated.length + routes.admin.length;
-  const totalFiltered = filteredPublicRoutes.length + filteredAuthRoutes.length + filteredAdminRoutes.length;
+  const totalRoutes = routes.public.length + routes.authenticated.length + routes.leaderboard.length + routes.admin.length + routes.edgeFunctions.length;
+  const totalFiltered = filteredPublicRoutes.length + filteredAuthRoutes.length + filteredLeaderboardRoutes.length + filteredAdminRoutes.length + filteredEdgeFunctions.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -275,7 +296,7 @@ const Sitemap = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Globe className="h-6 w-6 text-green-600" />
-                <h2 className="text-2xl font-bold">Public Routes</h2>
+                <h2 className="text-2xl font-bold">✔ PUBLIC ROUTES</h2>
                 <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20">
                   {filteredPublicRoutes.length} routes
                 </Badge>
@@ -293,7 +314,7 @@ const Sitemap = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Lock className="h-6 w-6 text-blue-600" />
-                <h2 className="text-2xl font-bold">Authenticated User Routes</h2>
+                <h2 className="text-2xl font-bold">✔ AUTHENTICATED USER ROUTES</h2>
                 <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20">
                   {filteredAuthRoutes.length} routes
                 </Badge>
@@ -306,12 +327,30 @@ const Sitemap = () => {
             </div>
           )}
 
+          {/* Leaderboard Routes */}
+          {filteredLeaderboardRoutes.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <TrendingUp className="h-6 w-6 text-purple-600" />
+                <h2 className="text-2xl font-bold">✔ LEADERBOARD ROUTES</h2>
+                <Badge variant="outline" className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20">
+                  {filteredLeaderboardRoutes.length} routes
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredLeaderboardRoutes.map((route) => (
+                  <RouteCard key={route.path} route={route} variant="leaderboard" />
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Admin Routes */}
           {filteredAdminRoutes.length > 0 && (
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Shield className="h-6 w-6 text-red-600" />
-                <h2 className="text-2xl font-bold">Admin-Only Routes</h2>
+                <h2 className="text-2xl font-bold">✔ ADMIN-ONLY ROUTES</h2>
                 <Badge variant="outline" className="bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20">
                   {filteredAdminRoutes.length} routes
                 </Badge>
@@ -319,6 +358,25 @@ const Sitemap = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredAdminRoutes.map((route) => (
                   <RouteCard key={route.path} route={route} variant="admin" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Edge Functions */}
+          {filteredEdgeFunctions.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Settings className="h-6 w-6 text-gray-600" />
+                <h2 className="text-2xl font-bold">✔ EDGE FUNCTIONS (NON-ROUTE, ARCHITECTURE REFERENCES)</h2>
+                <Badge variant="outline" className="bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20">
+                  {filteredEdgeFunctions.length} references
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">These are backend functions, not user-accessible routes</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredEdgeFunctions.map((route) => (
+                  <RouteCard key={route.path} route={route} variant="edgeFunctions" />
                 ))}
               </div>
             </div>
