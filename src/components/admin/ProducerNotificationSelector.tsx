@@ -21,6 +21,7 @@ interface QueuedNotification {
   amount_owed: number;
   days_overdue: number;
   oldest_debt_days: number;
+  days_since_submission: number;
   producer_name?: string;
   company_name?: string;
 }
@@ -62,6 +63,7 @@ export function ProducerNotificationSelector({
           payment_report_id,
           payment_reports!inner(
             producer_id,
+            created_at,
             producers!inner(
               name,
               company,
@@ -75,17 +77,25 @@ export function ProducerNotificationSelector({
       if (error) throw error;
 
       // Transform data to flatten the structure
-      const transformedData = data?.map((n: any) => ({
-        id: n.id,
-        producer_email: n.producer_email,
-        report_id: n.report_id,
-        project_name: n.project_name,
-        amount_owed: n.amount_owed,
-        days_overdue: n.days_overdue,
-        oldest_debt_days: n.payment_reports?.producers?.oldest_debt_days || 0,
-        producer_name: n.payment_reports?.producers?.name || 'Unknown',
-        company_name: n.payment_reports?.producers?.company || 'N/A'
-      })) || [];
+      const transformedData = data?.map((n: any) => {
+        const createdAt = new Date(n.payment_reports?.created_at);
+        const daysSinceSubmission = Math.floor(
+          (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        
+        return {
+          id: n.id,
+          producer_email: n.producer_email,
+          report_id: n.report_id,
+          project_name: n.project_name,
+          amount_owed: n.amount_owed,
+          days_overdue: n.days_overdue,
+          oldest_debt_days: n.payment_reports?.producers?.oldest_debt_days || 0,
+          days_since_submission: daysSinceSubmission,
+          producer_name: n.payment_reports?.producers?.name || 'Unknown',
+          company_name: n.payment_reports?.producers?.company || 'N/A'
+        };
+      }) || [];
 
       setNotifications(transformedData);
     } catch (error: any) {
@@ -217,7 +227,7 @@ export function ProducerNotificationSelector({
               <TableHead>Email</TableHead>
               <TableHead>Project</TableHead>
               <TableHead className="text-right">Amount Owed</TableHead>
-              <TableHead className="text-right">Invoice Days</TableHead>
+              <TableHead className="text-right">Oldest Report</TableHead>
               <TableHead className="text-right">Oldest Debt</TableHead>
             </TableRow>
           </TableHeader>
@@ -235,7 +245,7 @@ export function ProducerNotificationSelector({
                 <TableCell className="text-muted-foreground">{notification.producer_email}</TableCell>
                 <TableCell>{notification.project_name}</TableCell>
                 <TableCell className="text-right">${notification.amount_owed.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{notification.days_overdue} days</TableCell>
+                <TableCell className="text-right">{notification.days_since_submission} days</TableCell>
                 <TableCell className="text-right font-semibold">{notification.oldest_debt_days} days</TableCell>
               </TableRow>
             ))}
