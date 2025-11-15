@@ -3,6 +3,9 @@ project_id = "blpbeopmdfahiosglomx"
 [functions.send-email]
 verify_jwt = true
 
+[functions.send-producer-notifications]
+verify_jwt = true
+
 [functions.check-leaderboard-access]
 verify_jwt = true
 

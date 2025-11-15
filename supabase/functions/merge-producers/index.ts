@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
         .from('payment_reports')
         .update({ producer_id: primary_producer_id })
         .eq('producer_id', duplicate_id)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (reportsError) {
         console.error('[merge-producers] Error updating payment_reports:', reportsError);
@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
         .from('producer_self_reports')
         .update({ producer_id: primary_producer_id })
         .eq('producer_id', duplicate_id)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (selfReportsError) {
         console.error('[merge-producers] Error updating self reports:', selfReportsError);
@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
           .from('producer_subscriptions')
           .update({ producer_id: primary_producer_id })
           .eq('producer_id', duplicate_id)
-          .select('*', { count: 'exact', head: true });
+          .select();
 
         if (!subsUpdateError) {
           results.producer_subscriptions += subsCount || 0;
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
         .from('past_debts')
         .update({ producer_id: primary_producer_id })
         .eq('producer_id', duplicate_id)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (pastDebtsError) {
         console.error('[merge-producers] Error updating past debts:', pastDebtsError);
@@ -201,7 +201,7 @@ Deno.serve(async (req) => {
         .from('search_logs')
         .update({ matched_producer_id: primary_producer_id })
         .eq('matched_producer_id', duplicate_id)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (searchLogsError) {
         console.error('[merge-producers] Error updating search logs:', searchLogsError);
@@ -215,7 +215,7 @@ Deno.serve(async (req) => {
         .from('payment_confirmations')
         .update({ producer_id: primary_producer_id })
         .eq('producer_id', duplicate_id)
-        .select('*', { count: 'exact', head: true });
+        .select();
 
       if (confirmationsError) {
         console.error('[merge-producers] Error updating confirmations:', confirmationsError);
