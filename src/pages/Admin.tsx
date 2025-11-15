@@ -42,6 +42,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
+import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -83,6 +84,7 @@ export default function Admin() {
   const [activeTab, setActiveTab] = useState("crew_report");
   const [newSearchCount, setNewSearchCount] = useState(0);
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
+  const [notificationPanelExpanded, setNotificationPanelExpanded] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
@@ -1526,24 +1528,44 @@ export default function Admin() {
             />
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="space-y-1">
-              <Label htmlFor="producer-notifications" className="text-lg font-semibold flex items-center gap-2">
-                <Bell className="h-5 w-5 text-muted-foreground" />
-                Producer Notification Emails
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {sendProducerNotifications 
-                  ? "Producers receive emails when crew reports are verified" 
-                  : `Notifications paused (${queuedNotifications.length} queued)`}
-              </p>
+          <div className="pt-4 border-t">
+            <div className="flex items-center justify-between">
+              <div 
+                className="space-y-1 flex-1 cursor-pointer"
+                onClick={() => setNotificationPanelExpanded(!notificationPanelExpanded)}
+              >
+                <Label className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
+                  <Bell className="h-5 w-5 text-muted-foreground" />
+                  Producer Notification Emails
+                  <ChevronDown 
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground transition-transform",
+                      notificationPanelExpanded && "rotate-180"
+                    )} 
+                  />
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {sendProducerNotifications 
+                    ? "Producers receive emails when crew reports are verified" 
+                    : `Notifications paused (${queuedNotifications.length} queued)`}
+                </p>
+              </div>
+              <Switch
+                id="producer-notifications"
+                checked={sendProducerNotifications}
+                onCheckedChange={handleProducerNotificationToggle}
+                variant="status"
+              />
             </div>
-            <Switch
-              id="producer-notifications"
-              checked={sendProducerNotifications}
-              onCheckedChange={handleProducerNotificationToggle}
-              variant="status"
-            />
+            
+            {notificationPanelExpanded && (
+              <div className="mt-4 pt-4 border-t">
+                <ProducerNotificationSelector 
+                  queuedNotifications={queuedNotifications}
+                  onEmailsSent={loadAdminData}
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t">
