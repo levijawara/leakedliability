@@ -20,6 +20,7 @@ interface QueuedNotification {
   project_name: string;
   amount_owed: number;
   days_overdue: number;
+  oldest_debt_days: number;
   producer_name?: string;
   company_name?: string;
 }
@@ -63,7 +64,8 @@ export function ProducerNotificationSelector({
             producer_id,
             producers!inner(
               name,
-              company
+              company,
+              oldest_debt_days
             )
           )
         `)
@@ -80,6 +82,7 @@ export function ProducerNotificationSelector({
         project_name: n.project_name,
         amount_owed: n.amount_owed,
         days_overdue: n.days_overdue,
+        oldest_debt_days: n.payment_reports?.producers?.oldest_debt_days || 0,
         producer_name: n.payment_reports?.producers?.name || 'Unknown',
         company_name: n.payment_reports?.producers?.company || 'N/A'
       })) || [];
@@ -214,7 +217,8 @@ export function ProducerNotificationSelector({
               <TableHead>Email</TableHead>
               <TableHead>Project</TableHead>
               <TableHead className="text-right">Amount Owed</TableHead>
-              <TableHead className="text-right">Days Overdue</TableHead>
+              <TableHead className="text-right">Invoice Days</TableHead>
+              <TableHead className="text-right">Oldest Debt</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -232,6 +236,7 @@ export function ProducerNotificationSelector({
                 <TableCell>{notification.project_name}</TableCell>
                 <TableCell className="text-right">${notification.amount_owed.toLocaleString()}</TableCell>
                 <TableCell className="text-right">{notification.days_overdue} days</TableCell>
+                <TableCell className="text-right font-semibold">{notification.oldest_debt_days} days</TableCell>
               </TableRow>
             ))}
           </TableBody>

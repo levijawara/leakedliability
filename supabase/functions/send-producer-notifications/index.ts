@@ -66,11 +66,19 @@ serve(async (req) => {
     console.log(`[send-producer-notifications] Processing ${notification_ids.length} notifications`);
 
     // Fetch notification details
-    const { data: notifications, error: fetchError } = await supabase
-      .from('queued_producer_notifications')
-      .select('*')
-      .in('id', notification_ids)
-      .is('sent_at', null);
+  const { data: notifications, error: fetchError } = await supabase
+    .from('queued_producer_notifications')
+    .select(`
+      *,
+      payment_reports!inner(
+        producer_id,
+        producers!inner(
+          oldest_debt_days
+        )
+      )
+    `)
+    .in('id', notification_ids)
+    .is('sent_at', null);
 
     if (fetchError) {
       console.error('[send-producer-notifications] Fetch error:', fetchError);
@@ -105,6 +113,7 @@ serve(async (req) => {
               reportId: notification.report_id,
               amountOwed: notification.amount_owed,
               daysOverdue: notification.days_overdue,
+              oldestDebtDays: (notification as any).payment_reports?.producers?.oldest_debt_days || 0,
               projectName: notification.project_name
             }
           }
