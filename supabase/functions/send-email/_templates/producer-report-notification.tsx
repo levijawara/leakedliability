@@ -16,6 +16,7 @@ interface ProducerReportNotificationProps {
   reportId: string;
   amountOwed: number;
   daysOverdue: number;
+  oldestDebtDays: number;
   projectName: string;
 }
 
@@ -23,6 +24,7 @@ export const ProducerReportNotification = ({
   reportId,
   amountOwed,
   daysOverdue,
+  oldestDebtDays,
   projectName,
 }: ProducerReportNotificationProps) => (
   <Html>
@@ -54,6 +56,11 @@ export const ProducerReportNotification = ({
           
           <Text style={reportLabel}>Days Since Invoice</Text>
           <Text style={reportValue}>{daysOverdue} days</Text>
+          
+          <Hr style={divider} />
+          
+          <Text style={reportLabel}>Your Oldest Debt (Leaderboard)</Text>
+          <Text style={reportValue}>{oldestDebtDays} days</Text>
         </Section>
 
         <Section style={actionBox}>

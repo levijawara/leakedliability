@@ -60,7 +60,6 @@ export default function Admin() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [blurNamesForPublic, setBlurNamesForPublic] = useState(true);
-  const [sendProducerNotifications, setSendProducerNotifications] = useState(true);
   const [queuedNotifications, setQueuedNotifications] = useState<any[]>([]);
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [freeAccessEnabled, setFreeAccessEnabled] = useState(true);
@@ -186,7 +185,6 @@ export default function Admin() {
         setMaintenanceMode(settings.maintenance_mode);
         setMaintenanceMessage(settings.maintenance_message || "");
         setBlurNamesForPublic(settings.blur_names_for_public ?? true);
-        setSendProducerNotifications(settings.send_producer_notifications ?? true);
         setSettingsId(settings.id);
       }
 
@@ -1067,48 +1065,6 @@ export default function Admin() {
     });
   };
 
-  const handleProducerNotificationToggle = async (checked: boolean) => {
-    if (!settingsId) return;
-    
-    const { error } = await supabase
-      .from("site_settings")
-      .update({ send_producer_notifications: checked })
-      .eq("id", settingsId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSendProducerNotifications(checked);
-
-    // Log the notification toggle
-    await supabase.functions.invoke('log-event', {
-      body: {
-        event_type: 'producer_notification_toggled',
-        payload: {
-          enabled: checked,
-          queued_count: queuedNotifications.length
-        }
-      }
-    });
-
-    // If turning ON, send all queued notifications
-    if (checked && queuedNotifications.length > 0) {
-      await sendQueuedNotifications();
-    }
-
-    toast({
-      title: "Success",
-      description: checked 
-        ? "Producer notifications enabled" 
-        : "Producer notifications paused",
-    });
-  };
 
   const toggleFreeAccess = async () => {
     if (!leaderboardConfigId) return;
@@ -1146,64 +1102,6 @@ export default function Admin() {
         ? "All users now have free leaderboard access" 
         : "Normal access rules now apply",
     });
-  };
-
-  const sendQueuedNotifications = async () => {
-    const { data: queued } = await supabase
-      .from("queued_producer_notifications")
-      .select("*")
-      .is("sent_at", null);
-
-    if (!queued || queued.length === 0) return;
-
-    let successCount = 0;
-    let failCount = 0;
-
-    for (const notification of queued) {
-      const { error } = await supabase.functions.invoke('send-email', {
-        body: {
-          type: 'producer_report_notification',
-          to: notification.producer_email,
-          data: {
-            reportId: notification.report_id,
-            amountOwed: notification.amount_owed,
-            daysOverdue: notification.days_overdue,
-            projectName: notification.project_name,
-          }
-        }
-      });
-
-      if (!error) {
-        // Mark as sent
-        await supabase
-          .from("queued_producer_notifications")
-          .update({ sent_at: new Date().toISOString() })
-          .eq("id", notification.id);
-        successCount++;
-      } else {
-        failCount++;
-        console.error('Failed to send queued notification:', error);
-      }
-    }
-
-    // Log the batch send event
-    await supabase.functions.invoke('log-event', {
-      body: {
-        event_type: 'producer_notifications_sent',
-        payload: {
-          success_count: successCount,
-          fail_count: failCount,
-          total: queued.length
-        }
-      }
-    });
-
-    toast({
-      title: "Queued Emails Sent",
-      description: `Sent ${successCount} notifications${failCount > 0 ? `, ${failCount} failed` : ''}`,
-    });
-
-    loadAdminData(); // Refresh to show updated queue count
   };
 
   const handleResolveDispute = async (id: string, resolution: string) => {
@@ -1529,11 +1427,11 @@ export default function Admin() {
           </div>
 
           <div className="pt-4 border-t">
-            <div className="flex items-center justify-between">
-              <div 
-                className="space-y-1 flex-1 cursor-pointer"
-                onClick={() => setNotificationPanelExpanded(!notificationPanelExpanded)}
-              >
+            <div 
+              className="flex items-start justify-between cursor-pointer"
+              onClick={() => setNotificationPanelExpanded(!notificationPanelExpanded)}
+            >
+              <div className="space-y-0.5">
                 <Label className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
                   <Bell className="h-5 w-5 text-muted-foreground" />
                   Producer Notification Emails
@@ -1545,17 +1443,9 @@ export default function Admin() {
                   />
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  {sendProducerNotifications 
-                    ? "Producers receive emails when crew reports are verified" 
-                    : `Notifications paused (${queuedNotifications.length} queued)`}
+                  {queuedNotifications.length} queued notification{queuedNotifications.length !== 1 ? 's' : ''} • Manual send only
                 </p>
               </div>
-              <Switch
-                id="producer-notifications"
-                checked={sendProducerNotifications}
-                onCheckedChange={handleProducerNotificationToggle}
-                variant="status"
-              />
             </div>
             
             {notificationPanelExpanded && (
