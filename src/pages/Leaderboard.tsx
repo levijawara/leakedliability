@@ -286,11 +286,6 @@ export default function Leaderboard() {
               {accessState.reason === 'admin' && (
                 <Badge variant="default" className="text-lg px-4 py-2">Admin Access</Badge>
               )}
-              {accessState.reason === 'contributor_free' && (
-                <Badge variant="default" className="text-lg px-4 py-2 bg-green-600">
-                  ✓ Contributor Access (Free)
-                </Badge>
-              )}
               {accessState.reason === 'subscription_active' && (
                 <>
                   <Badge variant="default" className="text-lg px-4 py-2">Subscribed</Badge>

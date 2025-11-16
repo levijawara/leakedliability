@@ -9,13 +9,7 @@ export interface LeaderboardAccessState {
     | 'owner_account'          // Owner email
     | 'admin' 
     | 'admin_override' 
-    | 'report_unlock'          // Earned unlock
     | 'subscription_active' 
-    | 'contributor_free'       // Legacy
-    | 'threshold_locked' 
-    | 'producer_unpaid' 
-    | 'crew_no_report_unpaid'
-    | 'vendor_no_report_unpaid'
     | 'no_access';
   accountType?: string;
   hasVerifiedReport?: boolean;
