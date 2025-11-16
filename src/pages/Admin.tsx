@@ -250,18 +250,52 @@ export default function Admin() {
     
     setSubmissions(subs || []);
 
-    // Load all payment reports with crew member details
-    const { data: reports } = await supabase
+    // Load all payment reports
+    const { data: reports, error: reportsError } = await supabase
       .from("payment_reports")
       .select(`
         *,
-        producer:producers(name, company),
-        profiles!payment_reports_reporter_id_fkey(legal_first_name, legal_last_name),
-        admin_creator:profiles!payment_reports_admin_creator_id_fkey(legal_first_name, legal_last_name, email)
+        producer:producers(name, company)
       `)
       .order("created_at", { ascending: false });
-    
-    setPaymentReports(reports || []);
+
+    if (reportsError) {
+      console.error("Failed to load payment reports:", reportsError);
+      toast({
+        title: "Error Loading Reports",
+        description: reportsError.message,
+        variant: "destructive",
+      });
+    }
+
+    // Enrich results with reporter + admin creator profiles
+    const enrichedReports = await Promise.all(
+      (reports || []).map(async (report) => {
+        const { data: reporterProfile } = await supabase
+          .from("profiles")
+          .select("legal_first_name, legal_last_name")
+          .eq("user_id", report.reporter_id)
+          .maybeSingle();
+
+        let adminCreatorProfile = null;
+        if (report.admin_creator_id) {
+          const { data: adminProfile } = await supabase
+            .from("profiles")
+            .select("legal_first_name, legal_last_name, email")
+            .eq("user_id", report.admin_creator_id)
+            .maybeSingle();
+          adminCreatorProfile = adminProfile;
+        }
+
+        return {
+          ...report,
+          profiles: reporterProfile,
+          admin_creator: adminCreatorProfile,
+        };
+      })
+    );
+
+    setPaymentReports(enrichedReports);
 
     // Load all disputes
     const { data: disps } = await supabase
