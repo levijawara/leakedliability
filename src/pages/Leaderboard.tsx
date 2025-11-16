@@ -21,6 +21,82 @@ const getDaysColor = (days: number | null) => {
   return "bg-status-excellent text-white";
 };
 
+interface AdminEditableCellProps {
+  value: string | number | null;
+  onSave: (newValue: string | number | null) => Promise<void>;
+  className?: string;
+  isAdmin: boolean;
+  type?: 'text' | 'number' | 'date';
+}
+
+function AdminEditableCell({ 
+  value, 
+  onSave, 
+  className = "", 
+  isAdmin,
+  type = 'text'
+}: AdminEditableCellProps) {
+  const [editing, setEditing] = useState(false);
+  const [tempValue, setTempValue] = useState(value?.toString() || "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    setEditing(false);
+    
+    let finalValue: string | number | null = tempValue;
+    
+    if (type === 'number') {
+      finalValue = tempValue ? Number(tempValue) : null;
+    } else if (type === 'date') {
+      finalValue = tempValue || null;
+    }
+    
+    try {
+      await onSave(finalValue);
+    } catch (error) {
+      console.error('Failed to save:', error);
+      setTempValue(value?.toString() || "");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isAdmin) {
+    return <TableCell className={className}>{value || '—'}</TableCell>;
+  }
+
+  return (
+    <TableCell
+      className={`${className} ${isAdmin ? 'cursor-pointer hover:bg-muted/30' : ''}`}
+      onClick={() => !editing && setEditing(true)}
+    >
+      {editing ? (
+        <input
+          type={type === 'date' ? 'date' : type === 'number' ? 'number' : 'text'}
+          className="w-full bg-background/80 border border-primary/30 rounded px-2 py-1 text-center"
+          value={tempValue}
+          onChange={(e) => setTempValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSave();
+            if (e.key === 'Escape') {
+              setTempValue(value?.toString() || "");
+              setEditing(false);
+            }
+          }}
+          autoFocus
+          disabled={saving}
+        />
+      ) : (
+        <span className={saving ? 'opacity-50' : ''}>
+          {value || '—'}
+        </span>
+      )}
+    </TableCell>
+  );
+}
+
 export default function Leaderboard() {
   const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess();
   const [managingBilling, setManagingBilling] = useState(false);
@@ -28,7 +104,7 @@ export default function Leaderboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: producers, isLoading } = useQuery({
+  const { data: producers, isLoading, refetch: refetchProducers } = useQuery({
     queryKey: ["public_leaderboard"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -39,6 +115,32 @@ export default function Leaderboard() {
       return data;
     },
   });
+
+  const updateProducer = async (
+    producerId: string, 
+    updates: Partial<{
+      name: string;
+      pscs_score: number;
+      total_amount_owed: number;
+      oldest_debt_date: string | null;
+      total_crew_owed: number;
+      total_vendors_owed: number;
+      total_jobs_owed: number;
+      total_cities_owed: number;
+    }>
+  ) => {
+    const { error } = await supabase
+      .from('producers')
+      .update(updates)
+      .eq('id', producerId);
+
+    if (error) {
+      console.error('Update failed:', error);
+      throw error;
+    }
+
+    await refetchProducers();
+  };
 
   // Fetch site settings for blur toggle and public readiness flag
   const { data: settings } = useQuery({
@@ -392,45 +494,34 @@ export default function Leaderboard() {
                       key={producer.producer_id}
                       className="hover:bg-muted/50 transition-colors"
                     >
-                      <TableCell className="font-semibold">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <span className={shouldBlurNames ? "blur-sm select-none" : ""}>{producer.producer_name || '—'}</span>
-                            {producer.company_name && (
-                              <div className={`text-xs text-muted-foreground ${shouldBlurNames ? "blur-sm select-none" : ""}`}>{producer.company_name}</div>
-                            )}
-                          </div>
-                          {producer.momentum_active_until && 
-                           new Date(producer.momentum_active_until) > new Date() && (
-                            <span 
-                              title="Good Standing Momentum (7-day grace period)" 
-                              className="text-xl"
-                            >
-                              🔥
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <span className="font-bold text-lg">
-                            {Number(producer.pscs_score || 0).toFixed(2)}
-                          </span>
-                          {producer.total_amount_owed === 0 && producer.paid_jobs_count > 0 && (
-                            <span className="text-xs text-muted-foreground italic">
-                              (recovering)
-                            </span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center font-semibold">
-                        <span className="text-status-excellent">$</span>{producer.total_amount_owed?.toLocaleString() || "0"}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {producer.oldest_debt_date
-                          ? format(new Date(producer.oldest_debt_date), "MM/dd/yyyy")
-                          : "—"}
-                      </TableCell>
+                      <AdminEditableCell
+                        value={producer.producer_name || '—'}
+                        onSave={(v) => updateProducer(producer.producer_id, { name: v as string })}
+                        className="font-semibold"
+                        isAdmin={isAdmin}
+                        type="text"
+                      />
+                      <AdminEditableCell
+                        value={Number(producer.pscs_score || 0).toFixed(2)}
+                        onSave={(v) => updateProducer(producer.producer_id, { pscs_score: Number(v) })}
+                        className="text-center"
+                        isAdmin={isAdmin}
+                        type="number"
+                      />
+                      <AdminEditableCell
+                        value={producer.total_amount_owed || 0}
+                        onSave={(v) => updateProducer(producer.producer_id, { total_amount_owed: Number(v) })}
+                        className="text-center font-semibold"
+                        isAdmin={isAdmin}
+                        type="number"
+                      />
+                      <AdminEditableCell
+                        value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'yyyy-MM-dd') : null}
+                        onSave={(v) => updateProducer(producer.producer_id, { oldest_debt_date: v as string | null })}
+                        className="text-center"
+                        isAdmin={isAdmin}
+                        type="date"
+                      />
                       <TableCell className="text-center">
                         <span
                           className={`inline-block px-3 py-1 rounded font-bold text-lg ${getDaysColor(
@@ -440,18 +531,34 @@ export default function Leaderboard() {
                           {producer.oldest_debt_days || 0}
                         </span>
                       </TableCell>
-                      <TableCell className="text-center text-lg">
-                        {producer.total_crew_owed || 0}
-                      </TableCell>
-                      <TableCell className="text-center text-lg">
-                        {producer.total_vendors_owed || 0}
-                      </TableCell>
-                      <TableCell className="text-center text-lg">
-                        {producer.total_jobs_owed || 0}
-                      </TableCell>
-                      <TableCell className="text-center text-lg">
-                        {producer.total_cities_owed || 0}
-                      </TableCell>
+                      <AdminEditableCell
+                        value={producer.total_crew_owed || 0}
+                        onSave={(v) => updateProducer(producer.producer_id, { total_crew_owed: Number(v) })}
+                        className="text-center text-lg"
+                        isAdmin={isAdmin}
+                        type="number"
+                      />
+                      <AdminEditableCell
+                        value={producer.total_vendors_owed || 0}
+                        onSave={(v) => updateProducer(producer.producer_id, { total_vendors_owed: Number(v) })}
+                        className="text-center text-lg"
+                        isAdmin={isAdmin}
+                        type="number"
+                      />
+                      <AdminEditableCell
+                        value={producer.total_jobs_owed || 0}
+                        onSave={(v) => updateProducer(producer.producer_id, { total_jobs_owed: Number(v) })}
+                        className="text-center text-lg"
+                        isAdmin={isAdmin}
+                        type="number"
+                      />
+                      <AdminEditableCell
+                        value={producer.total_cities_owed || 0}
+                        onSave={(v) => updateProducer(producer.producer_id, { total_cities_owed: Number(v) })}
+                        className="text-center text-lg"
+                        isAdmin={isAdmin}
+                        type="number"
+                      />
                     </TableRow>
                     ))
                   ) : (
