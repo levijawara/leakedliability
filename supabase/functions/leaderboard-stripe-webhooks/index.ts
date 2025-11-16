@@ -42,6 +42,55 @@ serve(async (req) => {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
+        
+        // Check if this is an escrow payment
+        if (session.metadata?.type === "escrow_payment") {
+          const escrowId = session.metadata.escrow_payment_id;
+          const paymentReportId = session.metadata.payment_report_id;
+          const paymentIntentId = session.payment_intent as string;
+
+          log("escrow payment detected", { escrowId, paymentReportId });
+
+          // Update escrow payment to "paid"
+          const { error: escrowError } = await supabase
+            .from("escrow_payments")
+            .update({
+              status: "paid",
+              paid_at: new Date().toISOString(),
+              stripe_payment_intent_id: paymentIntentId,
+            })
+            .eq("id", escrowId);
+
+          if (escrowError) {
+            log("escrow update error", escrowError);
+            break;
+          }
+
+          // Update payment report to "paid"
+          const { error: reportError } = await supabase
+            .from("payment_reports")
+            .update({
+              status: "paid",
+              payment_date: new Date().toISOString(),
+            })
+            .eq("id", paymentReportId);
+
+          if (reportError) {
+            log("payment report update error", reportError);
+            break;
+          }
+
+          // Delete any queued notifications for this report
+          await supabase
+            .from("queued_producer_notifications")
+            .delete()
+            .eq("payment_report_id", paymentReportId);
+
+          log("escrow payment processed successfully", { escrowId, paymentReportId });
+          break;
+        }
+        
+        // Existing subscription checkout logic
         const userId = session.metadata?.user_id;
         const producerId = session.metadata?.producer_id;
         const customerId = session.customer as string | null;

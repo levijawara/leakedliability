@@ -30,6 +30,7 @@ import AdminSearchInsights from "./pages/AdminSearchInsights";
 import HoldThatLGenerator from "./pages/HoldThatLGenerator";
 import AdminEditReport from "./pages/AdminEditReport";
 import AdminProducerMerge from "./pages/AdminProducerMerge";
+import PayEscrow from "./pages/PayEscrow";
 
 const queryClient = new QueryClient();
 
@@ -123,6 +124,8 @@ const AppContent = () => {
       <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
       <Route path="/ban/:banId" element={<BanPage />} />
       <Route path="/confirm" element={<ConfirmReport />} />
+      <Route path="/pay/:code" element={<PayEscrow />} />
+      <Route path="/pay/:code/success" element={<PayEscrow />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
