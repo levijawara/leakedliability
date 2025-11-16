@@ -11,6 +11,8 @@ import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
 import { LeaderboardPaywall } from "@/components/LeaderboardPaywall";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 const getDaysColor = (days: number | null) => {
   if (!days || days < 0) return "bg-background text-foreground";
@@ -26,6 +28,7 @@ interface AdminEditableCellProps {
   onSave: (newValue: string | number | null) => Promise<void>;
   className?: string;
   isAdmin: boolean;
+  viewMode: 'admin' | 'public';
   type?: 'text' | 'number' | 'date';
 }
 
@@ -34,6 +37,7 @@ function AdminEditableCell({
   onSave, 
   className = "", 
   isAdmin,
+  viewMode,
   type = 'text'
 }: AdminEditableCellProps) {
   const [editing, setEditing] = useState(false);
@@ -62,7 +66,7 @@ function AdminEditableCell({
     }
   };
 
-  if (!isAdmin) {
+  if (!isAdmin || viewMode === 'public') {
     return <TableCell className={className}>{value || '—'}</TableCell>;
   }
 
@@ -102,6 +106,7 @@ export default function Leaderboard() {
   const [managingBilling, setManagingBilling] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState<'admin' | 'public'>('admin');
   const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: producers, isLoading, refetch: refetchProducers } = useQuery({
@@ -396,7 +401,7 @@ export default function Leaderboard() {
           </div>
         </Card>
 
-        {/* Producer Search Filter */}
+        {/* Producer Search Filter + View Toggle */}
         <div className="mb-4 flex items-center gap-3">
           <div className="relative flex-1 max-w-md">
             <input
@@ -416,6 +421,20 @@ export default function Leaderboard() {
               </button>
             )}
           </div>
+          
+          {/* Admin View Toggle - Only visible to admins */}
+          {isAdmin && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
+              <Label htmlFor="view-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
+                {viewMode === 'admin' ? 'Admin View' : 'Public View'}
+              </Label>
+              <Switch
+                id="view-mode"
+                checked={viewMode === 'admin'}
+                onCheckedChange={(checked) => setViewMode(checked ? 'admin' : 'public')}
+              />
+            </div>
+          )}
         </div>
 
         {/* Leaderboard Table */}
@@ -494,34 +513,38 @@ export default function Leaderboard() {
                       key={producer.producer_id}
                       className="hover:bg-muted/50 transition-colors"
                     >
-                      <AdminEditableCell
-                        value={producer.producer_name || '—'}
-                        onSave={(v) => updateProducer(producer.producer_id, { name: v as string })}
-                        className="font-semibold"
-                        isAdmin={isAdmin}
-                        type="text"
-                      />
-                      <AdminEditableCell
-                        value={Number(producer.pscs_score || 0).toFixed(2)}
-                        onSave={(v) => updateProducer(producer.producer_id, { pscs_score: Number(v) })}
-                        className="text-center"
-                        isAdmin={isAdmin}
-                        type="number"
-                      />
-                      <AdminEditableCell
-                        value={producer.total_amount_owed || 0}
-                        onSave={(v) => updateProducer(producer.producer_id, { total_amount_owed: Number(v) })}
-                        className="text-center font-semibold"
-                        isAdmin={isAdmin}
-                        type="number"
-                      />
-                      <AdminEditableCell
-                        value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'yyyy-MM-dd') : null}
-                        onSave={(v) => updateProducer(producer.producer_id, { oldest_debt_date: v as string | null })}
-                        className="text-center"
-                        isAdmin={isAdmin}
-                        type="date"
-                      />
+                    <AdminEditableCell
+                      value={producer.producer_name || '—'}
+                      onSave={(v) => updateProducer(producer.producer_id, { name: v as string })}
+                      className="font-semibold"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="text"
+                    />
+                    <AdminEditableCell
+                      value={Number(producer.pscs_score || 0).toFixed(2)}
+                      onSave={(v) => updateProducer(producer.producer_id, { pscs_score: Number(v) })}
+                      className="text-center"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="number"
+                    />
+                    <AdminEditableCell
+                      value={producer.total_amount_owed || 0}
+                      onSave={(v) => updateProducer(producer.producer_id, { total_amount_owed: Number(v) })}
+                      className="text-center font-semibold"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="number"
+                    />
+                    <AdminEditableCell
+                      value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'yyyy-MM-dd') : null}
+                      onSave={(v) => updateProducer(producer.producer_id, { oldest_debt_date: v as string | null })}
+                      className="text-center"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="date"
+                    />
                       <TableCell className="text-center">
                         <span
                           className={`inline-block px-3 py-1 rounded font-bold text-lg ${getDaysColor(
@@ -531,34 +554,38 @@ export default function Leaderboard() {
                           {producer.oldest_debt_days || 0}
                         </span>
                       </TableCell>
-                      <AdminEditableCell
-                        value={producer.total_crew_owed || 0}
-                        onSave={(v) => updateProducer(producer.producer_id, { total_crew_owed: Number(v) })}
-                        className="text-center text-lg"
-                        isAdmin={isAdmin}
-                        type="number"
-                      />
-                      <AdminEditableCell
-                        value={producer.total_vendors_owed || 0}
-                        onSave={(v) => updateProducer(producer.producer_id, { total_vendors_owed: Number(v) })}
-                        className="text-center text-lg"
-                        isAdmin={isAdmin}
-                        type="number"
-                      />
-                      <AdminEditableCell
-                        value={producer.total_jobs_owed || 0}
-                        onSave={(v) => updateProducer(producer.producer_id, { total_jobs_owed: Number(v) })}
-                        className="text-center text-lg"
-                        isAdmin={isAdmin}
-                        type="number"
-                      />
-                      <AdminEditableCell
-                        value={producer.total_cities_owed || 0}
-                        onSave={(v) => updateProducer(producer.producer_id, { total_cities_owed: Number(v) })}
-                        className="text-center text-lg"
-                        isAdmin={isAdmin}
-                        type="number"
-                      />
+                    <AdminEditableCell
+                      value={producer.total_crew_owed || 0}
+                      onSave={(v) => updateProducer(producer.producer_id, { total_crew_owed: Number(v) })}
+                      className="text-center text-lg"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="number"
+                    />
+                    <AdminEditableCell
+                      value={producer.total_vendors_owed || 0}
+                      onSave={(v) => updateProducer(producer.producer_id, { total_vendors_owed: Number(v) })}
+                      className="text-center text-lg"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="number"
+                    />
+                    <AdminEditableCell
+                      value={producer.total_jobs_owed || 0}
+                      onSave={(v) => updateProducer(producer.producer_id, { total_jobs_owed: Number(v) })}
+                      className="text-center text-lg"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="number"
+                    />
+                    <AdminEditableCell
+                      value={producer.total_cities_owed || 0}
+                      onSave={(v) => updateProducer(producer.producer_id, { total_cities_owed: Number(v) })}
+                      className="text-center text-lg"
+                      isAdmin={isAdmin}
+                      viewMode={viewMode}
+                      type="number"
+                    />
                     </TableRow>
                     ))
                   ) : (
