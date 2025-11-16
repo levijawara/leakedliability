@@ -556,7 +556,7 @@ export default function Leaderboard() {
                       isMoney={true}
                     />
                     <AdminEditableCell
-                      value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'yyyy-MM-dd') : null}
+                      value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'MM/dd/yyyy') : null}
                       onSave={(v) => updateProducer(producer.producer_id, { oldest_debt_date: v as string | null })}
                       className="text-center"
                       isAdmin={isAdmin}
