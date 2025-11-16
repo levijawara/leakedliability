@@ -414,7 +414,7 @@ export default function Leaderboard() {
                       <TableCell className="text-center">
                         <div className="flex items-center justify-center gap-2">
                           <span className="font-bold text-lg">
-                            {Math.round(producer.pscs_score || 0)}
+                            {Number(producer.pscs_score || 0).toFixed(2)}
                           </span>
                           {producer.total_amount_owed === 0 && producer.paid_jobs_count > 0 && (
                             <span className="text-xs text-muted-foreground italic">
