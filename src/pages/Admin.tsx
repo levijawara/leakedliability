@@ -80,6 +80,7 @@ export default function Admin() {
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [auditSearchQuery, setAuditSearchQuery] = useState("");
+  const [currentTab, setCurrentTab] = useState("payments_due");
   const [activeTab, setActiveTab] = useState("crew_report");
   const [newSearchCount, setNewSearchCount] = useState(0);
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
@@ -1605,87 +1606,318 @@ export default function Admin() {
         </div>
       </Card>
 
-      <Card className="p-6 shadow-sm hover:shadow-md transition-shadow">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold mb-1">Submissions & Reports</h2>
-            <p className="text-sm text-muted-foreground">Review all submission types</p>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleBackfillSubmissions}
-              disabled={backfillLoading}
-            >
-              {backfillLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Syncing...
-                </>
-              ) : (
-                'Backfill Missing Submissions'
-              )}
-            </Button>
-            
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="min-w-[200px] justify-between">
-                {activeTab === "crew_report" && "Crew Reports ⚠️"}
-                {activeTab === "vendor_report" && "Vendor Reports 📋"}
-                {activeTab === "payment_confirmation" && "Payment Confirmation ✅"}
-                {activeTab === "payment_documentation" && "Payment Documentation 🧾"}
-                {activeTab === "report_explanation" && "Report Explanation ☮️"}
-                {activeTab === "counter_dispute" && "Counter-Dispute ‼️"}
-                {activeTab === "report_dispute" && "Report Dispute ⁉️"}
-                {activeTab === "suggestions" && "Suggestions 💡"}
-                {activeTab === "moderation" && "Moderation 🛡️"}
-                {activeTab === "audit" && "Audit Logs 🧾"}
-                {activeTab === "create_user" && "Create User + Report 👤"}
-                <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[220px] bg-background">
-              <DropdownMenuItem onClick={() => setActiveTab("crew_report")}>
-                Crew Reports ⚠️
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("vendor_report")}>
-                Vendor Reports 📋
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("payment_confirmation")}>
-                Payment Confirmation ✅
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("payment_documentation")}>
-                Payment Documentation 🧾
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("report_explanation")}>
-                Report Explanation ☮️
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("counter_dispute")}>
-                Counter-Dispute ‼️
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("report_dispute")}>
-                Report Dispute ⁉️
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("suggestions")}>
-                Suggestions 💡
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("moderation")}>
-                Moderation 🛡️
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("audit")}>
-                Audit Logs 🧾
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setActiveTab("create_user")}>
-                Create User + Report 👤
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          </div>
-        </div>
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-1 h-auto p-1">
+          <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">💰 Payments Due</TabsTrigger>
+          <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">✅ Paid</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">⚙️ Settings</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">👥 Users</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">📧 Notifications</TabsTrigger>
+          <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">📋 All Submissions</TabsTrigger>
+        </TabsList>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
+        {/* Payments Due Tab */}
+        <TabsContent value="payments_due">
+          <Card className="p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold mb-1">Payments Due</h2>
+                <p className="text-sm text-muted-foreground">Mark debts as paid</p>
+              </div>
+              <Badge variant="outline">{paymentReports.filter(r => r.status !== 'paid').length} unpaid</Badge>
+            </div>
+            
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Report ID</TableHead>
+                  <TableHead>Producer</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Amount Owed</TableHead>
+                  <TableHead>Days Overdue</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentReports.filter(r => r.status !== 'paid').length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      No unpaid debts
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paymentReports.filter(r => r.status !== 'paid').map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell className="font-mono text-xs">{report.report_id || 'N/A'}</TableCell>
+                      <TableCell>{report.producer_name}</TableCell>
+                      <TableCell>{report.project_name}</TableCell>
+                      <TableCell className="font-semibold">${report.amount_owed.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <Badge variant={report.days_overdue > 30 ? 'destructive' : 'secondary'}>
+                          {report.days_overdue} days
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{report.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPaymentReport(report);
+                            setShowPaymentModal(true);
+                          }}
+                        >
+                          Mark as Paid
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Payments Paid Tab */}
+        <TabsContent value="payments_paid">
+          <Card className="p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold mb-1">Payments Paid</h2>
+                <p className="text-sm text-muted-foreground">History of resolved debts</p>
+              </div>
+              <Badge variant="outline">{paymentReports.filter(r => r.status === 'paid').length} paid</Badge>
+            </div>
+            
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Report ID</TableHead>
+                  <TableHead>Producer</TableHead>
+                  <TableHead>Project</TableHead>
+                  <TableHead>Amount</TableHead>
+                  <TableHead>Payment Date</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paymentReports.filter(r => r.status === 'paid').length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No paid debts yet
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paymentReports.filter(r => r.status === 'paid').map((report) => (
+                    <TableRow key={report.id}>
+                      <TableCell className="font-mono text-xs">{report.report_id || 'N/A'}</TableCell>
+                      <TableCell>{report.producer_name}</TableCell>
+                      <TableCell>{report.project_name}</TableCell>
+                      <TableCell className="font-semibold">${report.amount_owed.toFixed(2)}</TableCell>
+                      <TableCell className="text-xs">{report.payment_date ? new Date(report.payment_date).toLocaleDateString() : 'N/A'}</TableCell>
+                      <TableCell>
+                        <Badge variant="default">{report.status}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Site Settings</h2>
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="maintenance-mode" className="text-base">Maintenance Mode</Label>
+                  <p className="text-sm text-muted-foreground">Toggle site-wide maintenance mode</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {maintenanceMode ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
+                  <Switch
+                    id="maintenance-mode"
+                    checked={maintenanceMode}
+                    onCheckedChange={toggleMaintenanceMode}
+                  />
+                </div>
+              </div>
+              
+              {maintenanceMode && (
+                <div className="space-y-2">
+                  <Label htmlFor="maintenance-message">Maintenance Message</Label>
+                  <Textarea
+                    id="maintenance-message"
+                    value={maintenanceMessage}
+                    onChange={(e) => setMaintenanceMessage(e.target.value)}
+                    onBlur={toggleMaintenanceMode}
+                    placeholder="Enter maintenance message..."
+                  />
+                </div>
+              )}
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="blur-names" className="text-base">Blur Producer Names</Label>
+                  <p className="text-sm text-muted-foreground">Hide names from non-admin users</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Eye className="h-4 w-4" />
+                  <Switch
+                    id="blur-names"
+                    checked={blurNamesForPublic}
+                    onCheckedChange={toggleBlurNames}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="free-access" className="text-base">Free Leaderboard Access</Label>
+                  <p className="text-sm text-muted-foreground">Enable free access to leaderboard</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Unlock className="h-4 w-4" />
+                  <Switch
+                    id="free-access"
+                    checked={freeAccessEnabled}
+                    onCheckedChange={toggleFreeAccess}
+                  />
+                </div>
+              </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Users Tab */}
+        <TabsContent value="users">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">User Management</h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 gap-4">
+                <Card className="p-4">
+                  <p className="text-sm text-muted-foreground">Crew</p>
+                  <p className="text-2xl font-bold">{accountStats.crew}</p>
+                </Card>
+                <Card className="p-4">
+                  <p className="text-sm text-muted-foreground">Vendor</p>
+                  <p className="text-2xl font-bold">{accountStats.vendor}</p>
+                </Card>
+                <Card className="p-4">
+                  <p className="text-sm text-muted-foreground">Producer</p>
+                  <p className="text-2xl font-bold">{accountStats.producer}</p>
+                </Card>
+                <Card className="p-4">
+                  <p className="text-sm text-muted-foreground">Company</p>
+                  <p className="text-2xl font-bold">{accountStats.company}</p>
+                </Card>
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Search User</Label>
+                <Command className="border rounded-lg">
+                  <CommandInput
+                    placeholder="Search by name or email..."
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                  />
+                  <CommandList>
+                    <CommandEmpty>No users found</CommandEmpty>
+                    <CommandGroup>
+                      {allUsers
+                        .filter(u => 
+                          u.legal_first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          u.legal_last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+                        )
+                        .slice(0, 10)
+                        .map((user) => (
+                          <CommandItem
+                            key={user.user_id}
+                            onSelect={() => handleUserSelect(user.user_id)}
+                          >
+                            {user.legal_first_name} {user.legal_last_name} ({user.email})
+                          </CommandItem>
+                        ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </div>
+              
+              {selectedUser && (
+                <Card className="p-4">
+                  <h3 className="font-semibold mb-2">{selectedUser.legal_first_name} {selectedUser.legal_last_name}</h3>
+                  <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
+                  <p className="text-sm mt-2">Account Type: <Badge>{selectedUser.account_type}</Badge></p>
+                  {searchResults && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm font-medium">Submissions:</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Pending:</span> {searchResults.pending || 0}
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Verified:</span> {searchResults.verified || 0}
+                        </div>
+                        <div className="text-sm">
+                          <span className="text-muted-foreground">Rejected:</span> {searchResults.rejected || 0}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+              )}
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Producer Notifications Tab */}
+        <TabsContent value="notifications">
+          <Card className="p-6">
+            <h2 className="text-xl font-semibold mb-4">Producer Notifications</h2>
+            <p className="text-sm text-muted-foreground mb-4">Send email notifications to producers about outstanding payments</p>
+            <ProducerNotificationSelector 
+              queuedNotifications={queuedNotifications}
+              onEmailsSent={() => {
+                toast({ title: "Notification emails queued" });
+                loadAdminData();
+              }}
+            />
+          </Card>
+        </TabsContent>
+
+        {/* All Submissions Tab */}
+        <TabsContent value="all_submissions">
+          <Card className="p-6">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-semibold mb-1">All Submissions & Reports</h2>
+                <p className="text-sm text-muted-foreground">Review all submission types</p>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleBackfillSubmissions}
+                disabled={backfillLoading}
+              >
+                {backfillLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Syncing...
+                  </>
+                ) : (
+                  'Backfill Missing Submissions'
+                )}
+              </Button>
+            </div>
+            
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
 
           {/* Payment Reports Tab */}
           <TabsContent value="payment_reports">
@@ -2511,7 +2743,10 @@ export default function Admin() {
         </TabsContent>
 
         </Tabs>
-      </Card>
+          </Card>
+        </TabsContent>
+
+      </Tabs>
 
       {/* Payment Confirmation Modal */}
       <Dialog open={showPaymentModal} onOpenChange={setShowPaymentModal}>
