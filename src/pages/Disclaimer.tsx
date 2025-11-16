@@ -16,51 +16,103 @@ export default function Disclaimer() {
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none space-y-4 text-muted-foreground">
             <p>
-              Leaked Liability™ provides a public platform for users to share information about payment practices within the production industry, including freelance crew, vendors, and service providers. While we encourage transparency and accountability, we do not independently verify, investigate, or authenticate every submission. Content on this platform is provided "as is" for informational purposes only and should not be interpreted as fact without independent verification.
+              Leaked Liability™ is a user-driven transparency platform where individuals may share information about payment practices within the production industry, including experiences involving freelance crew, vendors, service providers, producers, and production companies. The information presented on this platform is user generated and is made available "as is" for general informational purposes only. Leaked Liability™ does not independently verify, investigate, or authenticate the accuracy of each submission.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Nature of User Content
+            </h2>
+
+            <p>
+              All reports, responses, and uploaded materials are submitted by platform users. Each user is solely responsible for the accuracy, completeness, and legality of their own submissions. By posting any content, you represent that it is true to the best of your knowledge and does not contain false, misleading, or defamatory material.
             </p>
 
             <p>
-              All reports, responses, and supporting materials are user-generated content. Crew Members, Producers, Production Companies, Vendors and Service Providers are solely responsible for the accuracy and legality of their submissions. By submitting content, you represent that it is true to the best of your knowledge and does not contain false, misleading, or defamatory material.
+              Under California defamation law, a claim generally requires a false statement of fact that is published to a third party, is unprivileged, and has a natural tendency to harm reputation. Statements of opinion are generally protected and cannot form the basis of a defamation claim. Users should ensure that all factual claims in their submissions can be supported with documentation, and should clearly distinguish personal opinion from factual assertion. References: Cal. Civ. Code; see also defamation guidance summarized by the Digital Media Law Project and other California legal resources.
             </p>
 
-            <p className="font-semibold text-foreground">
-              Leaked Liability™ is not:
+            <p>
+              Leaked Liability™ does not guarantee that user submissions constitute accurate factual representations of events. Users and third parties are encouraged to conduct their own independent verification.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Platform Role and Limitations
+            </h2>
+
+            <p>
+              Leaked Liability™ is not any of the following:
             </p>
 
             <ul className="list-disc pl-6 space-y-2">
               <li>A debt collection agency</li>
               <li>A credit reporting agency</li>
-              <li>An arbitrator or mediator between parties</li>
+              <li>A mediator, arbitrator, or legal representative for any party</li>
+              <li>A guarantor of the accuracy of user submitted information</li>
             </ul>
 
             <p>
-              We do not provide legal advice or act on behalf of any user. Our Producer Social Credit Score (PSCS) and related metrics are proprietary opinion-based indicators, not legally recognized credit scores, and should not be relied upon as financial, reputational, or hiring criteria.
+              The Producer Social Credit Score (PSCS) and related metrics are proprietary opinion based indicators. They are not credit scores, financial ratings, or legally recognized evaluations, and should not be used as the sole basis for hiring, contracting, or financial decision making.
             </p>
 
             <p>
-              We reserve the right—but not the obligation—to remove, redact, or restrict content that appears false, defamatory, abusive, or unsupported by documentation. However, any decision not to remove content does not constitute endorsement, agreement, or validation of that content.
+              Nothing on this platform should be interpreted as legal advice.
             </p>
 
-            <p className="font-semibold text-foreground">
-              By using this platform, you acknowledge and agree that:
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Content Moderation
+            </h2>
+
+            <p>
+              Leaked Liability™ reserves the right, but not the obligation, to remove, redact, restrict access to, or decline to publish any content that appears to be:
             </p>
 
             <ul className="list-disc pl-6 space-y-2">
-              <li>You assume full responsibility for the content you post.</li>
-              <li>You may be held legally liable by third parties for false, defamatory, or unlawful submissions.</li>
-              <li>Leaked Liability™ and its affiliates disclaim all responsibility and liability for damages, reputational loss, or disputes arising from user submissions or reliance on platform content, to the fullest extent permitted by law.</li>
+              <li>False</li>
+              <li>Defamatory under California law</li>
+              <li>Abusive, harassing, or retaliatory</li>
+              <li>Unsupported by documentation</li>
+              <li>Violative of these Terms or any applicable law</li>
             </ul>
 
-            <p className="font-semibold text-foreground pt-4">
-              Retaliation and Misuse:
+            <p>
+              Decisions not to remove content do not constitute endorsement, agreement, or validation of that content.
             </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              User Responsibilities
+            </h2>
 
             <p>
-              Any attempt to intimidate, harass, or retaliate against users or Leaked Liability™ for lawful participation in this platform may constitute interference or bad-faith conduct and may be documented or disclosed as part of a transparency report.
+              By using Leaked Liability™, you agree to the following:
             </p>
 
-            <p className="pt-4">
-              For specific disputes or claims, users should seek independent legal counsel.
+            <ol className="list-decimal pl-6 space-y-2">
+              <li>You assume full responsibility for any content you submit.</li>
+              <li>You acknowledge that California law may hold individuals liable for false statements of fact that harm another party's reputation.</li>
+              <li>You acknowledge that Leaked Liability™ disclaims liability for damages arising from user submissions or reliance on platform content, to the fullest extent permitted by law.</li>
+              <li>You understand that disputes between users must be resolved independently, through private communication or legal counsel, rather than through Leaked Liability™.</li>
+              <li>You understand that the statute of limitations for defamation claims in California is generally one year from the date of publication.</li>
+              <li>You understand that public figure status may affect the burden of proof for a defamation claim. Public figures generally must show "actual malice," meaning knowledge of falsity or reckless disregard for the truth.</li>
+            </ol>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Retaliation, Harassment, and Interference
+            </h2>
+
+            <p>
+              Any attempt to intimidate, harass, threaten, or retaliate against users for lawful participation on this platform may be documented. Such conduct may also be disclosed in transparency reports if necessary for platform safety and integrity.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Legal Consultation
+            </h2>
+
+            <p>
+              Users involved in disputes or legal matters are strongly encouraged to seek independent legal counsel. Leaked Liability™ cannot provide legal advice and does not intervene in individual conflicts.
+            </p>
+
+            <p className="text-sm text-muted-foreground text-center mt-8 pt-6 border-t">
+              Last Updated: November 16, 2025
             </p>
           </CardContent>
         </Card>
