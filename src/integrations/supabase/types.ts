@@ -762,6 +762,7 @@ export type Database = {
           oldest_debt_days: number | null
           paid_crew_count: number | null
           paid_jobs_count: number | null
+          plateau_days: number | null
           pscs_score: number | null
           subscription_status: string | null
           subscription_tier: string | null
@@ -790,6 +791,7 @@ export type Database = {
           oldest_debt_days?: number | null
           paid_crew_count?: number | null
           paid_jobs_count?: number | null
+          plateau_days?: number | null
           pscs_score?: number | null
           subscription_status?: string | null
           subscription_tier?: string | null
@@ -818,6 +820,7 @@ export type Database = {
           oldest_debt_days?: number | null
           paid_crew_count?: number | null
           paid_jobs_count?: number | null
+          plateau_days?: number | null
           pscs_score?: number | null
           subscription_status?: string | null
           subscription_tier?: string | null
