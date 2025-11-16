@@ -1650,7 +1650,7 @@ export default function Admin() {
                   paymentReports.filter(r => r.status !== 'paid').map((report) => (
                     <TableRow key={report.id}>
                       <TableCell className="font-mono text-xs">{report.report_id || 'N/A'}</TableCell>
-                      <TableCell>{report.producer_name}</TableCell>
+                      <TableCell>{report.producer?.name || 'Unknown Producer'}</TableCell>
                       <TableCell>{report.project_name}</TableCell>
                       <TableCell className="font-semibold">${report.amount_owed.toFixed(2)}</TableCell>
                       <TableCell>
@@ -1713,7 +1713,7 @@ export default function Admin() {
                   paymentReports.filter(r => r.status === 'paid').map((report) => (
                     <TableRow key={report.id}>
                       <TableCell className="font-mono text-xs">{report.report_id || 'N/A'}</TableCell>
-                      <TableCell>{report.producer_name}</TableCell>
+                      <TableCell>{report.producer?.name || 'Unknown Producer'}</TableCell>
                       <TableCell>{report.project_name}</TableCell>
                       <TableCell className="font-semibold">${report.amount_owed.toFixed(2)}</TableCell>
                       <TableCell className="text-xs">{report.payment_date ? new Date(report.payment_date).toLocaleDateString() : 'N/A'}</TableCell>
