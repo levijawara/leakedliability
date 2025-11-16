@@ -105,31 +105,11 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
   };
 
   const getPaywallContent = () => {
-    if (accessState.reason === 'threshold_locked') {
-      return {
-        title: "⚠️ Access Policy Updated",
-        description: "The Leaked Liability™ Leaderboard has reached critical mass. Free contributor access has ended.",
-        message: "All users now require a paid subscription to view the full leaderboard.",
-        showCrewOption: false,
-        showSignupPrompt: false,
-      };
-    }
-
-    if ((accessState.accountType === 'crew' || accessState.accountType === 'vendor') && !accessState.hasVerifiedReport) {
-      return {
-        title: "🔒 Full Access Required",
-        description: "Names are blurred until you unlock access.",
-        message: "Choose one of the following options to view the full leaderboard:",
-        showCrewOption: true,
-        showSignupPrompt: false,
-      };
-    }
-
-    if (!accessState.accountType) {
+    if (!user) {
       return {
         title: "🔒 Leaderboard Access",
-        description: "Names are blurred. Create an account to unlock access.",
-        message: "Crew members: Get FREE temporary access by submitting a verified crew member payment report.\nVendors & Service Providers: Get FREE temporary access by submitting a verified vendor report.\nProducers: Subscribe for $5.99/month.",
+        description: "Names are blurred. Sign in to subscribe.",
+        message: "Subscribe for $5.99/month to access the full leaderboard.",
         showCrewOption: false,
         showSignupPrompt: true,
       };
@@ -138,7 +118,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
     return {
       title: "🔒 Paid Access Required",
       description: "Names are blurred. Subscribe to view the full leaderboard.",
-      message: null,
+      message: "Subscribe for $5.99/month to unlock full access.",
       showCrewOption: false,
       showSignupPrompt: false,
     };

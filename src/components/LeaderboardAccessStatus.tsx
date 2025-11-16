@@ -78,22 +78,6 @@ export const LeaderboardAccessStatus = () => {
           action: null,
         };
 
-      case 'report_unlock':
-        return {
-          icon: <CheckCircle className="h-8 w-8 text-green-600" />,
-          badge: <Badge variant="default" className="bg-green-600">Access Granted</Badge>,
-          description: "You have permanent access for contributing a verified report to the platform.",
-          action: null,
-        };
-
-      case 'contributor_free':
-        const contributorType = accessState.accountType === 'vendor' ? 'vendor' : 'crew';
-        return {
-          icon: <Gift className="h-8 w-8 text-green-600" />,
-          badge: <Badge variant="default" className="bg-green-600">Free Contributor Access</Badge>,
-          description: `You have free access for submitting a verified ${contributorType} report. This access is temporary and subject to platform policy changes.`,
-          action: null,
-        };
 
       case 'subscription_active':
         return {
@@ -121,21 +105,8 @@ export const LeaderboardAccessStatus = () => {
           action: null,
         };
 
-      case 'threshold_locked':
-      case 'producer_unpaid':
-      case 'crew_no_report_unpaid':
-      case 'vendor_no_report_unpaid':
-        return {
-          icon: <CreditCard className="h-8 w-8 text-muted-foreground" />,
-          badge: <Badge variant="outline">No Access</Badge>,
-          description: "You need to subscribe to access the full leaderboard.",
-          action: (
-            <Button onClick={() => window.location.href = '/leaderboard'}>
-              View Subscription Options
-            </Button>
-          ),
-        };
 
+      case 'no_access':
       default:
         return {
           icon: <CreditCard className="h-8 w-8 text-muted-foreground" />,

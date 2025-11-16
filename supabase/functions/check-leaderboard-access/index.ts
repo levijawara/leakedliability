@@ -120,32 +120,16 @@ serve(async (req) => {
       });
     }
 
-    // Get user profile for next checks
+    // Get user profile for logging purposes only
     const { data: profile } = await supabaseClient
       .from('profiles')
-      .select('account_type, leaderboard_report_unlock')
+      .select('account_type')
       .eq('user_id', user.id)
       .single();
 
     const accountType = profile?.account_type || 'crew';
-    const hasReportUnlock = profile?.leaderboard_report_unlock || false;
-    logStep("User profile", { accountType, hasReportUnlock });
+    logStep("User profile", { accountType });
 
-    // 🚨 PRIORITY 5: Check report unlock (earned by verified report)
-    if (hasReportUnlock) {
-      logStep("Report unlock granted - granting access");
-      return new Response(JSON.stringify({ 
-        hasAccess: true, 
-        canPurchase: false, 
-        reason: 'report_unlock',
-        accountType,
-        hasVerifiedReport: true,
-        message: 'Access granted for contributing a verified report'
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
 
     // 🚨 PRIORITY 6: Check for active paid subscription
     const { data: subscription } = await supabaseClient
@@ -170,51 +154,10 @@ serve(async (req) => {
       });
     }
 
-    // 🚨 PRIORITY 7: Legacy contributor access (only if threshold NOT locked)
-    const thresholdLocked = config?.threshold_locked || false;
-    
-    if (!thresholdLocked) {
-      // Check for verified report (real-time check as fallback)
-      const { data: verifiedReport } = await supabaseClient
-        .from('submissions')
-        .select('id')
-        .eq('user_id', user.id)
-        .in('submission_type', ['crew_report', 'vendor_report'])
-        .eq('status', 'verified')
-        .maybeSingle();
 
-      if (verifiedReport && (accountType === 'crew' || accountType === 'vendor')) {
-        logStep("Legacy contributor access - granting access");
-        return new Response(JSON.stringify({ 
-          hasAccess: true, 
-          canPurchase: false, 
-          reason: 'contributor_free',
-          accountType,
-          hasVerifiedReport: true
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-          status: 200,
-        });
-      }
-    }
-
-    // ❌ NO ACCESS: Determine appropriate message
-    let reason = 'no_access';
-    let message = 'Subscribe to access the leaderboard';
-    
-    if (thresholdLocked) {
-      reason = 'threshold_locked';
-      message = 'The leaderboard now requires a paid subscription.';
-    } else if (accountType === 'producer' || accountType === 'production_company') {
-      reason = 'producer_unpaid';
-      message = 'Producers must subscribe to access the leaderboard.';
-    } else if (accountType === 'crew') {
-      reason = 'crew_no_report_unpaid';
-      message: 'Submit a verified report or subscribe to access.';
-    } else if (accountType === 'vendor') {
-      reason = 'vendor_no_report_unpaid';
-      message = 'Submit a verified report or subscribe to access.';
-    }
+    // ❌ NO ACCESS: Everyone gets the same message
+    const reason = 'no_access';
+    const message = 'Subscribe to access the full leaderboard';
 
     logStep("No access granted", { reason, accountType });
     return new Response(JSON.stringify({ 
