@@ -41,3 +41,9 @@ verify_jwt = true
 
 [functions.merge-producers]
 verify_jwt = true
+
+[functions.create-escrow-payment-link]
+verify_jwt = true
+
+[functions.create-escrow-checkout]
+verify_jwt = false

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,6 +82,9 @@ export default function Admin() {
   const [auditSearchQuery, setAuditSearchQuery] = useState("");
   const [currentTab, setCurrentTab] = useState("payments_due");
   const [activeTab, setActiveTab] = useState("crew_report");
+  const [generatingEscrowLink, setGeneratingEscrowLink] = useState<string | null>(null);
+  const [escrowPaymentUrl, setEscrowPaymentUrl] = useState<string | null>(null);
+  const [showEscrowLinkModal, setShowEscrowLinkModal] = useState(false);
   const [newSearchCount, setNewSearchCount] = useState(0);
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
   const [notificationPanelExpanded, setNotificationPanelExpanded] = useState(false);
@@ -1105,6 +1108,43 @@ export default function Admin() {
     });
   };
 
+  const handleGenerateEscrowLink = async (reportId: string) => {
+    setGeneratingEscrowLink(reportId);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-escrow-payment-link", {
+        body: { payment_report_id: reportId },
+      });
+
+      if (error) throw error;
+
+      setEscrowPaymentUrl(data.payment_url);
+      setShowEscrowLinkModal(true);
+
+      toast({
+        title: data.existing ? "Existing Link Retrieved" : "Payment Link Generated",
+        description: "Copy and share the link with the producer.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to generate payment link",
+        variant: "destructive",
+      });
+    } finally {
+      setGeneratingEscrowLink(null);
+    }
+  };
+
+  const copyEscrowLink = () => {
+    if (escrowPaymentUrl) {
+      navigator.clipboard.writeText(escrowPaymentUrl);
+      toast({
+        title: "Copied!",
+        description: "Payment link copied to clipboard",
+      });
+    }
+  };
+
   const handleResolveDispute = async (id: string, resolution: string) => {
     if (!adminNotes.trim()) {
       toast({
@@ -1662,15 +1702,35 @@ export default function Admin() {
                         <Badge variant="secondary">{report.status}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          size="sm"
-                          onClick={() => {
-                            setSelectedPaymentReport(report);
-                            setShowPaymentModal(true);
-                          }}
-                        >
-                          Mark as Paid
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedPaymentReport(report);
+                              setShowPaymentModal(true);
+                            }}
+                          >
+                            Mark as Paid
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleGenerateEscrowLink(report.id)}
+                            disabled={generatingEscrowLink === report.id}
+                          >
+                            {generatingEscrowLink === report.id ? (
+                              <>
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Link className="h-4 w-4 mr-2" />
+                                Payment Link
+                              </>
+                            )}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -3206,6 +3266,39 @@ export default function Admin() {
             </Button>
             <Button onClick={handleMarkAsPaid} disabled={!paymentDate || !paidBy}>
               Confirm Payment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Escrow Payment Link Modal */}
+      <Dialog open={showEscrowLinkModal} onOpenChange={setShowEscrowLinkModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>🔒 Anonymous Payment Link Generated</DialogTitle>
+            <DialogDescription>
+              Share this link with the producer. They can pay without creating an account.
+              Crew identity remains fully protected.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center space-x-2">
+            <div className="grid flex-1 gap-2">
+              <Input
+                readOnly
+                value={escrowPaymentUrl || ""}
+                className="font-mono text-sm"
+              />
+            </div>
+            <Button size="sm" onClick={copyEscrowLink}>
+              Copy
+            </Button>
+          </div>
+          <DialogFooter className="sm:justify-start">
+            <Button
+              variant="secondary"
+              onClick={() => setShowEscrowLinkModal(false)}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

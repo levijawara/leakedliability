@@ -266,6 +266,86 @@ export type Database = {
         }
         Relationships: []
       }
+      escrow_payments: {
+        Row: {
+          amount_due: number
+          created_at: string
+          crew_member_id: string
+          id: string
+          metadata: Json | null
+          paid_at: string | null
+          payment_code: string
+          payment_report_id: string
+          producer_id: string
+          released_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_due: number
+          created_at?: string
+          crew_member_id: string
+          id?: string
+          metadata?: Json | null
+          paid_at?: string | null
+          payment_code: string
+          payment_report_id: string
+          producer_id: string
+          released_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          created_at?: string
+          crew_member_id?: string
+          id?: string
+          metadata?: Json | null
+          paid_at?: string | null
+          payment_code?: string
+          payment_report_id?: string
+          producer_id?: string
+          released_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "escrow_payments_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_payments_payment_report_id_fkey"
+            columns: ["payment_report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_payments_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "escrow_payments_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+        ]
+      }
       image_generations: {
         Row: {
           created_at: string | null
@@ -1367,6 +1447,7 @@ export type Database = {
       }
       calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
       cleanup_old_past_debts: { Args: never; Returns: undefined }
+      generate_payment_code: { Args: never; Returns: string }
       generate_report_id: { Args: never; Returns: string }
       get_ban_page: {
         Args: never
