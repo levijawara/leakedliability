@@ -1894,6 +1894,89 @@ export default function Admin() {
         {/* All Submissions Tab */}
         <TabsContent value="all_submissions">
           <Card className="p-6">
+            {/* User Selector Dropdown */}
+            <div className="mb-6">
+              <Label>Select User to View Submissions</Label>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between">
+                    {selectedUser ? `${selectedUser.name} (${selectedUser.email})` : "Select user..."}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0 z-50 bg-popover">
+                  <Command>
+                    <CommandInput placeholder="Search users..." />
+                    <CommandList>
+                      <CommandEmpty>No user found.</CommandEmpty>
+                      <CommandGroup>
+                        {allUsers.map((user) => (
+                          <CommandItem
+                            key={user.user_id}
+                            onSelect={() => {
+                              setSelectedUser(user);
+                              handleUserSelect(user.user_id);
+                              setOpen(false);
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span>{user.name}</span>
+                              <span className="text-xs text-muted-foreground">{user.email}</span>
+                            </div>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            {/* Search Results Display */}
+            {searchResults && !searchResults.notFound && (
+              <Card className="mb-6 p-4 bg-muted/50">
+                <h4 className="font-semibold mb-2">{searchResults.name}</h4>
+                <p className="text-sm text-muted-foreground mb-2">{searchResults.email}</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <div><Badge variant="outline">{searchResults.stats.crew_report} Crew Reports</Badge></div>
+                  <div><Badge variant="outline">{searchResults.stats.payment_confirmation} Payments</Badge></div>
+                  <div><Badge variant="outline">{searchResults.stats.counter_dispute} Disputes</Badge></div>
+                </div>
+              </Card>
+            )}
+
+            {/* Leading Users Stats */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              {leadingUsers.crew_report && (
+                <Card className="p-3 bg-card">
+                  <p className="text-xs text-muted-foreground mb-1">Most Crew Reports</p>
+                  <p className="font-semibold truncate">{leadingUsers.crew_report.name}</p>
+                  <Badge variant="secondary" className="mt-1">{leadingUsers.crew_report.count}</Badge>
+                </Card>
+              )}
+              {leadingUsers.vendor_report && (
+                <Card className="p-3 bg-card">
+                  <p className="text-xs text-muted-foreground mb-1">Most Vendor Reports</p>
+                  <p className="font-semibold truncate">{leadingUsers.vendor_report.name}</p>
+                  <Badge variant="secondary" className="mt-1">{leadingUsers.vendor_report.count}</Badge>
+                </Card>
+              )}
+              {leadingUsers.producer_report && (
+                <Card className="p-3 bg-card">
+                  <p className="text-xs text-muted-foreground mb-1">Most Producer Reports</p>
+                  <p className="font-semibold truncate">{leadingUsers.producer_report.name}</p>
+                  <Badge variant="secondary" className="mt-1">{leadingUsers.producer_report.count}</Badge>
+                </Card>
+              )}
+              {leadingUsers.payment_confirmation && (
+                <Card className="p-3 bg-card">
+                  <p className="text-xs text-muted-foreground mb-1">Most Confirmations</p>
+                  <p className="font-semibold truncate">{leadingUsers.payment_confirmation.name}</p>
+                  <Badge variant="secondary" className="mt-1">{leadingUsers.payment_confirmation.count}</Badge>
+                </Card>
+              )}
+            </div>
+
             <div className="mb-6 flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-semibold mb-1">All Submissions & Reports</h2>
@@ -1918,6 +2001,291 @@ export default function Admin() {
             </div>
             
             <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-7 mb-4">
+                <TabsTrigger value="crew_report">Crew Reports</TabsTrigger>
+                <TabsTrigger value="vendor_report">Vendor Reports</TabsTrigger>
+                <TabsTrigger value="producer_report">Producer Reports</TabsTrigger>
+                <TabsTrigger value="payment_reports">Payment Reports</TabsTrigger>
+                <TabsTrigger value="disputes">Disputes</TabsTrigger>
+                <TabsTrigger value="confirmations">Confirmations</TabsTrigger>
+                <TabsTrigger value="create_user">Create User</TabsTrigger>
+              </TabsList>
+
+              {/* Crew Reports Tab */}
+              <TabsContent value="crew_report">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Crew Reports</h3>
+                  <Badge variant="outline">{submissions.filter(s => s.submission_type === 'crew_report').length} reports</Badge>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Report ID</TableHead>
+                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="font-semibold">Email</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Created</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {submissions.filter(s => s.submission_type === 'crew_report').map((submission) => (
+                      <TableRow key={submission.id}>
+                        <TableCell className="font-mono text-xs">{submission.report_id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {submission.full_name}
+                            {submission.created_by_admin && (
+                              <Badge variant="secondary" className="text-xs">Admin Created</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{submission.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            submission.status === 'verified' ? 'default' :
+                            submission.status === 'rejected' ? 'destructive' :
+                            'secondary'
+                          }>
+                            {submission.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(submission.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">Actions</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="z-50 bg-popover">
+                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                                View Details
+                              </DropdownMenuItem>
+                              {submission.status === 'pending' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleVerifySubmission(submission.id)}>
+                                    Verify
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRejectSubmission(submission.id)}>
+                                    Reject
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+
+              {/* Vendor Reports Tab */}
+              <TabsContent value="vendor_report">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Vendor Reports</h3>
+                  <Badge variant="outline">{submissions.filter(s => s.submission_type === 'vendor_report').length} reports</Badge>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Report ID</TableHead>
+                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="font-semibold">Email</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Created</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {submissions.filter(s => s.submission_type === 'vendor_report').map((submission) => (
+                      <TableRow key={submission.id}>
+                        <TableCell className="font-mono text-xs">{submission.report_id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {submission.full_name}
+                            {submission.created_by_admin && (
+                              <Badge variant="secondary" className="text-xs">Admin Created</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{submission.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            submission.status === 'verified' ? 'default' :
+                            submission.status === 'rejected' ? 'destructive' :
+                            'secondary'
+                          }>
+                            {submission.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(submission.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">Actions</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="z-50 bg-popover">
+                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                                View Details
+                              </DropdownMenuItem>
+                              {submission.status === 'pending' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleVerifySubmission(submission.id)}>
+                                    Verify
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRejectSubmission(submission.id)}>
+                                    Reject
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+
+              {/* Producer Reports Tab */}
+              <TabsContent value="producer_report">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Producer Reports</h3>
+                  <Badge variant="outline">{submissions.filter(s => s.submission_type === 'producer_report').length} reports</Badge>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Report ID</TableHead>
+                      <TableHead className="font-semibold">Name</TableHead>
+                      <TableHead className="font-semibold">Email</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Created</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {submissions.filter(s => s.submission_type === 'producer_report').map((submission) => (
+                      <TableRow key={submission.id}>
+                        <TableCell className="font-mono text-xs">{submission.report_id}</TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {submission.full_name}
+                            {submission.created_by_admin && (
+                              <Badge variant="secondary" className="text-xs">Admin Created</Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{submission.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            submission.status === 'verified' ? 'default' :
+                            submission.status === 'rejected' ? 'destructive' :
+                            'secondary'
+                          }>
+                            {submission.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(submission.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">Actions</Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="z-50 bg-popover">
+                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                                View Details
+                              </DropdownMenuItem>
+                              {submission.status === 'pending' && (
+                                <>
+                                  <DropdownMenuItem onClick={() => handleVerifySubmission(submission.id)}>
+                                    Verify
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleRejectSubmission(submission.id)}>
+                                    Reject
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+
+              {/* Disputes Tab */}
+              <TabsContent value="disputes">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">All Disputes</h3>
+                  <Badge variant="outline">{disputes.length} disputes</Badge>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Dispute ID</TableHead>
+                      <TableHead className="font-semibold">Type</TableHead>
+                      <TableHead className="font-semibold">Status</TableHead>
+                      <TableHead className="font-semibold">Created</TableHead>
+                      <TableHead className="font-semibold">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {disputes.map((dispute) => (
+                      <TableRow key={dispute.id}>
+                        <TableCell className="font-mono text-xs">{dispute.id.slice(0, 8)}</TableCell>
+                        <TableCell>{dispute.dispute_type}</TableCell>
+                        <TableCell>
+                          <Badge variant={dispute.status === 'resolved' ? 'default' : 'secondary'}>
+                            {dispute.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(dispute.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell>
+                          <Button variant="ghost" size="sm" onClick={() => setSelectedItem(dispute)}>
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
+
+              {/* Confirmations Tab */}
+              <TabsContent value="confirmations">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Payment Confirmations</h3>
+                  <Badge variant="outline">{paymentConfirmations.length} confirmations</Badge>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="border-b-2 border-border/50 hover:bg-transparent">
+                      <TableHead className="font-semibold">Confirmation ID</TableHead>
+                      <TableHead className="font-semibold">Type</TableHead>
+                      <TableHead className="font-semibold">Amount</TableHead>
+                      <TableHead className="font-semibold">Verified</TableHead>
+                      <TableHead className="font-semibold">Created</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paymentConfirmations.map((confirmation) => (
+                      <TableRow key={confirmation.id}>
+                        <TableCell className="font-mono text-xs">{confirmation.id.slice(0, 8)}</TableCell>
+                        <TableCell>{confirmation.confirmation_type}</TableCell>
+                        <TableCell>${confirmation.amount_paid.toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge variant={confirmation.verified ? 'default' : 'secondary'}>
+                            {confirmation.verified ? 'Verified' : 'Pending'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(confirmation.created_at).toLocaleDateString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TabsContent>
 
           {/* Payment Reports Tab */}
           <TabsContent value="payment_reports">
