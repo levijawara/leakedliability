@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ROUTES } from "@/config/routes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,6 +40,11 @@ const AppContent = () => {
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // Dev-mode route config validator
+  if (import.meta.env.DEV) {
+    console.log("[Router] Loaded route config:", ROUTES.map(r => r.path));
+  }
 
   useEffect(() => {
     checkMaintenanceMode();
