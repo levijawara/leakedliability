@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertCircle, ArrowLeft, ArrowRight } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, TrendingUp, CheckCircle2, Building2, Scale, Trophy } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { SubmissionWalkthrough } from "@/components/submission/SubmissionWalkthrough";
 import { ParticipantTypeSelector } from "@/components/submission/ParticipantTypeSelector";
@@ -115,7 +115,67 @@ export default function SubmitReport() {
                   <strong>Crew members:</strong> your identity is well-protected unless you choose to reveal it. <strong>Vendors:</strong> your business contact info is required and will appear on verified reports (standard B2B accountability).
                 </p>
                 <p className="text-muted-foreground mt-2">
-                  All reports are reviewed and verified. Fake reports result in account suspension and potential legal action.
+                  <strong>Reports filed under fake names will be rejected.</strong> Crew identities are private unless you choose to reveal them. Vendors must include business info. Leaked Liability™ is a legal-grade platform, not a gossip hotline.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 mb-6 border-l-4 border-blue-500 bg-blue-500/10">
+            <div className="flex items-start gap-3">
+              <TrendingUp className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Producer Social Credit Score (PSCS)</p>
+                <p className="text-muted-foreground">
+                  Every confirmed debt affects the producer's <strong>PSCS</strong>. Paid debts start a 30-day recovery window. A producer's score affects how they appear on the leaderboard, and multiple debts accumulate heavier penalties.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 mb-6 border-l-4 border-green-500 bg-green-500/10">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Verification & Timeline</p>
+                <p className="text-muted-foreground">
+                  <strong>All reports undergo verification.</strong> All disputes undergo review. All outcomes are logged permanently with date-stamped trails that protect both parties.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 mb-6 border-l-4 border-purple-500 bg-purple-500/10">
+            <div className="flex items-start gap-3">
+              <Building2 className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Vendor Categories</p>
+                <p className="text-muted-foreground">
+                  Vendors include <strong>equipment rentals, studios, trucking, grip/lighting suppliers, post houses, and any B2B service</strong>. If you provide services to productions, you belong here.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 mb-6 border-l-4 border-orange-500 bg-orange-500/10">
+            <div className="flex items-start gap-3">
+              <Scale className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Dispute Resolution Process</p>
+                <p className="text-muted-foreground">
+                  Producers may <strong>dispute reports</strong> through a guided resolution process, including document uploads, explanation statements, and evidence review. All resolutions are tracked and logged.
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6 mb-6 border-l-4 border-pink-500 bg-pink-500/10">
+            <div className="flex items-start gap-3">
+              <Trophy className="h-5 w-5 text-pink-500 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold mb-1">Leaderboard Access</p>
+                <p className="text-muted-foreground">
+                  <strong>Leaderboard access is available to crew, vendors, producers, and companies for $5.99/month.</strong> View PSCS scores, debt histories, and payment timelines for all verified producers.
                 </p>
               </div>
             </div>
