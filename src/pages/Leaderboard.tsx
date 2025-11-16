@@ -30,6 +30,7 @@ interface AdminEditableCellProps {
   isAdmin: boolean;
   viewMode: 'admin' | 'public';
   type?: 'text' | 'number' | 'date';
+  isMoney?: boolean;
 }
 
 function AdminEditableCell({ 
@@ -38,7 +39,8 @@ function AdminEditableCell({
   className = "", 
   isAdmin,
   viewMode,
-  type = 'text'
+  type = 'text',
+  isMoney = false
 }: AdminEditableCellProps) {
   const [editing, setEditing] = useState(false);
   const [tempValue, setTempValue] = useState(value?.toString() || "");
@@ -67,6 +69,21 @@ function AdminEditableCell({
   };
 
   if (!isAdmin || viewMode === 'public') {
+    // Special rendering for money columns in public view
+    if (isMoney && viewMode === 'public') {
+      const numValue = typeof value === 'string' ? parseFloat(value) : value;
+      if (!numValue || numValue === 0) {
+        return <TableCell className={className}>—</TableCell>;
+      }
+      return (
+        <TableCell className={className}>
+          <span className="text-green-400 font-semibold">
+            ${numValue}
+          </span>
+        </TableCell>
+      );
+    }
+    
     return <TableCell className={className}>{value || '—'}</TableCell>;
   }
 
@@ -536,6 +553,7 @@ export default function Leaderboard() {
                       isAdmin={isAdmin}
                       viewMode={viewMode}
                       type="number"
+                      isMoney={true}
                     />
                     <AdminEditableCell
                       value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'yyyy-MM-dd') : null}
