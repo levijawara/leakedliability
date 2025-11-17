@@ -123,7 +123,7 @@ const AppContent = () => {
       <Route path="/admin/merge-producers" element={<AdminProducerMerge />} />
       <Route path="/hold-that-l" element={<HoldThatLGenerator />} />
       <Route path="/producer-dashboard" element={<ProducerDashboard />} />
-      <Route path="/suggestions" element={<SuggestionBox />} />
+      <Route path="/suggestion-box" element={<SuggestionBox />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
       <Route path="/sitemap" element={<Sitemap />} />

@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1681,13 +1681,19 @@ export default function Admin() {
       </Card>
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6 gap-1 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 gap-1 h-auto p-1">
           <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">💰 Payments Due</TabsTrigger>
           <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">✅ Paid</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">⚙️ Settings</TabsTrigger>
           <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">👥 Users</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">📧 Notifications</TabsTrigger>
           <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">📋 All Submissions</TabsTrigger>
+          <TabsTrigger value="suggestions" className="text-xs sm:text-sm px-2 py-1.5">
+            💡 Suggestions
+            {suggestions.length > 0 && (
+              <Badge variant="secondary" className="ml-1">{suggestions.length}</Badge>
+            )}
+          </TabsTrigger>
         </TabsList>
 
         {/* Payments Due Tab */}
@@ -3205,6 +3211,66 @@ export default function Admin() {
         </TabsContent>
 
         </Tabs>
+          </Card>
+        </TabsContent>
+
+        {/* Suggestions Tab */}
+        <TabsContent value="suggestions">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-1">Platform Suggestions</h2>
+              <p className="text-sm text-muted-foreground">
+                User feedback and feature requests
+              </p>
+            </div>
+
+            {suggestions.length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                <p>No suggestions yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {suggestions.map((suggestion: any) => (
+                  <Card key={suggestion.id} className="p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {suggestion.email ? (
+                            <span className="text-sm font-medium">
+                              {suggestion.legal_first_name} {suggestion.legal_last_name}
+                            </span>
+                          ) : (
+                            <span className="text-sm font-medium text-muted-foreground">
+                              Anonymous
+                            </span>
+                          )}
+                          <Badge variant="outline" className="text-xs">
+                            {suggestion.account_type || 'public'}
+                          </Badge>
+                        </div>
+                        {suggestion.email && (
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {suggestion.email}
+                          </p>
+                        )}
+                        <p className="text-sm whitespace-pre-wrap">
+                          {suggestion.suggestion}
+                        </p>
+                      </div>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap ml-4">
+                        {new Date(suggestion.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {suggestion.total_suggestions_by_user > 1 && (
+                      <Badge variant="secondary" className="text-xs mt-2">
+                        {suggestion.total_suggestions_by_user} total suggestions
+                      </Badge>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            )}
           </Card>
         </TabsContent>
 
