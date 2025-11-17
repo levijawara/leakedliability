@@ -1,6 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Accordion,
   AccordionContent,
@@ -8,270 +8,334 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const FAQ = () => {
+export default function FAQ() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-3xl">Frequently Asked Questions</CardTitle>
-            <CardDescription>
-              Find answers to common questions about Leaked Liability
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* General Questions */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">General Questions</h2>
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger>What is Leaked Liability?</AccordionTrigger>
-                  <AccordionContent>
-                    Leaked Liability is a transparency platform that allows film and TV crew members 
-                    and vendors to report unpaid invoices and unethical business practices by production 
-                    companies. We provide a public accountability system through our leaderboard, which 
-                    tracks producers' Producing Social Credit Score (PSCS).
-                  </AccordionContent>
-                </AccordionItem>
+      <main className="container max-w-4xl mx-auto px-4 py-12">
+        <Card className="p-8">
+          <h1 className="text-4xl font-bold mb-2">Frequently Asked Questions</h1>
+          <p className="text-muted-foreground mb-8">
+            Find answers to common questions about Leaked Liability™
+          </p>
 
-                <AccordionItem value="item-2">
-                  <AccordionTrigger>Who can use this platform?</AccordionTrigger>
-                  <AccordionContent>
-                    Freelance crew, vendors, and service providers who have worked in film and television 
-                    production can submit reports about unpaid invoices. Vendors include rental houses, 
-                    location providers, catering, transportation, and equipment companies. Producers and 
-                    production companies can also submit documentation to dispute reports or confirm payments.
-                  </AccordionContent>
-                </AccordionItem>
+          {/* General Questions */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">General Questions</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="what-is">
+                <AccordionTrigger>What is Leaked Liability™?</AccordionTrigger>
+                <AccordionContent>
+                  Leaked Liability™ is a transparency platform built to track delayed payments in film and production. Crew, vendors, and freelancers can submit reports about outstanding payments, and LL™ publicly displays producer payment behavior on the Leaderboard. Our goal is simple: encourage faster, more reliable payment across the industry.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="item-3">
-                  <AccordionTrigger>Is this a debt collection service?</AccordionTrigger>
-                  <AccordionContent>
-                    No. Leaked Liability is not a debt collection agency. We do not collect debts, pursue
-                    legal action on behalf of crew members, or guarantee payment. We are a transparency
-                    platform that publicly tracks payment compliance.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="who-can-use">
+                <AccordionTrigger>Who can use this platform?</AccordionTrigger>
+                <AccordionContent>
+                  Anyone working in the production ecosystem: crew members, vendors, producers, production companies, rental houses, and agencies. Producers can view, verify, and settle outstanding debts. Crew and vendors can track owed payments and submit reports when necessary.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="item-4">
-                  <AccordionTrigger>Is this a credit reporting agency?</AccordionTrigger>
-                  <AccordionContent>
-                    No. We are not a credit reporting agency. The Producing Social Credit Score (PSCS) displayed on our leaderboard
-                    is an opinion-based metric derived from user-submitted reports and does not constitute
-                    an official credit rating.
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
+              <AccordionItem value="debt-collection">
+                <AccordionTrigger>Is this a debt collection service?</AccordionTrigger>
+                <AccordionContent>
+                  No. Leaked Liability™ is <strong>not</strong> a debt collection agency. We do <strong>not</strong> purchase debts, chase debtors, or take legal action on behalf of users.
+                  <br /><br />
+                  LL™ simply tracks verified payment delays and provides an optional <strong>neutral escrow settlement system</strong>. Producers may choose to resolve a debt through our secure Stripe-backed escrow portal, but all payments are voluntary and processed anonymously on both sides.
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Crew Member FAQs */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">For Crew Members</h2>
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="crew-1">
-                  <AccordionTrigger>How do I file a report?</AccordionTrigger>
-                  <AccordionContent>
-                    Navigate to "Submit Report" in the menu, then follow the step-by-step walkthrough.
-                    You'll need to provide information about the production company, project details, your
-                    role, payment amount owed, and supporting documentation (invoices, contracts, timecards,
-                    etc.). Reports are anonymous unless you choose to identify yourself.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="credit-reporting">
+                <AccordionTrigger>Is this a credit reporting agency?</AccordionTrigger>
+                <AccordionContent>
+                  No. We are not a credit bureau and do not report to credit agencies. The Producer Social Credit Score (PSCS) is <strong>internal to Leaked Liability™ only</strong> and is designed to reflect payment behavior within the production community.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
 
-                <AccordionItem value="crew-2">
-                  <AccordionTrigger>What documentation do I need?</AccordionTrigger>
-                  <AccordionContent>
-                    We require at least one form of payment documentation such as: invoices, W-2 forms,
-                    1099 forms, contracts, timecards, pay stubs, or email correspondence confirming payment
-                    terms. The more documentation you provide, the stronger your report.
-                  </AccordionContent>
-                </AccordionItem>
+          {/* For Crew Members */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">For Crew Members</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="how-to-file">
+                <AccordionTrigger>How do I file a report?</AccordionTrigger>
+                <AccordionContent>
+                  Log into your account and submit a delayed-payment report from the "Submission Forms" section. You'll provide the producer's name, project details, amount owed, and supporting documentation.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="crew-3">
-                  <AccordionTrigger>Will my report be anonymous?</AccordionTrigger>
-                  <AccordionContent>
-                    Yes, by default all crew reports are anonymous. Your identity is never shared publicly
-                    on the leaderboard. However, you may optionally choose to identify yourself to the
-                    producer during the submission process.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="what-documentation">
+                <AccordionTrigger>What documentation do I need?</AccordionTrigger>
+                <AccordionContent>
+                  Preferred evidence includes:
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li>Invoices</li>
+                    <li>Call sheets</li>
+                    <li>Texts/emails confirming the rate and job</li>
+                    <li>Proof of completed work</li>
+                    <li>Payment agreements</li>
+                    <li>Purchase orders (if vendor)</li>
+                  </ul>
+                  <br />
+                  The more documentation you attach, the faster we can verify and publish the report.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="crew-4">
-                  <AccordionTrigger>How long does verification take?</AccordionTrigger>
-                  <AccordionContent>
-                    Our admin team reviews all reports within 3-5 business days. We verify that documentation
-                    is sufficient and that the report meets our submission guidelines. You'll receive an email
-                    notification once your report is verified or if additional documentation is needed.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="crew-anonymous">
+                <AccordionTrigger>Can producers see my name?</AccordionTrigger>
+                <AccordionContent>
+                  No. Producer-facing pages, including escrow payment links, never reveal your identity. Only LL™ admins can see reporter information internally for verification and fraud-prevention.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="crew-5">
-                  <AccordionTrigger>What happens after I file a report?</AccordionTrigger>
-                  <AccordionContent>
-                    After verification, your report appears on the producer's profile and affects their PSCS
-                    score. The producer is notified and can respond by submitting proof of payment. If they
-                    submit valid payment proof, you'll be asked to confirm receipt, which can improve their
-                    score.
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
+              <AccordionItem value="report-verification">
+                <AccordionTrigger>How are reports verified?</AccordionTrigger>
+                <AccordionContent>
+                  Our admin team checks timestamps, communication logs, submitted documents, and rate confirmations. If anything is unclear, we contact you for clarification before adding the report to the Leaderboard.
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Producer FAQs */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">For Producers</h2>
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="prod-1">
-                  <AccordionTrigger>How do I respond to a report?</AccordionTrigger>
-                  <AccordionContent>
-                    Create a producer account and navigate to your Producer Dashboard. You'll see all reports
-                    filed against your production company. You can respond by submitting payment documentation
-                    (cancelled checks, bank statements, payment confirmations) to prove payment was made.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="verification-time">
+                <AccordionTrigger>How long does verification take?</AccordionTrigger>
+                <AccordionContent>
+                  Verification typically takes 1-3 business days, depending on the completeness of your submission. Clear documentation and communication records help speed up the process.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="prod-2">
-                  <AccordionTrigger>What is the PSCS score?</AccordionTrigger>
-                  <AccordionContent>
-                    The Producing Social Credit Score (PSCS) is a credit rating system (1-1,000) that measures a
-                    producer's reliability. Every producer starts at 1,000. The score decreases based on unpaid amounts
-                    (up to -300 points), how long debts remain unpaid (up to -650 points), and repeat offenses (unlimited penalty).
-                    Even after payment, 25% of the maximum penalty remains and fades over 3+ years.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="after-filing">
+                <AccordionTrigger>What happens after I file a report?</AccordionTrigger>
+                <AccordionContent>
+                  Once verified, your report appears on the public leaderboard under the producer's name. The producer receives a notification about the outstanding payment. If they resolve the debt through our escrow system or provide proof of payment, the report status is updated automatically.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
 
-                <AccordionItem value="prod-3">
-                  <AccordionTrigger>How do I improve my PSCS score?</AccordionTrigger>
-                  <AccordionContent>
-                    Submit valid payment documentation for outstanding reports. Once crew members confirm
-                    receipt of payment, your score will update to reflect resolved debts. The fastest way
-                    to improve your score is to pay outstanding crew members and submit proof promptly.
-                  </AccordionContent>
-                </AccordionItem>
+          {/* For Producers */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">For Producers</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="how-to-resolve">
+                <AccordionTrigger>How can I resolve a payment shown on the Leaderboard?</AccordionTrigger>
+                <AccordionContent>
+                  Producers can:
+                  <ol className="list-decimal ml-6 mt-2 space-y-1">
+                    <li><strong>Pay the crew/vendor directly</strong>, then upload proof of payment, or</li>
+                    <li><strong>Use LL™ Anonymous Escrow</strong>, where Stripe handles payment securely and LL™ updates the report automatically.</li>
+                  </ol>
+                  <br />
+                  Selecting escrow does <strong>not</strong> require an account. We never disclose the crew member's identity.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="prod-4">
-                  <AccordionTrigger>Can I dispute a false report?</AccordionTrigger>
-                  <AccordionContent>
-                    Yes. If you believe a report is false or inaccurate, you can file a dispute through your
-                    Producer Dashboard. Provide evidence that payment was made (or the claim is fraudulent),
-                    and our admin team will review. Fraudulent reports are removed and may result in penalties
-                    for the submitter.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="why-name-appears">
+                <AccordionTrigger>Why does my name appear on the leaderboard?</AccordionTrigger>
+                <AccordionContent>
+                  Your name appears only after a delayed-payment report has been <strong>verified</strong>. We do not publish unverified or speculative reports.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="prod-5">
-                  <AccordionTrigger>How much does it cost to respond?</AccordionTrigger>
-                  <AccordionContent>
-                    Creating a producer account and viewing reports filed against you is free. Accessing
-                    certain features and expedited score updates may require a subscription in the future.
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
+              <AccordionItem value="producer-respond">
+                <AccordionTrigger>How can I respond to a report?</AccordionTrigger>
+                <AccordionContent>
+                  Create a producer account to access your dashboard where you can view reports, submit payment confirmations, or file disputes with supporting documentation.
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* Technical Support */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Technical Support</h2>
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="tech-1">
-                  <AccordionTrigger>I forgot my password. How do I reset it?</AccordionTrigger>
-                  <AccordionContent>
-                    Click "Sign In" in the navigation menu, then click "Forgot Password?" on the login page.
-                    Enter your email address and you'll receive a password reset link.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="pscs-score">
+                <AccordionTrigger>What is the Producer Social Credit Score (PSCS)?</AccordionTrigger>
+                <AccordionContent>
+                  The PSCS is a scoring model that reflects payment reliability. It considers:
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li>Total amount owed</li>
+                    <li>Days overdue</li>
+                    <li>Number of outstanding reports</li>
+                    <li>Number of paid/cleared reports</li>
+                    <li>Repeat offenses across multiple jobs or locations</li>
+                  </ul>
+                  <br />
+                  Scores update automatically when debts are paid or verified. The system includes a forgiveness curve that allows producers to recover their score within 30 days after resolving past debts.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="tech-2">
-                  <AccordionTrigger>How is my data protected?</AccordionTrigger>
-                  <AccordionContent>
-                    We use industry-standard encryption and secure authentication. All uploaded documents are
-                    stored securely and only accessible to verified admin staff during the review process.
-                    Crew member identities are never shared publicly unless explicitly authorized.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="improve-score">
+                <AccordionTrigger>How can I improve my PSCS score?</AccordionTrigger>
+                <AccordionContent>
+                  Pay outstanding debts promptly and maintain consistent payment practices. Your score improves as you resolve reports and demonstrate reliable payment behavior over time.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="tech-3">
-                  <AccordionTrigger>Can I delete my account?</AccordionTrigger>
-                  <AccordionContent>
-                    Yes. Contact our support team to request account deletion. Note that reports you've
-                    submitted may remain on the platform (in anonymous form) to maintain leaderboard integrity,
-                    but your personal account data will be permanently deleted.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="dispute-report">
+                <AccordionTrigger>Can I dispute a report?</AccordionTrigger>
+                <AccordionContent>
+                  Yes. Producers may submit a dispute from the "Disputes" section on their dashboard. Supporting documentation is required.
+                </AccordionContent>
+              </AccordionItem>
 
-                <AccordionItem value="tech-4">
-                  <AccordionTrigger>Who can I contact for support?</AccordionTrigger>
-                  <AccordionContent>
-                    For technical issues, account problems, or general questions, you can reach us at:{" "}
-                    <a href="mailto:leakedliability@gmail.com" className="text-primary hover:underline">
-                      LEAKEDLIABILITY@GMAIL.COM
-                    </a>{" "}
-                    or send us a DM on Instagram:{" "}
-                    <a 
-                      href="https://instagram.com/LeakedLiability" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      @LeakedLiability
-                    </a>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
+              <AccordionItem value="cost-to-respond">
+                <AccordionTrigger>How much does it cost to respond?</AccordionTrigger>
+                <AccordionContent>
+                  Creating an account and responding to reports is free. Payment processing fees apply when using the escrow system.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
 
-            {/* Vendor FAQs */}
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">For Vendors</h2>
-              <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="vendor-1">
-                  <AccordionTrigger>Can vendors submit reports?</AccordionTrigger>
-                  <AccordionContent>
-                    Yes! Rental houses, location providers, catering companies, transportation vendors, 
-                    and all B2B service providers can report unpaid producer debts. Vendor reports include 
-                    invoice numbers, PO references, net terms, and contract documentation.
-                  </AccordionContent>
-                </AccordionItem>
-                
-                <AccordionItem value="vendor-2">
-                  <AccordionTrigger>What's different about vendor reports?</AccordionTrigger>
-                  <AccordionContent>
-                    Vendor reports require business contact information (not anonymous), invoice/PO numbers, 
-                    net payment terms, and commercial agreements. Vendor debts carry heavier PSCS penalties 
-                    (50% more impact) because unpaid vendors can block future productions from accessing 
-                    critical equipment and services.
-                  </AccordionContent>
-                </AccordionItem>
-                
-                <AccordionItem value="vendor-3">
-                  <AccordionTrigger>What documentation do vendors need?</AccordionTrigger>
-                  <AccordionContent>
-                    Vendors must provide: (1) Invoice as submitted, (2) At least one of: PO/booking 
-                    confirmation, signed rental agreement, or contract, (3) Optional but recommended: 
-                    email acceptance, delivery receipts, payment attempt records. Strong documentation = 
-                    faster verification.
-                  </AccordionContent>
-                </AccordionItem>
-                
-                <AccordionItem value="vendor-4">
-                  <AccordionTrigger>Will my company name be public?</AccordionTrigger>
-                  <AccordionContent>
-                    Unlike crew reports (which are anonymous), verified vendor reports will show your 
-                    company name on the leaderboard alongside the debt details. This is standard B2B 
-                    accountability—the same transparency producers expect from collection agencies, except 
-                    here it's public and preventative.
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            </div>
-          </CardContent>
+          {/* Escrow & Payment System */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Escrow & Payment System</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="how-escrow-works">
+                <AccordionTrigger>How does LL™ Escrow work?</AccordionTrigger>
+                <AccordionContent>
+                  LL™ creates a secure payment link for a verified report. When paid:
+                  <ul className="list-disc ml-6 mt-2 space-y-1">
+                    <li>Stripe processes the payment</li>
+                    <li>LL™ marks the report as "Paid"</li>
+                    <li>The crew/vendor receives funds</li>
+                    <li>Producer identity remains private</li>
+                    <li>Crew/vendor identity remains private</li>
+                  </ul>
+                  <br />
+                  No one sees each other's personal details.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="ll-profit">
+                <AccordionTrigger>Does LL™ profit from these payments?</AccordionTrigger>
+                <AccordionContent>
+                  No. LL™ does not profit from the debt itself. Standard Stripe processing fees apply, and LL™ may charge a small platform fee for payment handling and verification services.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="dispute-process">
+                <AccordionTrigger>What is the dispute resolution process?</AccordionTrigger>
+                <AccordionContent>
+                  Submit your dispute through the producer dashboard with all relevant documentation. Our admin team reviews both sides and makes a determination based on the evidence provided. Resolution typically takes 3-5 business days.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
+
+          {/* Leaderboard & Public Visibility */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Leaderboard & Public Visibility</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="remove-name">
+                <AccordionTrigger>Can I remove my name from the Leaderboard?</AccordionTrigger>
+                <AccordionContent>
+                  If a report is incorrect, outdated, or paid—and proof is submitted—your name will be updated automatically. We do not remove verified reports solely upon request.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="why-transparency">
+                <AccordionTrigger>Why is transparency necessary?</AccordionTrigger>
+                <AccordionContent>
+                  Delayed payments are widespread in the film industry and often go unaddressed. The Leaderboard incentivizes timely payment and accountability, not harassment or retaliation.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
+
+          {/* Account & Platform */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Account & Platform</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="crew-anonymity">
+                <AccordionTrigger>Is LL™ anonymous for crew?</AccordionTrigger>
+                <AccordionContent>
+                  Yes. All producer-facing systems (escrow links, emails, notifications) preserve crew anonymity.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="platform-cost">
+                <AccordionTrigger>Is LL™ free to use?</AccordionTrigger>
+                <AccordionContent>
+                  Creating an account is free. Some advanced analytics and optional subscription features may require payment.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="producer-registration">
+                <AccordionTrigger>Can producers register?</AccordionTrigger>
+                <AccordionContent>
+                  Yes. Producers can create accounts to manage reports, submit payment confirmations, dispute incorrect entries, and view detailed PSCS analytics.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
+
+          {/* Technical Support */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Technical Support</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="password-reset">
+                <AccordionTrigger>How do I reset my password?</AccordionTrigger>
+                <AccordionContent>
+                  Click "Forgot Password" on the login page. Enter your email address and we'll send you a password reset link.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="data-protection">
+                <AccordionTrigger>How is my data protected?</AccordionTrigger>
+                <AccordionContent>
+                  We use industry-standard encryption and security measures. Personal information is never shared with producers, and all payment processing is handled securely through Stripe.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="delete-account">
+                <AccordionTrigger>Can I delete my account?</AccordionTrigger>
+                <AccordionContent>
+                  Yes. Contact our support team to request account deletion. Note that verified reports you've submitted will remain on the platform for transparency, but your personal information will be removed.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="contact-support">
+                <AccordionTrigger>How do I contact support?</AccordionTrigger>
+                <AccordionContent>
+                  Use the "Suggestion Box" link in the footer to submit questions or issues. Our team typically responds within 24-48 hours.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
+
+          {/* For Vendors */}
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">For Vendors</h2>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="vendors-submit">
+                <AccordionTrigger>Can vendors submit reports?</AccordionTrigger>
+                <AccordionContent>
+                  Yes! Vendors (equipment rental houses, catering companies, post-production facilities, etc.) can submit reports just like crew members when payments are delayed.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="vendor-different">
+                <AccordionTrigger>What's different for vendor reports?</AccordionTrigger>
+                <AccordionContent>
+                  Vendor reports are handled the same way as crew reports, but we understand vendors often work with formal contracts and invoices. The verification process accommodates these business-to-business relationships.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="vendor-documentation">
+                <AccordionTrigger>What documentation should vendors provide?</AccordionTrigger>
+                <AccordionContent>
+                  Invoices, purchase orders, contracts, delivery confirmations, and any email correspondence regarding payment terms or delays.
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="company-name-public">
+                <AccordionTrigger>Will my company name be public?</AccordionTrigger>
+                <AccordionContent>
+                  No. Like crew members, vendor identities are kept confidential on all producer-facing communications and escrow transactions.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </section>
         </Card>
-      </div>
-      
+      </main>
       <Footer />
     </div>
   );
-};
-
-export default FAQ;
+}
