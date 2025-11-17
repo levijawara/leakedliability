@@ -69,22 +69,34 @@ function AdminEditableCell({
   };
 
   if (!isAdmin || viewMode === 'public') {
-    // Special rendering for money columns in public view
-    if (isMoney && viewMode === 'public') {
-      const numValue = typeof value === 'string' ? parseFloat(value) : value;
+    // Always render money in green, regardless of view mode
+    if (isMoney) {
+      const numValue = typeof value === 'string'
+        ? parseFloat(value)
+        : value;
+
       if (!numValue || numValue === 0) {
-        return <TableCell className={className}>—</TableCell>;
+        return (
+          <TableCell className={className}>
+            —
+          </TableCell>
+        );
       }
+
       return (
         <TableCell className={className}>
-          <span className="text-green-400 font-semibold">
-            ${numValue}
+          <span className="text-green-500 font-semibold">
+            ${numValue.toLocaleString()}
           </span>
         </TableCell>
       );
     }
-    
-    return <TableCell className={className}>{value || '—'}</TableCell>;
+
+    return (
+      <TableCell className={className}>
+        {value || '—'}
+      </TableCell>
+    );
   }
 
   return (
