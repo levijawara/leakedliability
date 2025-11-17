@@ -63,18 +63,10 @@ serve(async (req) => {
       });
     }
 
-    // 🚨 PRIORITY 2: Check owner email whitelist
-    if (OWNER_EMAILS.includes(userEmail.toLowerCase())) {
-      logStep("Owner email detected - granting access");
-      return new Response(JSON.stringify({ 
-        hasAccess: true, 
-        canPurchase: false, 
-        reason: 'owner_account',
-        message: 'Company account - full access'
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+    // 🚨 PRIORITY 2: Check owner email (for logging only, no auto-access)
+    const isOwner = OWNER_EMAILS.includes(userEmail.toLowerCase());
+    if (isOwner) {
+      logStep("Owner email detected - checking subscription status normally");
     }
 
     // 🚨 PRIORITY 3: Check if admin role
