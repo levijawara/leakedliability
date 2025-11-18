@@ -29,6 +29,7 @@ export default function SubmitReport() {
   const [submissionType, setSubmissionType] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>({ firstName: "", lastName: "", email: "", role: "" });
   const [prefilledReportId, setPrefilledReportId] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -43,6 +44,13 @@ export default function SubmitReport() {
         navigate("/auth");
         return;
       }
+      
+      // Check admin status
+      const { data: adminData } = await supabase.rpc('has_role', { 
+        _user_id: session.user.id, 
+        _role: 'admin' 
+      });
+      setIsAdmin(Boolean(adminData));
       
       setIsAuthenticated(true);
       setLoading(false);
@@ -195,6 +203,7 @@ export default function SubmitReport() {
                 handleNext();
               }}
               onBack={handleBack}
+              isAdmin={isAdmin}
             />
           )}
 
