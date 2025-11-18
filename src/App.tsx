@@ -34,6 +34,7 @@ import AdminProducerMerge from "./pages/AdminProducerMerge";
 import PayEscrow from "./pages/PayEscrow";
 import AdminSubmitExisting from "./pages/AdminSubmitExisting";
 import AdminSubmitNew from "./pages/AdminSubmitNew";
+import LiabilityClaim from "./pages/LiabilityClaim";
 
 const queryClient = new QueryClient();
 
@@ -136,6 +137,7 @@ const AppContent = () => {
       <Route path="/confirm" element={<ConfirmReport />} />
       <Route path="/pay/:code" element={<PayEscrow />} />
       <Route path="/pay/:code/success" element={<PayEscrow />} />
+      <Route path="/liability/claim/:token" element={<LiabilityClaim />} />
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
       <Route path="*" element={<NotFound />} />
     </Routes>
