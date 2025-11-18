@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,17 @@ import { Footer } from "@/components/Footer";
 export default function VerifyEmail() {
   const navigate = useNavigate();
   const [resending, setResending] = useState(false);
+
+  useEffect(() => {
+    const checkIfAlreadyVerified = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email_confirmed_at) {
+        toast.success("Your email is already verified!");
+        setTimeout(() => navigate("/"), 2000);
+      }
+    };
+    checkIfAlreadyVerified();
+  }, [navigate]);
 
   const handleResendEmail = async () => {
     setResending(true);

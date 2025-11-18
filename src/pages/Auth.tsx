@@ -130,8 +130,16 @@ export default function Auth() {
         setNewUserId(data.user.id);
         setShowProducerModal(true);
       } else {
-        // For non-producer accounts, show verification reminder
-        navigate("/verify-email");
+        // Only show verification page if email is NOT already confirmed
+        if (data.user?.email_confirmed_at) {
+          toast({
+            title: "Account Created!",
+            description: "You're all set! Redirecting to homepage...",
+          });
+          setTimeout(() => navigate("/"), 1500);
+        } else {
+          navigate("/verify-email");
+        }
       }
     } catch (error: any) {
       toast({
