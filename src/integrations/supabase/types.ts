@@ -409,6 +409,159 @@ export type Database = {
         }
         Relationships: []
       }
+      liability_chain: {
+        Row: {
+          accused_email: string
+          accused_name: string
+          accused_response: string | null
+          accused_role: string
+          accuser_id: string | null
+          affirmation_ip: unknown
+          created_at: string | null
+          id: string
+          report_id: string
+          response_at: string | null
+        }
+        Insert: {
+          accused_email: string
+          accused_name: string
+          accused_response?: string | null
+          accused_role: string
+          accuser_id?: string | null
+          affirmation_ip?: unknown
+          created_at?: string | null
+          id?: string
+          report_id: string
+          response_at?: string | null
+        }
+        Update: {
+          accused_email?: string
+          accused_name?: string
+          accused_response?: string | null
+          accused_role?: string
+          accuser_id?: string | null
+          affirmation_ip?: unknown
+          created_at?: string | null
+          id?: string
+          report_id?: string
+          response_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_chain_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_chain_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liability_claim_tokens: {
+        Row: {
+          accused_email: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          report_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          accused_email: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          report_id: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          accused_email?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          report_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_claim_tokens_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_claim_tokens_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liability_history: {
+        Row: {
+          action_type: string
+          affirmation_text: string | null
+          created_at: string | null
+          id: string
+          new_email: string
+          new_name: string
+          previous_email: string | null
+          previous_name: string | null
+          report_id: string
+          triggered_by: string | null
+        }
+        Insert: {
+          action_type: string
+          affirmation_text?: string | null
+          created_at?: string | null
+          id?: string
+          new_email: string
+          new_name: string
+          previous_email?: string | null
+          previous_name?: string | null
+          report_id: string
+          triggered_by?: string | null
+        }
+        Update: {
+          action_type?: string
+          affirmation_text?: string | null
+          created_at?: string | null
+          id?: string
+          new_email?: string
+          new_name?: string
+          previous_email?: string | null
+          previous_name?: string | null
+          report_id?: string
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_history_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       moderation_logs: {
         Row: {
           action: string
@@ -577,9 +730,14 @@ export type Database = {
           confirmation_deadline: string | null
           created_at: string
           created_by_admin: boolean | null
+          current_liable_email: string | null
+          current_liable_name: string | null
           days_overdue: number
           id: string
           invoice_date: string
+          is_in_liability_chain: boolean | null
+          liability_chain_length: number | null
+          liability_loop_detected: boolean | null
           payment_date: string | null
           producer_email: string | null
           producer_id: string
@@ -603,9 +761,14 @@ export type Database = {
           confirmation_deadline?: string | null
           created_at?: string
           created_by_admin?: boolean | null
+          current_liable_email?: string | null
+          current_liable_name?: string | null
           days_overdue: number
           id?: string
           invoice_date: string
+          is_in_liability_chain?: boolean | null
+          liability_chain_length?: number | null
+          liability_loop_detected?: boolean | null
           payment_date?: string | null
           producer_email?: string | null
           producer_id: string
@@ -629,9 +792,14 @@ export type Database = {
           confirmation_deadline?: string | null
           created_at?: string
           created_by_admin?: boolean | null
+          current_liable_email?: string | null
+          current_liable_name?: string | null
           days_overdue?: number
           id?: string
           invoice_date?: string
+          is_in_liability_chain?: boolean | null
+          liability_chain_length?: number | null
+          liability_loop_detected?: boolean | null
           payment_date?: string | null
           producer_email?: string | null
           producer_id?: string
