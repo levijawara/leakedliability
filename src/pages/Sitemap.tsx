@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, Code, Zap, User, Boxes, Info, UserCircle, FileText, RefreshCw, DollarSign, AlertTriangle, CreditCard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import * as Icons from "lucide-react";
 import { ROUTES, ROUTE_CATEGORIES } from "@/config/routes";
 import { Footer } from "@/components/Footer";
@@ -27,6 +28,283 @@ interface RoutesData {
   admin: RouteInfo[];
   edgeFunctions: RouteInfo[];
 }
+
+interface EmailTemplateInfo {
+  name: string;
+  templateFile: string;
+  trigger: string;
+  recipient: string;
+  edgeFunction: string;
+  purpose: string;
+  status: 'implemented' | 'pending';
+  category: 'account' | 'reports' | 'liability' | 'payment' | 'disputes' | 'subscriptions' | 'admin';
+}
+
+const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
+  // Account & Authentication (4 emails)
+  {
+    name: "Welcome Email",
+    templateFile: "welcome.tsx",
+    trigger: "New user account created",
+    recipient: "New user",
+    edgeFunction: "send-email",
+    purpose: "Welcome message with platform introduction",
+    status: "implemented",
+    category: "account"
+  },
+  {
+    name: "Admin Created Account",
+    templateFile: "admin-created-account.tsx",
+    trigger: "Admin creates account on behalf of user",
+    recipient: "New user created by admin",
+    edgeFunction: "send-email",
+    purpose: "Notify user of admin-created account with temporary credentials",
+    status: "implemented",
+    category: "account"
+  },
+  {
+    name: "Email Verification",
+    templateFile: "Supabase built-in",
+    trigger: "User signs up (if verification enabled)",
+    recipient: "New user",
+    edgeFunction: "Supabase Auth",
+    purpose: "Confirm email address before login",
+    status: "implemented",
+    category: "account"
+  },
+  {
+    name: "Password Reset",
+    templateFile: "Supabase built-in",
+    trigger: "User requests password reset",
+    recipient: "User",
+    edgeFunction: "Supabase Auth",
+    purpose: "Send password reset link",
+    status: "implemented",
+    category: "account"
+  },
+
+  // Report Submissions (7 emails)
+  {
+    name: "Crew Report Confirmation",
+    templateFile: "crew-report-confirmation.tsx",
+    trigger: "Crew member submits payment report",
+    recipient: "Crew member (reporter)",
+    edgeFunction: "send-email",
+    purpose: "Confirm report submission received",
+    status: "implemented",
+    category: "reports"
+  },
+  {
+    name: "Vendor Report Confirmation",
+    templateFile: "vendor-report-confirmation.tsx",
+    trigger: "Vendor submits payment report",
+    recipient: "Vendor (reporter)",
+    edgeFunction: "send-email",
+    purpose: "Confirm report submission received",
+    status: "implemented",
+    category: "reports"
+  },
+  {
+    name: "Producer Submission Notification",
+    templateFile: "producer-submission.tsx",
+    trigger: "Producer self-reports payment issue",
+    recipient: "Producer",
+    edgeFunction: "send-email",
+    purpose: "Confirm producer's self-submission",
+    status: "implemented",
+    category: "reports"
+  },
+  {
+    name: "Crew Report Verified",
+    templateFile: "crew-report-verified.tsx",
+    trigger: "Admin verifies crew report",
+    recipient: "Crew member (reporter)",
+    edgeFunction: "send-email",
+    purpose: "Notify reporter their report is now public on leaderboard",
+    status: "implemented",
+    category: "reports"
+  },
+  {
+    name: "Vendor Report Verified",
+    templateFile: "vendor-report-verified.tsx",
+    trigger: "Admin verifies vendor report",
+    recipient: "Vendor (reporter)",
+    edgeFunction: "send-email",
+    purpose: "Notify reporter their report is now public on leaderboard",
+    status: "implemented",
+    category: "reports"
+  },
+  {
+    name: "Crew Report Rejected",
+    templateFile: "crew-report-rejected.tsx",
+    trigger: "Admin rejects crew report",
+    recipient: "Crew member (reporter)",
+    edgeFunction: "send-email",
+    purpose: "Notify reporter of rejection with reason",
+    status: "implemented",
+    category: "reports"
+  },
+  {
+    name: "Vendor Report Rejected",
+    templateFile: "vendor-report-rejected.tsx",
+    trigger: "Admin rejects vendor report",
+    recipient: "Vendor (reporter)",
+    edgeFunction: "send-email",
+    purpose: "Notify reporter of rejection with reason",
+    status: "implemented",
+    category: "reports"
+  },
+
+  // Liability Chain (4 emails)
+  {
+    name: "Initial Liability Notification",
+    templateFile: "liability-notification.tsx",
+    trigger: "Report filed naming producer/company as responsible party",
+    recipient: "Named producer/company",
+    edgeFunction: "send-liability-notification",
+    purpose: "Alert accused party with action link (accept/dispute/redirect). Contains legal warning about perjury.",
+    status: "implemented",
+    category: "liability"
+  },
+  {
+    name: "Liability Redirect Notification",
+    templateFile: "liability-notification.tsx (reused)",
+    trigger: "Someone redirects liability to a new party",
+    recipient: "Newly accused party",
+    edgeFunction: "send-liability-notification",
+    purpose: "Inform newly named party they've been accused. Provides action link with perjury warning.",
+    status: "implemented",
+    category: "liability"
+  },
+  {
+    name: "Liability Loop Detected",
+    templateFile: "liability-loop-detected.tsx",
+    trigger: "Liability redirected to someone already in the chain",
+    recipient: "All parties in the loop",
+    edgeFunction: "send-email",
+    purpose: "Notify parties that loop was detected and liability reverted to original accused",
+    status: "implemented",
+    category: "liability"
+  },
+  {
+    name: "Liability Accepted Confirmation",
+    templateFile: "liability-accepted.tsx",
+    trigger: "Accused party accepts responsibility",
+    recipient: "Party who accepted liability",
+    edgeFunction: "process-liability-claim",
+    purpose: "Confirm acceptance and provide next steps for payment",
+    status: "pending",
+    category: "liability"
+  },
+
+  // Payment & Resolution (3 emails)
+  {
+    name: "Producer Report Notification",
+    templateFile: "producer-report-notification.tsx",
+    trigger: "New report filed against producer",
+    recipient: "Producer",
+    edgeFunction: "send-email",
+    purpose: "Alert producer of new report with details and resolution options",
+    status: "implemented",
+    category: "payment"
+  },
+  {
+    name: "Producer Payment Confirmation",
+    templateFile: "producer-payment-confirmation.tsx",
+    trigger: "Producer uploads payment proof or pays via escrow",
+    recipient: "Producer who made payment",
+    edgeFunction: "send-email",
+    purpose: "Confirm payment received and report will be marked resolved",
+    status: "implemented",
+    category: "payment"
+  },
+  {
+    name: "Crew Payment Confirmed",
+    templateFile: "crew-report-payment-confirmed.tsx",
+    trigger: "Payment confirmed by admin or via escrow",
+    recipient: "Crew member (original reporter)",
+    edgeFunction: "send-email",
+    purpose: "Notify reporter that payment was confirmed and report is resolved",
+    status: "implemented",
+    category: "payment"
+  },
+
+  // Disputes (3 emails)
+  {
+    name: "Dispute Submission",
+    templateFile: "dispute-submission.tsx",
+    trigger: "Producer/company files dispute on report",
+    recipient: "Disputing party",
+    edgeFunction: "send-email",
+    purpose: "Confirm dispute submission received and under review",
+    status: "implemented",
+    category: "disputes"
+  },
+  {
+    name: "Counter-Dispute Submission",
+    templateFile: "counter-dispute-submission.tsx",
+    trigger: "Original reporter submits counter-dispute",
+    recipient: "Counter-disputing party",
+    edgeFunction: "send-email",
+    purpose: "Confirm counter-dispute received and under admin review",
+    status: "implemented",
+    category: "disputes"
+  },
+  {
+    name: "Dispute Resolved",
+    templateFile: "dispute-resolved.tsx",
+    trigger: "Admin resolves dispute",
+    recipient: "Both parties (reporter and accused)",
+    edgeFunction: "send-email",
+    purpose: "Notify both sides of dispute outcome and updated report status",
+    status: "pending",
+    category: "disputes"
+  },
+
+  // Subscriptions (2 emails)
+  {
+    name: "Subscription Payment Failed",
+    templateFile: "subscription-payment-failed.tsx",
+    trigger: "Stripe payment fails",
+    recipient: "User with failed payment",
+    edgeFunction: "leaderboard-stripe-webhooks",
+    purpose: "Warn user of failed payment and upcoming access restriction",
+    status: "pending",
+    category: "subscriptions"
+  },
+  {
+    name: "Subscription Canceled",
+    templateFile: "subscription-canceled.tsx",
+    trigger: "User cancels or payment fails repeatedly",
+    recipient: "User",
+    edgeFunction: "leaderboard-stripe-webhooks",
+    purpose: "Confirm cancellation and explain access changes",
+    status: "pending",
+    category: "subscriptions"
+  },
+
+  // Admin System (2 emails)
+  {
+    name: "Admin Notification",
+    templateFile: "admin-notification.tsx",
+    trigger: "Various admin-worthy events (disputes, flags, etc.)",
+    recipient: "Admin team",
+    edgeFunction: "send-email",
+    purpose: "Alert admins to events requiring review or action",
+    status: "implemented",
+    category: "admin"
+  },
+  {
+    name: "New Report Alert",
+    templateFile: "admin-report-alert.tsx",
+    trigger: "New payment report submitted",
+    recipient: "Admin team",
+    edgeFunction: "send-email",
+    purpose: "Notify admins of new report awaiting verification",
+    status: "pending",
+    category: "admin"
+  },
+];
 
 const Sitemap = () => {
   const navigate = useNavigate();
@@ -330,6 +608,431 @@ const Sitemap = () => {
               </div>
             </div>
           )}
+
+          {/* Email Catalogue Section */}
+          <div className="mb-12">
+            <div className="flex items-center gap-2 mb-4 flex-wrap">
+              <Mail className="h-6 w-6 text-orange-600" />
+              <h2 className="text-2xl font-bold">✉️ EMAIL CATALOGUE</h2>
+              <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
+                {EMAIL_CATALOGUE.filter(e => e.status === 'implemented').length} implemented
+              </Badge>
+              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-700 dark:text-yellow-300 border-yellow-500/20">
+                {EMAIL_CATALOGUE.filter(e => e.status === 'pending').length} pending
+              </Badge>
+            </div>
+            
+            <p className="text-muted-foreground mb-6">
+              All automated system emails and templates. Shows what communications users receive at each stage of the platform lifecycle.
+            </p>
+
+            <Accordion type="multiple" className="space-y-4">
+              {/* Account & Authentication */}
+              <AccordionItem value="account" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <UserCircle className="h-5 w-5 text-blue-600" />
+                    <span className="font-semibold">Account & Authentication</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'account').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'account').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Report Submissions */}
+              <AccordionItem value="reports" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-green-600" />
+                    <span className="font-semibold">Report Submissions</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'reports').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'reports').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Liability Chain */}
+              <AccordionItem value="liability" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <RefreshCw className="h-5 w-5 text-orange-600" />
+                    <span className="font-semibold">Liability Chain (Ring Around the Rosie)</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'liability').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'liability').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Payment & Resolution */}
+              <AccordionItem value="payment" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-green-600" />
+                    <span className="font-semibold">Payment & Resolution</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'payment').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'payment').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Disputes */}
+              <AccordionItem value="disputes" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-5 w-5 text-red-600" />
+                    <span className="font-semibold">Disputes</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'disputes').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'disputes').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Subscriptions */}
+              <AccordionItem value="subscriptions" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="h-5 w-5 text-purple-600" />
+                    <span className="font-semibold">Subscriptions & Billing</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'subscriptions').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'subscriptions').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Admin System */}
+              <AccordionItem value="admin" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-5 w-5 text-gray-600" />
+                    <span className="font-semibold">Admin System</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'admin').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'admin').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+
+            {/* Reference Box */}
+            <Card className="mt-6 p-6 bg-muted/50">
+              <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <Boxes className="h-5 w-5" />
+                Edge Functions & Template Locations
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm font-semibold mb-2">Edge Functions:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <code className="text-xs bg-background px-2 py-1 rounded border">send-email</code>
+                    <code className="text-xs bg-background px-2 py-1 rounded border">send-liability-notification</code>
+                    <code className="text-xs bg-background px-2 py-1 rounded border">process-liability-claim</code>
+                    <code className="text-xs bg-background px-2 py-1 rounded border">leaderboard-stripe-webhooks</code>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm font-semibold mb-2">Template Files Location:</p>
+                  <code className="text-xs bg-background px-2 py-1 rounded border block">
+                    📁 supabase/functions/send-email/_templates/
+                  </code>
+                </div>
+              </div>
+            </Card>
+          </div>
 
           {/* No Results */}
           {totalFiltered === 0 && (
