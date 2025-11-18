@@ -47,3 +47,9 @@ verify_jwt = true
 
 [functions.create-escrow-checkout]
 verify_jwt = false
+
+[functions.send-liability-notification]
+verify_jwt = true
+
+[functions.process-liability-claim]
+verify_jwt = false
