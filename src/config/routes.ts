@@ -39,6 +39,8 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/admin/edit/:id", component: "AdminEditReport", name: "Edit Report", icon: "FileText", description: "Modify report", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/search-insights", component: "AdminSearchInsights", name: "Search Insights", icon: "Search", description: "Leaderboard analytics", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/merge-producers", component: "AdminProducerMerge", name: "Merge Producers", icon: "Users", description: "Merge duplicates", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin-submit-existing", component: "AdminSubmitExisting", name: "Submit for Existing User", icon: "UserPlus", description: "Admin proxy submission (existing user)", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin-submit-new", component: "AdminSubmitNew", name: "Submit for New User", icon: "UserPlus", description: "Admin proxy submission (new user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/leaderboard-analytics", component: "LeaderboardAnalytics", name: "Leaderboard Analytics", icon: "BarChart3", description: "Leaderboard performance metrics", category: "admin", requiresAuth: true, requiresAdmin: true },
 
   // System Routes

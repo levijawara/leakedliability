@@ -2,14 +2,18 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ParticipantTypeSelectorProps {
   value: "crew" | "producer" | "production_company" | "vendor" | null;
   onChange: (type: "crew" | "producer" | "production_company" | "vendor") => void;
   onBack: () => void;
+  isAdmin?: boolean;
 }
 
-export function ParticipantTypeSelector({ value, onChange, onBack }: ParticipantTypeSelectorProps) {
+export function ParticipantTypeSelector({ value, onChange, onBack, isAdmin = false }: ParticipantTypeSelectorProps) {
+  const navigate = useNavigate();
   return (
     <Card className="p-8">
       <h2 className="text-2xl font-bold mb-4">Select Participant Type</h2>
@@ -60,6 +64,35 @@ export function ParticipantTypeSelector({ value, onChange, onBack }: Participant
           </div>
         </div>
       </RadioGroup>
+
+      {isAdmin && (
+        <div className="mt-8 border-t pt-6">
+          <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+            <Shield className="h-4 w-4 text-primary" />
+            Admin Tools
+          </h3>
+
+          <div
+            className="flex flex-col p-4 border rounded-lg cursor-pointer hover:bg-muted/30 mb-3"
+            onClick={() => navigate("/admin-submit-existing")}
+          >
+            <span className="font-medium">Submit for Existing User</span>
+            <span className="text-sm text-muted-foreground">
+              Search for an existing LL user and file a report on their behalf
+            </span>
+          </div>
+
+          <div
+            className="flex flex-col p-4 border rounded-lg cursor-pointer hover:bg-muted/30"
+            onClick={() => navigate("/admin-submit-new")}
+          >
+            <span className="font-medium">Submit for New User</span>
+            <span className="text-sm text-muted-foreground">
+              Create a new LL account and immediately file a report for them
+            </span>
+          </div>
+        </div>
+      )}
 
       <div className="flex gap-3 mt-6">
         <Button variant="outline" onClick={onBack}>

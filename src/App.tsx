@@ -32,6 +32,8 @@ import HoldThatLGenerator from "./pages/HoldThatLGenerator";
 import AdminEditReport from "./pages/AdminEditReport";
 import AdminProducerMerge from "./pages/AdminProducerMerge";
 import PayEscrow from "./pages/PayEscrow";
+import AdminSubmitExisting from "./pages/AdminSubmitExisting";
+import AdminSubmitNew from "./pages/AdminSubmitNew";
 
 const queryClient = new QueryClient();
 
@@ -121,6 +123,8 @@ const AppContent = () => {
       <Route path="/admin/search-insights" element={<AdminSearchInsights />} />
       <Route path="/admin/edit-report/:id" element={<AdminEditReport />} />
       <Route path="/admin/merge-producers" element={<AdminProducerMerge />} />
+      <Route path="/admin-submit-existing" element={<AdminSubmitExisting />} />
+      <Route path="/admin-submit-new" element={<AdminSubmitNew />} />
       <Route path="/hold-that-l" element={<HoldThatLGenerator />} />
       <Route path="/producer-dashboard" element={<ProducerDashboard />} />
       <Route path="/suggestion-box" element={<SuggestionBox />} />
