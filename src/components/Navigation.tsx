@@ -72,10 +72,11 @@ export function Navigation() {
   return (
     <nav className="border-b bg-card/50 backdrop-blur">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4">
+        <div className="flex items-center">
+          {/* Desktop Navigation - Evenly Spaced */}
+          <div className="hidden md:flex w-full items-center justify-evenly px-6">
             <ThemeToggle />
+            
             <Button
               variant="ghost"
               size="sm"
@@ -84,6 +85,7 @@ export function Navigation() {
               <Home className="h-4 w-4 mr-2" />
               Home
             </Button>
+            
             <a 
               href="https://www.instagram.com/leakedliability/"
               target="_blank"
@@ -93,9 +95,7 @@ export function Navigation() {
               @LeakedLiability
               <Instagram className="h-5 w-5" />
             </a>
-          </div>
-
-          <div className="hidden md:flex items-center gap-2">
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
@@ -136,6 +136,7 @@ export function Navigation() {
               <TrendingUp className="h-4 w-4 mr-2" />
               Leaderboard
             </Button>
+            
             <Button
               variant="outline"
               size="sm"
