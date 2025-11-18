@@ -18,6 +18,8 @@ import { VendorReportConfirmation } from "./_templates/vendor-report-confirmatio
 import { VendorReportVerified } from "./_templates/vendor-report-verified.tsx";
 import { VendorReportRejected } from "./_templates/vendor-report-rejected.tsx";
 import { AdminCreatedAccount } from "./_templates/admin-created-account.tsx";
+import { LiabilityNotification } from "./_templates/liability-notification.tsx";
+import { LiabilityLoopDetected } from "./_templates/liability-loop-detected.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,8 +30,10 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected';
   to: string;
+  subject?: string;
+  template?: string;
   data: any;
 }
 
@@ -70,10 +74,13 @@ serve(async (req) => {
     console.log('Email request from authenticated user:', authenticatedUserId);
 
     // Get request body and check email type
-    const { type, to, data }: EmailRequest = await req.json();
+    const { type, to, data, template, subject: customSubject }: EmailRequest = await req.json();
     
-    // Check email verification (except for welcome emails)
-    if (type !== 'welcome' && !userData.user.email_confirmed_at) {
+    // Support both old 'type' and new 'template' parameter
+    const emailType = template || type;
+    
+    // Check email verification (except for welcome emails and liability notifications)
+    if (emailType !== 'welcome' && emailType !== 'liability_notification' && emailType !== 'liability_loop_detected' && !userData.user.email_confirmed_at) {
       console.log('User email not verified, blocking email send');
       return new Response(
         JSON.stringify({ error: 'Please verify your email before performing this action' }),
@@ -85,7 +92,7 @@ serve(async (req) => {
     let subject: string;
 
     // Render appropriate email template based on type
-    switch (type) {
+    switch (emailType) {
       case 'crew_report':
         html = await renderAsync(
           React.createElement(CrewReportConfirmation, data)
@@ -210,8 +217,22 @@ serve(async (req) => {
         subject = 'Your Leaked Liability Account Has Been Created';
         break;
       
+      case 'liability_notification':
+        html = await renderAsync(
+          React.createElement(LiabilityNotification, data)
+        );
+        subject = customSubject || data.subject || `You've Been Named as Responsible Party - Report #${data.reportId}`;
+        break;
+      
+      case 'liability_loop_detected':
+        html = await renderAsync(
+          React.createElement(LiabilityLoopDetected, data)
+        );
+        subject = customSubject || data.subject || `Liability Loop Detected - Report #${data.reportId}`;
+        break;
+      
       default:
-        throw new Error(`Unknown email type: ${type}`);
+        throw new Error(`Unknown email type: ${emailType}`);
     }
 
     // Send email via Resend
@@ -231,7 +252,7 @@ serve(async (req) => {
       .from('email_logs')
       .insert({
         recipient_email: to,
-        email_type: type,
+        email_type: emailType,
         subject,
         status: 'sent',
         metadata: { resend_id: emailData?.id, data },
@@ -241,7 +262,7 @@ serve(async (req) => {
       console.error('Error logging email:', logError);
     }
 
-    console.log('Email sent successfully:', { type, to, from: FROM_EMAIL, subject });
+    console.log('Email sent successfully:', { type: emailType, to, from: FROM_EMAIL, subject });
 
     return new Response(
       JSON.stringify({ success: true, emailId: emailData?.id }),
