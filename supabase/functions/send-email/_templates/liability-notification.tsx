@@ -105,6 +105,24 @@ export const LiabilityNotification = ({
         
         <Hr style={hr} />
         
+        <Section style={accountSection}>
+          <Text style={accountHeading}>Don't Have an Account Yet?</Text>
+          <Text style={accountText}>
+            Register using this email address to manage your producer profile and respond to reports.
+          </Text>
+          <Button href="https://leakedliability.com/auth?mode=signup" style={secondaryButton}>
+            Create Account
+          </Button>
+          <Text style={loginText}>
+            Already have an account?{' '}
+            <Link href="https://leakedliability.com/auth" style={footerLink}>
+              Login here
+            </Link>
+          </Text>
+        </Section>
+        
+        <Hr style={hr} />
+        
         <Text style={footerText}>
           This link expires on {expirationDate}. If you do not respond, this debt 
           will remain attributed to you on the Leaked Liability™ public leaderboard.
@@ -260,4 +278,47 @@ const footer = {
 const footerLink = {
   color: '#ff4444',
   textDecoration: 'underline',
+};
+
+const accountSection = {
+  backgroundColor: '#f0f9ff',
+  border: '1px solid #0891b2',
+  borderRadius: '8px',
+  margin: '24px 40px',
+  padding: '24px',
+  textAlign: 'center' as const,
+};
+
+const accountHeading = {
+  color: '#0891b2',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  margin: '0 0 12px 0',
+};
+
+const accountText = {
+  color: '#164e63',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0 0 16px 0',
+};
+
+const secondaryButton = {
+  backgroundColor: '#0891b2',
+  borderRadius: '6px',
+  color: '#fff',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 40px',
+  margin: '8px 0',
+};
+
+const loginText = {
+  color: '#666',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '16px 0 0 0',
 };
