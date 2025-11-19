@@ -252,13 +252,53 @@ const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
     category: "disputes"
   },
   {
-    name: "Dispute Resolved",
-    templateFile: "dispute-resolved.tsx",
-    trigger: "Admin resolves dispute",
-    recipient: "Both parties (reporter and accused)",
+    name: "Dispute Evidence Round Started",
+    templateFile: "dispute-evidence-round-started.tsx",
+    trigger: "New dispute round begins (initial or additional info requested)",
+    recipient: "Both parties in the dispute",
     edgeFunction: "send-email",
-    purpose: "Notify both sides of dispute outcome and updated report status",
-    status: "pending",
+    purpose: "Notify both sides that evidence submission is required for current round with deadline",
+    status: "implemented",
+    category: "disputes"
+  },
+  {
+    name: "Additional Information Required",
+    templateFile: "dispute-additional-info-required.tsx",
+    trigger: "Admin requests additional evidence or clarification",
+    recipient: "Party from whom info is requested",
+    edgeFunction: "send-email",
+    purpose: "Request specific additional information to proceed with dispute resolution",
+    status: "implemented",
+    category: "disputes"
+  },
+  {
+    name: "Dispute Resolved - Payment Confirmed",
+    templateFile: "dispute-resolved-paid.tsx",
+    trigger: "Payment confirmed during dispute",
+    recipient: "Reporter, producer, and admins",
+    edgeFunction: "send-email",
+    purpose: "Notify all parties that dispute resolved via payment with updated report status",
+    status: "implemented",
+    category: "disputes"
+  },
+  {
+    name: "Dispute Resolved - Mutual Agreement",
+    templateFile: "dispute-resolved-mutual.tsx",
+    trigger: "Both parties agree to settle privately",
+    recipient: "Reporter, producer, and admins",
+    edgeFunction: "send-email",
+    purpose: "Confirm mutual resolution reached and dispute closed by agreement",
+    status: "implemented",
+    category: "disputes"
+  },
+  {
+    name: "Dispute Closed - Unresolved",
+    templateFile: "dispute-closed-unresolved.tsx",
+    trigger: "Dispute process completes without resolution or payment",
+    recipient: "Reporter, producer, and admins",
+    edgeFunction: "send-email",
+    purpose: "Notify parties that dispute closed without resolution; debt remains on leaderboard",
+    status: "implemented",
     category: "disputes"
   },
 

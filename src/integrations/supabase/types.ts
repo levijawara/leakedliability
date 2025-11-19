@@ -176,16 +176,93 @@ export type Database = {
         }
         Relationships: []
       }
+      dispute_evidence: {
+        Row: {
+          created_at: string
+          dispute_id: string
+          explanation: string
+          file_paths: string[] | null
+          id: string
+          round: number
+          submitted_by: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_id: string
+          explanation: string
+          file_paths?: string[] | null
+          id?: string
+          round?: number
+          submitted_by: string
+        }
+        Update: {
+          created_at?: string
+          dispute_id?: string
+          explanation?: string
+          file_paths?: string[] | null
+          id?: string
+          round?: number
+          submitted_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_evidence_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_timeline: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          dispute_id: string
+          event_type: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          dispute_id: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          dispute_id?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_timeline_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disputes: {
         Row: {
           created_at: string | null
           dispute_type: string
           disputer_id: string
+          evidence_metadata: Json | null
           evidence_url: string | null
           explanation: string
           id: string
           payment_report_id: string | null
           resolution_notes: string | null
+          resolution_type: string | null
+          resolved_at: string | null
+          round: number
           status: string | null
           updated_at: string | null
         }
@@ -193,11 +270,15 @@ export type Database = {
           created_at?: string | null
           dispute_type: string
           disputer_id: string
+          evidence_metadata?: Json | null
           evidence_url?: string | null
           explanation: string
           id?: string
           payment_report_id?: string | null
           resolution_notes?: string | null
+          resolution_type?: string | null
+          resolved_at?: string | null
+          round?: number
           status?: string | null
           updated_at?: string | null
         }
@@ -205,11 +286,15 @@ export type Database = {
           created_at?: string | null
           dispute_type?: string
           disputer_id?: string
+          evidence_metadata?: Json | null
           evidence_url?: string | null
           explanation?: string
           id?: string
           payment_report_id?: string | null
           resolution_notes?: string | null
+          resolution_type?: string | null
+          resolved_at?: string | null
+          round?: number
           status?: string | null
           updated_at?: string | null
         }

@@ -23,6 +23,11 @@ import { LiabilityLoopDetected } from "./_templates/liability-loop-detected.tsx"
 import { EmailVerification } from "./_templates/email-verification.tsx";
 import { PasswordReset } from "./_templates/password-reset.tsx";
 import { LiabilityAccepted } from "./_templates/liability-accepted.tsx";
+import { DisputeEvidenceRoundStarted } from "./_templates/dispute-evidence-round-started.tsx";
+import { DisputeAdditionalInfoRequired } from "./_templates/dispute-additional-info-required.tsx";
+import { DisputeResolvedPaid } from "./_templates/dispute-resolved-paid.tsx";
+import { DisputeResolvedMutual } from "./_templates/dispute-resolved-mutual.tsx";
+import { DisputeClosedUnresolved } from "./_templates/dispute-closed-unresolved.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,7 +38,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected' | 'email_verification' | 'password_reset' | 'liability_accepted';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected' | 'email_verification' | 'password_reset' | 'liability_accepted' | 'dispute_evidence_round_started' | 'dispute_additional_info_required' | 'dispute_resolved_paid' | 'dispute_resolved_mutual' | 'dispute_closed_unresolved';
   to: string;
   subject?: string;
   template?: string;
@@ -82,8 +87,19 @@ serve(async (req) => {
     // Support both old 'type' and new 'template' parameter
     const emailType = template || type;
     
-    // Check email verification (except for welcome emails, liability notifications, and auth emails)
-    if (emailType !== 'welcome' && emailType !== 'liability_notification' && emailType !== 'liability_loop_detected' && emailType !== 'liability_accepted' && emailType !== 'email_verification' && emailType !== 'password_reset' && !userData.user.email_confirmed_at) {
+    // Check email verification (except for welcome emails, liability notifications, auth emails, and dispute emails)
+    if (emailType !== 'welcome' 
+        && emailType !== 'liability_notification' 
+        && emailType !== 'liability_loop_detected' 
+        && emailType !== 'liability_accepted' 
+        && emailType !== 'email_verification' 
+        && emailType !== 'password_reset'
+        && emailType !== 'dispute_evidence_round_started'
+        && emailType !== 'dispute_additional_info_required'
+        && emailType !== 'dispute_resolved_paid'
+        && emailType !== 'dispute_resolved_mutual'
+        && emailType !== 'dispute_closed_unresolved'
+        && !userData.user.email_confirmed_at) {
       console.log('User email not verified, blocking email send');
       return new Response(
         JSON.stringify({ error: 'Please verify your email before performing this action' }),
@@ -253,6 +269,41 @@ serve(async (req) => {
           React.createElement(LiabilityAccepted, data)
         );
         subject = customSubject || `Liability Accepted - Report #${data.reportId}`;
+        break;
+      
+      case 'dispute_evidence_round_started':
+        html = await renderAsync(
+          React.createElement(DisputeEvidenceRoundStarted, data)
+        );
+        subject = customSubject || `Dispute Evidence Required - Report #${data.reportId}`;
+        break;
+      
+      case 'dispute_additional_info_required':
+        html = await renderAsync(
+          React.createElement(DisputeAdditionalInfoRequired, data)
+        );
+        subject = customSubject || `Additional Information Required - Report #${data.reportId}`;
+        break;
+      
+      case 'dispute_resolved_paid':
+        html = await renderAsync(
+          React.createElement(DisputeResolvedPaid, data)
+        );
+        subject = customSubject || `Dispute Resolved: Payment Confirmed - Report #${data.reportId}`;
+        break;
+      
+      case 'dispute_resolved_mutual':
+        html = await renderAsync(
+          React.createElement(DisputeResolvedMutual, data)
+        );
+        subject = customSubject || `Dispute Resolved: Mutual Agreement - Report #${data.reportId}`;
+        break;
+      
+      case 'dispute_closed_unresolved':
+        html = await renderAsync(
+          React.createElement(DisputeClosedUnresolved, data)
+        );
+        subject = customSubject || `Dispute Closed: Unresolved - Report #${data.reportId}`;
         break;
       
       default:

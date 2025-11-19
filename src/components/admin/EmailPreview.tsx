@@ -151,6 +151,52 @@ const MOCK_DATA: Record<string, any> = {
     paymentInstructions: 'Upload proof of payment or pay via LL Anonymous Escrow.',
     recipientName: 'Jordan Smith'
   },
+  "dispute-evidence-round-started.tsx": {
+    recipientName: 'Sarah Johnson',
+    recipientRole: 'reporter',
+    reportId: 'CR-20251115-67890',
+    round: 1,
+    amountOwed: 4200,
+    projectName: 'Commercial Production',
+    deadline: '72 hours from now',
+    disputeId: 'dispute-uuid-123'
+  },
+  "dispute-additional-info-required.tsx": {
+    recipientName: 'Mike Williams',
+    reportId: 'CR-20251110-11223',
+    round: 2,
+    adminRequest: 'Please provide additional documentation showing the agreed-upon payment terms and any written communication about the invoice date. Contracts or email threads would be helpful.',
+    deadline: '48 hours from now',
+    disputeId: 'dispute-uuid-456'
+  },
+  "dispute-resolved-paid.tsx": {
+    recipientName: 'Alex Chen',
+    recipientRole: 'reporter',
+    reportId: 'CR-20251105-33445',
+    amountPaid: 6800,
+    projectName: 'Documentary Series',
+    producerName: 'Visionary Films LLC',
+    paymentDate: 'December 18, 2025'
+  },
+  "dispute-resolved-mutual.tsx": {
+    recipientName: 'Taylor Martinez',
+    recipientRole: 'producer',
+    reportId: 'CR-20251120-55667',
+    amountOwed: 3200,
+    projectName: 'Short Film "Echoes"',
+    producerName: 'Indie Studios Co.',
+    resolutionDate: 'December 19, 2025'
+  },
+  "dispute-closed-unresolved.tsx": {
+    recipientName: 'Jamie Lee',
+    recipientRole: 'reporter',
+    reportId: 'CR-20251101-77889',
+    amountOwed: 9500,
+    projectName: 'Feature Film "Horizon"',
+    producerName: 'Sunset Productions',
+    closureDate: 'December 20, 2025',
+    rounds: 2
+  },
 };
 
 // Email subject lines
@@ -175,6 +221,11 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   "email-verification.tsx": "Verify Your Email Address",
   "password-reset.tsx": "Reset Your Password",
   "liability-accepted.tsx": "Liability Accepted - Next Steps",
+  "dispute-evidence-round-started.tsx": "Dispute Evidence Required",
+  "dispute-additional-info-required.tsx": "Additional Information Required",
+  "dispute-resolved-paid.tsx": "Dispute Resolved: Payment Confirmed",
+  "dispute-resolved-mutual.tsx": "Dispute Resolved: Mutual Agreement",
+  "dispute-closed-unresolved.tsx": "Dispute Closed: Unresolved",
 };
 
 interface EmailPreviewProps {
@@ -475,6 +526,23 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
             </div>
           );
         }
+      
+      case 'dispute-evidence-round-started.tsx':
+      case 'dispute-additional-info-required.tsx':
+      case 'dispute-resolved-paid.tsx':
+      case 'dispute-resolved-mutual.tsx':
+      case 'dispute-closed-unresolved.tsx':
+        return (
+          <div className="p-8 bg-background rounded-lg border">
+            <div className="text-center mb-4">
+              <Badge variant="default" className="mb-2">Template Implemented</Badge>
+              <p className="text-sm text-muted-foreground">
+                This email template is fully implemented in the backend. Preview rendering temporarily unavailable in frontend.
+              </p>
+            </div>
+          </div>
+        );
+      
       default:
         return (
           <div className="p-8 text-center text-muted-foreground">
