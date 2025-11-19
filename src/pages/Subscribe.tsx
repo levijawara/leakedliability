@@ -52,9 +52,9 @@ const Subscribe = () => {
 
   const getPrice = (tier: string) => {
     const prices: Record<string, { monthly: string; annual: string }> = {
-      crew_t1: { monthly: "$5.99", annual: "$64.68" },
-      producer_t1: { monthly: "$5.99", annual: "$64.68" },
-      producer_t2: { monthly: "$9.99", annual: "$107.88" },
+      crew_t1: { monthly: "$5.99", annual: "$50.00" },
+      producer_t1: { monthly: "$5.99", annual: "$50.00" },
+      producer_t2: { monthly: "$9.99", annual: "$80.00" },
     };
     return prices[tier][billingFrequency];
   };
@@ -66,9 +66,9 @@ const Subscribe = () => {
       producer_t2: 9.99 * 12,
     };
     const annualCosts: Record<string, number> = {
-      crew_t1: 64.68,
-      producer_t1: 64.68,
-      producer_t2: 107.88,
+      crew_t1: 50.00,
+      producer_t1: 50.00,
+      producer_t2: 80.00,
     };
     const savings = monthlyCosts[tier] - annualCosts[tier];
     return savings.toFixed(2);
@@ -122,7 +122,7 @@ const Subscribe = () => {
               >
                 Annual
                 <Badge variant="secondary" className="ml-2 bg-green-600">
-                  Save 10%
+                  Save up to 33%
                 </Badge>
               </Button>
             </div>
