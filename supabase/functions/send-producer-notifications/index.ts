@@ -71,9 +71,14 @@ serve(async (req) => {
     .select(`
       *,
       payment_reports!inner(
+        id,
         producer_id,
         producer_email,
+        invoice_date,
+        report_id,
         producers!inner(
+          name,
+          company,
           oldest_debt_days,
           email
         )
@@ -120,19 +125,72 @@ serve(async (req) => {
 
         console.log(`[send-producer-notifications] Using email: ${targetEmail} (source: ${reportEmail ? 'report' : 'producer'})`);
 
-        // Call send-email function
+        // Generate liability claim token
+        const { data: tokenData, error: tokenError } = await supabase
+          .from('liability_claim_tokens')
+          .insert({
+            report_id: (notification as any).payment_reports?.id,
+            accused_email: targetEmail,
+          })
+          .select()
+          .single();
+
+        if (tokenError) {
+          console.error(`[send-producer-notifications] Token creation failed for ${notification.id}:`, tokenError);
+          failed++;
+          failedIds.push(notification.id);
+          continue;
+        }
+
+        // Create liability chain entry
+        const producerName = (notification as any).payment_reports?.producers?.name || 'Producer';
+        const producerCompany = (notification as any).payment_reports?.producers?.company;
+        const accusedName = producerCompany ? `${producerName} (${producerCompany})` : producerName;
+
+        const { error: chainError } = await supabase
+          .from('liability_chain')
+          .insert({
+            report_id: (notification as any).payment_reports?.id,
+            accused_name: accusedName,
+            accused_email: targetEmail,
+            accused_role: 'Producer',
+            accuser_id: null, // Initial notification, no accuser
+          });
+
+        if (chainError) {
+          console.error(`[send-producer-notifications] Chain creation failed for ${notification.id}:`, chainError);
+          // Continue anyway - chain is for tracking, not critical
+        }
+
+        // Build claim URL and format dates
+        const publicUrl = Deno.env.get("PUBLIC_SITE_URL") || "https://leakedliability.com";
+        const claimUrl = `${publicUrl}/liability/claim/${tokenData.token}`;
+
+        const expirationDate = new Date(tokenData.expires_at).toLocaleDateString('en-US', {
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric',
+        });
+
+        const invoiceDate = new Date((notification as any).payment_reports?.invoice_date).toLocaleDateString();
+
+        // Send email with liability_notification template
         const { error: emailError } = await supabase.functions.invoke('send-email', {
           body: {
-            type: 'producer_report_notification',
             to: targetEmail,
+            subject: `You've Been Named as Responsible Party - Report #${notification.report_id}`,
+            template: 'liability_notification',
             data: {
               reportId: notification.report_id,
               amountOwed: notification.amount_owed,
+              projectName: notification.project_name,
+              invoiceDate,
               daysOverdue: notification.days_overdue,
-              oldestDebtDays: (notification as any).payment_reports?.producers?.oldest_debt_days || 0,
-              projectName: notification.project_name
-            }
-          }
+              claimUrl,
+              expirationDate,
+              accusedName,
+            },
+          },
         });
 
         if (emailError) {
