@@ -57,7 +57,8 @@ serve(async (req: Request) => {
         project_name,
         status,
         producer_id,
-        producers!inner(name, company)
+        producer_email,
+        producers!inner(name, company, email)
       `)
       .eq('id', report_id)
       .single();
@@ -147,9 +148,24 @@ serve(async (req: Request) => {
       year: 'numeric',
     });
     
+    // Determine target email with fallback
+    const reportEmail = (report as any).producer_email;
+    const producerEmail = (report as any).producers?.email;
+    const targetEmail = accused_email || reportEmail || producerEmail;
+
+    if (!targetEmail) {
+      logStep('ERROR: No email available for liability notification', { report_id });
+      throw new Error('No email address available for accused party');
+    }
+
+    logStep('Sending to email', { 
+      to: targetEmail, 
+      source: accused_email ? 'accused' : reportEmail ? 'report' : 'producer' 
+    });
+    
     const { error: emailError } = await supabase.functions.invoke('send-email', {
       body: {
-        to: accused_email,
+        to: targetEmail,
         subject: `You've Been Named as Responsible Party - Report #${report.report_id}`,
         template: 'liability_notification',
         data: {
