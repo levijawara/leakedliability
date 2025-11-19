@@ -1468,38 +1468,53 @@ export type Database = {
       }
       user_entitlements: {
         Row: {
+          billing_frequency: string | null
           created_at: string | null
           entitlement_type: string
+          failed_attempts: number | null
+          grace_period_ends_at: string | null
           id: string
+          payment_failed_at: string | null
           source: string
           status: string
           stripe_customer_id: string | null
           stripe_subscription_id: string | null
           subscription_end: string | null
+          subscription_tier: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          billing_frequency?: string | null
           created_at?: string | null
           entitlement_type?: string
+          failed_attempts?: number | null
+          grace_period_ends_at?: string | null
           id?: string
+          payment_failed_at?: string | null
           source: string
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_end?: string | null
+          subscription_tier?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          billing_frequency?: string | null
           created_at?: string | null
           entitlement_type?: string
+          failed_attempts?: number | null
+          grace_period_ends_at?: string | null
           id?: string
+          payment_failed_at?: string | null
           source?: string
           status?: string
           stripe_customer_id?: string | null
           stripe_subscription_id?: string | null
           subscription_end?: string | null
+          subscription_tier?: string | null
           updated_at?: string | null
           user_id?: string
         }
