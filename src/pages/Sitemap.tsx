@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Code, Zap, User, Boxes, Info, UserCircle, FileText, RefreshCw, DollarSign, AlertTriangle, CreditCard, Shield } from "lucide-react";
+import { Loader2, Mail, Code, Zap, User, Boxes, Info, UserCircle, FileText, RefreshCw, DollarSign, AlertTriangle, CreditCard, Shield, LayoutList, LayoutGrid } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import * as Icons from "lucide-react";
 import { ROUTES, ROUTE_CATEGORIES } from "@/config/routes";
 import { Footer } from "@/components/Footer";
+import { EmailPreview } from "@/components/admin/EmailPreview";
 
 interface RouteInfo {
   path: string;
@@ -311,6 +312,8 @@ const Sitemap = () => {
   const location = useLocation();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
+  const [emailViewMode, setEmailViewMode] = useState<"list" | "gallery">("list");
+  const [selectedEmail, setSelectedEmail] = useState<EmailTemplateInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -609,9 +612,10 @@ const Sitemap = () => {
             </div>
           )}
 
-          {/* Email Catalogue Section */}
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-4 flex-wrap">
+        {/* Email Catalogue Section */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
+            <div className="flex items-center gap-2 flex-wrap">
               <Mail className="h-6 w-6 text-orange-600" />
               <h2 className="text-2xl font-bold">✉️ EMAIL CATALOGUE</h2>
               <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
@@ -622,10 +626,39 @@ const Sitemap = () => {
               </Badge>
             </div>
             
-            <p className="text-muted-foreground mb-6">
-              All automated system emails and templates. Shows what communications users receive at each stage of the platform lifecycle.
-            </p>
+            {/* View Mode Toggle */}
+            <div className="flex gap-2">
+              <Button
+                variant={emailViewMode === "list" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setEmailViewMode("list")}
+                className="gap-2"
+              >
+                <LayoutList className="h-4 w-4" />
+                List View
+              </Button>
+              <Button
+                variant={emailViewMode === "gallery" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setEmailViewMode("gallery");
+                  if (!selectedEmail && EMAIL_CATALOGUE.length > 0) {
+                    setSelectedEmail(EMAIL_CATALOGUE[0]);
+                  }
+                }}
+                className="gap-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Gallery View
+              </Button>
+            </div>
+          </div>
+            
+          <p className="text-muted-foreground mb-6">
+            All automated system emails and templates. Shows what communications users receive at each stage of the platform lifecycle.
+          </p>
 
+          {emailViewMode === "list" ? (
             <Accordion type="multiple" className="space-y-4">
               {/* Account & Authentication */}
               <AccordionItem value="account" className="border rounded-lg px-4">
@@ -1005,6 +1038,90 @@ const Sitemap = () => {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
+          ) : (
+            /* Gallery View - Finder Style */
+            <div className="grid grid-cols-1 lg:grid-cols-[350px,1fr] gap-6 h-[800px]">
+              {/* Left Column - Email List */}
+              <Card className="p-4 overflow-auto">
+                <div className="space-y-1">
+                  {EMAIL_CATALOGUE.map((email, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedEmail(email)}
+                      className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                        selectedEmail?.templateFile === email.templateFile
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{email.name}</div>
+                          <div className="text-xs opacity-70 truncate">{email.category}</div>
+                        </div>
+                        <Badge
+                          variant={email.status === "implemented" ? "default" : "secondary"}
+                          className="text-xs shrink-0"
+                        >
+                          {email.status === "implemented" ? "✅" : "🚧"}
+                        </Badge>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </Card>
+
+              {/* Right Column - Preview Pane */}
+              <div className="flex flex-col gap-4 overflow-hidden">
+                {/* Preview */}
+                <div className="flex-1 overflow-hidden">
+                  {selectedEmail ? (
+                    <EmailPreview
+                      templateFile={selectedEmail.templateFile}
+                      emailName={selectedEmail.name}
+                      status={selectedEmail.status}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center bg-muted/20 rounded-lg border-2 border-dashed">
+                      <div className="text-center p-8">
+                        <Mail className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                        <p className="text-muted-foreground">Select an email to preview</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Metadata Card */}
+                {selectedEmail && (
+                  <Card className="p-4 shrink-0">
+                    <h3 className="font-bold text-lg mb-3">{selectedEmail.name}</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                        <code className="text-xs bg-muted px-2 py-1 rounded">{selectedEmail.templateFile}</code>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                        <span><strong>Trigger:</strong> {selectedEmail.trigger}</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                        <span><strong>Recipient:</strong> {selectedEmail.recipient}</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                        <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{selectedEmail.edgeFunction}</code></span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                        <span className="text-muted-foreground">{selectedEmail.purpose}</span>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </div>
+            </div>
+          )}
 
             {/* Reference Box */}
             <Card className="mt-6 p-6 bg-muted/50">
