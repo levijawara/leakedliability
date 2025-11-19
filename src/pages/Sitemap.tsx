@@ -191,10 +191,10 @@ const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
     name: "Liability Accepted Confirmation",
     templateFile: "liability-accepted.tsx",
     trigger: "Accused party accepts responsibility",
-    recipient: "Party who accepted liability",
-    edgeFunction: "process-liability-claim",
-    purpose: "Confirm acceptance and provide next steps for payment",
-    status: "pending",
+    recipient: "Person who accepted + all chain members + reporter + admins",
+    edgeFunction: "process-liability-claim + send-email",
+    purpose: "Notify ALL parties when liability is accepted. Acceptor receives payment instructions. Others receive clearance confirmation. Admins receive oversight notification.",
+    status: "implemented",
     category: "liability"
   },
 

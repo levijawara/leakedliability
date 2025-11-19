@@ -138,6 +138,19 @@ const MOCK_DATA: Record<string, any> = {
     resetUrl: "https://leakedliability.com/auth/reset-password?token=def456uvw",
     expiresIn: "60 minutes"
   },
+  "liability-accepted.tsx": {
+    recipientType: 'acceptor',
+    acceptorName: 'ACME Productions',
+    acceptorEmail: 'ceo@acme.com',
+    reportId: 'CR-20251118-12345',
+    amountOwed: 2500,
+    projectName: 'Music Video Shoot',
+    invoiceDate: '2025-10-15',
+    daysOverdue: 34,
+    chainLength: 3,
+    paymentInstructions: 'Upload proof of payment or pay via LL Anonymous Escrow.',
+    recipientName: 'Jordan Smith'
+  },
 };
 
 // Email subject lines
@@ -161,6 +174,7 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   "producer-payment-confirmation.tsx": "Payment Confirmation Received",
   "email-verification.tsx": "Verify Your Email Address",
   "password-reset.tsx": "Reset Your Password",
+  "liability-accepted.tsx": "Liability Accepted - Next Steps",
 };
 
 interface EmailPreviewProps {
@@ -320,6 +334,147 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
             </p>
           </div>
         );
+      case "liability-accepted.tsx":
+        const recipientType = mockData.recipientType || 'acceptor';
+        
+        if (recipientType === 'acceptor') {
+          return (
+            <div className="email-body bg-[#0D0D0D] p-8 rounded-lg" style={{ fontFamily: '"IBM Plex Mono", "Courier New", monospace' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: '#FFFFFF' }}>
+                ✅ Liability Accepted — Next Steps
+              </h1>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                Hi {mockData.acceptorName},
+              </p>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                You have accepted full financial responsibility for Report #{mockData.reportId}.
+              </p>
+              <div style={{ backgroundColor: '#262626', padding: '20px', borderRadius: '5px', margin: '20px 0', border: '1px solid #333333' }}>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Amount Owed:</strong> ${mockData.amountOwed.toLocaleString()}</p>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Project:</strong> {mockData.projectName}</p>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Invoice Date:</strong> {mockData.invoiceDate}</p>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Days Overdue:</strong> {mockData.daysOverdue} days</p>
+              </div>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 'bold', marginTop: '24px', marginBottom: '12px' }}>Payment Options:</h2>
+              <p style={{ color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>1. Upload proof of direct payment to crew/vendor</p>
+              <p style={{ color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>2. Pay securely via LL™ Anonymous Escrow</p>
+              <a
+                href="#"
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#FFFFFF',
+                  color: '#000000',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                  marginTop: '20px'
+                }}
+              >
+                Complete Payment
+              </a>
+              <p style={{ color: '#999999', fontSize: '12px', marginTop: '20px', fontStyle: 'italic' }}>
+                ⚖️ This acceptance has been timestamped and logged for legal purposes.
+              </p>
+            </div>
+          );
+        } else if (recipientType === 'chain_member') {
+          return (
+            <div className="email-body bg-[#0D0D0D] p-8 rounded-lg" style={{ fontFamily: '"IBM Plex Mono", "Courier New", monospace' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: '#FFFFFF' }}>
+                ✅ Liability Resolution — You Are Cleared
+              </h1>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                Hi {mockData.recipientName},
+              </p>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                <strong>{mockData.acceptorName}</strong> has accepted full responsibility for Report #{mockData.reportId}.
+              </p>
+              <div style={{ backgroundColor: '#0A3D0A', border: '1px solid #00B14F', padding: '15px', borderRadius: '5px', marginTop: '20px', marginBottom: '20px' }}>
+                <p style={{ margin: 0, color: '#00FF66', fontSize: '14px', lineHeight: '24px' }}>
+                  ✅ <strong>You are no longer considered liable for this debt.</strong>
+                </p>
+              </div>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 'bold', marginTop: '24px', marginBottom: '12px' }}>Report Summary:</h2>
+              <ul style={{ color: '#E0E0E0', fontSize: '14px', lineHeight: '24px', paddingLeft: '20px' }}>
+                <li style={{ marginBottom: '8px' }}>Amount: ${mockData.amountOwed.toLocaleString()}</li>
+                <li style={{ marginBottom: '8px' }}>Project: {mockData.projectName}</li>
+                <li style={{ marginBottom: '8px' }}>Days Overdue: {mockData.daysOverdue}</li>
+              </ul>
+            </div>
+          );
+        } else if (recipientType === 'reporter') {
+          return (
+            <div className="email-body bg-[#0D0D0D] p-8 rounded-lg" style={{ fontFamily: '"IBM Plex Mono", "Courier New", monospace' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: '#FFFFFF' }}>
+                ✅ Liability Accepted — Next Steps
+              </h1>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                Hi {mockData.recipientName},
+              </p>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                <strong>{mockData.acceptorName}</strong> has accepted responsibility for your report #{mockData.reportId}.
+              </p>
+              <h2 style={{ color: '#FFFFFF', fontSize: '18px', fontWeight: 'bold', marginTop: '24px', marginBottom: '12px' }}>What Happens Next:</h2>
+              <ul style={{ color: '#E0E0E0', fontSize: '14px', lineHeight: '24px', paddingLeft: '20px' }}>
+                <li style={{ marginBottom: '8px' }}>Payment is expected within 30 days</li>
+                <li style={{ marginBottom: '8px' }}>You'll receive confirmation when payment is completed</li>
+                <li style={{ marginBottom: '8px' }}>If payment isn't made, the report remains on the leaderboard</li>
+              </ul>
+              <a
+                href="#"
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#FFFFFF',
+                  color: '#000000',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                  marginTop: '20px'
+                }}
+              >
+                View Report Status
+              </a>
+            </div>
+          );
+        } else {
+          return (
+            <div className="email-body bg-[#0D0D0D] p-8 rounded-lg" style={{ fontFamily: '"IBM Plex Mono", "Courier New", monospace' }}>
+              <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: '#FFFFFF' }}>
+                ⚖️ Liability Accepted — Admin Notification
+              </h1>
+              <p style={{ marginBottom: '16px', color: '#E0E0E0', fontSize: '14px', lineHeight: '24px' }}>
+                Report #{mockData.reportId} has reached resolution.
+              </p>
+              <div style={{ backgroundColor: '#262626', padding: '20px', borderRadius: '5px', margin: '20px 0', border: '1px solid #333333' }}>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Acceptor:</strong> {mockData.acceptorName} ({mockData.acceptorEmail})</p>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Amount:</strong> ${mockData.amountOwed.toLocaleString()}</p>
+                <p style={{ margin: '8px 0', color: '#E0E0E0', fontSize: '14px' }}><strong>Chain Length:</strong> {mockData.chainLength || 1} parties involved</p>
+              </div>
+              <div style={{ backgroundColor: '#3D1A0A', border: '1px solid #FF6B1E', padding: '15px', borderRadius: '5px', marginTop: '20px', marginBottom: '20px' }}>
+                <p style={{ margin: 0, color: '#FF9966', fontSize: '13px', lineHeight: '20px' }}>
+                  ⚠️ <strong>Action Required:</strong> Monitor for payment completion within 30 days.
+                </p>
+              </div>
+              <a
+                href="#"
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#FFFFFF',
+                  color: '#000000',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                  marginTop: '20px'
+                }}
+              >
+                View in Admin Dashboard
+              </a>
+            </div>
+          );
+        }
       default:
         return (
           <div className="p-8 text-center text-muted-foreground">
