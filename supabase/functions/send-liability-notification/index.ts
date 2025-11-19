@@ -88,6 +88,10 @@ serve(async (req: Request) => {
     
     logStep('Token created', { token: tokenData.token });
     
+    // Build claim URL with proper domain
+    const publicUrl = Deno.env.get("PUBLIC_SITE_URL") || "https://leakedliability.com";
+    const claimUrl = `${publicUrl}/liability/claim/${tokenData.token}`;
+    
     // Create liability chain entry
     logStep('Creating liability chain entry');
     const { error: chainError } = await supabase
@@ -141,7 +145,6 @@ serve(async (req: Request) => {
     
     // Send email via send-email function
     logStep('Sending liability notification email');
-    const claimUrl = `${supabaseUrl.replace('https://', 'https://').replace('.supabase.co', '')}/liability/claim/${tokenData.token}`;
     const expirationDate = new Date(tokenData.expires_at).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
@@ -166,7 +169,6 @@ serve(async (req: Request) => {
     const { error: emailError } = await supabase.functions.invoke('send-email', {
       body: {
         to: targetEmail,
-        cc: "leakedliability@gmail.com",
         subject: `You've Been Named as Responsible Party - Report #${report.report_id}`,
         template: 'liability_notification',
         data: {
