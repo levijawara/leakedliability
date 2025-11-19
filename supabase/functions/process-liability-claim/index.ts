@@ -206,15 +206,19 @@ serve(async (req: Request) => {
         }
         
         // 3. Send to ORIGINAL REPORTER
-        if (reportDetails?.profiles?.email) {
+        const reporterProfile = Array.isArray(reportDetails?.profiles) 
+          ? reportDetails.profiles[0] 
+          : reportDetails?.profiles;
+          
+        if (reporterProfile?.email) {
           await supabase.functions.invoke('send-email', {
             body: {
               type: 'liability_accepted',
-              to: reportDetails.profiles.email,
+              to: reporterProfile.email,
               data: {
                 ...baseData,
                 recipientType: 'reporter',
-                recipientName: `${reportDetails.profiles.legal_first_name} ${reportDetails.profiles.legal_last_name}`,
+                recipientName: `${reporterProfile.legal_first_name} ${reporterProfile.legal_last_name}`,
               }
             }
           });

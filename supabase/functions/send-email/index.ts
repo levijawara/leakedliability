@@ -28,6 +28,8 @@ import { DisputeAdditionalInfoRequired } from "./_templates/dispute-additional-i
 import { DisputeResolvedPaid } from "./_templates/dispute-resolved-paid.tsx";
 import { DisputeResolvedMutual } from "./_templates/dispute-resolved-mutual.tsx";
 import { DisputeClosedUnresolved } from "./_templates/dispute-closed-unresolved.tsx";
+import { SubscriptionPaymentFailed } from "./_templates/subscription-payment-failed.tsx";
+import { SubscriptionCanceled } from "./_templates/subscription-canceled.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -38,7 +40,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected' | 'email_verification' | 'password_reset' | 'liability_accepted' | 'dispute_evidence_round_started' | 'dispute_additional_info_required' | 'dispute_resolved_paid' | 'dispute_resolved_mutual' | 'dispute_closed_unresolved';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected' | 'email_verification' | 'password_reset' | 'liability_accepted' | 'dispute_evidence_round_started' | 'dispute_additional_info_required' | 'dispute_resolved_paid' | 'dispute_resolved_mutual' | 'dispute_closed_unresolved' | 'subscription_payment_failed' | 'subscription_canceled';
   to: string;
   subject?: string;
   template?: string;
@@ -87,7 +89,7 @@ serve(async (req) => {
     // Support both old 'type' and new 'template' parameter
     const emailType = template || type;
     
-    // Check email verification (except for welcome emails, liability notifications, auth emails, and dispute emails)
+    // Check email verification (except for welcome emails, liability notifications, auth emails, dispute emails, and subscription emails)
     if (emailType !== 'welcome' 
         && emailType !== 'liability_notification' 
         && emailType !== 'liability_loop_detected' 
@@ -99,6 +101,8 @@ serve(async (req) => {
         && emailType !== 'dispute_resolved_paid'
         && emailType !== 'dispute_resolved_mutual'
         && emailType !== 'dispute_closed_unresolved'
+        && emailType !== 'subscription_payment_failed'
+        && emailType !== 'subscription_canceled'
         && !userData.user.email_confirmed_at) {
       console.log('User email not verified, blocking email send');
       return new Response(
@@ -304,6 +308,20 @@ serve(async (req) => {
           React.createElement(DisputeClosedUnresolved, data)
         );
         subject = customSubject || `Dispute Closed: Unresolved - Report #${data.reportId}`;
+        break;
+      
+      case 'subscription_payment_failed':
+        html = await renderAsync(
+          React.createElement(SubscriptionPaymentFailed, data)
+        );
+        subject = customSubject || 'Payment Failed - Action Required';
+        break;
+      
+      case 'subscription_canceled':
+        html = await renderAsync(
+          React.createElement(SubscriptionCanceled, data)
+        );
+        subject = customSubject || 'Subscription Canceled';
         break;
       
       default:
