@@ -1855,33 +1855,34 @@ export default function Admin() {
               
               <div className="space-y-2">
                 <Label>Search User</Label>
-                <Command className="border rounded-lg">
-                  <CommandInput
-                    placeholder="Search by name or email..."
-                    value={searchQuery}
-                    onValueChange={setSearchQuery}
-                  />
-                  <CommandList>
-                    <CommandEmpty>No users found</CommandEmpty>
-                    <CommandGroup>
-                      {allUsers
-                        .filter(u => 
-                          u.legal_first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          u.legal_last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          u.email?.toLowerCase().includes(searchQuery.toLowerCase())
-                        )
-                        .slice(0, 10)
-                        .map((user) => (
-                          <CommandItem
-                            key={user.user_id}
-                            onSelect={() => handleUserSelect(user.user_id)}
-                          >
-                            {user.legal_first_name} {user.legal_last_name} ({user.email})
-                          </CommandItem>
-                        ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
+                <Input
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="mb-2"
+                />
+                
+                <div className="p-4 bg-muted rounded-lg border font-mono text-sm whitespace-pre-wrap select-text">
+                  {allUsers
+                    .filter(u => 
+                      u.legal_first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      u.legal_last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .slice(0, 50)
+                    .map((user) => user.email)
+                    .join('\n')}
+                </div>
+                
+                {allUsers.filter(u => 
+                  u.legal_first_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  u.legal_last_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  u.email?.toLowerCase().includes(searchQuery.toLowerCase())
+                ).length > 50 && (
+                  <p className="text-sm text-muted-foreground">
+                    Showing first 50 results. Refine your search to see more.
+                  </p>
+                )}
               </div>
               
               {selectedUser && (
