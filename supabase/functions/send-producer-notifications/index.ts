@@ -72,8 +72,10 @@ serve(async (req) => {
       *,
       payment_reports!inner(
         producer_id,
+        producer_email,
         producers!inner(
-          oldest_debt_days
+          oldest_debt_days,
+          email
         )
       )
     `)
@@ -104,11 +106,25 @@ serve(async (req) => {
     // Send emails
     for (const notification of notifications) {
       try {
+        // Determine target email with fallback logic
+        const reportEmail = (notification as any).payment_reports?.producer_email;
+        const producerEmail = (notification as any).payment_reports?.producers?.email;
+        const targetEmail = reportEmail || producerEmail;
+
+        if (!targetEmail) {
+          console.warn(`[send-producer-notifications] No email available for notification ${notification.id} - skipping`);
+          failed++;
+          failedIds.push(notification.id);
+          continue;
+        }
+
+        console.log(`[send-producer-notifications] Using email: ${targetEmail} (source: ${reportEmail ? 'report' : 'producer'})`);
+
         // Call send-email function
         const { error: emailError } = await supabase.functions.invoke('send-email', {
           body: {
             type: 'producer_report_notification',
-            to: notification.producer_email,
+            to: targetEmail,
             data: {
               reportId: notification.report_id,
               amountOwed: notification.amount_owed,
