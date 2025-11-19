@@ -71,7 +71,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
     if (!user) {
       return {
         title: "🔒 Leaderboard Access",
-        description: "Names are blurred. Sign in to subscribe.",
+        description: "Sign in to subscribe.",
         message: "Subscribe for $5.99/month to access the full leaderboard.",
         showCrewOption: false,
         showSignupPrompt: true,
@@ -80,7 +80,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
 
     return {
       title: "🔒 Paid Access Required",
-      description: "Names are blurred. Subscribe to view the full leaderboard.",
+      description: "Subscribe to view the full leaderboard.",
       message: "Subscribe for $5.99/month to unlock full access.",
       showCrewOption: false,
       showSignupPrompt: false,
