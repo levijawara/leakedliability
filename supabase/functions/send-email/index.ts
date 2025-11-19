@@ -59,58 +59,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Phase 3: Enforce authentication for email sending
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('Email request without authorization header');
-      return new Response(
-        JSON.stringify({ error: 'Authentication required' }),
-        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: userData, error: userError } = await supabase.auth.getUser(token);
-    
-    if (userError || !userData.user) {
-      console.error('Invalid authentication token:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Invalid authentication' }),
-        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
-
-    const authenticatedUserId = userData.user.id;
-    const authenticatedUserEmail = userData.user.email;
-    console.log('Email request from authenticated user:', authenticatedUserId);
+    // Authentication removed - function is public for internal edge function calls
+    // BCC audit trail is always included for all emails
 
     // Get request body and check email type
     const { type, to, cc, data, template, subject: customSubject }: EmailRequest = await req.json();
     
     // Support both old 'type' and new 'template' parameter
     const emailType = template || type;
-    
-    // Check email verification (except for welcome emails, liability notifications, auth emails, dispute emails, and subscription emails)
-    if (emailType !== 'welcome' 
-        && emailType !== 'liability_notification' 
-        && emailType !== 'liability_loop_detected' 
-        && emailType !== 'liability_accepted' 
-        && emailType !== 'email_verification' 
-        && emailType !== 'password_reset'
-        && emailType !== 'dispute_evidence_round_started'
-        && emailType !== 'dispute_additional_info_required'
-        && emailType !== 'dispute_resolved_paid'
-        && emailType !== 'dispute_resolved_mutual'
-        && emailType !== 'dispute_closed_unresolved'
-        && emailType !== 'subscription_payment_failed'
-        && emailType !== 'subscription_canceled'
-        && !userData.user.email_confirmed_at) {
-      console.log('User email not verified, blocking email send');
-      return new Response(
-        JSON.stringify({ error: 'Please verify your email before performing this action' }),
-        { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
-      );
-    }
     
     let html: string;
     let subject: string;

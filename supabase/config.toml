@@ -1,7 +1,7 @@
 project_id = "blpbeopmdfahiosglomx"
 
 [functions.send-email]
-verify_jwt = true
+verify_jwt = false
 
 [functions.send-producer-notifications]
 verify_jwt = true
