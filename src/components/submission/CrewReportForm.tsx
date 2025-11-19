@@ -45,6 +45,7 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
   });
   const [reportingType, setReportingType] = useState<"producer" | "production_company" | "both">("producer");
   const [producerName, setProducerName] = useState({ firstName: "", lastName: "", email: "" });
+  const [companyName, setCompanyName] = useState("");
   const [producerAliases, setProducerAliases] = useState("");
   const [amountOwed, setAmountOwed] = useState("");
   const [invoiceDate, setInvoiceDate] = useState<Date>();
@@ -63,9 +64,9 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
       // Validate input
       const validationResult = crewReportSchema.safeParse({
         reportingType: reportingType,
-        producerFirstName: producerName.firstName,
+        producerFirstName: reportingType === "production_company" ? companyName : producerName.firstName,
         producerLastName: producerName.lastName,
-        producerCompany: reportingType === "production_company" ? producerName.firstName : undefined,
+        producerCompany: reportingType === "both" ? companyName : (reportingType === "production_company" ? companyName : undefined),
         producerEmail: producerName.email,
         producerAliases,
         amountOwed: parseFloat(amountOwed),
@@ -118,14 +119,17 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
         form_data: {
           // snake_case keys for Admin flow
           reporting_type: reportingType,
-          producer_name: producerName,
+          producer_name: reportingType === "production_company" ? companyName : producerName.firstName,
+          producer_last_name: reportingType === "production_company" ? "" : producerName.lastName,
+          producer_company: reportingType === "both" ? companyName : (reportingType === "production_company" ? companyName : ""),
+          producer_email: producerName.email,
           producer_aliases: sanitizeText(producerAliases),
           amount_owed: amountOwed,
           invoice_date: invoiceDate?.toISOString().split('T')[0],
           project_name: projectName,
           city: city || null,
           // camelCase keys required by backend validation trigger
-          producerName: producerName,
+          producerName: reportingType === "production_company" ? companyName : producerName.firstName,
           amountOwed: parseFloat(amountOwed),
           projectName: projectName,
           // Admin metadata
@@ -157,7 +161,19 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
     }
   };
 
-  const isValid = producerName.firstName && producerName.email && amountOwed && invoiceDate && projectName && invoiceFiles.length > 0 && (reportingType === "production_company" || producerName.lastName);
+  const isValid = 
+    amountOwed && 
+    invoiceDate && 
+    projectName && 
+    invoiceFiles.length > 0 &&
+    producerName.email &&
+    (reportingType === "production_company" 
+      ? companyName 
+      : (reportingType === "both" 
+        ? (producerName.firstName && producerName.lastName && companyName)
+        : (producerName.firstName && producerName.lastName)
+      )
+    );
 
   return (
     <Card className="p-8">
@@ -200,30 +216,77 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
           </p>
         </div>
 
-        <div className="space-y-4">
-          <Label>Producer/Production Company Contact Information *</Label>
-          <Input
-            placeholder="First name or Company name"
-            value={producerName.firstName}
-            onChange={(e) => setProducerName({ ...producerName, firstName: e.target.value })}
-          />
-          {reportingType !== "production_company" && (
+        {reportingType === "producer" && (
+          <div className="space-y-4">
+            <Label>Producer Contact Information *</Label>
             <Input
-              placeholder="Last name"
+              placeholder="Producer First Name"
+              value={producerName.firstName}
+              onChange={(e) => setProducerName({ ...producerName, firstName: e.target.value })}
+            />
+            <Input
+              placeholder="Producer Last Name"
               value={producerName.lastName}
               onChange={(e) => setProducerName({ ...producerName, lastName: e.target.value })}
             />
-          )}
-          <Input
-            type="email"
-            placeholder="Email address"
-            value={producerName.email}
-            onChange={(e) => setProducerName({ ...producerName, email: e.target.value })}
-          />
-        </div>
+            <Input
+              type="email"
+              placeholder="Producer Email"
+              value={producerName.email}
+              onChange={(e) => setProducerName({ ...producerName, email: e.target.value })}
+            />
+          </div>
+        )}
+
+        {reportingType === "production_company" && (
+          <div className="space-y-4">
+            <Label>Production Company Contact Information *</Label>
+            <Input
+              placeholder="Company Name"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
+            <Input
+              type="email"
+              placeholder="Company Email"
+              value={producerName.email}
+              onChange={(e) => setProducerName({ ...producerName, email: e.target.value })}
+            />
+          </div>
+        )}
+
+        {reportingType === "both" && (
+          <div className="space-y-4">
+            <Label>Producer & Company Contact Information *</Label>
+            <Input
+              placeholder="Producer First Name"
+              value={producerName.firstName}
+              onChange={(e) => setProducerName({ ...producerName, firstName: e.target.value })}
+            />
+            <Input
+              placeholder="Producer Last Name"
+              value={producerName.lastName}
+              onChange={(e) => setProducerName({ ...producerName, lastName: e.target.value })}
+            />
+            <Input
+              placeholder="Company Name"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+            />
+            <Input
+              type="email"
+              placeholder="Email Address (shared)"
+              value={producerName.email}
+              onChange={(e) => setProducerName({ ...producerName, email: e.target.value })}
+            />
+          </div>
+        )}
 
         <div>
           <Label htmlFor="aliases">Known Aliases/Nicknames (Optional)</Label>
+          <p className="text-xs text-muted-foreground mb-2">
+            For producer, company, or both if applicable
+          </p>
           <Textarea
             id="aliases"
             placeholder="Any other names, abandoned LLCs, stage names, etc."
