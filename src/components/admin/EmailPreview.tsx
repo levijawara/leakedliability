@@ -128,6 +128,16 @@ const MOCK_DATA: Record<string, any> = {
     producerName: "Creative Films LLC",
     amountPaid: 8000,
   },
+  "email-verification.tsx": {
+    userName: "Alex Chen",
+    verificationUrl: "https://leakedliability.com/auth/verify?token=abc123xyz",
+    verificationCode: "847291"
+  },
+  "password-reset.tsx": {
+    userName: "Jordan Williams",
+    resetUrl: "https://leakedliability.com/auth/reset-password?token=def456uvw",
+    expiresIn: "60 minutes"
+  },
 };
 
 // Email subject lines
@@ -149,6 +159,8 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   "dispute-submission.tsx": "Your Dispute Has Been Submitted",
   "counter-dispute-submission.tsx": "Your Counter-Dispute Has Been Submitted",
   "producer-payment-confirmation.tsx": "Payment Confirmation Received",
+  "email-verification.tsx": "Verify Your Email Address",
+  "password-reset.tsx": "Reset Your Password",
 };
 
 interface EmailPreviewProps {
@@ -213,6 +225,101 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
         return <CounterDisputeSubmission {...mockData} />;
       case "producer-payment-confirmation.tsx":
         return <ProducerPaymentConfirmation {...mockData} />;
+      case "email-verification.tsx":
+        return (
+          <div className="email-body bg-white p-8 rounded-lg" style={{ fontFamily: '"IBM Plex Mono", "Courier New", monospace' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: '#000' }}>
+              Verify Your Email Address
+            </h1>
+            <p style={{ marginBottom: '16px', color: '#333', fontSize: '14px', lineHeight: '24px' }}>
+              Hi {mockData.userName},
+            </p>
+            <p style={{ marginBottom: '16px', color: '#333', fontSize: '14px', lineHeight: '24px' }}>
+              Please verify your email address to complete your Leaked Liability™ account setup. 
+              This ensures the security of your account and enables all platform features.
+            </p>
+            <div style={{ backgroundColor: '#f0f0f0', padding: '20px', borderRadius: '5px', margin: '20px 0', textAlign: 'center' }}>
+              <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#666', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                Verification Code:
+              </p>
+              <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', letterSpacing: '8px', color: '#000' }}>
+                {mockData.verificationCode}
+              </p>
+            </div>
+            <div style={{ margin: '32px 0', textAlign: 'center' }}>
+              <a
+                href={mockData.verificationUrl}
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Verify Email Address
+              </a>
+            </div>
+            <p style={{ fontSize: '12px', color: '#999', marginTop: '32px', lineHeight: '20px' }}>
+              If you didn't create this account, you can safely ignore this email.
+            </p>
+            <p style={{ fontSize: '12px', color: '#666', marginTop: '32px', lineHeight: '20px' }}>
+              Best regards,<br />
+              The PSCS Team<br />
+              <a href="https://leakedliability.com" style={{ color: '#000', textDecoration: 'underline' }}>
+                leakedliability.com
+              </a>
+            </p>
+          </div>
+        );
+      case "password-reset.tsx":
+        return (
+          <div className="email-body bg-white p-8 rounded-lg" style={{ fontFamily: '"IBM Plex Mono", "Courier New", monospace' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '20px', color: '#000' }}>
+              Reset Your Password
+            </h1>
+            <p style={{ marginBottom: '16px', color: '#333', fontSize: '14px', lineHeight: '24px' }}>
+              Hi {mockData.userName},
+            </p>
+            <p style={{ marginBottom: '16px', color: '#333', fontSize: '14px', lineHeight: '24px' }}>
+              We received a request to reset your password for your Leaked Liability™ account. 
+              Click the button below to create a new password.
+            </p>
+            <div style={{ margin: '32px 0', textAlign: 'center' }}>
+              <a
+                href={mockData.resetUrl}
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  padding: '12px 24px',
+                  textDecoration: 'none',
+                  borderRadius: '5px',
+                  fontWeight: 'bold',
+                  fontSize: '14px'
+                }}
+              >
+                Reset Password
+              </a>
+            </div>
+            <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ff6b6b', padding: '15px', borderRadius: '5px', margin: '20px 0' }}>
+              <p style={{ margin: 0, fontSize: '13px', color: '#721c24', lineHeight: '20px' }}>
+                <strong>⚠️ Security Notice:</strong> This link expires in {mockData.expiresIn}. 
+                If you didn't request this reset, your account may be compromised. Contact support immediately.
+              </p>
+            </div>
+            <p style={{ fontSize: '12px', color: '#666', marginTop: '32px', lineHeight: '20px' }}>
+              Best regards,<br />
+              The PSCS Team<br />
+              <a href="https://leakedliability.com" style={{ color: '#000', textDecoration: 'underline' }}>
+                leakedliability.com
+              </a>
+            </p>
+          </div>
+        );
       default:
         return (
           <div className="p-8 text-center text-muted-foreground">

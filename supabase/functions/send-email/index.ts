@@ -20,6 +20,8 @@ import { VendorReportRejected } from "./_templates/vendor-report-rejected.tsx";
 import { AdminCreatedAccount } from "./_templates/admin-created-account.tsx";
 import { LiabilityNotification } from "./_templates/liability-notification.tsx";
 import { LiabilityLoopDetected } from "./_templates/liability-loop-detected.tsx";
+import { EmailVerification } from "./_templates/email-verification.tsx";
+import { PasswordReset } from "./_templates/password-reset.tsx";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,7 +32,7 @@ const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string);
 const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@leakedliability.com>';
 
 interface EmailRequest {
-  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected';
+  type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected' | 'email_verification' | 'password_reset';
   to: string;
   subject?: string;
   template?: string;
@@ -79,8 +81,8 @@ serve(async (req) => {
     // Support both old 'type' and new 'template' parameter
     const emailType = template || type;
     
-    // Check email verification (except for welcome emails and liability notifications)
-    if (emailType !== 'welcome' && emailType !== 'liability_notification' && emailType !== 'liability_loop_detected' && !userData.user.email_confirmed_at) {
+    // Check email verification (except for welcome emails, liability notifications, and auth emails)
+    if (emailType !== 'welcome' && emailType !== 'liability_notification' && emailType !== 'liability_loop_detected' && emailType !== 'email_verification' && emailType !== 'password_reset' && !userData.user.email_confirmed_at) {
       console.log('User email not verified, blocking email send');
       return new Response(
         JSON.stringify({ error: 'Please verify your email before performing this action' }),
@@ -229,6 +231,20 @@ serve(async (req) => {
           React.createElement(LiabilityLoopDetected, data)
         );
         subject = customSubject || data.subject || `Liability Loop Detected - Report #${data.reportId}`;
+        break;
+      
+      case 'email_verification':
+        html = await renderAsync(
+          React.createElement(EmailVerification, data)
+        );
+        subject = 'Verify Your Email Address - Leaked Liability';
+        break;
+      
+      case 'password_reset':
+        html = await renderAsync(
+          React.createElement(PasswordReset, data)
+        );
+        subject = 'Reset Your Password - Leaked Liability';
         break;
       
       default:
