@@ -43,7 +43,7 @@ export const counterDisputeSchema = z.object({
 });
 
 export const adminNotesSchema = z.object({
-  adminNotes: z.string().trim().max(2000).optional(),
+  adminNotes: z.string().trim().max(50000).optional(),
 });
 
 export const suggestionSchema = z.object({
