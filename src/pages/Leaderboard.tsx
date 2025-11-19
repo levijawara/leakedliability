@@ -182,7 +182,7 @@ export default function Leaderboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("blur_names_for_public, public_leaderboard_ready")
+        .select("public_leaderboard_ready")
         .single();
       
       if (error) throw error;
@@ -268,12 +268,6 @@ export default function Leaderboard() {
   if (!accessLoading && accessState && !accessState.hasAccess) {
     return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
   }
-
-  // Two-tier blur system:
-  // Stage 1: Names blurred until public_leaderboard_ready = TRUE
-  // Stage 2: Names visible to all when admin flips the flag
-  // Admins always see unblurred regardless of flag
-  const shouldBlurNames = !settings?.public_leaderboard_ready && !isAdmin;
 
   return (
     <>

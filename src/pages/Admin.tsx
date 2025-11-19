@@ -59,7 +59,6 @@ export default function Admin() {
   const [loadingUrls, setLoadingUrls] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
-  const [blurNamesForPublic, setBlurNamesForPublic] = useState(true);
   const [queuedNotifications, setQueuedNotifications] = useState<any[]>([]);
   const [settingsId, setSettingsId] = useState<string | null>(null);
   const [freeAccessEnabled, setFreeAccessEnabled] = useState(true);
@@ -188,7 +187,6 @@ export default function Admin() {
       if (settings) {
         setMaintenanceMode(settings.maintenance_mode);
         setMaintenanceMessage(settings.maintenance_message || "");
-        setBlurNamesForPublic(settings.blur_names_for_public ?? true);
         setSettingsId(settings.id);
       }
 
@@ -1076,34 +1074,6 @@ export default function Admin() {
     });
   };
 
-  const toggleBlurNames = async () => {
-    if (!settingsId) return;
-
-    const newBlur = !blurNamesForPublic;
-    const { error } = await supabase
-      .from("site_settings")
-      .update({ blur_names_for_public: newBlur })
-      .eq("id", settingsId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: mapDatabaseError(error),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setBlurNamesForPublic(newBlur);
-    toast({
-      title: "Name Blur " + (newBlur ? "Enabled" : "Disabled"),
-      description: newBlur 
-        ? "Producer names are now blurred for non-admin users on the leaderboard." 
-        : "Producer names are now visible to everyone on the leaderboard.",
-    });
-  };
-
-
   const toggleFreeAccess = async () => {
     if (!leaderboardConfigId) return;
 
@@ -1481,26 +1451,6 @@ export default function Admin() {
             </Button>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="space-y-1">
-              <Label htmlFor="blur-names" className="text-lg font-semibold flex items-center gap-2">
-                <Eye className="h-5 w-5 text-muted-foreground" />
-                Blur Names for Non-Admins
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {blurNamesForPublic 
-                  ? "Producer names are blurred on the leaderboard for non-admin users." 
-                  : "Producer names are visible to everyone on the leaderboard."}
-              </p>
-            </div>
-            <Switch
-              id="blur-names"
-              checked={blurNamesForPublic}
-              onCheckedChange={toggleBlurNames}
-              variant="status"
-            />
-          </div>
-
           <div className="pt-4 border-t">
             <div 
               className="flex items-start justify-between cursor-pointer"
@@ -1860,21 +1810,6 @@ export default function Admin() {
                   />
                 </div>
               )}
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="blur-names" className="text-base">Blur Producer Names</Label>
-                  <p className="text-sm text-muted-foreground">Hide names from non-admin users</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Eye className="h-4 w-4" />
-                  <Switch
-                    id="blur-names"
-                    checked={blurNamesForPublic}
-                    onCheckedChange={toggleBlurNames}
-                  />
-                </div>
-              </div>
               
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
