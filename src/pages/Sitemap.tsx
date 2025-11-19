@@ -65,21 +65,21 @@ const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
   },
   {
     name: "Email Verification",
-    templateFile: "Supabase built-in",
-    trigger: "User signs up (if verification enabled)",
+    templateFile: "email-verification.tsx",
+    trigger: "User signs up or requests email verification",
     recipient: "New user",
-    edgeFunction: "Supabase Auth",
-    purpose: "Confirm email address before login",
+    edgeFunction: "send-email",
+    purpose: "Verify email address with branded LL™ template. Includes CTA button and optional verification code.",
     status: "implemented",
     category: "account"
   },
   {
     name: "Password Reset",
-    templateFile: "Supabase built-in",
+    templateFile: "password-reset.tsx",
     trigger: "User requests password reset",
     recipient: "User",
-    edgeFunction: "Supabase Auth",
-    purpose: "Send password reset link",
+    edgeFunction: "send-email",
+    purpose: "Send password reset link with 60-minute expiration. Includes security warning if request was unauthorized.",
     status: "implemented",
     category: "account"
   },
