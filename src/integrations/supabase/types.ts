@@ -1083,10 +1083,12 @@ export type Database = {
         Row: {
           account_status: string | null
           admin_creator_id: string | null
+          auto_created: boolean | null
           average_days_to_pay: number | null
           company: string | null
           created_at: string
           created_by_admin: boolean | null
+          email: string | null
           id: string
           last_closed_date: string | null
           momentum_active_until: string | null
@@ -1108,14 +1110,17 @@ export type Database = {
           total_vendor_debt: number | null
           total_vendors_owed: number | null
           updated_at: string
+          verification_status: string | null
         }
         Insert: {
           account_status?: string | null
           admin_creator_id?: string | null
+          auto_created?: boolean | null
           average_days_to_pay?: number | null
           company?: string | null
           created_at?: string
           created_by_admin?: boolean | null
+          email?: string | null
           id?: string
           last_closed_date?: string | null
           momentum_active_until?: string | null
@@ -1137,14 +1142,17 @@ export type Database = {
           total_vendor_debt?: number | null
           total_vendors_owed?: number | null
           updated_at?: string
+          verification_status?: string | null
         }
         Update: {
           account_status?: string | null
           admin_creator_id?: string | null
+          auto_created?: boolean | null
           average_days_to_pay?: number | null
           company?: string | null
           created_at?: string
           created_by_admin?: boolean | null
+          email?: string | null
           id?: string
           last_closed_date?: string | null
           momentum_active_until?: string | null
@@ -1166,6 +1174,7 @@ export type Database = {
           total_vendor_debt?: number | null
           total_vendors_owed?: number | null
           updated_at?: string
+          verification_status?: string | null
         }
         Relationships: []
       }
@@ -1716,6 +1725,7 @@ export type Database = {
       calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
       cleanup_old_past_debts: { Args: never; Returns: undefined }
       generate_payment_code: { Args: never; Returns: string }
+      generate_payment_report_id: { Args: never; Returns: string }
       generate_report_id: { Args: never; Returns: string }
       get_ban_page: {
         Args: never

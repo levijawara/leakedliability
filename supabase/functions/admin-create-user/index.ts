@@ -20,6 +20,7 @@ interface CreateUserRequest {
   new_producer_name?: string;
   new_producer_company?: string;
   new_producer_email?: string;
+  producer_email?: string;
 }
 
 serve(async (req) => {
@@ -174,6 +175,7 @@ serve(async (req) => {
         reporter_id: newUserId,
         reporter_type: requestData.account_type,
         producer_id: producerId,
+        producer_email: requestData.new_producer_email || requestData.producer_email,
         amount_owed: requestData.amount_owed,
         project_name: requestData.project_name,
         invoice_date: requestData.invoice_date,
