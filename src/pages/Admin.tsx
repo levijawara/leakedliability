@@ -2688,12 +2688,18 @@ export default function Admin() {
                     )}
 
                     <div>
-                      <label className="text-sm font-medium">Admin Notes</label>
+                      <label className="text-sm font-medium">
+                        Admin Notes
+                        <span className="text-xs text-muted-foreground ml-2">
+                          ({adminNotes.length.toLocaleString()} characters)
+                        </span>
+                      </label>
                       <Textarea
                         value={adminNotes}
                         onChange={(e) => setAdminNotes(e.target.value)}
                         placeholder="Add notes about this submission..."
                         className="mt-2"
+                        rows={6}
                       />
                     </div>
 
