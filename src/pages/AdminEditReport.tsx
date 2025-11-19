@@ -521,6 +521,8 @@ export default function AdminEditReport() {
                         mode="single"
                         selected={invoiceDate}
                         onSelect={setInvoiceDate}
+                        fromYear={1990}
+                        toYear={new Date().getFullYear()}
                         initialFocus
                       />
                     </PopoverContent>
@@ -547,6 +549,8 @@ export default function AdminEditReport() {
                         mode="single"
                         selected={paymentDate}
                         onSelect={setPaymentDate}
+                        fromYear={1990}
+                        toYear={new Date().getFullYear()}
                         initialFocus
                       />
                     </PopoverContent>

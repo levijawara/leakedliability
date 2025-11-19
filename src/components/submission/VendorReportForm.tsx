@@ -334,6 +334,8 @@ export function VendorReportForm({ userInfo, onBack, onSuccess, adminMetadata }:
                 mode="single"
                 selected={invoiceDate}
                 onSelect={setInvoiceDate}
+                fromYear={1990}
+                toYear={new Date().getFullYear()}
                 initialFocus
                 className="pointer-events-auto"
               />
@@ -423,6 +425,8 @@ export function VendorReportForm({ userInfo, onBack, onSuccess, adminMetadata }:
                 mode="single"
                 selected={dueDate}
                 onSelect={setDueDate}
+                fromYear={1990}
+                toYear={new Date().getFullYear()}
                 initialFocus
                 className="pointer-events-auto"
               />
@@ -463,6 +467,8 @@ export function VendorReportForm({ userInfo, onBack, onSuccess, adminMetadata }:
                   mode="single"
                   selected={deliveryStartDate}
                   onSelect={setDeliveryStartDate}
+                  fromYear={1990}
+                  toYear={new Date().getFullYear()}
                   initialFocus
                   className="pointer-events-auto"
                 />
@@ -490,6 +496,8 @@ export function VendorReportForm({ userInfo, onBack, onSuccess, adminMetadata }:
                   mode="single"
                   selected={deliveryEndDate}
                   onSelect={setDeliveryEndDate}
+                  fromYear={1990}
+                  toYear={new Date().getFullYear()}
                   initialFocus
                   className="pointer-events-auto"
                 />

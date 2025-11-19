@@ -3271,6 +3271,8 @@ export default function Admin() {
                     mode="single"
                     selected={paymentDate}
                     onSelect={setPaymentDate}
+                    fromYear={1990}
+                    toYear={new Date().getFullYear()}
                     initialFocus
                     className="pointer-events-auto"
                   />

@@ -327,6 +327,8 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
                 mode="single"
                 selected={invoiceDate}
                 onSelect={setInvoiceDate}
+                fromYear={1990}
+                toYear={new Date().getFullYear()}
                 initialFocus
                 className="pointer-events-auto"
               />
