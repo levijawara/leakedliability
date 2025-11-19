@@ -123,6 +123,33 @@ serve(async (req) => {
     logStep("User profile", { accountType });
 
 
+    // 🚨 PRIORITY 5: Check for grace period status (user retains access during grace period)
+    const { data: gracePeriodSub } = await supabaseClient
+      .from('user_entitlements')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('entitlement_type', 'leaderboard')
+      .eq('source', 'stripe_subscription')
+      .eq('status', 'grace_period')
+      .maybeSingle();
+
+    if (gracePeriodSub) {
+      logStep("Grace period active - granting access with warning");
+      return new Response(JSON.stringify({ 
+        hasAccess: true, 
+        canPurchase: false, 
+        reason: 'grace_period',
+        subscriptionEnd: gracePeriodSub.subscription_end,
+        gracePeriodEnd: gracePeriodSub.grace_period_ends_at,
+        failedAttempts: gracePeriodSub.failed_attempts,
+        subscriptionTier: gracePeriodSub.subscription_tier,
+        billingFrequency: gracePeriodSub.billing_frequency
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
     // 🚨 PRIORITY 6: Check for active paid subscription
     const { data: subscription } = await supabaseClient
       .from('user_entitlements')
@@ -139,7 +166,9 @@ serve(async (req) => {
         hasAccess: true, 
         canPurchase: false, 
         reason: 'subscription_active',
-        subscriptionEnd: subscription.subscription_end
+        subscriptionEnd: subscription.subscription_end,
+        subscriptionTier: subscription.subscription_tier,
+        billingFrequency: subscription.billing_frequency
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

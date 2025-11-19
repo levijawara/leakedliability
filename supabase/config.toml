@@ -24,6 +24,9 @@ verify_jwt = false
 [functions.stripe-setup-check]
 verify_jwt = true
 
+[functions.check-grace-periods]
+verify_jwt = false
+
 [functions.admin-ban-account]
 verify_jwt = true
 

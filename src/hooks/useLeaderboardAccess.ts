@@ -10,10 +10,15 @@ export interface LeaderboardAccessState {
     | 'admin' 
     | 'admin_override' 
     | 'subscription_active' 
+    | 'grace_period'           // Payment failed, grace period active
     | 'no_access';
   accountType?: string;
   hasVerifiedReport?: boolean;
   subscriptionEnd?: string;
+  subscriptionTier?: string;
+  billingFrequency?: string;
+  gracePeriodEnd?: string;
+  failedAttempts?: number;
   message?: string;
 }
 

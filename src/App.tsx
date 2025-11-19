@@ -24,6 +24,7 @@ import ProducerDashboard from "./pages/ProducerDashboard";
 import SuggestionBox from "./pages/SuggestionBox";
 import VerifyEmail from "./pages/VerifyEmail";
 import LeaderboardAnalytics from "./pages/LeaderboardAnalytics";
+import Subscribe from "./pages/Subscribe";
 import Sitemap from "./pages/Sitemap";
 import BanPage from "./pages/BanPage";
 import ConfirmReport from "./pages/ConfirmReport";
@@ -131,6 +132,7 @@ const AppContent = () => {
       <Route path="/suggestion-box" element={<SuggestionBox />} />
       <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
+      <Route path="/subscribe" element={<Subscribe />} />
       <Route path="/sitemap" element={<Sitemap />} />
       <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
       <Route path="/ban/:banId" element={<BanPage />} />

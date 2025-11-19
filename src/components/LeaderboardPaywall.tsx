@@ -18,7 +18,6 @@ interface LeaderboardPaywallProps {
 }
 
 export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess }: LeaderboardPaywallProps) => {
-  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -64,44 +63,8 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
     navigate("/");
   };
 
-  const handleSubscribe = async () => {
-    try {
-      setLoading(true);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please sign in to subscribe");
-        navigate("/auth");
-        return;
-      }
-
-      console.log("Invoking create-leaderboard-checkout function...");
-      const { data, error } = await supabase.functions.invoke('create-leaderboard-checkout', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      console.log("Function response:", { data, error });
-
-      if (error) {
-        console.error("Function error:", error);
-        throw error;
-      }
-
-      if (!data?.url) {
-        throw new Error("No checkout URL returned");
-      }
-
-      console.log("Redirecting to Stripe checkout:", data.url);
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Checkout error details:', error);
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      toast.error(`Failed to start checkout: ${errorMessage}`);
-    } finally {
-      setLoading(false);
-    }
+  const handleSubscribe = () => {
+    navigate("/subscribe");
   };
 
   const getPaywallContent = () => {
@@ -348,9 +311,8 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
                   <Button 
                     className="w-full" 
                     onClick={handleSubscribe}
-                    disabled={loading}
                   >
-                    {loading ? "Processing..." : "Subscribe - $5.99/month"}
+                    Subscribe - Choose Your Plan
                   </Button>
                 </CardContent>
               </Card>
@@ -362,9 +324,8 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
               <Button 
                 size="lg"
                 onClick={handleSubscribe}
-                disabled={loading}
               >
-                {loading ? "Processing..." : "Get Full Access - $5.99/month"}
+                Get Full Access - Choose Your Plan
               </Button>
               
               {refreshAccess && (
