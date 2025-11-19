@@ -33,6 +33,11 @@ interface VendorReportFormProps {
   };
   onBack: () => void;
   onSuccess: () => void;
+  adminMetadata?: {
+    createdByAdmin: boolean;
+    adminCreatorId: string;
+    reporterId: string;
+  };
 }
 
 const netTermsOptions = [
@@ -53,7 +58,7 @@ const bookingMethodOptions = [
   "Other"
 ];
 
-export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFormProps) {
+export function VendorReportForm({ userInfo, onBack, onSuccess, adminMetadata }: VendorReportFormProps) {
   const [loading, setLoading] = useState(false);
   const [reportingType, setReportingType] = useState<"producer" | "production_company" | "both">("producer");
   const [producerName, setProducerName] = useState({ firstName: "", lastName: "", email: "" });
@@ -160,7 +165,7 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
 
       // Submit the report
       const { error } = await supabase.from('submissions').insert({
-        user_id: user.id,
+        user_id: adminMetadata?.reporterId || user.id,
         submission_type: 'vendor_report',
         full_name: userInfo.contactName,
         email: userInfo.contactEmail,
@@ -194,7 +199,12 @@ export function VendorReportForm({ userInfo, onBack, onSuccess }: VendorReportFo
           vendorCompany: userInfo.vendorCompany,
           invoiceNumber: invoiceNumber,
           amountOwed: parseFloat(amountOwed),
-          projectName: projectName
+          projectName: projectName,
+          // Admin metadata
+          ...(adminMetadata && {
+            created_by_admin: adminMetadata.createdByAdmin,
+            admin_creator_id: adminMetadata.adminCreatorId
+          })
         },
         document_urls: documentUrls
       });

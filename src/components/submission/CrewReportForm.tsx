@@ -23,9 +23,14 @@ interface CrewReportFormProps {
   userInfo: { firstName: string; lastName: string; email: string; role: string };
   onBack: () => void;
   onSuccess: () => void;
+  adminMetadata?: {
+    createdByAdmin: boolean;
+    adminCreatorId: string;
+    reporterId: string;
+  };
 }
 
-export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormProps) {
+export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: CrewReportFormProps) {
   const [loading, setLoading] = useState(false);
 
   // Check email verification status on mount
@@ -105,7 +110,7 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
 
       // Submit the report
       const { error } = await supabase.from('submissions').insert({
-        user_id: user.id,
+        user_id: adminMetadata?.reporterId || user.id,
         submission_type: 'crew_report',
         full_name: `${userInfo.firstName} ${userInfo.lastName}`,
         email: userInfo.email,
@@ -122,7 +127,12 @@ export function CrewReportForm({ userInfo, onBack, onSuccess }: CrewReportFormPr
           // camelCase keys required by backend validation trigger
           producerName: producerName,
           amountOwed: parseFloat(amountOwed),
-          projectName: projectName
+          projectName: projectName,
+          // Admin metadata
+          ...(adminMetadata && {
+            created_by_admin: adminMetadata.createdByAdmin,
+            admin_creator_id: adminMetadata.adminCreatorId
+          })
         },
         document_urls: documentUrls
       });

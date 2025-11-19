@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { AlertCircle, ArrowLeft, ArrowRight, TrendingUp, CheckCircle2, Building2, Scale, Trophy } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, TrendingUp, CheckCircle2, Building2, Scale, Trophy, Shield } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { SubmissionWalkthrough } from "@/components/submission/SubmissionWalkthrough";
 import { ParticipantTypeSelector } from "@/components/submission/ParticipantTypeSelector";
@@ -18,10 +18,12 @@ import { VendorIdentification } from "@/components/submission/VendorIdentificati
 import { VendorReportForm } from "@/components/submission/VendorReportForm";
 import { useToast } from "@/hooks/use-toast";
 import { Footer } from "@/components/Footer";
+import { useAdminProxy } from "@/contexts/AdminProxyContext";
 
 export default function SubmitReport() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { adminMode, adminId, actingAsUserId, actingAsUserEmail, actingAsUserName, clearAdminProxy } = useAdminProxy();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
@@ -74,6 +76,19 @@ export default function SubmitReport() {
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
 
+  // Pre-fill user info when in admin mode
+  useEffect(() => {
+    if (adminMode && actingAsUserEmail && actingAsUserName) {
+      const [firstName, ...lastNameParts] = actingAsUserName.split(' ');
+      setUserInfo({
+        firstName: firstName || "",
+        lastName: lastNameParts.join(' ') || "",
+        email: actingAsUserEmail,
+        role: ""
+      });
+    }
+  }, [adminMode, actingAsUserEmail, actingAsUserName]);
+
   const handleBack = () => setStep(Math.max(1, step - 1));
   const handleNext = () => setStep(step + 1);
 
@@ -85,6 +100,17 @@ export default function SubmitReport() {
       ? { vendorCompany: "", vendorDBA: "", vendorWebsite: "", contactName: "", contactEmail: "", contactPhone: "", vendorType: "", vendorTypeOther: "" }
       : { firstName: "", lastName: "", email: "", role: "" }
     );
+    clearAdminProxy();
+  };
+
+  // Generate admin metadata for form submissions
+  const getAdminMetadata = () => {
+    if (!adminMode || !adminId || !actingAsUserId) return undefined;
+    return {
+      createdByAdmin: true,
+      adminCreatorId: adminId,
+      reporterId: actingAsUserId
+    };
   };
 
   if (loading) {
@@ -107,6 +133,20 @@ export default function SubmitReport() {
       <Navigation />
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-12">
         <div className="container mx-auto px-4 max-w-4xl">
+          {adminMode && (
+            <Card className="p-4 mb-6 bg-primary/10 border-primary">
+              <div className="flex items-center gap-3">
+                <Shield className="h-5 w-5 text-primary flex-shrink-0" />
+                <div>
+                  <p className="font-semibold text-primary">Admin Mode Active</p>
+                  <p className="text-sm text-muted-foreground">
+                    Submitting on behalf of: <span className="font-medium">{actingAsUserName}</span> ({actingAsUserEmail})
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
           <div className="mb-8 text-center">
             <h1 className="text-4xl md:text-5xl font-black mb-3">Submission Forms</h1>
             <p className="text-muted-foreground">
@@ -263,6 +303,7 @@ export default function SubmitReport() {
               userInfo={userInfo}
               onBack={handleBack}
               onSuccess={resetForm}
+              adminMetadata={getAdminMetadata()}
             />
           )}
 
@@ -301,6 +342,7 @@ export default function SubmitReport() {
               userInfo={userInfo}
               onBack={handleBack}
               onSuccess={resetForm}
+              adminMetadata={getAdminMetadata()}
             />
           )}
 
