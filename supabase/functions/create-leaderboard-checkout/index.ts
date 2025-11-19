@@ -7,12 +7,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LEADERBOARD_PRICE_ID = Deno.env.get("STRIPE_LEADERBOARD_PRICE_ID")!;
+// Price ID mapping for all subscription tiers
+const TIER_PRICE_MAP: Record<string, string> = {
+  'crew_t1_monthly': Deno.env.get("STRIPE_CREW_T1_MONTHLY_PRICE_ID")!,
+  'crew_t1_annual': Deno.env.get("STRIPE_CREW_T1_ANNUAL_PRICE_ID")!,
+  'producer_t1_monthly': Deno.env.get("STRIPE_PRODUCER_T1_MONTHLY_PRICE_ID")!,
+  'producer_t1_annual': Deno.env.get("STRIPE_PRODUCER_T1_ANNUAL_PRICE_ID")!,
+  'producer_t2_monthly': Deno.env.get("STRIPE_PRODUCER_T2_MONTHLY_PRICE_ID")!,
+  'producer_t2_annual': Deno.env.get("STRIPE_PRODUCER_T2_ANNUAL_PRICE_ID")!,
+};
 
 const logStep = (step: string, details?: any) => {
   const detailsStr = details ? ` - ${JSON.stringify(details)}` : '';
   console.log(`[CREATE-LEADERBOARD-CHECKOUT] ${step}${detailsStr}`);
 };
+
+interface CheckoutRequest {
+  tier?: string; // e.g., 'crew_t1', 'producer_t1', 'producer_t2'
+  billing_frequency?: string; // 'monthly' or 'annual'
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -38,10 +51,36 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
+    // Parse request body for tier selection
+    const body: CheckoutRequest = await req.json().catch(() => ({}));
+    const { tier = 'crew_t1', billing_frequency = 'monthly' } = body;
+    
+    // Validate tier and billing frequency
+    const validTiers = ['crew_t1', 'producer_t1', 'producer_t2'];
+    const validFrequencies = ['monthly', 'annual'];
+    
+    if (!validTiers.includes(tier)) {
+      throw new Error(`Invalid tier: ${tier}. Must be one of: ${validTiers.join(', ')}`);
+    }
+    
+    if (!validFrequencies.includes(billing_frequency)) {
+      throw new Error(`Invalid billing frequency: ${billing_frequency}. Must be: monthly or annual`);
+    }
+
+    // Build price ID key
+    const priceIdKey = `${tier}_${billing_frequency}`;
+    const priceId = TIER_PRICE_MAP[priceIdKey];
+    
+    if (!priceId) {
+      throw new Error(`No price ID found for ${priceIdKey}`);
+    }
+    
+    logStep("Price ID selected", { tier, billing_frequency, priceIdKey, priceId });
+
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2022-11-15" });
+    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27" });
 
     // Check for existing Stripe customer
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -61,7 +100,7 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price: LEADERBOARD_PRICE_ID,
+          price: priceId,
           quantity: 1,
         },
       ],
@@ -71,10 +110,17 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         entitlement_type: 'leaderboard',
+        subscription_tier: tier,
+        billing_frequency: billing_frequency,
       },
     });
 
-    logStep("Checkout session created", { sessionId: session.id, url: session.url });
+    logStep("Checkout session created", { 
+      sessionId: session.id, 
+      url: session.url,
+      tier,
+      billing_frequency
+    });
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

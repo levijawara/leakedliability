@@ -5,6 +5,23 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 const log = (msg: string, extra?: unknown) =>
   console.log(`[LEADERBOARD-WEBHOOKS] ${msg}`, extra ?? "");
 
+// Helper: Calculate business days (skip weekends)
+const calculateBusinessDays = (startDate: Date, days: number): Date => {
+  const result = new Date(startDate);
+  let addedDays = 0;
+  
+  while (addedDays < days) {
+    result.setDate(result.getDate() + 1);
+    const dayOfWeek = result.getDay();
+    // Skip weekends (0 = Sunday, 6 = Saturday)
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      addedDays++;
+    }
+  }
+  
+  return result;
+};
+
 serve(async (req) => {
   try {
     if (req.method !== "POST") {
@@ -101,7 +118,11 @@ serve(async (req) => {
           break;
         }
 
-        // Grant leaderboard entitlement
+        // Extract tier and billing frequency from session metadata
+        const subscriptionTier = session.metadata?.subscription_tier || 'crew_t1';
+        const billingFrequency = session.metadata?.billing_frequency || 'monthly';
+
+        // Grant leaderboard entitlement with tier info
         const { error } = await supabase
           .from("user_entitlements")
           .upsert(
@@ -111,7 +132,12 @@ serve(async (req) => {
               source: "stripe_subscription",
               stripe_customer_id: customerId,
               stripe_subscription_id: subscriptionId ?? null,
+              subscription_tier: subscriptionTier,
+              billing_frequency: billingFrequency,
               status: "active",
+              failed_attempts: 0,
+              payment_failed_at: null,
+              grace_period_ends_at: null,
               updated_at: new Date().toISOString(),
             },
             { onConflict: "user_id,entitlement_type" }
@@ -198,6 +224,31 @@ serve(async (req) => {
         const sub = event.data.object as Stripe.Subscription;
         const customerId = sub.customer as string;
 
+        // Send cancellation email
+        const { data: entitlement } = await supabase
+          .from("user_entitlements")
+          .select("user_id, subscription_tier, profiles!inner(email, legal_first_name, legal_last_name)")
+          .eq("stripe_customer_id", customerId)
+          .eq("entitlement_type", "leaderboard")
+          .single();
+
+        if (entitlement) {
+          const profile = Array.isArray(entitlement.profiles) ? entitlement.profiles[0] : entitlement.profiles;
+          
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'subscription_canceled',
+              to: profile.email,
+              data: {
+                userName: `${profile.legal_first_name} ${profile.legal_last_name}`,
+                subscriptionTier: entitlement.subscription_tier,
+                resubscribeUrl: `${Deno.env.get("SUPABASE_URL")}/subscribe`,
+                reason: 'manual_cancellation',
+              }
+            }
+          });
+        }
+
         // Update entitlement
         const { error } = await supabase
           .from("user_entitlements")
@@ -222,6 +273,81 @@ serve(async (req) => {
           .eq("stripe_subscription_id", sub.id);
 
         if (prodError) log("producer subscription cancel error", prodError);
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        // Get current entitlement
+        const { data: entitlement } = await supabase
+          .from("user_entitlements")
+          .select("user_id, failed_attempts, profiles!inner(email, legal_first_name, legal_last_name)")
+          .eq("stripe_customer_id", customerId)
+          .eq("entitlement_type", "leaderboard")
+          .single();
+
+        if (entitlement) {
+          const newFailedAttempts = (entitlement.failed_attempts || 0) + 1;
+          const updateData: any = {
+            failed_attempts: newFailedAttempts,
+            payment_failed_at: entitlement.failed_attempts === 0 ? new Date().toISOString() : undefined,
+            updated_at: new Date().toISOString(),
+          };
+
+          // If 3rd failure, start grace period
+          if (newFailedAttempts >= 3) {
+            const gracePeriodEnd = calculateBusinessDays(new Date(), 5);
+            updateData.grace_period_ends_at = gracePeriodEnd.toISOString();
+            updateData.status = 'grace_period';
+
+            // Send payment failed email
+            const profile = Array.isArray(entitlement.profiles) ? entitlement.profiles[0] : entitlement.profiles;
+            
+            await supabase.functions.invoke('send-email', {
+              body: {
+                type: 'subscription_payment_failed',
+                to: profile.email,
+                data: {
+                  userName: `${profile.legal_first_name} ${profile.legal_last_name}`,
+                  gracePeriodEnd: gracePeriodEnd.toISOString(),
+                  billingPortalUrl: `${Deno.env.get("SUPABASE_URL")}/leaderboard`,
+                  failedAttempts: newFailedAttempts,
+                }
+              }
+            });
+          }
+
+          await supabase
+            .from("user_entitlements")
+            .update(updateData)
+            .eq("stripe_customer_id", customerId)
+            .eq("entitlement_type", "leaderboard");
+
+          log("payment failed", { customerId, failedAttempts: newFailedAttempts });
+        }
+        break;
+      }
+
+      case "invoice.payment_succeeded": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        // Reset failed attempts and clear grace period
+        await supabase
+          .from("user_entitlements")
+          .update({
+            failed_attempts: 0,
+            payment_failed_at: null,
+            grace_period_ends_at: null,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          })
+          .eq("stripe_customer_id", customerId)
+          .eq("entitlement_type", "leaderboard");
+
+        log("payment succeeded - reset failures", { customerId });
         break;
       }
 
