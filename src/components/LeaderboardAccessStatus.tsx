@@ -1,7 +1,7 @@
 import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, Crown, Gift, CreditCard, Unlock } from "lucide-react";
+import { Loader2, CheckCircle, Crown, Gift, CreditCard, Unlock, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -105,6 +105,30 @@ export const LeaderboardAccessStatus = () => {
           action: null,
         };
 
+      case 'grace_period':
+        const daysRemaining = accessState.gracePeriodEnd 
+          ? Math.ceil((new Date(accessState.gracePeriodEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+          : 0;
+        return {
+          icon: <AlertTriangle className="h-8 w-8 text-orange-600" />,
+          badge: <Badge variant="destructive" className="bg-orange-600">Payment Failed - Grace Period</Badge>,
+          description: `Your payment failed. You have until ${accessState.gracePeriodEnd ? new Date(accessState.gracePeriodEnd).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'soon'} to update your payment method (${daysRemaining} days remaining).`,
+          action: (
+            <div className="space-y-2">
+              <Button 
+                variant="default"
+                className="bg-red-600 hover:bg-red-700"
+                onClick={handleManageBilling}
+                disabled={managingBilling}
+              >
+                {managingBilling ? "Loading..." : "Fix Payment Method"}
+              </Button>
+              <p className="text-sm text-muted-foreground">
+                Failed attempts: {accessState.failedAttempts || 0}/3
+              </p>
+            </div>
+          ),
+        };
 
       case 'no_access':
       default:

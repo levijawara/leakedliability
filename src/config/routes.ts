@@ -32,6 +32,7 @@ export const ROUTES: RouteMetadata[] = [
 
   // Leaderboard Routes
   { path: "/leaderboard", component: "Leaderboard", name: "Leaderboard", icon: "TrendingUp", description: "Producer ranking board", category: "leaderboard" },
+  { path: "/subscribe", component: "Subscribe", name: "Subscribe", icon: "CreditCard", description: "Subscription tier selection", category: "leaderboard" },
   { path: "/hold-that-l", component: "HoldThatLGenerator", name: "Hold That L Generator", icon: "Star", description: "Shareable debt graphics", category: "leaderboard" },
 
   // Admin Routes
