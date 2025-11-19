@@ -239,6 +239,7 @@ serve(async (req) => {
             body: {
               type: 'subscription_canceled',
               to: profile.email,
+              cc: "leakedliability@gmail.com",
               data: {
                 userName: `${profile.legal_first_name} ${profile.legal_last_name}`,
                 subscriptionTier: entitlement.subscription_tier,
@@ -309,6 +310,7 @@ serve(async (req) => {
               body: {
                 type: 'subscription_payment_failed',
                 to: profile.email,
+                cc: "leakedliability@gmail.com",
                 data: {
                   userName: `${profile.legal_first_name} ${profile.legal_last_name}`,
                   gracePeriodEnd: gracePeriodEnd.toISOString(),

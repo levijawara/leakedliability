@@ -178,6 +178,7 @@ serve(async (req: Request) => {
           body: {
             type: 'liability_accepted',
             to: tokenData.accused_email,
+            cc: "leakedliability@gmail.com",
             data: {
               ...baseData,
               recipientType: 'acceptor',
@@ -194,6 +195,7 @@ serve(async (req: Request) => {
                 body: {
                   type: 'liability_accepted',
                   to: member.accused_email,
+                  cc: "leakedliability@gmail.com",
                   data: {
                     ...baseData,
                     recipientType: 'chain_member',
@@ -215,6 +217,7 @@ serve(async (req: Request) => {
             body: {
               type: 'liability_accepted',
               to: reporterProfile.email,
+              cc: "leakedliability@gmail.com",
               data: {
                 ...baseData,
                 recipientType: 'reporter',
@@ -230,6 +233,7 @@ serve(async (req: Request) => {
             body: {
               type: 'liability_accepted',
               to: admin.email,
+              cc: "leakedliability@gmail.com",
               data: {
                 ...baseData,
                 recipientType: 'admin',
@@ -364,6 +368,7 @@ serve(async (req: Request) => {
           await supabase.functions.invoke('send-email', {
             body: {
               to: originalEntry.accused_email,
+              cc: "leakedliability@gmail.com",
               subject: `Liability Loop Detected - Report #${report.report_id}`,
               template: 'liability_loop_detected',
               data: {

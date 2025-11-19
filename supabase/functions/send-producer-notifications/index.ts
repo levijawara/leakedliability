@@ -125,6 +125,7 @@ serve(async (req) => {
           body: {
             type: 'producer_report_notification',
             to: targetEmail,
+            cc: "leakedliability@gmail.com",
             data: {
               reportId: notification.report_id,
               amountOwed: notification.amount_owed,

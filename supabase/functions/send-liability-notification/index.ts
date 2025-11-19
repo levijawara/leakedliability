@@ -166,6 +166,7 @@ serve(async (req: Request) => {
     const { error: emailError } = await supabase.functions.invoke('send-email', {
       body: {
         to: targetEmail,
+        cc: "leakedliability@gmail.com",
         subject: `You've Been Named as Responsible Party - Report #${report.report_id}`,
         template: 'liability_notification',
         data: {
