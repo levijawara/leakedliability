@@ -126,6 +126,121 @@ serve(async (req: Request) => {
         .update({ used_at: new Date().toISOString() })
         .eq('id', tokenData.id);
       
+      // Send emails to ALL parties involved
+      try {
+        // Fetch ALL chain members
+        const { data: allChainMembers } = await supabase
+          .from('liability_chain')
+          .select('accused_email, accused_name')
+          .eq('report_id', tokenData.report_id);
+        
+        // Fetch original reporter details
+        const { data: reportDetails } = await supabase
+          .from('payment_reports')
+          .select(`
+            reporter_id,
+            report_id,
+            profiles:reporter_id (email, legal_first_name, legal_last_name)
+          `)
+          .eq('id', tokenData.report_id)
+          .single();
+        
+        // Fetch all admin users
+        const { data: adminRoles } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'admin');
+        
+        let adminEmails: Array<{ email: string; legal_first_name: string; legal_last_name: string }> = [];
+        if (adminRoles && adminRoles.length > 0) {
+          const adminIds = adminRoles.map(r => r.user_id);
+          const { data: admins } = await supabase
+            .from('profiles')
+            .select('email, legal_first_name, legal_last_name')
+            .in('user_id', adminIds);
+          adminEmails = admins || [];
+        }
+        
+        // Base email data
+        const baseData = {
+          acceptorName: tokenData.accused_name || tokenData.accused_email,
+          acceptorEmail: tokenData.accused_email,
+          reportId: report.report_id || tokenData.report_id,
+          amountOwed: report.amount_owed,
+          projectName: report.project_name,
+          invoiceDate: report.invoice_date,
+          daysOverdue: report.days_overdue,
+          chainLength: allChainMembers?.length || 0,
+        };
+        
+        // 1. Send to ACCEPTOR
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'liability_accepted',
+            to: tokenData.accused_email,
+            data: {
+              ...baseData,
+              recipientType: 'acceptor',
+              paymentInstructions: 'Upload proof or pay via escrow',
+            }
+          }
+        });
+        
+        // 2. Send to ALL CHAIN MEMBERS
+        if (allChainMembers && allChainMembers.length > 0) {
+          for (const member of allChainMembers) {
+            if (member.accused_email !== tokenData.accused_email) {
+              await supabase.functions.invoke('send-email', {
+                body: {
+                  type: 'liability_accepted',
+                  to: member.accused_email,
+                  data: {
+                    ...baseData,
+                    recipientType: 'chain_member',
+                    recipientName: member.accused_name,
+                  }
+                }
+              });
+            }
+          }
+        }
+        
+        // 3. Send to ORIGINAL REPORTER
+        if (reportDetails?.profiles?.email) {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'liability_accepted',
+              to: reportDetails.profiles.email,
+              data: {
+                ...baseData,
+                recipientType: 'reporter',
+                recipientName: `${reportDetails.profiles.legal_first_name} ${reportDetails.profiles.legal_last_name}`,
+              }
+            }
+          });
+        }
+        
+        // 4. Send to ALL ADMINS
+        for (const admin of adminEmails) {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'liability_accepted',
+              to: admin.email,
+              data: {
+                ...baseData,
+                recipientType: 'admin',
+                recipientName: `${admin.legal_first_name} ${admin.legal_last_name}`,
+              }
+            }
+          });
+        }
+        
+        logStep('Liability accepted emails sent to all parties');
+      } catch (emailError) {
+        console.error('Failed to send liability accepted emails:', emailError);
+        // Don't fail the whole request if emails fail
+      }
+      
       logStep('Accept action completed');
       
       return new Response(
