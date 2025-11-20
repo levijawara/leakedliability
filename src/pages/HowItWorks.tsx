@@ -304,6 +304,12 @@ export default function HowItWorks() {
                     </div>
                   </div>
 
+                  <p className="text-muted-foreground">
+                    Scores start at 1,000 (perfect standing) and decrease based on payment behavior. 
+                    <strong className="text-foreground"> Scores can go below 0</strong> for producers with 
+                    extremely overdue debts or chronic nonpayment patterns.
+                  </p>
+
                   <div>
                     <h3 className="text-xl font-bold mb-3">Active Debt Penalties</h3>
                     <div className="space-y-3">

@@ -41,8 +41,8 @@ export default function HoldThatLGenerator() {
     }
 
     const pscs = parseFloat(formData.pscsScore);
-    if (isNaN(pscs) || pscs < 0 || pscs > 1000) {
-      toast.error("PSCS must be between 0 and 1000");
+    if (isNaN(pscs) || pscs > 1000) {
+      toast.error("PSCS must be 1000 or below");
       return;
     }
 
