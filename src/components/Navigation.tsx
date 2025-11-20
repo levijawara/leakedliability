@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, FileText, Info, AlertTriangle, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare } from "lucide-react";
+import { Home, TrendingUp, FileText, Info, AlertTriangle, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare, DollarSign } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -74,7 +74,7 @@ export function Navigation() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center">
           {/* Desktop Navigation - Evenly Spaced */}
-          <div className="hidden md:flex w-full items-center justify-evenly px-6">
+          <div className="hidden md:flex w-full items-center justify-evenly px-4 gap-2">
             <ThemeToggle />
             
             <Button
@@ -144,6 +144,15 @@ export function Navigation() {
             >
               <FileText className="h-4 w-4 mr-2" />
               Submission Forms
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate("/escrow")}
+            >
+              <DollarSign className="h-4 w-4 mr-2" />
+              Escrow
             </Button>
 
             {user ? (
@@ -275,6 +284,10 @@ export function Navigation() {
                   <DropdownMenuItem onClick={() => handleNavigate("/submit")}>
                     <FileText className="h-4 w-4 mr-2" />
                     Submission Forms
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleNavigate("/escrow")}>
+                    <DollarSign className="h-4 w-4 mr-2" />
+                    Escrow
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleNavigate("/disclaimer")}>
                     <AlertTriangle className="h-4 w-4 mr-2" />

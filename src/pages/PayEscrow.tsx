@@ -24,12 +24,32 @@ export default function PayEscrow() {
     const sid = urlParams.get("session_id");
     if (sid) {
       setSessionId(sid);
-      setLoading(false);
+      // Load escrow data for receipt display
+      loadEscrowDataForReceipt();
       return;
     }
 
     loadEscrowPayment();
   }, [code]);
+
+  const loadEscrowDataForReceipt = async () => {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from("escrow_payments")
+        .select("*")
+        .eq("payment_code", code)
+        .single();
+
+      if (fetchError) throw fetchError;
+      if (data) {
+        setEscrowData(data);
+      }
+    } catch (err) {
+      console.error("Failed to load escrow data for receipt:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadEscrowPayment = async () => {
     try {
@@ -90,7 +110,7 @@ export default function PayEscrow() {
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
               <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <CardTitle className="text-2xl">Payment Successful</CardTitle>
+            <CardTitle className="text-2xl">Payment Successfully Submitted ✔️</CardTitle>
             <CardDescription>
               {sessionId === "already_paid" 
                 ? "This payment has already been processed."
@@ -98,6 +118,39 @@ export default function PayEscrow() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+            {escrowData?.metadata && (
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-muted-foreground">Producer:</span>
+                  <span className="font-medium">
+                    {escrowData.metadata.producerName}
+                    {escrowData.metadata.companyName && ` (${escrowData.metadata.companyName})`}
+                  </span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-muted-foreground">Crew Member:</span>
+                  <span className="font-medium">{escrowData.metadata.crewName}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-muted-foreground">Project:</span>
+                  <span className="font-medium">{escrowData.metadata.projectName}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-muted-foreground">Amount Held in Escrow:</span>
+                  <span className="font-bold text-lg">${escrowData.amount_due.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b">
+                  <span className="text-muted-foreground">Verification Code:</span>
+                  <span className="font-mono font-medium">{escrowData.payment_code}</span>
+                </div>
+                {escrowData.paid_at && (
+                  <div className="flex justify-between py-2">
+                    <span className="text-muted-foreground">Timestamp:</span>
+                    <span className="font-medium">{new Date(escrowData.paid_at).toLocaleString()}</span>
+                  </div>
+                )}
+              </div>
+            )}
             <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-lg border border-green-200 dark:border-green-800">
               <p className="text-sm">
                 The outstanding payment has been marked as <strong>PAID</strong> in the Leaked Liability™ system.
