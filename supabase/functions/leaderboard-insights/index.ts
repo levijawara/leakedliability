@@ -181,6 +181,153 @@ serve(async (req) => {
     console.log('  - Total Reports:', totalReports);
     console.log('  - Verified Reports:', verifiedReports);
 
+    //--------------------------------------------------------------
+    // PRODUCER ACCOUNT SEGMENTATION LOGIC
+    // This block cleanly separates non-registered vs registered
+    // producers based on explicit rules:
+    //
+    // Non-Registered Producers =
+    //   - producers created automatically from reports
+    //   - stored in `producers` table
+    //   - but whose email does NOT belong to any `profile` with
+    //     account_type = 'producer'
+    //
+    // Registered Producers =
+    //   - actual logged-in humans
+    //   - profiles table, account_type = 'producer'
+    //   - whether linked or not, they go into the "registered" carousel
+    //
+    // We then attempt to connect registered profiles to their producer
+    // records using:
+    //   1. explicit link table (authoritative)
+    //   2. email match (fallback)
+    //--------------------------------------------------------------
+
+    // 1. Fetch ALL producers that exist in leaderboard
+    const { data: allProducers, error: allProducersError } = await supabase
+      .from('producers')
+      .select(`
+        id,
+        name,
+        email,
+        pscs_score,
+        payment_reports(amount_owed, status)
+      `);
+
+    if (allProducersError) console.error('Producer fetch error:', allProducersError);
+
+    // 2. Fetch ALL registered producer profiles (already fetched above as producerProfiles)
+    // Using existing producerProfiles variable
+
+    // 3. Fetch explicit account links (ground truth binding)
+    const { data: links, error: linksError } = await supabase
+      .from('producer_account_links')
+      .select('user_id, producer_id');
+
+    if (linksError) console.error('Producer links error:', linksError);
+
+    const linkMap = new Map(links?.map(l => [l.user_id, l.producer_id]) || []);
+
+    // Helper to compute total + open debt
+    function computeDebtStats(p: any) {
+      const debts = p.payment_reports || [];
+      const totalDebtEver = debts.reduce((sum: number, d: any) => sum + (d.amount_owed || 0), 0);
+      const openDebt = debts
+        .filter((d: any) => d.status !== 'paid')
+        .reduce((sum: number, d: any) => sum + (d.amount_owed || 0), 0);
+      return { totalDebtEver, openDebt };
+    }
+
+    // 4. Build REGISTERED producer carousel
+    //--------------------------------------------------------------
+    // RULES:
+    // - Every profile with account_type='producer' belongs here
+    // - Try to find a producer record via link table first
+    // - If no link, try email match against producers table
+    // - If still no match, producer has no associated debt yet
+    //--------------------------------------------------------------
+    const registeredProducerAccounts = producerProfiles?.map(profile => {
+      const fullName = `${profile.legal_first_name} ${profile.legal_last_name}`;
+      const email = profile.email || 'No email';
+
+      let producerRecord = null;
+
+      // Explicit link first
+      const linkedId = linkMap.get(profile.user_id);
+      if (linkedId) {
+        producerRecord = allProducers?.find(p => p.id === linkedId) || null;
+      }
+
+      // Email fallback match
+      if (!producerRecord && email !== 'No email') {
+        producerRecord =
+          allProducers?.find(p => p.email?.toLowerCase() === email.toLowerCase()) ||
+          null;
+      }
+
+      // No match → no debt yet
+      if (!producerRecord) {
+        return {
+          name: fullName,
+          email,
+          pscs: null,
+          totalDebtEver: 0,
+          openDebt: 0,
+          linked: false
+        };
+      }
+
+      // Matched producer → compute stats
+      const { totalDebtEver, openDebt } = computeDebtStats(producerRecord);
+
+      return {
+        name: fullName,
+        email,
+        pscs: producerRecord.pscs_score,
+        totalDebtEver,
+        openDebt,
+        linked: !!linkedId
+      };
+    }) || [];
+
+    // 5. Build NON-REGISTERED producer carousel
+    //--------------------------------------------------------------
+    // RULES:
+    //
+    // - Only include producers from the producers table
+    // - whose email does NOT appear in any producer profile
+    //   (this prevents duplicates)
+    //
+    // - These are system-created producers from reports
+    //   who have never signed up.
+    //
+    //--------------------------------------------------------------
+    const registeredEmails = new Set(
+      producerProfiles?.map(p => p.email?.toLowerCase()) || []
+    );
+
+    const nonRegisteredProducerAccounts =
+      allProducers
+        ?.filter(p => {
+          const email = p.email?.toLowerCase();
+          return email && !registeredEmails.has(email);
+        })
+        .map(p => {
+          const { totalDebtEver, openDebt } = computeDebtStats(p);
+
+          return {
+            name: p.name,
+            email: p.email || 'Unknown',
+            pscs: p.pscs_score,
+            totalDebtEver,
+            openDebt,
+            linked: false
+          };
+        }) || [];
+
+    console.log('[leaderboard-insights] Registered producer accounts:', registeredProducerAccounts.length);
+    console.log('[leaderboard-insights] Non-registered producer accounts:', nonRegisteredProducerAccounts.length);
+
     const insights = {
       totalUsers,
       crewCount,
@@ -200,6 +347,8 @@ serve(async (req) => {
       vendors: vendorsFormatted,
       producers: producersFormatted,
       productionCompanies: companiesFormatted,
+      registeredProducerAccounts,
+      nonRegisteredProducerAccounts,
     };
 
     return new Response(

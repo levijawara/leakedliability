@@ -7,6 +7,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, TrendingUp, DollarSign, Users, FileText, ArrowLeft, Wrench, Building2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Footer } from "@/components/Footer";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 interface UserTypeCardProps {
   title: string;
@@ -14,6 +21,43 @@ interface UserTypeCardProps {
   users: any[];
   extraFormatter?: (user: any) => React.ReactNode;
 }
+
+interface ProducerCardProps {
+  name: string;
+  email: string;
+  pscs: number | null;
+  totalDebtEver: number;
+  openDebt: number;
+  linked?: boolean;
+}
+
+const ProducerCard = ({ name, email, pscs, totalDebtEver, openDebt }: ProducerCardProps) => (
+  <Card className="p-4 h-full">
+    <div className="space-y-3">
+      <div>
+        <p className="font-semibold text-base">{name}</p>
+        <p className="text-sm text-muted-foreground">{email}</p>
+      </div>
+      
+      <div className="space-y-2 pt-2 border-t">
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Total Debt Ever:</span>
+          <span className="font-medium">${totalDebtEver.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span className="text-muted-foreground">Open Debt:</span>
+          <span className="font-medium">${openDebt.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-sm pt-2 border-t">
+          <span className="text-muted-foreground">PSCS:</span>
+          <span className="font-bold">
+            {pscs !== null ? pscs.toFixed(0) : <span className="text-muted-foreground italic">No data yet</span>}
+          </span>
+        </div>
+      </div>
+    </div>
+  </Card>
+);
 
 function UserTypeCard({ title, icon, users, extraFormatter }: UserTypeCardProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -259,16 +303,87 @@ export default function LeaderboardAnalytics() {
             />
 
             <UserTypeCard
-              title="Producer Accounts"
-              icon={<Building2 className="h-8 w-8 text-blue-500" />}
-              users={insights?.producers || []}
-            />
-
-            <UserTypeCard
               title="Production Company Accounts"
               icon={<Building2 className="h-8 w-8 text-emerald-500" />}
               users={insights?.productionCompanies || []}
             />
+          </div>
+        </div>
+
+        {/* Producer Accounts - Two Carousels */}
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+            <Building2 className="h-6 w-6 text-blue-500" />
+            Producer Accounts
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Registered producers vs system-created producers from reports
+          </p>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Non-Registered Producers */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Non-Registered Producer Accounts
+                </h3>
+                <Badge variant="outline">
+                  {insights?.nonRegisteredProducerAccounts?.length || 0}
+                </Badge>
+              </div>
+              
+              {insights?.nonRegisteredProducerAccounts && insights.nonRegisteredProducerAccounts.length > 0 ? (
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {insights.nonRegisteredProducerAccounts.map((producer: ProducerCardProps, index: number) => (
+                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-full">
+                        <ProducerCard {...producer} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              ) : (
+                <Card className="p-6">
+                  <p className="text-sm text-muted-foreground text-center">
+                    No non-registered producers
+                  </p>
+                </Card>
+              )}
+            </div>
+
+            {/* Registered Producers */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium text-muted-foreground">
+                  Registered Producer Accounts
+                </h3>
+                <Badge variant="outline">
+                  {insights?.registeredProducerAccounts?.length || 0}
+                </Badge>
+              </div>
+              
+              {insights?.registeredProducerAccounts && insights.registeredProducerAccounts.length > 0 ? (
+                <Carousel className="w-full">
+                  <CarouselContent>
+                    {insights.registeredProducerAccounts.map((producer: ProducerCardProps, index: number) => (
+                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-full">
+                        <ProducerCard {...producer} />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  <CarouselPrevious />
+                  <CarouselNext />
+                </Carousel>
+              ) : (
+                <Card className="p-6">
+                  <p className="text-sm text-muted-foreground text-center">
+                    No registered producers
+                  </p>
+                </Card>
+              )}
+            </div>
           </div>
         </div>
 
