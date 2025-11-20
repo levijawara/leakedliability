@@ -46,6 +46,7 @@ interface EmailRequest {
   subject?: string;
   template?: string;
   data: any;
+  origin?: 'auto' | 'manual_admin'; // NEW: identify source of email
 }
 
 serve(async (req) => {
@@ -63,7 +64,7 @@ serve(async (req) => {
     // BCC audit trail is always included for all emails
 
     // Get request body and check email type
-    const { type, to, cc, data, template, subject: customSubject }: EmailRequest = await req.json();
+    const { type, to, cc, data, template, subject: customSubject, origin }: EmailRequest = await req.json();
     
     // Support both old 'type' and new 'template' parameter
     const emailType = template || type;
@@ -285,9 +286,14 @@ serve(async (req) => {
         throw new Error(`Unknown email type: ${emailType}`);
     }
 
+    // Determine FROM address based on origin
+    const fromAddress = origin === 'manual_admin' 
+      ? 'Leaked Liability <notifications@leakedliability.com>'
+      : FROM_EMAIL;
+
     // Send email via Resend
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: FROM_EMAIL,
+      from: fromAddress,
       to: [to],
       bcc: ["leakedliability@gmail.com"], // ALWAYS BCC for silent audit trail
       cc: cc ? [cc] : undefined, // Optional explicit CC if caller provides one

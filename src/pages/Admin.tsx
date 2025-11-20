@@ -43,6 +43,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
 import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
+import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -349,7 +350,7 @@ export default function Admin() {
     // Load all producers for the create user form dropdown
     const { data: producersList } = await supabase
       .from('producers')
-      .select('id, name, company')
+      .select('id, name, company, email')
       .order('name', { ascending: true });
     setProducers(producersList || []);
 
@@ -1474,7 +1475,14 @@ export default function Admin() {
             </div>
             
             {notificationPanelExpanded && (
-              <div className="mt-4 pt-4 border-t">
+              <div className="mt-4 pt-4 border-t space-y-4">
+                {/* Manual Email Sender - NEW */}
+                <ManualEmailSender 
+                  producers={producers}
+                  onEmailSent={loadAdminData}
+                />
+
+                {/* Existing Queued Notification Sender */}
                 <ProducerNotificationSelector 
                   queuedNotifications={queuedNotifications}
                   onEmailsSent={loadAdminData}

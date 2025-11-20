@@ -650,6 +650,60 @@ export type Database = {
           },
         ]
       }
+      manual_email_logs: {
+        Row: {
+          admin_id: string
+          created_at: string
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          producer_email: string
+          producer_id: string
+          sent_at: string
+          status: string
+          template_key: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          producer_email: string
+          producer_id: string
+          sent_at?: string
+          status: string
+          template_key: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          producer_email?: string
+          producer_id?: string
+          sent_at?: string
+          status?: string
+          template_key?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manual_email_logs_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manual_email_logs_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+        ]
+      }
       moderation_logs: {
         Row: {
           action: string
