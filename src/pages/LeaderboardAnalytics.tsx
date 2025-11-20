@@ -336,7 +336,7 @@ export default function LeaderboardAnalytics() {
                 <Carousel className="w-full">
                   <CarouselContent>
                     {insights.nonRegisteredProducerAccounts.map((producer: ProducerCardProps, index: number) => (
-                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-full">
+                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-3/4">
                         <ProducerCard {...producer} />
                       </CarouselItem>
                     ))}
@@ -368,7 +368,7 @@ export default function LeaderboardAnalytics() {
                 <Carousel className="w-full">
                   <CarouselContent>
                     {insights.registeredProducerAccounts.map((producer: ProducerCardProps, index: number) => (
-                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-full">
+                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-3/4">
                         <ProducerCard {...producer} />
                       </CarouselItem>
                     ))}
