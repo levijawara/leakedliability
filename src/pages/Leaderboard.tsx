@@ -408,7 +408,10 @@ export default function Leaderboard() {
 
         {/* PSCS Formula */}
         <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
-          <h3 className="font-black text-lg mb-4 text-center">PSCS™ CREDIT SCORE MODEL</h3>
+            <h3 className="font-black text-lg mb-2 text-center">PSCS™ CREDIT SCORE MODEL</h3>
+            <p className="text-xs text-muted-foreground text-center mb-4">
+              How producer scores decrease (and recover) over time
+            </p>
           <div className="space-y-4">
             <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
               <h4 className="font-bold text-sm mb-3 text-center">Active Debt Penalty</h4>
@@ -440,10 +443,10 @@ export default function Leaderboard() {
               <h4 className="font-bold text-sm mb-3 text-center">Credit Recovery (When All Debts Paid)</h4>
               <div className="text-xs text-muted-foreground space-y-2">
                 <div className="font-mono text-center text-[10px]">
-                  Recovery = 1000 - (250 × forgiveness_factor)
+                  recovery = 1000 × forgiveness_factor
                 </div>
                 <div className="font-mono text-center text-[10px]">
-                  forgiveness_factor = (1 - days_clean / 30) if &lt; 30 days, else 0
+                  forgiveness_factor = MIN(days_clean / 30, 1)
                 </div>
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <div className="bg-background/50 p-2 rounded">
@@ -464,7 +467,21 @@ export default function Leaderboard() {
                   </div>
                 </div>
                 <div className="text-[10px] text-center italic mt-2">
-                  25% history penalty drops to zero after 30 days clean
+                  After 30 clean days, all history penalties reset to zero
+                </div>
+              </div>
+            </div>
+
+            {/* Master Equation Card */}
+            <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
+              <h4 className="font-bold text-sm mb-3 text-center">Final Score Calculation</h4>
+              <div className="text-xs text-muted-foreground space-y-2">
+                <div className="font-mono text-center text-sm font-bold">
+                  PSCS = 1000 – (Age + Amount + Repeat)
+                </div>
+                <div className="text-center text-[10px] mt-2">
+                  <div>Upper cap: 1000</div>
+                  <div className="text-red-700 font-semibold">No lower bound — scores can go negative</div>
                 </div>
               </div>
             </div>
