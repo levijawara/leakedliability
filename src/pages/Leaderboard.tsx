@@ -78,7 +78,7 @@ function AdminEditableCell({
       if (!numValue || numValue === 0) {
         return (
           <TableCell className={className}>
-            —
+            <span className="text-green-500 font-semibold">$0</span>
           </TableCell>
         );
       }
@@ -94,7 +94,7 @@ function AdminEditableCell({
 
     return (
       <TableCell className={className}>
-        {value || '—'}
+        {type === 'number' ? (value ?? 0) : (value || '—')}
       </TableCell>
     );
   }
