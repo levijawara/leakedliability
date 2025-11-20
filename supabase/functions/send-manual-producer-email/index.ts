@@ -57,10 +57,10 @@ serve(async (req) => {
 
     console.log('[Manual Email] Request:', { template, producer_id, admin_id });
 
-    // Fetch producer data
+    // Fetch producer data with aggregated stats
     const { data: producer, error: producerError } = await supabase
       .from('producers')
-      .select('id, name, email, company, pscs_score, total_amount_owed')
+      .select('id, name, email, company, pscs_score, total_amount_owed, oldest_debt_days')
       .eq('id', producer_id)
       .single();
 
@@ -189,7 +189,7 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
     case 'liability_notification':
       return {
         ...baseData,
-        amount: latestReport?.amount_owed || 0,
+        amount: producer.total_amount_owed || 0,
         projectName: latestReport?.project_name || 'Unknown Project',
         reportId: latestReport?.report_id || 'N/A',
         claimUrl: `${Deno.env.get('SUPABASE_URL')}/liability/claim/manual`,
@@ -199,10 +199,10 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
     case 'producer_report_notification':
       return {
         ...baseData,
-        amount: latestReport?.amount_owed || 0,
+        amount: producer.total_amount_owed || 0,
         projectName: latestReport?.project_name || 'Unknown Project',
         reportId: latestReport?.report_id || 'N/A',
-        daysOverdue: latestReport?.days_overdue || 0,
+        daysOverdue: producer.oldest_debt_days || 0,
         claimUrl: `${Deno.env.get('SUPABASE_URL')}/liability/claim/manual`
       };
 
@@ -210,7 +210,7 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
     case 'crew_report_payment_confirmed':
       return {
         ...baseData,
-        amount: latestReport?.amount_owed || 0,
+        amount: producer.total_amount_owed || 0,
         projectName: latestReport?.project_name || 'Unknown Project',
         reportId: latestReport?.report_id || 'N/A',
         paidDate: new Date().toLocaleDateString()
@@ -219,7 +219,7 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
     case 'liability_accepted':
       return {
         ...baseData,
-        amount: latestReport?.amount_owed || 0,
+        amount: producer.total_amount_owed || 0,
         projectName: latestReport?.project_name || 'Unknown Project',
         reportId: latestReport?.report_id || 'N/A',
         confirmedBy: producer.name
@@ -254,7 +254,7 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
       return {
         ...baseData,
         fullName: producer.name,
-        amount: latestReport?.amount_owed || 0,
+        amount: producer.total_amount_owed || 0,
         reportId: latestReport?.report_id || 'N/A'
       };
 
@@ -288,7 +288,7 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
       return {
         ...baseData,
         reportId: latestReport?.report_id || 'N/A',
-        amount: latestReport?.amount_owed || 0,
+        amount: producer.total_amount_owed || 0,
         resolution: 'Manual admin resolution'
       };
 
