@@ -46,6 +46,14 @@ serve(async (req) => {
 
     const { data: producers } = await supabase.from('producers').select('*');
     const { data: reports } = await supabase.from('payment_reports').select('*');
+    const { data: profiles } = await supabase.from('profiles').select('account_type, business_name');
+
+    // Calculate user statistics
+    const crewCount = profiles?.filter(p => p.account_type === 'crew').length || 0;
+    const vendorCount = profiles?.filter(p => p.account_type === 'vendor').length || 0;
+    const producerCount = profiles?.filter(p => p.account_type === 'producer').length || 0;
+    const companyCount = profiles?.filter(p => p.account_type === 'production_company').length || 0;
+    const totalUsers = crewCount + vendorCount + producerCount + companyCount;
 
     const totalProducers = producers?.length || 0;
     const totalReports = reports?.length || 0;
@@ -59,6 +67,11 @@ serve(async (req) => {
     const averageDebt = totalProducers > 0 ? totalDebt / totalProducers : 0;
 
     const insights = {
+      totalUsers,
+      crewCount,
+      vendorCount,
+      producerCount,
+      companyCount,
       totalProducers,
       totalReports,
       verifiedReports,
