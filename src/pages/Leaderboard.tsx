@@ -531,14 +531,16 @@ export default function Leaderboard() {
                       key={producer.producer_id}
                       className="hover:bg-muted/50 transition-colors"
                     >
-                    <AdminEditableCell
-                      value={producer.producer_name || '—'}
-                      onSave={(v) => updateProducer(producer.producer_id, { name: v as string })}
-                      className="font-semibold"
-                      isAdmin={isAdmin}
-                      viewMode={viewMode}
-                      type="text"
-                    />
+                    <TableCell className="font-semibold">
+                      <div>
+                        <div>{producer.producer_name || '—'}</div>
+                        {producer.sub_name && (
+                          <div className="text-sm text-muted-foreground mt-1">
+                            {producer.sub_name}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
                     <AdminEditableCell
                       value={Number(producer.pscs_score || 0).toFixed(2)}
                       onSave={(v) => updateProducer(producer.producer_id, { pscs_score: Number(v) })}

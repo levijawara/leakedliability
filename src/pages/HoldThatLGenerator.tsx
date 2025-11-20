@@ -16,6 +16,7 @@ export default function HoldThatLGenerator() {
   const [formData, setFormData] = useState({
     name: "",
     igHandle: "",
+    productionCompanyName: "",
     pscsScore: "",
     debtOwed: "",
     debtAge: "",
@@ -92,6 +93,29 @@ export default function HoldThatLGenerator() {
         toast.success("Image downloaded successfully!");
       }, "image/png");
 
+      // Check for producer match and tag with production company
+      if (formData.productionCompanyName.trim()) {
+        try {
+          const { data: matchedProducer } = await supabase
+            .from("producers")
+            .select("id")
+            .ilike("name", formData.name.trim())
+            .maybeSingle();
+
+          if (matchedProducer) {
+            await supabase
+              .from("producers")
+              .update({ sub_name: formData.productionCompanyName.trim() })
+              .eq("id", matchedProducer.id);
+            
+            console.log(`[HoldThatL] Tagged producer ${formData.name} with company: ${formData.productionCompanyName}`);
+          }
+        } catch (error) {
+          console.error("[HoldThatL] Failed to tag producer:", error);
+          // Silent fail - don't block UX
+        }
+      }
+
       // Log to database (fire-and-forget)
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -103,6 +127,7 @@ export default function HoldThatLGenerator() {
             pscs_score: pscs,
             debt_amount: debt,
             debt_age: age,
+            production_company_name: formData.productionCompanyName.trim() || null,
           });
         } catch (_) {
           // Silent fail - don't block UX
@@ -158,6 +183,16 @@ export default function HoldThatLGenerator() {
                   placeholder="@johndoe or johndoe"
                   value={formData.igHandle}
                   onChange={(e) => handleInputChange("igHandle", e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="companyName">Production Company Name (optional)</Label>
+                <Input
+                  id="companyName"
+                  placeholder="Killer Films LLC"
+                  value={formData.productionCompanyName}
+                  onChange={(e) => handleInputChange("productionCompanyName", e.target.value)}
                 />
               </div>
 
@@ -237,6 +272,11 @@ export default function HoldThatLGenerator() {
                       {formData.name || "Name"}
                       {cleanHandle && `: @${cleanHandle}`}
                     </p>
+                    {formData.productionCompanyName && (
+                      <p className="text-2xl mt-2" style={{ color: "#999999" }}>
+                        {formData.productionCompanyName}
+                      </p>
+                    )}
                   </div>
 
                   {/* PSCS */}

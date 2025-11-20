@@ -439,6 +439,7 @@ export type Database = {
           id: string
           ig_handle: string
           producer_name: string
+          production_company_name: string | null
           pscs_score: number
           user_id: string | null
         }
@@ -449,6 +450,7 @@ export type Database = {
           id?: string
           ig_handle: string
           producer_name: string
+          production_company_name?: string | null
           pscs_score: number
           user_id?: string | null
         }
@@ -459,6 +461,7 @@ export type Database = {
           id?: string
           ig_handle?: string
           producer_name?: string
+          production_company_name?: string | null
           pscs_score?: number
           user_id?: string | null
         }
@@ -1099,6 +1102,7 @@ export type Database = {
           paid_jobs_count: number | null
           plateau_days: number | null
           pscs_score: number | null
+          sub_name: string | null
           subscription_status: string | null
           subscription_tier: string | null
           total_amount_owed: number | null
@@ -1131,6 +1135,7 @@ export type Database = {
           paid_jobs_count?: number | null
           plateau_days?: number | null
           pscs_score?: number | null
+          sub_name?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
           total_amount_owed?: number | null
@@ -1163,6 +1168,7 @@ export type Database = {
           paid_jobs_count?: number | null
           plateau_days?: number | null
           pscs_score?: number | null
+          sub_name?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
           total_amount_owed?: number | null
