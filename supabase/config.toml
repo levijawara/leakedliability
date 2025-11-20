@@ -56,3 +56,6 @@ verify_jwt = true
 
 [functions.process-liability-claim]
 verify_jwt = false
+
+[functions.send-manual-producer-email]
+verify_jwt = true
