@@ -65,9 +65,9 @@ export const LiabilityNotification = ({
         <Section style={warningBox}>
           <Text style={warningHeading}>⚠️ LEGAL NOTICE</Text>
           <Text style={warningText}>
-            You must respond within 7 days (by {expirationDate}). All actions are logged 
-            and timestamped for legal purposes. Failure to respond will result in this 
-            debt remaining attributed to you on the Leaked Liability™ leaderboard.
+            This report is now live on the Leaked Liability™ public leaderboard. All actions 
+            are logged and timestamped for legal purposes. You can respond at any time to 
+            resolve or dispute this claim.
           </Text>
         </Section>
         
@@ -124,8 +124,8 @@ export const LiabilityNotification = ({
         <Hr style={hr} />
         
         <Text style={footerText}>
-          This link expires on {expirationDate}. If you do not respond, this debt 
-          will remain attributed to you on the Leaked Liability™ public leaderboard.
+          If you do not respond, this debt will remain attributed to you on the 
+          Leaked Liability™ public leaderboard.
         </Text>
         
         <Text style={footer}>
