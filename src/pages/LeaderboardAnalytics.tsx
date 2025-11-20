@@ -97,8 +97,8 @@ export default function LeaderboardAnalytics() {
             <div className="flex items-center gap-4">
               <Users className="h-8 w-8 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Producers</p>
-                <p className="text-2xl font-bold">{insights?.totalProducers || 0}</p>
+                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-2xl font-bold">{insights?.totalUsers || 0}</p>
               </div>
             </div>
           </Card>
@@ -173,6 +173,39 @@ export default function LeaderboardAnalytics() {
               />
             </div>
           </Card>
+        </div>
+
+        {/* User Overview Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            User Overview
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Account type distribution across the platform
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-6">
+              <div className="text-sm text-muted-foreground mb-2">Crew Member Accounts</div>
+              <div className="text-3xl font-bold">⚠️ {insights?.crewCount || 0}</div>
+            </Card>
+            
+            <Card className="p-6">
+              <div className="text-sm text-muted-foreground mb-2">Vendor / Service Provider Accounts</div>
+              <div className="text-3xl font-bold">🛠️ {insights?.vendorCount || 0}</div>
+            </Card>
+            
+            <Card className="p-6">
+              <div className="text-sm text-muted-foreground mb-2">Producer Accounts</div>
+              <div className="text-3xl font-bold">🏢 {insights?.producerCount || 0}</div>
+            </Card>
+            
+            <Card className="p-6">
+              <div className="text-sm text-muted-foreground mb-2">Production Company Accounts</div>
+              <div className="text-3xl font-bold">🎬 {insights?.companyCount || 0}</div>
+            </Card>
+          </div>
         </div>
 
       </div>
