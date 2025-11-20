@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, TrendingUp, DollarSign, Users, FileText, Lock, ArrowLeft } from "lucide-react";
+import { Loader2, TrendingUp, DollarSign, Users, FileText, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Footer } from "@/components/Footer";
 
@@ -175,32 +175,6 @@ export default function LeaderboardAnalytics() {
           </Card>
         </div>
 
-        <Card className="p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <Lock className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">Threshold Status</h2>
-          </div>
-          {insights?.thresholdLocked ? (
-            <div className="space-y-2">
-              <Badge variant="destructive">LOCKED</Badge>
-              <p className="text-sm text-muted-foreground">
-                Threshold locked at {insights.producerCountAtLock} producers
-              </p>
-              {insights.lockedAt && (
-                <p className="text-xs text-muted-foreground">
-                  Locked on: {new Date(insights.lockedAt).toLocaleDateString()}
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Badge variant="outline">UNLOCKED</Badge>
-              <p className="text-sm text-muted-foreground">
-                Contributors can access leaderboard for free (threshold: 20 producers)
-              </p>
-            </div>
-          )}
-        </Card>
       </div>
       
       <Footer />
