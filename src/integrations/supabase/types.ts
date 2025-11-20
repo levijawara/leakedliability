@@ -1598,7 +1598,7 @@ export type Database = {
           paid_jobs_count?: number | null
           producer_id?: string | null
           producer_name?: string | null
-          pscs_score?: number | null
+          pscs_score?: never
           sub_name?: string | null
           total_amount_owed?: number | null
           total_cities_owed?: number | null
@@ -1615,7 +1615,7 @@ export type Database = {
           paid_jobs_count?: number | null
           producer_id?: string | null
           producer_name?: string | null
-          pscs_score?: number | null
+          pscs_score?: never
           sub_name?: string | null
           total_amount_owed?: number | null
           total_cities_owed?: number | null
