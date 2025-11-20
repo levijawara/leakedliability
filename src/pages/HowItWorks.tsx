@@ -308,7 +308,7 @@ export default function HowItWorks() {
                     <h3 className="text-xl font-bold mb-3">Active Debt Penalties</h3>
                     <div className="space-y-3">
                       <div>
-                        <h4 className="font-semibold mb-1">Age Penalty (max -650 points)</h4>
+                        <h4 className="font-semibold mb-1">Age Penalty (no cap)</h4>
                         <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
                           <li>Days 0-60: -1 point/day</li>
                           <li>After 60 days: -60 base + -2 points/day beyond 60</li>
