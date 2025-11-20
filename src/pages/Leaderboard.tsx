@@ -266,10 +266,30 @@ export default function Leaderboard() {
     }
   };
 
-  // Show paywall if no access
-  if (!accessLoading && accessState && !accessState.hasAccess) {
+  // 1. LOADING STATE - show spinner while checking access
+  if (accessLoading || !accessState) {
+    return (
+      <>
+        <Navigation />
+        <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+          <div className="container mx-auto px-4 py-20">
+            <div className="flex flex-col items-center justify-center space-y-4">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+              <p className="text-sm text-muted-foreground">Verifying access...</p>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </>
+    );
+  }
+
+  // 2. NO ACCESS - show paywall
+  if (!accessState.hasAccess) {
     return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
   }
+
+  // 3. HAS ACCESS - show full leaderboard
 
   return (
     <>
