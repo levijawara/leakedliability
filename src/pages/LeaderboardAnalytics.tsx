@@ -32,7 +32,7 @@ interface ProducerCardProps {
 }
 
 const ProducerCard = ({ name, email, pscs, totalDebtEver, openDebt }: ProducerCardProps) => (
-  <Card className="p-4 h-full">
+  <Card className="p-4 h-full w-[280px] sm:w-[300px] md:w-[320px] lg:w-[340px]">
     <div className="space-y-3">
       <div>
         <p className="font-semibold text-base">{name}</p>
@@ -320,9 +320,9 @@ export default function LeaderboardAnalytics() {
             Registered producers vs system-created producers from reports
           </p>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="flex flex-col lg:flex-row gap-6 justify-between">
             {/* Non-Registered Producers */}
-            <div>
+            <div className="flex flex-col gap-2 w-full max-w-[420px]">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium text-muted-foreground">
                   Non-Registered Producer Accounts
@@ -333,16 +333,16 @@ export default function LeaderboardAnalytics() {
               </div>
               
               {insights?.nonRegisteredProducerAccounts && insights.nonRegisteredProducerAccounts.length > 0 ? (
-                <Carousel className="w-full">
+                <Carousel className="w-full relative px-12">
                   <CarouselContent>
                     {insights.nonRegisteredProducerAccounts.map((producer: ProducerCardProps, index: number) => (
-                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-3/4">
+                      <CarouselItem key={index} className="flex justify-center">
                         <ProducerCard {...producer} />
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious />
-                  <CarouselNext />
+                  <CarouselPrevious className="left-0 -translate-x-1/2" />
+                  <CarouselNext className="right-0 translate-x-1/2" />
                 </Carousel>
               ) : (
                 <Card className="p-6">
@@ -354,7 +354,7 @@ export default function LeaderboardAnalytics() {
             </div>
 
             {/* Registered Producers */}
-            <div>
+            <div className="flex flex-col gap-2 w-full max-w-[420px]">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-medium text-muted-foreground">
                   Registered Producer Accounts
@@ -365,16 +365,16 @@ export default function LeaderboardAnalytics() {
               </div>
               
               {insights?.registeredProducerAccounts && insights.registeredProducerAccounts.length > 0 ? (
-                <Carousel className="w-full">
+                <Carousel className="w-full relative px-12">
                   <CarouselContent>
                     {insights.registeredProducerAccounts.map((producer: ProducerCardProps, index: number) => (
-                      <CarouselItem key={index} className="md:basis-1/2 lg:basis-3/4">
+                      <CarouselItem key={index} className="flex justify-center">
                         <ProducerCard {...producer} />
                       </CarouselItem>
                     ))}
                   </CarouselContent>
-                  <CarouselPrevious />
-                  <CarouselNext />
+                  <CarouselPrevious className="left-0 -translate-x-1/2" />
+                  <CarouselNext className="right-0 translate-x-1/2" />
                 </Carousel>
               ) : (
                 <Card className="p-6">
