@@ -203,7 +203,7 @@ export default function LeaderboardAnalytics() {
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium">Pending Reports</p>
+              <p className="text-sm font-medium">Unpaid Reports</p>
               <Badge variant="outline">{insights?.pendingReports || 0}</Badge>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
