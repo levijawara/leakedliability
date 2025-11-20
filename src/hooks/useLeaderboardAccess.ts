@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export interface LeaderboardAccessState {
@@ -26,12 +26,16 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
   const [accessState, setAccessState] = useState<LeaderboardAccessState | null>(null);
   const [loading, setLoading] = useState(shouldCheck);
   const [error, setError] = useState<string | null>(null);
+  const hasInitiallyLoaded = useRef(false);
 
-  const checkAccess = async () => {
+  const checkAccess = async (isBackgroundRefresh = false) => {
     if (!shouldCheck) return;
     
     try {
-      setLoading(true);
+      // Only show loading state on initial load
+      if (!isBackgroundRefresh && !hasInitiallyLoaded.current) {
+        setLoading(true);
+      }
       setError(null);
 
       const { data: { session } } = await supabase.auth.getSession();
@@ -55,6 +59,11 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
       if (funcError) throw funcError;
 
       setAccessState(data as LeaderboardAccessState);
+      
+      // Mark initial load complete
+      if (!hasInitiallyLoaded.current) {
+        hasInitiallyLoaded.current = true;
+      }
     } catch (err) {
       console.error('Error checking leaderboard access:', err);
       setError(err instanceof Error ? err.message : 'Failed to check access');
@@ -64,7 +73,10 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
         reason: 'no_access',
       });
     } finally {
-      setLoading(false);
+      // Only clear loading if it was set (initial load)
+      if (!isBackgroundRefresh && !hasInitiallyLoaded.current) {
+        setLoading(false);
+      }
     }
   };
 
@@ -125,8 +137,8 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
     // Initial access check
     checkAccess();
 
-    // Refresh every 10 seconds to catch subscription changes faster
-    const interval = setInterval(checkAccess, 10000);
+    // Refresh every 10 seconds to catch subscription changes faster (background refresh)
+    const interval = setInterval(() => checkAccess(true), 10000);
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
@@ -136,7 +148,7 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
     // Check access when tab becomes visible (user returns from checkout)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkAccess();
+        checkAccess(true); // Background refresh, no spinner
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
