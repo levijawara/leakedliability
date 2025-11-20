@@ -46,7 +46,7 @@ serve(async (req) => {
 
     const { data: producers, error: producersError } = await supabase.from('producers').select('*');
     const { data: reports, error: reportsError } = await supabase.from('payment_reports').select('*');
-    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('account_type, business_name');
+    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('id, user_id, legal_first_name, legal_last_name, email, account_type, business_name');
 
     console.log('[leaderboard-insights] Producers:', producers?.length, 'Error:', producersError);
     console.log('[leaderboard-insights] Reports:', reports?.length, 'Error:', reportsError);
@@ -62,12 +62,93 @@ serve(async (req) => {
       console.error('[leaderboard-insights] Profiles query error:', profilesError);
     }
 
+    // Split profiles by account type
+    const crewProfiles = profiles?.filter(p => p.account_type === 'crew') || [];
+    const vendorProfiles = profiles?.filter(p => p.account_type === 'vendor') || [];
+    const producerProfiles = profiles?.filter(p => p.account_type === 'producer') || [];
+    const companyProfiles = profiles?.filter(p => p.account_type === 'production_company') || [];
+
     // Calculate user statistics
-    const crewCount = profiles?.filter(p => p.account_type === 'crew').length || 0;
-    const vendorCount = profiles?.filter(p => p.account_type === 'vendor').length || 0;
-    const producerCount = profiles?.filter(p => p.account_type === 'producer').length || 0;
-    const companyCount = profiles?.filter(p => p.account_type === 'production_company').length || 0;
+    const crewCount = crewProfiles.length;
+    const vendorCount = vendorProfiles.length;
+    const producerCount = producerProfiles.length;
+    const companyCount = companyProfiles.length;
     const totalUsers = crewCount + vendorCount + producerCount + companyCount;
+
+    // Get crew role data from submissions
+    const { data: submissions, error: submissionsError } = await supabase
+      .from('submissions')
+      .select('user_id, role_department')
+      .eq('submission_type', 'crew_report')
+      .not('role_department', 'is', null);
+
+    if (submissionsError) {
+      console.error('[leaderboard-insights] Submissions query error:', submissionsError);
+    }
+
+    // Build map of user_id -> most common role
+    const roleMap = new Map<string, string>();
+
+    if (submissions && submissions.length > 0) {
+      const userRoleCounts = new Map<string, Map<string, number>>();
+      
+      for (const sub of submissions) {
+        if (!sub.user_id || !sub.role_department) continue;
+        
+        if (!userRoleCounts.has(sub.user_id)) {
+          userRoleCounts.set(sub.user_id, new Map());
+        }
+        
+        const roleCounts = userRoleCounts.get(sub.user_id)!;
+        roleCounts.set(sub.role_department, (roleCounts.get(sub.role_department) || 0) + 1);
+      }
+      
+      for (const [userId, roleCounts] of userRoleCounts.entries()) {
+        let mostCommonRole = '';
+        let maxCount = 0;
+        
+        for (const [role, count] of roleCounts.entries()) {
+          if (count > maxCount) {
+            mostCommonRole = role;
+            maxCount = count;
+          }
+        }
+        
+        if (mostCommonRole) {
+          roleMap.set(userId, mostCommonRole);
+        }
+      }
+    }
+
+    // Format user lists with names and emails
+    const crewMembersWithRole = crewProfiles.map(c => ({
+      id: c.id,
+      user_id: c.user_id,
+      full_name: `${c.legal_first_name} ${c.legal_last_name}`,
+      email: c.email || 'No email',
+      most_common_role: roleMap.get(c.user_id) || null
+    }));
+
+    const vendorsFormatted = vendorProfiles.map(v => ({
+      id: v.id,
+      full_name: `${v.legal_first_name} ${v.legal_last_name}`,
+      email: v.email || 'No email',
+      business_name: v.business_name
+    }));
+
+    const producersFormatted = producerProfiles.map(p => ({
+      id: p.id,
+      full_name: `${p.legal_first_name} ${p.legal_last_name}`,
+      email: p.email || 'No email',
+      business_name: p.business_name
+    }));
+
+    const companiesFormatted = companyProfiles.map(c => ({
+      id: c.id,
+      full_name: `${c.legal_first_name} ${c.legal_last_name}`,
+      email: c.email || 'No email',
+      business_name: c.business_name
+    }));
 
     const totalProducers = producers?.length || 0;
     const totalReports = reports?.length || 0;
@@ -114,7 +195,11 @@ serve(async (req) => {
       distinctProducersWithReports,
       totalDebtEver: Math.round(totalDebtEver * 100) / 100,
       totalOpenDebt: Math.round(totalOpenDebt * 100) / 100,
-      averageDebt: Math.round(averageDebt * 100) / 100
+      averageDebt: Math.round(averageDebt * 100) / 100,
+      crewMembers: crewMembersWithRole,
+      vendors: vendorsFormatted,
+      producers: producersFormatted,
+      productionCompanies: companiesFormatted,
     };
 
     return new Response(

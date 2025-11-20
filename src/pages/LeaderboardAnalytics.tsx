@@ -4,9 +4,61 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, TrendingUp, DollarSign, Users, FileText, ArrowLeft } from "lucide-react";
+import { Loader2, TrendingUp, DollarSign, Users, FileText, ArrowLeft, Wrench, Building2, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Footer } from "@/components/Footer";
+
+interface UserTypeCardProps {
+  title: string;
+  icon: React.ReactNode;
+  users: any[];
+  extraFormatter?: (user: any) => React.ReactNode;
+}
+
+function UserTypeCard({ title, icon, users, extraFormatter }: UserTypeCardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Card className="p-6">
+      <div 
+        className="flex items-center justify-between cursor-pointer select-none"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center gap-4">
+          {icon}
+          <div>
+            <p className="text-sm text-muted-foreground">{title}</p>
+            <p className="text-2xl font-bold">{users.length}</p>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground">
+          {isOpen ? '▲ Hide' : '▼ View list'}
+        </div>
+      </div>
+
+      {isOpen && users.length > 0 && (
+        <div className="mt-4 max-h-60 overflow-y-auto border-t pt-4">
+          <div className="space-y-2 font-mono text-sm">
+            {users.map((user: any) => (
+              <div key={user.id} className="select-text">
+                <div className="text-foreground">
+                  {user.full_name} – {user.email}
+                </div>
+                {extraFormatter && extraFormatter(user)}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {isOpen && users.length === 0 && (
+        <div className="mt-4 text-sm text-muted-foreground border-t pt-4">
+          No users in this category
+        </div>
+      )}
+    </Card>
+  );
+}
 
 export default function LeaderboardAnalytics() {
   const navigate = useNavigate();
@@ -178,34 +230,45 @@ export default function LeaderboardAnalytics() {
 
         {/* User Overview Section */}
         <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-            <Users className="h-5 w-5" />
+          <h2 className="text-2xl font-semibold mb-1 flex items-center gap-2">
+            <Users className="h-6 w-6" />
             User Overview
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-muted-foreground mb-6">
             Account type distribution across the platform
           </p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-2">Crew Member Accounts</div>
-              <div className="text-3xl font-bold">⚠️ {insights?.crewCount || 0}</div>
-            </Card>
-            
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-2">Vendor / Service Provider Accounts</div>
-              <div className="text-3xl font-bold">🛠️ {insights?.vendorCount || 0}</div>
-            </Card>
-            
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-2">Producer Accounts</div>
-              <div className="text-3xl font-bold">🏢 {insights?.producerCount || 0}</div>
-            </Card>
-            
-            <Card className="p-6">
-              <div className="text-sm text-muted-foreground mb-2">Production Company Accounts</div>
-              <div className="text-3xl font-bold">🎬 {insights?.companyCount || 0}</div>
-            </Card>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <UserTypeCard
+              title="Crew Member Accounts"
+              icon={<User className="h-8 w-8 text-yellow-500" />}
+              users={insights?.crewMembers || []}
+              extraFormatter={(user) =>
+                user.most_common_role ? (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Most reported role: {user.most_common_role}
+                  </div>
+                ) : null
+              }
+            />
+
+            <UserTypeCard
+              title="Vendor / Service Provider Accounts"
+              icon={<Wrench className="h-8 w-8 text-purple-500" />}
+              users={insights?.vendors || []}
+            />
+
+            <UserTypeCard
+              title="Producer Accounts"
+              icon={<Building2 className="h-8 w-8 text-blue-500" />}
+              users={insights?.producers || []}
+            />
+
+            <UserTypeCard
+              title="Production Company Accounts"
+              icon={<Building2 className="h-8 w-8 text-emerald-500" />}
+              users={insights?.productionCompanies || []}
+            />
           </div>
         </div>
 
