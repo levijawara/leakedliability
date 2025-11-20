@@ -61,10 +61,14 @@ serve(async (req) => {
     const pendingReports = reports?.filter(r => r.status === 'pending').length || 0;
     const paidReports = reports?.filter(r => r.status === 'paid').length || 0;
     
-    const totalDebt = reports?.reduce((sum, r) => 
+    // Total debt EVER reported (all reports regardless of status)
+    const totalDebtEver = reports?.reduce((sum, r) => sum + (r.amount_owed || 0), 0) || 0;
+    
+    // Total OPEN/CURRENT debt (unpaid reports only)
+    const totalOpenDebt = reports?.reduce((sum, r) => 
       r.status !== 'paid' ? sum + (r.amount_owed || 0) : sum, 0) || 0;
     
-    const averageDebt = totalProducers > 0 ? totalDebt / totalProducers : 0;
+    const averageDebt = totalProducers > 0 ? totalOpenDebt / totalProducers : 0;
 
     const insights = {
       totalUsers,
@@ -77,7 +81,8 @@ serve(async (req) => {
       verifiedReports,
       pendingReports,
       paidReports,
-      totalDebt: Math.round(totalDebt * 100) / 100,
+      totalDebtEver: Math.round(totalDebtEver * 100) / 100,
+      totalOpenDebt: Math.round(totalOpenDebt * 100) / 100,
       averageDebt: Math.round(averageDebt * 100) / 100
     };
 
