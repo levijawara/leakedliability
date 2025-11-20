@@ -1582,6 +1582,7 @@ export type Database = {
           producer_id: string | null
           producer_name: string | null
           pscs_score: number | null
+          sub_name: string | null
           total_amount_owed: number | null
           total_cities_owed: number | null
           total_crew_owed: number | null
@@ -1598,6 +1599,7 @@ export type Database = {
           producer_id?: string | null
           producer_name?: string | null
           pscs_score?: number | null
+          sub_name?: string | null
           total_amount_owed?: number | null
           total_cities_owed?: number | null
           total_crew_owed?: number | null
@@ -1614,6 +1616,7 @@ export type Database = {
           producer_id?: string | null
           producer_name?: string | null
           pscs_score?: number | null
+          sub_name?: string | null
           total_amount_owed?: number | null
           total_cities_owed?: number | null
           total_crew_owed?: number | null
