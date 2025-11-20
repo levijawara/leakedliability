@@ -366,7 +366,7 @@ export default function Leaderboard() {
                 </div>
                 <div className="grid md:grid-cols-3 gap-3 mt-3">
                   <div className="bg-background/50 p-2 rounded text-center">
-                    <div className="font-bold text-foreground text-xs">Age (max -650)</div>
+                    <div className="font-bold text-foreground text-xs">Age (no cap)</div>
                     <div className="text-[10px]">0-60d: -1/day</div>
                     <div className="text-[10px]">60+: -60 + -2/day</div>
                   </div>
