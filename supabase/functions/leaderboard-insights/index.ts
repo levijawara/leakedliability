@@ -44,9 +44,23 @@ serve(async (req) => {
 
     console.log('[leaderboard-insights] Generating insights for admin:', user.id);
 
-    const { data: producers } = await supabase.from('producers').select('*');
-    const { data: reports } = await supabase.from('payment_reports').select('*');
-    const { data: profiles } = await supabase.from('profiles').select('account_type, business_name');
+    const { data: producers, error: producersError } = await supabase.from('producers').select('*');
+    const { data: reports, error: reportsError } = await supabase.from('payment_reports').select('*');
+    const { data: profiles, error: profilesError } = await supabase.from('profiles').select('account_type, business_name');
+
+    console.log('[leaderboard-insights] Producers:', producers?.length, 'Error:', producersError);
+    console.log('[leaderboard-insights] Reports:', reports?.length, 'Error:', reportsError);
+    console.log('[leaderboard-insights] Profiles:', profiles?.length, 'Error:', profilesError);
+
+    if (reportsError) {
+      console.error('[leaderboard-insights] Reports query error:', reportsError);
+    }
+    if (producersError) {
+      console.error('[leaderboard-insights] Producers query error:', producersError);
+    }
+    if (profilesError) {
+      console.error('[leaderboard-insights] Profiles query error:', profilesError);
+    }
 
     // Calculate user statistics
     const crewCount = profiles?.filter(p => p.account_type === 'crew').length || 0;
@@ -69,6 +83,13 @@ serve(async (req) => {
       r.status !== 'paid' ? sum + (r.amount_owed || 0) : sum, 0) || 0;
     
     const averageDebt = totalProducers > 0 ? totalOpenDebt / totalProducers : 0;
+
+    console.log('[leaderboard-insights] Calculated totals:');
+    console.log('  - Total Debt Ever:', totalDebtEver);
+    console.log('  - Total Open Debt:', totalOpenDebt);
+    console.log('  - Average Debt:', averageDebt);
+    console.log('  - Total Reports:', totalReports);
+    console.log('  - Verified Reports:', verifiedReports);
 
     const insights = {
       totalUsers,
