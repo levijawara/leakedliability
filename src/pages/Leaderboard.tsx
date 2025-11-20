@@ -600,16 +600,38 @@ export default function Leaderboard() {
                       key={producer.producer_id}
                       className="hover:bg-muted/50 transition-colors"
                     >
-                    <TableCell className="font-semibold">
-                      <div>
-                        <div>{producer.producer_name || '—'}</div>
-                        {producer.sub_name && (
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {producer.sub_name}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
+                    {isAdmin && viewMode === "admin" ? (
+                      <TableCell className="font-semibold">
+                        <div
+                          className="cursor-pointer hover:bg-muted/30 rounded px-2 py-1"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const newName = prompt('Edit Producer Name:', producer.producer_name || '');
+                            if (newName && newName !== producer.producer_name) {
+                              await updateProducer(producer.producer_id, { name: newName });
+                            }
+                          }}
+                        >
+                          <div>{producer.producer_name || '—'}</div>
+                          {producer.sub_name && (
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {producer.sub_name}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    ) : (
+                      <TableCell className="font-semibold">
+                        <div>
+                          <div>{producer.producer_name || '—'}</div>
+                          {producer.sub_name && (
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {producer.sub_name}
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                    )}
                     <TableCell className="text-center">
                       {isAdmin && viewMode === "admin" ? (
                         <AdminEditableCell
