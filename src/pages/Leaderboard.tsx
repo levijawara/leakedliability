@@ -469,7 +469,7 @@ export default function Leaderboard() {
                   <TableHead className="text-primary-foreground font-black text-sm text-center min-w-[120px]">
                     *PSCS*
                     <br />
-                    <span className="text-xs font-normal">(0 - 1,000)</span>
+                    <span className="text-xs font-normal">(Unknown – 1,000)</span>
                   </TableHead>
                   <TableHead className="text-primary-foreground font-black text-sm text-center">
                     TOTAL <span className="text-status-excellent">$$$</span>

@@ -162,7 +162,7 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold">PSCS Scoring</h3>
             <p className="text-muted-foreground">
-              Producing Social Credit Score (0-1,000) is based on a logarithmic, weighted equation, that's modeled after real FICO credit score calculations.
+              Producing Social Credit Score (Unknown – 1,000) is based on a logarithmic, weighted equation, that's modeled after real FICO credit score calculations.
             </p>
           </Card>
 
