@@ -62,6 +62,7 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [selectedProducerId, setSelectedProducerId] = useState<string>("");
+  const [manualEmail, setManualEmail] = useState<string>("");
   const [sending, setSending] = useState(false);
 
   const handleSendEmail = async () => {
@@ -75,10 +76,20 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
     }
 
     const producer = producers.find(p => p.id === selectedProducerId);
-    if (!producer || !producer.email) {
+    if (!producer) {
+      toast({
+        title: "Producer Not Found",
+        description: "Please select a valid producer.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const finalEmail = manualEmail.trim() || producer.email;
+    if (!finalEmail) {
       toast({
         title: "No Email Address",
-        description: "This producer does not have an email address on file.",
+        description: "Please enter an email address or select a producer with an email on file.",
         variant: "destructive",
       });
       return;
@@ -98,6 +109,7 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
           template: selectedTemplate,
           producer_id: selectedProducerId,
           admin_id: user.id,
+          manual_email: manualEmail.trim() || undefined,
         },
       });
 
@@ -112,6 +124,7 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
         // Reset form
         setSelectedTemplate("");
         setSelectedProducerId("");
+        setManualEmail("");
 
         onEmailSent?.();
       } else {
@@ -188,12 +201,38 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
           </div>
         </div>
 
-        {/* Selected Info Preview */}
+        {/* Selected Info Preview & Manual Email */}
         {selectedProducer && (
-          <div className="p-3 bg-muted/50 rounded-md text-sm">
-            <div className="font-medium">Email will be sent to:</div>
-            <div className="text-muted-foreground mt-1">
-              {selectedProducer.name} — {selectedProducer.email || "No email on file"}
+          <div className="p-3 bg-muted/50 rounded-md space-y-3">
+            <div>
+              <div className="text-sm font-medium mb-1">Email will be sent to:</div>
+              <div className="text-sm text-muted-foreground">
+                {selectedProducer.name} — {selectedProducer.email || "No email on file"}
+              </div>
+              {selectedProducer.company && (
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Company: {selectedProducer.company}
+                </div>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="manual-email" className="text-sm">
+                Or manually enter an email address:
+              </Label>
+              <input
+                id="manual-email"
+                type="email"
+                placeholder="producer@example.com"
+                value={manualEmail}
+                onChange={(e) => setManualEmail(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              {manualEmail && (
+                <div className="text-xs text-muted-foreground">
+                  ✓ Will use: {manualEmail}
+                </div>
+              )}
             </div>
           </div>
         )}

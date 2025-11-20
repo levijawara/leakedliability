@@ -12,6 +12,7 @@ interface ManualEmailRequest {
   template: string;
   producer_id: string;
   admin_id: string;
+  manual_email?: string;
   custom_data?: any;
 }
 
@@ -52,7 +53,7 @@ serve(async (req) => {
       );
     }
 
-    const { template, producer_id, admin_id, custom_data }: ManualEmailRequest = await req.json();
+    const { template, producer_id, admin_id, manual_email, custom_data }: ManualEmailRequest = await req.json();
 
     console.log('[Manual Email] Request:', { template, producer_id, admin_id });
 
@@ -67,8 +68,11 @@ serve(async (req) => {
       throw new Error('Producer not found');
     }
 
-    if (!producer.email) {
-      throw new Error('Producer has no email address on file');
+    // Prioritize manual email over producer email
+    const finalEmail = manual_email?.trim() || producer.email;
+    
+    if (!finalEmail) {
+      throw new Error('No email address provided. Please enter one manually.');
     }
 
     console.log('[Manual Email] Producer found:', producer.name, producer.email);
@@ -91,7 +95,7 @@ serve(async (req) => {
     const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-email', {
       body: {
         type: template,
-        to: producer.email,
+        to: finalEmail,
         data: templateData,
         origin: 'manual_admin'
       }
@@ -110,10 +114,12 @@ serve(async (req) => {
         admin_id: admin_id,
         producer_id: producer_id,
         template_key: template,
-        producer_email: producer.email,
+        producer_email: finalEmail,
         status: 'success',
         metadata: { 
           producer_name: producer.name,
+          used_manual_email: !!manual_email,
+          manual_email_value: manual_email || null,
           template_data: templateData
         }
       });
@@ -125,7 +131,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Email sent to ${producer.name} (${producer.email})` 
+        message: `Email sent to ${producer.name} (${finalEmail})` 
       }),
       { 
         status: 200, 
@@ -168,8 +174,13 @@ serve(async (req) => {
 
 // Helper function to build template-specific data
 function buildTemplateData(template: string, producer: any, latestReport: any, customData: any = {}) {
+  // Include company in producer display name
+  const producerDisplayName = producer.company 
+    ? `${producer.name} (${producer.company})`
+    : producer.name;
+
   const baseData = {
-    producerName: producer.name,
+    producerName: producerDisplayName,
     ...customData
   };
 
