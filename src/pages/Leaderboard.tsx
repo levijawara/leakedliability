@@ -133,12 +133,15 @@ function AdminEditableCell({
 }
 
 export default function Leaderboard() {
-  const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess();
-  const [managingBilling, setManagingBilling] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [checkingAdmin, setCheckingAdmin] = useState(true);
+  const [managingBilling, setManagingBilling] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'admin' | 'public'>('admin');
   const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Only check subscription if NOT admin
+  const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess(!checkingAdmin && !isAdmin);
 
   const { data: producers, isLoading, refetch: refetchProducers } = useQuery({
     queryKey: ["public_leaderboard"],
@@ -192,18 +195,22 @@ export default function Leaderboard() {
     },
   });
 
-  // Check admin status
+  // Check admin status FIRST
   useEffect(() => {
     const checkAdmin = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { data, error } = await supabase.rpc('has_role', {
-          _user_id: user.id,
-          _role: 'admin'
-        });
-        if (!error) {
-          setIsAdmin(!!data);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase.rpc('has_role', {
+            _user_id: user.id,
+            _role: 'admin'
+          });
+          if (!error) {
+            setIsAdmin(!!data);
+          }
         }
+      } finally {
+        setCheckingAdmin(false);
       }
     };
     checkAdmin();
@@ -266,8 +273,8 @@ export default function Leaderboard() {
     }
   };
 
-  // 1. LOADING STATE - show spinner while checking access
-  if (accessLoading || !accessState) {
+  // 1. CHECKING ADMIN STATUS - show spinner
+  if (checkingAdmin) {
     return (
       <>
         <Navigation />
@@ -284,12 +291,35 @@ export default function Leaderboard() {
     );
   }
 
-  // 2. NO ACCESS - show paywall
-  if (!accessState.hasAccess) {
-    return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
+  // 2. ADMIN BYPASS - grant full access immediately
+  if (isAdmin) {
+    // Admin gets full access - skip to leaderboard render below
+  } else {
+    // 3. NON-ADMIN - check subscription
+    if (accessLoading || !accessState) {
+      return (
+        <>
+          <Navigation />
+          <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+            <div className="container mx-auto px-4 py-20">
+              <div className="flex flex-col items-center justify-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p className="text-sm text-muted-foreground">Verifying subscription...</p>
+              </div>
+            </div>
+          </div>
+          <Footer />
+        </>
+      );
+    }
+
+    // 4. NO ACCESS - show paywall
+    if (!accessState.hasAccess) {
+      return <LeaderboardPaywall accessState={accessState} onAccessGranted={refreshAccess} refreshAccess={refreshAccess} />;
+    }
   }
 
-  // 3. HAS ACCESS - show full leaderboard
+  // 5. HAS ACCESS (admin or subscribed) - show full leaderboard
 
   return (
     <>

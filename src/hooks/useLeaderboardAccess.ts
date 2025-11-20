@@ -22,12 +22,14 @@ export interface LeaderboardAccessState {
   message?: string;
 }
 
-export const useLeaderboardAccess = () => {
+export const useLeaderboardAccess = (shouldCheck = true) => {
   const [accessState, setAccessState] = useState<LeaderboardAccessState | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(shouldCheck);
   const [error, setError] = useState<string | null>(null);
 
   const checkAccess = async () => {
+    if (!shouldCheck) return;
+    
     try {
       setLoading(true);
       setError(null);
@@ -71,6 +73,11 @@ export const useLeaderboardAccess = () => {
   };
 
   useEffect(() => {
+    if (!shouldCheck) {
+      setLoading(false);
+      return;
+    }
+
     const verifyStripeCheckout = async () => {
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
@@ -139,7 +146,7 @@ export const useLeaderboardAccess = () => {
       subscription.unsubscribe();
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [shouldCheck]);
 
   return { accessState, loading, error, refreshAccess };
 };
