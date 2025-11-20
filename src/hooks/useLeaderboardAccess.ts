@@ -73,10 +73,7 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
         reason: 'no_access',
       });
     } finally {
-      // Only clear loading if it was set (initial load)
-      if (!isBackgroundRefresh && !hasInitiallyLoaded.current) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
