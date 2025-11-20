@@ -46,7 +46,6 @@ serve(async (req) => {
 
     const { data: producers } = await supabase.from('producers').select('*');
     const { data: reports } = await supabase.from('payment_reports').select('*');
-    const { data: config } = await supabase.from('leaderboard_config').select('*').single();
 
     const totalProducers = producers?.length || 0;
     const totalReports = reports?.length || 0;
@@ -66,10 +65,7 @@ serve(async (req) => {
       pendingReports,
       paidReports,
       totalDebt: Math.round(totalDebt * 100) / 100,
-      averageDebt: Math.round(averageDebt * 100) / 100,
-      thresholdLocked: config?.threshold_locked || false,
-      producerCountAtLock: config?.producer_count_at_lock || null,
-      lockedAt: config?.locked_at || null
+      averageDebt: Math.round(averageDebt * 100) / 100
     };
 
     return new Response(
