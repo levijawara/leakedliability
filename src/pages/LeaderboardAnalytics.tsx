@@ -117,8 +117,9 @@ export default function LeaderboardAnalytics() {
             <div className="flex items-center gap-4">
               <DollarSign className="h-8 w-8 text-green-500" />
               <div>
-                <p className="text-sm text-muted-foreground">Total Debt</p>
-                <p className="text-2xl font-bold">${insights?.totalDebt?.toLocaleString() || 0}</p>
+                <p className="text-sm text-muted-foreground">Total Debt Ever Reported</p>
+                <p className="text-2xl font-bold">${insights?.totalDebtEver?.toLocaleString() || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Current Open: ${insights?.totalOpenDebt?.toLocaleString() || 0}</p>
               </div>
             </div>
           </Card>
