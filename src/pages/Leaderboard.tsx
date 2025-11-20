@@ -13,6 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 const getDaysColor = (days: number | null) => {
   if (!days || days < 0) return "bg-background text-foreground";
@@ -541,14 +543,30 @@ export default function Leaderboard() {
                         )}
                       </div>
                     </TableCell>
-                    <AdminEditableCell
-                      value={Number(producer.pscs_score || 0).toFixed(2)}
-                      onSave={(v) => updateProducer(producer.producer_id, { pscs_score: Number(v) })}
-                      className="text-center"
-                      isAdmin={isAdmin}
-                      viewMode={viewMode}
-                      type="number"
-                    />
+                    <TableCell className="text-center">
+                      {isAdmin && viewMode === "admin" ? (
+                        <AdminEditableCell
+                          value={Number(producer.pscs_score || 0).toFixed(2)}
+                          onSave={(v) => updateProducer(producer.producer_id, { pscs_score: Number(v) })}
+                          className="text-center"
+                          isAdmin={isAdmin}
+                          viewMode={viewMode}
+                          type="number"
+                        />
+                      ) : (
+                        <span className={cn(
+                          "font-mono text-sm",
+                          producer.pscs_score >= 800 && "text-green-500",
+                          producer.pscs_score >= 600 && producer.pscs_score < 800 && "text-yellow-500",
+                          producer.pscs_score >= 300 && producer.pscs_score < 600 && "text-orange-500",
+                          producer.pscs_score >= 0 && producer.pscs_score < 300 && "text-red-500",
+                          producer.pscs_score < 0 && "text-red-700 font-bold"
+                        )}>
+                          {Number(producer.pscs_score || 0).toFixed(2)}
+                          {producer.pscs_score < 0 && <span className="ml-1 text-xs">⚠️</span>}
+                        </span>
+                      )}
+                    </TableCell>
                     <AdminEditableCell
                       value={producer.total_amount_owed || 0}
                       onSave={(v) => updateProducer(producer.producer_id, { total_amount_owed: Number(v) })}
