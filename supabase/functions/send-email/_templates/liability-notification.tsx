@@ -23,6 +23,8 @@ interface LiabilityNotificationProps {
   claimUrl: string;
   expirationDate: string;
   accusedName: string;
+  paymentUrl?: string;
+  paymentCode?: string;
 }
 
 export const LiabilityNotification = ({
@@ -34,6 +36,8 @@ export const LiabilityNotification = ({
   claimUrl,
   expirationDate,
   accusedName,
+  paymentUrl,
+  paymentCode,
 }: LiabilityNotificationProps) => (
   <Html>
     <Head />
@@ -70,6 +74,31 @@ export const LiabilityNotification = ({
             resolve or dispute this claim.
           </Text>
         </Section>
+        
+        {paymentUrl && paymentCode && (
+          <>
+            <Hr style={hr} />
+            
+            <Section style={escrowPaySection}>
+              <Text style={escrowHeading}>💰 Fastest Resolution: Pay Now</Text>
+              <Text style={escrowText}>
+                Skip the back-and-forth. Pay through our secure escrow and clear your name immediately.
+              </Text>
+              
+              <Button href={paymentUrl} style={escrowButton}>
+                Pay via Leaked Liability Escrow →
+              </Button>
+              
+              <Text style={escrowCode}>
+                Escrow Code: <strong>{paymentCode}</strong>
+              </Text>
+              
+              <Text style={escrowSubtext}>
+                Funds are held securely until crew confirms payment. Every step is logged and timestamped.
+              </Text>
+            </Section>
+          </>
+        )}
         
         <Section style={ctaSection}>
           <Text style={text}>
@@ -321,4 +350,57 @@ const loginText = {
   fontSize: '12px',
   lineHeight: '20px',
   margin: '16px 0 0 0',
+};
+
+const escrowPaySection = {
+  backgroundColor: '#f0fdf4',
+  border: '2px solid #22c55e',
+  borderRadius: '8px',
+  margin: '24px 40px',
+  padding: '24px',
+  textAlign: 'center' as const,
+};
+
+const escrowHeading = {
+  color: '#16a34a',
+  fontSize: '18px',
+  fontWeight: 'bold',
+  margin: '0 0 12px 0',
+};
+
+const escrowText = {
+  color: '#166534',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0 0 20px 0',
+};
+
+const escrowButton = {
+  backgroundColor: '#22c55e',
+  borderRadius: '6px',
+  color: '#fff',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 40px',
+  margin: '8px 0 16px 0',
+  boxShadow: '0 4px 6px -1px rgba(34, 197, 94, 0.3)',
+};
+
+const escrowCode = {
+  color: '#166534',
+  fontSize: '13px',
+  lineHeight: '20px',
+  margin: '8px 0',
+  fontFamily: 'monospace',
+};
+
+const escrowSubtext = {
+  color: '#4d7c0f',
+  fontSize: '12px',
+  lineHeight: '18px',
+  margin: '12px 0 0 0',
+  fontStyle: 'italic' as const,
 };

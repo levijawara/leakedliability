@@ -88,9 +88,94 @@ serve(async (req: Request) => {
     
     logStep('Token created', { token: tokenData.token });
     
+    // Generate escrow payment session
+    logStep('Creating escrow payment record');
+    
+    // Look up or create producer by accused_email
+    const { data: producer, error: producerError } = await supabase
+      .from('producers')
+      .upsert(
+        { 
+          email: accused_email, 
+          name: accused_name,
+          verification_status: 'unverified',
+          auto_created: true 
+        },
+        { onConflict: 'email', ignoreDuplicates: false }
+      )
+      .select()
+      .single();
+
+    if (producerError) {
+      logStep('Error upserting producer', producerError);
+      throw new Error(`Failed to upsert producer: ${producerError.message}`);
+    }
+
+    // Generate unique 12-character payment code
+    const generatePaymentCode = () => {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let code = '';
+      for (let i = 0; i < 12; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    };
+
+    let paymentCode = generatePaymentCode();
+    let codeExists = true;
+    let attempts = 0;
+
+    // Ensure payment code is unique (max 5 attempts)
+    while (codeExists && attempts < 5) {
+      const { data: existing } = await supabase
+        .from('escrow_payments')
+        .select('id')
+        .eq('payment_code', paymentCode)
+        .single();
+      
+      if (!existing) {
+        codeExists = false;
+      } else {
+        paymentCode = generatePaymentCode();
+        attempts++;
+      }
+    }
+
+    // Insert escrow payment record
+    const { data: escrowPayment, error: escrowError } = await supabase
+      .from('escrow_payments')
+      .insert({
+        producer_id: producer.id,
+        crew_member_id: producer.id, // Placeholder
+        payment_report_id: report_id,
+        amount_due: report.amount_owed,
+        status: 'pending',
+        payment_code: paymentCode,
+        metadata: {
+          accused_name: accused_name,
+          accused_email: accused_email,
+          accused_role: accused_role,
+          project_name: report.project_name,
+          report_id: report.report_id,
+          liability_token: tokenData.token,
+          created_via: 'liability_notification'
+        }
+      })
+      .select()
+      .single();
+
+    if (escrowError) {
+      logStep('Error creating escrow payment', escrowError);
+      // Don't throw - escrow is optional, liability notification should still work
+      console.error('Failed to create escrow payment, continuing without it', escrowError);
+    }
+
+    logStep('Escrow payment created', { payment_code: paymentCode });
+    
     // Build claim URL with proper domain
     const publicUrl = Deno.env.get("PUBLIC_SITE_URL") || "https://leakedliability.com";
     const claimUrl = `${publicUrl}/liability/claim/${tokenData.token}`;
+    const paymentUrl = escrowPayment ? `${publicUrl}/pay/${paymentCode}` : null;
     
     // Create liability chain entry
     logStep('Creating liability chain entry');
@@ -180,6 +265,8 @@ serve(async (req: Request) => {
           claimUrl,
           expirationDate,
           accusedName: accused_name,
+          paymentUrl: paymentUrl,
+          paymentCode: escrowPayment ? paymentCode : null,
         },
       },
     });
