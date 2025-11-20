@@ -82,11 +82,20 @@ serve(async (req) => {
     const totalOpenDebt = reports?.reduce((sum, r) => 
       r.status !== 'paid' ? sum + (r.amount_owed || 0) : sum, 0) || 0;
     
-    const averageDebt = totalProducers > 0 ? totalOpenDebt / totalProducers : 0;
+    // Count distinct producers who have reports
+    const distinctProducersWithReports = reports 
+      ? new Set(reports.filter(r => r.producer_id).map(r => r.producer_id)).size 
+      : 0;
+    
+    // Calculate average using TOTAL DEBT EVER (not open debt)
+    const averageDebt = distinctProducersWithReports > 0 
+      ? totalDebtEver / distinctProducersWithReports 
+      : 0;
 
     console.log('[leaderboard-insights] Calculated totals:');
     console.log('  - Total Debt Ever:', totalDebtEver);
     console.log('  - Total Open Debt:', totalOpenDebt);
+    console.log('  - Distinct Producers with Reports:', distinctProducersWithReports);
     console.log('  - Average Debt:', averageDebt);
     console.log('  - Total Reports:', totalReports);
     console.log('  - Verified Reports:', verifiedReports);
@@ -102,6 +111,7 @@ serve(async (req) => {
       verifiedReports,
       pendingReports,
       paidReports,
+      distinctProducersWithReports,
       totalDebtEver: Math.round(totalDebtEver * 100) / 100,
       totalOpenDebt: Math.round(totalOpenDebt * 100) / 100,
       averageDebt: Math.round(averageDebt * 100) / 100
