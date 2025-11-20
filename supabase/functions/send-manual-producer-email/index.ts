@@ -186,15 +186,33 @@ function buildTemplateData(template: string, producer: any, latestReport: any, c
 
   // Build data based on template type
   switch (template) {
-    case 'liability_notification':
+    case 'liability_notification': {
+      const accusedName = producerDisplayName; 
+      const amountOwed = producer.total_amount_owed || 0;
+      const projectName = latestReport?.project_name || 'Unknown Project';
+
+      const invoiceDate = latestReport?.invoice_date
+        ? new Date(latestReport.invoice_date).toLocaleDateString()
+        : 'Not specified';
+
+      const daysOverdue = producer.oldest_debt_days || 0;
+
+      const claimUrl = `${Deno.env.get('SUPABASE_URL')}/liability/claim/manual`;
+
+      // Keep expirationDate for template compatibility
+      const expirationDate = new Date().toLocaleDateString();
+
       return {
-        ...baseData,
-        amount: producer.total_amount_owed || 0,
-        projectName: latestReport?.project_name || 'Unknown Project',
+        accusedName,
+        amountOwed,
+        projectName,
         reportId: latestReport?.report_id || 'N/A',
-        claimUrl: `${Deno.env.get('SUPABASE_URL')}/liability/claim/manual`,
-        expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString()
+        invoiceDate,
+        daysOverdue,
+        claimUrl,
+        expirationDate
       };
+    }
 
     case 'producer_report_notification':
       return {
