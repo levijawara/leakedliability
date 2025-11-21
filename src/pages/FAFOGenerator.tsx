@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Slider } from "@/components/ui/slider";
+import { Rnd } from "react-rnd";
 
 export default function FAFOGenerator() {
   const navigate = useNavigate();
@@ -26,9 +26,9 @@ export default function FAFOGenerator() {
   const [holdThatLFile, setHoldThatLFile] = useState<File[]>([]);
   const [proofFile, setProofFile] = useState<File[]>([]);
   const [showBlurPreview, setShowBlurPreview] = useState(false);
-  const [blurHeight, setBlurHeight] = useState(0.30);
-  const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [blurBox, setBlurBox] = useState({ x: 0, y: 0, width: 400, height: 200 });
+  const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [originalImageUrl, setOriginalImageUrl] = useState("");
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -66,46 +66,33 @@ export default function FAFOGenerator() {
     checkAdmin();
   }, [navigate]);
 
-  // Auto-generate preview when #HoldThatL image is uploaded
+  // Load original image when #HoldThatL file is uploaded
   useEffect(() => {
     if (holdThatLFile.length > 0) {
-      generateBlurPreview(holdThatLFile[0], blurHeight);
+      loadOriginalImage(holdThatLFile[0]);
     }
   }, [holdThatLFile]);
 
-  // Cleanup preview URL on unmount
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
+  const loadOriginalImage = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const url = e.target?.result as string;
+      setOriginalImageUrl(url);
+
+      const img = new Image();
+      img.onload = () => {
+        setImageSize({ width: img.width, height: img.height });
+        setBlurBox({
+          x: 0,
+          y: 0,
+          width: img.width,
+          height: Math.floor(img.height * 0.3)
+        });
+        setShowBlurPreview(true);
+      };
+      img.src = url;
     };
-  }, [previewUrl]);
-
-  const generateBlurPreview = async (file: File, height: number) => {
-    setIsGeneratingPreview(true);
-    try {
-      const processedBlob = await blurIdentitySection(file, height);
-      const url = URL.createObjectURL(processedBlob);
-      setPreviewUrl(url);
-      setShowBlurPreview(true);
-    } catch (error) {
-      console.error('Preview generation error:', error);
-      toast({
-        title: "Preview Failed",
-        description: "Could not generate blur preview",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingPreview(false);
-    }
-  };
-
-  const handleBlurHeightChange = (newHeight: number) => {
-    setBlurHeight(newHeight);
-    if (holdThatLFile.length > 0) {
-      generateBlurPreview(holdThatLFile[0], newHeight);
-    }
+    reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
@@ -134,8 +121,8 @@ export default function FAFOGenerator() {
       const holdThatLExt = holdThatLFile[0].name.split('.').pop();
       const holdThatLPath = `${entryId}/hold-that-l.${holdThatLExt}`;
       
-      // Apply blur with custom height to anonymize identity section
-      const processedBlob = await blurIdentitySection(holdThatLFile[0], blurHeight);
+      // Apply blur with custom region to anonymize identity section
+      const processedBlob = await blurIdentitySection(holdThatLFile[0], blurBox);
       
       const { error: holdThatLError } = await supabase.storage
         .from('fafo-results')
@@ -274,79 +261,80 @@ export default function FAFOGenerator() {
 
       {/* Blur Preview Dialog */}
       <Dialog open={showBlurPreview} onOpenChange={setShowBlurPreview}>
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-w-5xl">
           <DialogHeader>
-            <DialogTitle>Preview Blur Effect</DialogTitle>
+            <DialogTitle>Adjust Blur Region</DialogTitle>
             <DialogDescription>
-              Adjust the slider to control how much of the top portion is blurred.
-              Names and personal info should be completely unreadable.
+              Drag and resize the red box to cover names/personal info.
             </DialogDescription>
           </DialogHeader>
 
-          {/* Preview Image */}
-          <div className="relative">
-            {isGeneratingPreview ? (
-              <div className="aspect-square bg-muted animate-pulse rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">Generating preview...</p>
-              </div>
-            ) : (
-              <img 
-                src={previewUrl} 
-                alt="Blurred preview" 
-                className="w-full rounded-lg border"
-              />
-            )}
-            
-            {/* Visual indicator line showing blur boundary */}
-            {!isGeneratingPreview && (
-              <div 
-                className="absolute left-0 right-0 border-t-2 border-red-500 border-dashed"
-                style={{ top: `${blurHeight * 100}%` }}
-              >
-                <span className="absolute right-2 -top-6 bg-red-500 text-white text-xs px-2 py-1 rounded">
-                  Blur ends here ({Math.round(blurHeight * 100)}%)
-                </span>
-              </div>
-            )}
-          </div>
-
-          {/* Blur Height Slider */}
-          <div className="space-y-4">
-            <label className="text-sm font-medium">
-              Blur Height: {Math.round(blurHeight * 100)}%
-            </label>
-            <Slider
-              value={[blurHeight * 100]}
-              onValueChange={(value) => handleBlurHeightChange(value[0] / 100)}
-              min={10}
-              max={60}
-              step={1}
-              className="w-full"
+          <div className="relative inline-block max-w-full mx-auto overflow-hidden rounded-lg border">
+            <img 
+              src={originalImageUrl} 
+              alt="Original"
+              className="max-w-full block"
+              style={{ maxHeight: '70vh' }}
             />
-            <p className="text-xs text-muted-foreground">
-              Recommended: 25-35% for standard #HoldThatL images
-            </p>
-          </div>
-
-          {/* Action Buttons */}
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowBlurPreview(false);
-                setHoldThatLFile([]);
-                URL.revokeObjectURL(previewUrl);
-                setPreviewUrl("");
+            
+            <Rnd
+              size={{ width: blurBox.width, height: blurBox.height }}
+              position={{ x: blurBox.x, y: blurBox.y }}
+              bounds="parent"
+              onDragStop={(e, d) => setBlurBox(prev => ({ ...prev, x: d.x, y: d.y }))}
+              onResizeStop={(e, direction, ref, delta, position) => {
+                setBlurBox({
+                  width: parseInt(ref.style.width),
+                  height: parseInt(ref.style.height),
+                  ...position
+                });
+              }}
+              className="border-2 border-red-500 border-dashed cursor-move"
+              style={{
+                backdropFilter: "blur(14px)",
+                backgroundColor: "rgba(0,0,0,0.2)"
+              }}
+              enableResizing={{
+                top: true, right: true, bottom: true, left: true,
+                topRight: true, bottomRight: true, bottomLeft: true, topLeft: true
+              }}
+              resizeHandleStyles={{
+                topRight: { width: 20, height: 20, right: -10, top: -10, cursor: 'ne-resize', backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: '50%' },
+                bottomRight: { width: 20, height: 20, right: -10, bottom: -10, cursor: 'se-resize', backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: '50%' },
+                bottomLeft: { width: 20, height: 20, left: -10, bottom: -10, cursor: 'sw-resize', backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: '50%' },
+                topLeft: { width: 20, height: 20, left: -10, top: -10, cursor: 'nw-resize', backgroundColor: 'rgba(239, 68, 68, 0.8)', borderRadius: '50%' }
               }}
             >
+              <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded pointer-events-none">
+                {blurBox.width}×{blurBox.height}px
+              </div>
+            </Rnd>
+          </div>
+
+          <div className="text-sm text-muted-foreground space-y-1 bg-muted/50 p-3 rounded">
+            <p>• <strong>Drag</strong> the box to reposition</p>
+            <p>• <strong>Drag corners/edges</strong> to resize</p>
+            <p>• Box cannot move outside image boundaries</p>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => {
+              setShowBlurPreview(false);
+              setHoldThatLFile([]);
+              setOriginalImageUrl("");
+            }}>
               Cancel & Re-upload
             </Button>
-            <Button
-              onClick={() => {
-                setShowBlurPreview(false);
-              }}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
+            <Button variant="secondary" onClick={() => {
+              setBlurBox({
+                x: 0, y: 0,
+                width: imageSize.width,
+                height: Math.floor(imageSize.height * 0.3)
+              });
+            }}>
+              Reset to Default
+            </Button>
+            <Button onClick={() => setShowBlurPreview(false)} className="bg-emerald-600 hover:bg-emerald-700">
               Looks Good – Proceed ✓
             </Button>
           </DialogFooter>
