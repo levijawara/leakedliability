@@ -114,43 +114,45 @@ const AppContent = () => {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/leaderboard" element={<Leaderboard />} />
-      <Route path="/submit" element={<SubmitReport />} />
-      <Route path="/how-it-works" element={<HowItWorks />} />
-      <Route path="/why-it-works" element={<WhyItWorks />} />
-      <Route path="/disclaimer" element={<Disclaimer />} />
-      <Route path="/faq" element={<FAQ />} />
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/admin" element={<Admin />} />
-      <Route path="/admin/search-insights" element={<AdminSearchInsights />} />
-      <Route path="/admin/edit-report/:id" element={<AdminEditReport />} />
-      <Route path="/admin/merge-producers" element={<AdminProducerMerge />} />
-      <Route path="/admin-submit-existing" element={<AdminSubmitExisting />} />
-      <Route path="/admin-submit-new" element={<AdminSubmitNew />} />
-      <Route path="/hold-that-l" element={<HoldThatLGenerator />} />
-      <Route path="/producer-dashboard" element={<ProducerDashboard />} />
-      <Route path="/suggestion-box" element={<SuggestionBox />} />
-      <Route path="/suggestions" element={<SuggestionBox />} />
-      <Route path="/verify-email" element={<VerifyEmail />} />
-      <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
-      <Route path="/subscribe" element={<Subscribe />} />
-      <Route path="/sitemap" element={<Sitemap />} />
-      <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
-      <Route path="/ban/:banId" element={<BanPage />} />
-      <Route path="/confirm" element={<ConfirmReport />} />
-      <Route path="/pay/:code" element={<PayEscrow />} />
-      <Route path="/pay/:code/success" element={<PayEscrow />} />
-      <Route path="/liability/claim/:token" element={<LiabilityClaim />} />
-      <Route path="/escrow" element={<EscrowHub />} />
-      <Route path="/escrow/initiate" element={<EscrowInitiate />} />
-      <Route path="/escrow/redeem" element={<EscrowRedeem />} />
-      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <div className="pt-0 md:pt-[72px]">
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/submit" element={<SubmitReport />} />
+        <Route path="/how-it-works" element={<HowItWorks />} />
+        <Route path="/why-it-works" element={<WhyItWorks />} />
+        <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/admin/search-insights" element={<AdminSearchInsights />} />
+        <Route path="/admin/edit-report/:id" element={<AdminEditReport />} />
+        <Route path="/admin/merge-producers" element={<AdminProducerMerge />} />
+        <Route path="/admin-submit-existing" element={<AdminSubmitExisting />} />
+        <Route path="/admin-submit-new" element={<AdminSubmitNew />} />
+        <Route path="/hold-that-l" element={<HoldThatLGenerator />} />
+        <Route path="/producer-dashboard" element={<ProducerDashboard />} />
+        <Route path="/suggestion-box" element={<SuggestionBox />} />
+        <Route path="/suggestions" element={<SuggestionBox />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
+        <Route path="/subscribe" element={<Subscribe />} />
+        <Route path="/sitemap" element={<Sitemap />} />
+        <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
+        <Route path="/ban/:banId" element={<BanPage />} />
+        <Route path="/confirm" element={<ConfirmReport />} />
+        <Route path="/pay/:code" element={<PayEscrow />} />
+        <Route path="/pay/:code/success" element={<PayEscrow />} />
+        <Route path="/liability/claim/:token" element={<LiabilityClaim />} />
+        <Route path="/escrow" element={<EscrowHub />} />
+        <Route path="/escrow/initiate" element={<EscrowInitiate />} />
+        <Route path="/escrow/redeem" element={<EscrowRedeem />} />
+        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
   );
 };
 
