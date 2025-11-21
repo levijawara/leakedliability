@@ -43,6 +43,7 @@ import EscrowInitiate from "./pages/EscrowInitiate";
 import EscrowRedeem from "./pages/EscrowRedeem";
 import DailyVisitors from "./pages/DailyVisitors";
 import Results from "./pages/Results";
+import FAFOGenerator from "./pages/FAFOGenerator";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +123,7 @@ const AppContent = () => {
       <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/results" element={<Results />} />
+        <Route path="/results/fafo-generator" element={<FAFOGenerator />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/submit" element={<SubmitReport />} />
         <Route path="/how-it-works" element={<HowItWorks />} />

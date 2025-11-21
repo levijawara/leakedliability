@@ -461,6 +461,36 @@ export type Database = {
           },
         ]
       }
+      fafo_entries: {
+        Row: {
+          created_at: string
+          created_by_admin_id: string | null
+          display_order: number | null
+          hold_that_l_image_path: string
+          id: string
+          metadata: Json | null
+          proof_image_path: string
+        }
+        Insert: {
+          created_at?: string
+          created_by_admin_id?: string | null
+          display_order?: number | null
+          hold_that_l_image_path: string
+          id?: string
+          metadata?: Json | null
+          proof_image_path: string
+        }
+        Update: {
+          created_at?: string
+          created_by_admin_id?: string | null
+          display_order?: number | null
+          hold_that_l_image_path?: string
+          id?: string
+          metadata?: Json | null
+          proof_image_path?: string
+        }
+        Relationships: []
+      }
       image_generations: {
         Row: {
           created_at: string | null
