@@ -87,15 +87,13 @@ export function Navigation() {
               Home
             </Button>
             
-            <a 
-              href="https://www.instagram.com/leakedliability/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xl font-black hover:opacity-80 transition-opacity flex items-center gap-2"
+            <Button
+              onClick={() => navigate("/results")}
+              size="sm"
+              className="bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold"
             >
-              @LeakedLiability
-              <Instagram className="h-5 w-5" />
-            </a>
+              💰RESULTS💰
+            </Button>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -120,6 +118,17 @@ export function Navigation() {
                 <DropdownMenuItem onClick={() => navigate("/faq")}>
                   <HelpCircle className="h-4 w-4 mr-2" />
                   FAQ
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a
+                    href="https://www.instagram.com/leakedliability/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2"
+                  >
+                    <Instagram className="h-4 w-4" />
+                    @LeakedLiability
+                  </a>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/suggestions")}>
@@ -213,15 +222,13 @@ export function Navigation() {
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <ThemeToggle />
-              <a 
-                href="https://www.instagram.com/leakedliability/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-lg font-black hover:opacity-80 transition-opacity flex items-center gap-2"
+              <Button
+                onClick={() => navigate("/results")}
+                size="sm"
+                className="bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold text-xs px-3"
               >
-                @LeakedLiability
-                <Instagram className="h-4 w-4" />
-              </a>
+                💰RESULTS💰
+              </Button>
             </div>
             
             <div className="flex items-center gap-2">
@@ -302,6 +309,17 @@ export function Navigation() {
                   <DropdownMenuItem onClick={() => handleNavigate("/faq")}>
                     <HelpCircle className="h-4 w-4 mr-2" />
                     FAQ
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <a
+                      href="https://www.instagram.com/leakedliability/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-2 py-1.5"
+                    >
+                      <Instagram className="h-4 w-4" />
+                      <span>@LeakedLiability</span>
+                    </a>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => handleNavigate("/suggestions")}>
