@@ -1,14 +1,14 @@
 import * as StackBlur from 'stackblur-canvas';
 
 /**
- * Blurs the top portion of an image (identity section above PSCS line)
+ * Blurs a specific rectangular region of an image
  * @param file - The image file to process
- * @param blurHeight - Percentage of image height to blur (default: 0.30)
+ * @param region - The rectangular region to blur { x, y, width, height }
  * @returns Processed blob ready for upload
  */
 export async function blurIdentitySection(
   file: File,
-  blurHeight: number = 0.30
+  region: { x: number; y: number; width: number; height: number }
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -20,34 +20,27 @@ export async function blurIdentitySection(
 
     img.onload = () => {
       try {
-        // Create main canvas
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
         
         if (!ctx) {
           throw new Error('Could not get canvas context');
         }
 
-        // Set canvas to image dimensions
         canvas.width = img.width;
         canvas.height = img.height;
-
-        // Draw original image
         ctx.drawImage(img, 0, 0);
 
-        // Calculate blur region height
-        const blurRegionHeight = Math.floor(img.height * blurHeight);
-
-        // Apply StackBlur to the top region only
+        // Apply StackBlur to the specific rectangular region only
         StackBlur.canvasRGBA(
-          canvas, 
-          0, 0,                    // x, y start
-          img.width,               // width
-          blurRegionHeight,        // height  
-          25                       // blur radius
+          canvas,
+          region.x,
+          region.y,
+          region.width,
+          region.height,
+          25
         );
 
-        // Convert to blob
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -56,7 +49,7 @@ export async function blurIdentitySection(
               reject(new Error('Failed to create blob'));
             }
           },
-          'image/png',
+          "image/png",
           1.0
         );
       } catch (error) {
@@ -64,14 +57,8 @@ export async function blurIdentitySection(
       }
     };
 
-    img.onerror = () => {
-      reject(new Error('Failed to load image'));
-    };
-
-    reader.onerror = () => {
-      reject(new Error('Failed to read file'));
-    };
-
+    img.onerror = () => reject(new Error('Failed to load image'));
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
   });
 }
