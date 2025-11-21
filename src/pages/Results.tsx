@@ -121,7 +121,7 @@ export default function Results() {
           {/* FAFO Archive Section */}
           {loadingEntries ? (
             <div className="mt-16">
-              <h2 className="text-4xl font-black text-center mb-4">⚡ FAFO ARCHIVE ⚡</h2>
+              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE 💯</h2>
               <p className="text-center text-muted-foreground text-xl mb-12">
                 Real receipts. Real payouts. Zero excuses.
               </p>
@@ -133,7 +133,7 @@ export default function Results() {
             </div>
           ) : entries.length > 0 ? (
             <div className="mt-16">
-              <h2 className="text-4xl font-black text-center mb-4">⚡ FAFO ARCHIVE ⚡</h2>
+              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE 💯</h2>
               <p className="text-center text-muted-foreground text-xl mb-12">
                 Real receipts. Real payouts. Zero excuses.
               </p>

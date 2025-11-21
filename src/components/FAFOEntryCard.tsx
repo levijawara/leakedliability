@@ -2,9 +2,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 
 interface FAFOEntryCardProps {
   entry: {
@@ -21,6 +21,7 @@ interface FAFOEntryCardProps {
 
 export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) {
   const [deleting, setDeleting] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleDelete = async () => {
     if (!confirm("Delete this FAFO entry? This cannot be undone.")) {
@@ -76,7 +77,10 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
           variant="destructive"
           size="icon"
           className="absolute top-4 right-4 z-10 opacity-0 hover:opacity-100 transition-opacity"
-          onClick={handleDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete();
+          }}
           disabled={deleting}
         >
           <Trash2 className="h-4 w-4" />
@@ -85,7 +89,10 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
 
       <div className="p-6">
         {/* Images Container */}
-        <div className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4">
+        <div 
+          className="flex flex-col md:flex-row gap-4 md:gap-6 mb-4 cursor-pointer"
+          onClick={() => setIsPreviewOpen(true)}
+        >
           {/* #HoldThatL Image */}
           <div className="w-full md:w-1/2 aspect-[4/5] overflow-hidden rounded-md bg-black">
             <img
@@ -107,14 +114,35 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
             />
           </div>
         </div>
-
-        {/* Date Stamp */}
-        <div className="text-center">
-          <p className="text-sm text-muted-foreground">
-            Recovered: {format(new Date(entry.created_at), 'MM/dd/yyyy')}
-          </p>
-        </div>
       </div>
+
+      {/* Full Size Preview Modal */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <div className="flex flex-col gap-8">
+            {/* #HoldThatL Full Size */}
+            <div className="w-full">
+              <img
+                src={entry.holdThatLUrl}
+                alt="Hold That L Generator Image - Full Size"
+                className="w-full h-auto rounded-md"
+              />
+            </div>
+            
+            {/* Divider */}
+            <div className="w-full h-px bg-border" />
+            
+            {/* Proof Full Size */}
+            <div className="w-full">
+              <img
+                src={entry.proofUrl}
+                alt="Payment Proof Screenshot - Full Size"
+                className="w-full h-auto rounded-md"
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
