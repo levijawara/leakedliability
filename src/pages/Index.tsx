@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle, FileText, Users, TrendingUp, Info, Search } from "lucide-react";
+import { AlertTriangle, FileText, Users, TrendingUp, Info, Search, Instagram } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect, useRef } from "react";
@@ -67,6 +67,16 @@ const Index = () => {
           <h1 className="text-6xl md:text-8xl font-black tracking-tight">
             Leaked Liability™
           </h1>
+
+          <a 
+            href="https://www.instagram.com/leakedliability/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-xl font-bold hover:opacity-80 transition-opacity text-muted-foreground"
+          >
+            @LeakedLiability
+            <Instagram className="h-5 w-5" />
+          </a>
 
           <p className="text-2xl md:text-xl font-bold text-muted-foreground max-w-2xl mx-auto">
             A platform designed to enable and empower freelance crew members and vendors, by intrinsically motivating producers to be good people. We reward integrity, and expose the exploiters.

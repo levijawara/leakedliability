@@ -42,6 +42,7 @@ import EscrowHub from "./pages/EscrowHub";
 import EscrowInitiate from "./pages/EscrowInitiate";
 import EscrowRedeem from "./pages/EscrowRedeem";
 import DailyVisitors from "./pages/DailyVisitors";
+import Results from "./pages/Results";
 
 const queryClient = new QueryClient();
 
@@ -120,6 +121,7 @@ const AppContent = () => {
     <div className="pt-0 md:pt-[72px]">
       <Routes>
         <Route path="/" element={<Index />} />
+        <Route path="/results" element={<Results />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/submit" element={<SubmitReport />} />
         <Route path="/how-it-works" element={<HowItWorks />} />

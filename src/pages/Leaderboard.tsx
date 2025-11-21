@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Instagram } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -331,9 +331,21 @@ export default function Leaderboard() {
           <h1 className="text-5xl md:text-7xl font-black tracking-tight">
             Leaked Liability™
           </h1>
-          <p className="text-xl md:text-2xl font-bold text-muted-foreground">
-            Producer Debt Leaderboard
-          </p>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <p className="text-xl md:text-2xl font-bold text-muted-foreground">
+              Producer Debt Leaderboard
+            </p>
+            <span className="text-muted-foreground">|</span>
+            <a 
+              href="https://www.instagram.com/leakedliability/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-lg font-bold hover:opacity-80 transition-opacity flex items-center gap-2 text-muted-foreground"
+            >
+              @LeakedLiability
+              <Instagram className="h-4 w-4" />
+            </a>
+          </div>
           <p className="text-sm text-muted-foreground">
             Last Updated: {format(new Date(), "MM/dd/yy")}
           </p>
