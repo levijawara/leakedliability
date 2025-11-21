@@ -182,7 +182,10 @@ export default function LeaderboardAnalytics() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Admin
           </Button>
-          <Button variant="ghost">
+          <Button 
+            variant="ghost"
+            onClick={() => navigate("/admin/analytics/daily-visitors")}
+          >
             Daily Visitors
           </Button>
         </div>
