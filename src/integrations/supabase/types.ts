@@ -56,6 +56,36 @@ export type Database = {
         }
         Relationships: []
       }
+      analytics_daily_visitors: {
+        Row: {
+          city: string | null
+          country: string | null
+          created_at: string
+          day: string
+          hashed_visitor: string
+          id: number
+          region: string | null
+        }
+        Insert: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          day: string
+          hashed_visitor: string
+          id?: number
+          region?: string | null
+        }
+        Update: {
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          day?: string
+          hashed_visitor?: string
+          id?: number
+          region?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           created_at: string
@@ -1792,6 +1822,22 @@ export type Database = {
         Returns: {
           body: string
           title: string
+        }[]
+      }
+      get_daily_visitor_stats: {
+        Args: { start_date: string }
+        Returns: {
+          day: string
+          unique_visitors: number
+        }[]
+      }
+      get_geo_breakdown: {
+        Args: { selected_day: string }
+        Returns: {
+          city: string
+          country: string
+          region: string
+          visitor_count: number
         }[]
       }
       get_top_searches: {

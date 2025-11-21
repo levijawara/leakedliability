@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client"; // Force rebuild
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
+import { trackVisit } from "@/lib/analytics";
 import Index from "./pages/Index";
 import Leaderboard from "./pages/Leaderboard";
 import SubmitReport from "./pages/SubmitReport";
@@ -40,6 +41,7 @@ import LiabilityClaim from "./pages/LiabilityClaim";
 import EscrowHub from "./pages/EscrowHub";
 import EscrowInitiate from "./pages/EscrowInitiate";
 import EscrowRedeem from "./pages/EscrowRedeem";
+import DailyVisitors from "./pages/DailyVisitors";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +59,7 @@ const AppContent = () => {
   useEffect(() => {
     checkMaintenanceMode();
     checkAdminStatus();
+    trackVisit();
     
     // Subscribe to realtime changes
     const channel = supabase
@@ -138,6 +141,7 @@ const AppContent = () => {
         <Route path="/suggestions" element={<SuggestionBox />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
+        <Route path="/admin/analytics/daily-visitors" element={<DailyVisitors />} />
         <Route path="/subscribe" element={<Subscribe />} />
         <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
