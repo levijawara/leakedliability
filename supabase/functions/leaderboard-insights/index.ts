@@ -211,7 +211,7 @@ serve(async (req) => {
         name,
         email,
         pscs_score,
-        payment_reports(amount_owed, status)
+        payment_reports(amount_owed, status, producer_email)
       `);
 
     if (allProducersError) console.error('Producer fetch error:', allProducersError);
@@ -309,15 +309,34 @@ serve(async (req) => {
     const nonRegisteredProducerAccounts =
       allProducers
         ?.filter(p => {
-          const email = p.email?.toLowerCase();
-          return email && !registeredEmails.has(email);
+          // First check producers.email
+          let email = p.email?.toLowerCase();
+          
+          // If null, extract from first payment report
+          if (!email && p.payment_reports && p.payment_reports.length > 0) {
+            const reportWithEmail = p.payment_reports.find((r: any) => r.producer_email);
+            email = reportWithEmail?.producer_email?.toLowerCase();
+          }
+          
+          // Include if:
+          // - Producer has no email (system-created, null in both places) OR
+          // - Producer has email that's not in registered profiles
+          return !email || !registeredEmails.has(email);
         })
         .map(p => {
           const { totalDebtEver, openDebt } = computeDebtStats(p);
-
+          
+          // Display email priority: producers.email > first report email > 'Unknown'
+          let displayEmail = p.email;
+          if (!displayEmail && p.payment_reports && p.payment_reports.length > 0) {
+            const reportWithEmail = p.payment_reports.find((r: any) => r.producer_email);
+            displayEmail = reportWithEmail?.producer_email || 'Unknown';
+          }
+          if (!displayEmail) displayEmail = 'Unknown';
+          
           return {
             name: p.name,
-            email: p.email || 'Unknown',
+            email: displayEmail,
             pscs: p.pscs_score,
             totalDebtEver,
             openDebt,
