@@ -1,3 +1,5 @@
+import StackBlur from 'stackblur-canvas';
+
 /**
  * Blurs the top portion of an image (identity section above PSCS line)
  * @param file - The image file to process
@@ -36,30 +38,14 @@ export async function blurIdentitySection(
         // Calculate blur region height
         const blurRegionHeight = Math.floor(img.height * blurHeight);
 
-        // Create temporary canvas for blurred section
-        const tempCanvas = document.createElement('canvas');
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        if (!tempCtx) {
-          throw new Error('Could not get temp canvas context');
-        }
-
-        tempCanvas.width = img.width;
-        tempCanvas.height = blurRegionHeight;
-
-        // Draw the top section to temp canvas
-        tempCtx.drawImage(
-          img,
-          0, 0, img.width, blurRegionHeight,
-          0, 0, img.width, blurRegionHeight
+        // Apply StackBlur to the top region only
+        StackBlur.canvasRGBA(
+          canvas, 
+          0, 0,                    // x, y start
+          img.width,               // width
+          blurRegionHeight,        // height  
+          25                       // blur radius
         );
-
-        // Apply blur filter
-        tempCtx.filter = 'blur(25px)';
-        tempCtx.drawImage(tempCanvas, 0, 0);
-
-        // Draw blurred section back onto main canvas
-        ctx.drawImage(tempCanvas, 0, 0);
 
         // Convert to blob
         canvas.toBlob(
