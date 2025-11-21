@@ -28,6 +28,7 @@ export default function FAFOGenerator() {
   const [showBlurPreview, setShowBlurPreview] = useState(false);
   const [blurBox, setBlurBox] = useState({ x: 0, y: 0, width: 400, height: 200 });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
+  const [displaySize, setDisplaySize] = useState({ width: 0, height: 0 });
   const [originalImageUrl, setOriginalImageUrl] = useState("");
 
   useEffect(() => {
@@ -73,6 +74,18 @@ export default function FAFOGenerator() {
     }
   }, [holdThatLFile]);
 
+  // Update blur box when display size is captured
+  useEffect(() => {
+    if (displaySize.width > 0 && imageSize.width > 0) {
+      setBlurBox({
+        x: 0,
+        y: 0,
+        width: displaySize.width,
+        height: Math.floor(displaySize.height * 0.3)
+      });
+    }
+  }, [displaySize.width, displaySize.height, imageSize.width, imageSize.height]);
+
   const loadOriginalImage = (file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -82,12 +95,7 @@ export default function FAFOGenerator() {
       const img = new Image();
       img.onload = () => {
         setImageSize({ width: img.width, height: img.height });
-        setBlurBox({
-          x: 0,
-          y: 0,
-          width: img.width,
-          height: Math.floor(img.height * 0.3)
-        });
+        // Blur box will be initialized after display size is captured
         setShowBlurPreview(true);
       };
       img.src = url;
@@ -121,8 +129,24 @@ export default function FAFOGenerator() {
       const holdThatLExt = holdThatLFile[0].name.split('.').pop();
       const holdThatLPath = `${entryId}/hold-that-l.${holdThatLExt}`;
       
-      // Apply blur with custom region to anonymize identity section
-      const processedBlob = await blurIdentitySection(holdThatLFile[0], blurBox);
+      // Scale blur box coordinates from display size to original image size
+      const scaleX = imageSize.width / displaySize.width;
+      const scaleY = imageSize.height / displaySize.height;
+      
+      const scaledRegion = {
+        x: Math.round(blurBox.x * scaleX),
+        y: Math.round(blurBox.y * scaleY),
+        width: Math.round(blurBox.width * scaleX),
+        height: Math.round(blurBox.height * scaleY)
+      };
+      
+      console.log('[FAFO] Display blur box:', blurBox);
+      console.log('[FAFO] Scaled to original:', scaledRegion);
+      console.log('[FAFO] Scale factors:', { scaleX, scaleY });
+      console.log('[FAFO] Image dimensions:', { original: imageSize, display: displaySize });
+      
+      // Apply blur with scaled coordinates
+      const processedBlob = await blurIdentitySection(holdThatLFile[0], scaledRegion);
       
       const { error: holdThatLError } = await supabase.storage
         .from('fafo-results')
@@ -271,6 +295,14 @@ export default function FAFOGenerator() {
 
           <div className="relative inline-block max-w-full mx-auto overflow-hidden rounded-lg border">
             <img 
+              ref={(el) => {
+                if (el && el.offsetWidth > 0) {
+                  setDisplaySize({
+                    width: el.offsetWidth,
+                    height: el.offsetHeight
+                  });
+                }
+              }}
               src={originalImageUrl} 
               alt="Original"
               className="max-w-full block"
@@ -328,8 +360,8 @@ export default function FAFOGenerator() {
             <Button variant="secondary" onClick={() => {
               setBlurBox({
                 x: 0, y: 0,
-                width: imageSize.width,
-                height: Math.floor(imageSize.height * 0.3)
+                width: displaySize.width,
+                height: Math.floor(displaySize.height * 0.3)
               });
             }}>
               Reset to Default
