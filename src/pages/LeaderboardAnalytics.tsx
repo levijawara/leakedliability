@@ -174,14 +174,18 @@ export default function LeaderboardAnalytics() {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="container max-w-6xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/admin")}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Admin
-        </Button>
+        <div className="flex gap-3 mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/admin")}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Admin
+          </Button>
+          <Button variant="ghost">
+            Daily Visitors
+          </Button>
+        </div>
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Leaderboard Analytics</h1>
