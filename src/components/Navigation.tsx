@@ -70,11 +70,12 @@ export function Navigation() {
   };
 
   return (
-    <nav className="border-b bg-card/50 backdrop-blur">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center">
-          {/* Desktop Navigation - Evenly Spaced */}
-          <div className="hidden md:flex w-full items-center justify-evenly px-4 gap-2">
+    <>
+      {/* Desktop Navigation - Fixed */}
+      <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 border-b bg-card/95 backdrop-blur-lg">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center">
+            <div className="flex w-full items-center justify-evenly px-4 gap-2">
             <ThemeToggle />
             
             <Button
@@ -201,10 +202,15 @@ export function Navigation() {
                 Sign In
               </Button>
             )}
+            </div>
           </div>
+        </div>
+      </nav>
 
-          {/* Mobile Navigation */}
-          <div className="md:hidden flex items-center justify-between w-full">
+      {/* Mobile Navigation - Inline */}
+      <nav className="md:hidden border-b bg-card/50 backdrop-blur">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <ThemeToggle />
               <a 
@@ -307,7 +313,7 @@ export function Navigation() {
             </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+    </>
   );
 }
