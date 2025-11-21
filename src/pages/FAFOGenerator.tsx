@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { FileUploadZone } from "@/components/submission/FileUploadZone";
+import { blurIdentitySection } from "@/lib/imageProcessing";
 
 export default function FAFOGenerator() {
   const navigate = useNavigate();
@@ -74,13 +75,16 @@ export default function FAFOGenerator() {
         throw new Error("User not authenticated");
       }
       
-      // Upload #HoldThatL image
+      // Upload #HoldThatL image (blur identity section first)
       const holdThatLExt = holdThatLFile[0].name.split('.').pop();
       const holdThatLPath = `${entryId}/hold-that-l.${holdThatLExt}`;
       
+      // Apply blur to top 30% to anonymize identity section
+      const processedBlob = await blurIdentitySection(holdThatLFile[0]);
+      
       const { error: holdThatLError } = await supabase.storage
         .from('fafo-results')
-        .upload(holdThatLPath, holdThatLFile[0]);
+        .upload(holdThatLPath, processedBlob);
       
       if (holdThatLError) throw holdThatLError;
       uploadedPaths.push(holdThatLPath);
@@ -205,7 +209,7 @@ export default function FAFOGenerator() {
                   disabled={uploading || holdThatLFile.length === 0 || proofFile.length === 0}
                   className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-12 py-6 text-xl rounded-lg shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
-                  {uploading ? "Uploading..." : "TALK TO 'EM! 💯"}
+                  {uploading ? "Processing & Uploading..." : "TALK TO 'EM! 💯"}
                 </Button>
               </div>
             </div>
