@@ -643,17 +643,25 @@ export default function Leaderboard() {
                           type="number"
                         />
                       ) : (
-                        <span className={cn(
-                          "font-mono text-sm",
-                          producer.pscs_score >= 800 && "text-green-500",                    // 800-1000: Excellent
-                          producer.pscs_score >= 650 && producer.pscs_score < 800 && "text-green-300",  // 650-799: Good
-                          producer.pscs_score >= 500 && producer.pscs_score < 650 && "text-yellow-300", // 500-649: Watchlist
-                          producer.pscs_score >= 300 && producer.pscs_score < 500 && "text-orange-400", // 300-499: High risk
-                          producer.pscs_score >= 0 && producer.pscs_score < 300 && "text-red-500",      // 0-299: Severe risk
-                          producer.pscs_score < 0 && "text-red-700 font-semibold"            // <0: Critical
-                        )}>
-                          {Number(producer.pscs_score || 0).toFixed(2)}
-                        </span>
+                        <div className="flex flex-col items-center gap-1">
+                          <span className={cn(
+                            "font-mono text-sm",
+                            producer.pscs_score >= 800 && "text-green-500",                    // 800-1000: Excellent
+                            producer.pscs_score >= 650 && producer.pscs_score < 800 && "text-green-300",  // 650-799: Good
+                            producer.pscs_score >= 500 && producer.pscs_score < 650 && "text-yellow-300", // 500-649: Watchlist
+                            producer.pscs_score >= 300 && producer.pscs_score < 500 && "text-orange-400", // 300-499: High risk
+                            producer.pscs_score >= 0 && producer.pscs_score < 300 && "text-red-500",      // 0-299: Severe risk
+                            producer.pscs_score < 0 && "text-red-700 font-semibold"            // <0: Critical
+                          )}>
+                            {Number(producer.pscs_score || 0).toFixed(2)}
+                          </span>
+                          
+                          {producer.total_amount_owed === 0 && producer.pscs_score < 1000 && (
+                            <span className="text-xs text-gray-400 italic">
+                              recovering
+                            </span>
+                          )}
+                        </div>
                       )}
                     </TableCell>
                     <AdminEditableCell
