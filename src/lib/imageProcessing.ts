@@ -1,4 +1,4 @@
-import StackBlur from 'stackblur-canvas';
+import * as StackBlur from 'stackblur-canvas';
 
 /**
  * Blurs the top portion of an image (identity section above PSCS line)
