@@ -112,6 +112,16 @@ export default function FAFOGenerator() {
       });
       return;
     }
+
+    // Validate dimensions are captured
+    if (displaySize.width === 0 || imageSize.width === 0) {
+      toast({
+        title: "Processing Error",
+        description: "Image dimensions not captured. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setUploading(true);
     
@@ -308,8 +318,15 @@ export default function FAFOGenerator() {
               className="max-w-full block"
               style={{ maxHeight: '70vh' }}
             />
-            
-            <Rnd
+
+            {displaySize.width === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                <p className="text-white text-sm">Loading blur editor...</p>
+              </div>
+            )}
+
+            {displaySize.width > 0 && imageSize.width > 0 && (
+              <Rnd
               size={{ width: blurBox.width, height: blurBox.height }}
               position={{ x: blurBox.x, y: blurBox.y }}
               bounds="parent"
@@ -341,6 +358,7 @@ export default function FAFOGenerator() {
                 {blurBox.width}×{blurBox.height}px
               </div>
             </Rnd>
+            )}
           </div>
 
           <div className="text-sm text-muted-foreground space-y-1 bg-muted/50 p-3 rounded">
@@ -354,6 +372,7 @@ export default function FAFOGenerator() {
               setShowBlurPreview(false);
               setHoldThatLFile([]);
               setOriginalImageUrl("");
+              setDisplaySize({ width: 0, height: 0 });
             }}>
               Cancel & Re-upload
             </Button>
