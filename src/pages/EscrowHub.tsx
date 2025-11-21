@@ -1,11 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, ArrowRight, CreditCard, CheckCircle2 } from "lucide-react";
+import { Navigation } from "@/components/Navigation";
 
 export default function EscrowHub() {
   const navigate = useNavigate();
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 space-y-12 animate-fade-in">
+    <>
+      <Navigation />
+      <div className="max-w-3xl mx-auto px-4 py-12 space-y-12 animate-fade-in">
       <header className="space-y-5 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/50 text-xs uppercase tracking-wide">
           <ShieldCheck className="w-4 h-4 text-green-500 animate-pulse" />
@@ -18,7 +21,7 @@ export default function EscrowHub() {
         </h1>
         <p className="text-neutral-300 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
           Producers send money into escrow; Leaked Liability tracks, verifies, 
-          and confirms when crew have been paid. No excuses. No "lost invoices". 💰✅
+          and confirms when crew have been paid. No excuses. No "lost invoices". Never again.
         </p>
       </header>
 
@@ -53,7 +56,7 @@ export default function EscrowHub() {
       </section>
 
       <section className="bg-green-500/5 border border-green-500/30 rounded-xl p-6 space-y-4 text-sm">
-        <h2 className="font-semibold text-lg text-green-400">How Escrow Works 💚</h2>
+        <h2 className="font-semibold text-lg text-green-400">How Escrow Works 💰</h2>
         <ul className="space-y-3 text-neutral-300">
           <li className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
@@ -74,5 +77,6 @@ export default function EscrowHub() {
         </ul>
       </section>
     </div>
+    </>
   );
 }
