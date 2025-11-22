@@ -219,9 +219,14 @@ export function Navigation() {
       {/* Mobile Navigation - Inline */}
       <nav className="md:hidden border-b bg-card/50 backdrop-blur">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2">
+          <div className="grid grid-cols-3 items-center w-full">
+            {/* Left: Theme Toggle */}
+            <div className="flex items-center justify-start">
               <ThemeToggle />
+            </div>
+            
+            {/* Center: RESULTS Button */}
+            <div className="flex items-center justify-center">
               <Button
                 onClick={() => navigate("/results")}
                 size="sm"
@@ -231,7 +236,8 @@ export function Navigation() {
               </Button>
             </div>
             
-            <div className="flex items-center gap-2">
+            {/* Right: User & Menu */}
+            <div className="flex items-center justify-end gap-2">
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
