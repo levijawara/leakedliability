@@ -89,6 +89,7 @@ export default function Admin() {
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
   const [notificationPanelExpanded, setNotificationPanelExpanded] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
+  const [verifyingSubmissionId, setVerifyingSubmissionId] = useState<string | null>(null);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
     legal_first_name: '',
@@ -509,97 +510,125 @@ export default function Admin() {
   };
 
   const handleVerifySubmission = async (id: string) => {
-    const submission = submissions.find(s => s.id === id);
-    
-    const { error } = await supabase
-      .from("submissions")
-      .update({ 
-        verified: true, 
-        status: "verified",
-        admin_notes: adminNotes || null 
-      })
-      .eq("id", id);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+    // Prevent double-clicks
+    if (verifyingSubmissionId) {
+      console.log('[handleVerifySubmission] Already verifying another submission, skipping');
       return;
     }
+    
+    setVerifyingSubmissionId(id);
+    
+    try {
+      const submission = submissions.find(s => s.id === id);
+      
+      const { error } = await supabase
+        .from("submissions")
+        .update({ 
+          verified: true, 
+          status: "verified",
+          admin_notes: adminNotes || null 
+        })
+        .eq("id", id);
 
-    // Create payment report for crew reports
-    if (submission?.submission_type === 'crew_report') {
-      const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
-      
-      // Find or create the producer
-      let { data: existingProducer } = await supabase
-        .from('producers')
-        .select('id')
-        .ilike('name', producerName)
-        .maybeSingle();
-      
-      let producerId;
-      
-      if (!existingProducer) {
-        const { data: newProducer, error: producerError } = await supabase
-          .from('producers')
-          .insert({
-            name: producerName,
-            company: formData.producer_name?.company || null
-          })
-          .select('id')
-          .single();
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Create payment report for crew reports
+      if (submission?.submission_type === 'crew_report') {
+        const formData = submission.form_data;
+        const producerName = formData.producer_name?.company || 
+          `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
+          'Unknown Producer';
         
-        if (producerError) {
-          console.error('Error creating producer:', producerError);
+        // Check if payment report already exists for this submission
+        const { data: existingReport } = await supabase
+          .from('payment_reports')
+          .select('id')
+          .eq('report_id', submission.report_id)
+          .maybeSingle();
+        
+        if (existingReport) {
+          console.log('[handleVerifySubmission] Payment report already exists, skipping creation');
           toast({
-            title: "Error",
-            description: "Failed to create producer record",
-            variant: "destructive",
+            title: "Success",
+            description: "Submission verified (payment report already existed)",
           });
+          await loadAdminData();
+          setSelectedItem(null);
+          setAdminNotes("");
           return;
         }
-        producerId = newProducer.id;
-      } else {
-        producerId = existingProducer.id;
-      }
-      
-      // Create the payment report
-      const invoiceDate = formData.invoice_date || new Date().toISOString().split('T')[0];
-      const daysOverdue = Math.floor((new Date().getTime() - new Date(invoiceDate).getTime()) / (1000 * 60 * 60 * 24));
-      
-      // Extract producer email from form data
-      const producerEmail = formData.producer_name?.email || null;
-      
-      const { error: reportError } = await supabase
-        .from('payment_reports')
-        .insert({
-          reporter_id: submission.user_id,
-          producer_id: producerId,
-          amount_owed: parseFloat(formData.amount_owed),
-          project_name: formData.project_name || 'Not specified',
-          invoice_date: invoiceDate,
-          days_overdue: daysOverdue,
-          city: formData.city || null,
-          status: 'pending',
-          verified: true,
-          report_id: submission.report_id,
-          producer_email: producerEmail
-        });
-      
-      if (reportError) {
-        console.error('Error creating payment report:', reportError);
-        toast({
-          title: "Warning",
-          description: "Submission verified but payment report creation failed",
-          variant: "default",
-        });
-      }
+        
+        // Find or create the producer
+        let { data: existingProducer } = await supabase
+          .from('producers')
+          .select('id')
+          .ilike('name', producerName)
+          .maybeSingle();
+        
+        let producerId;
+        
+        if (!existingProducer) {
+          const { data: newProducer, error: producerError } = await supabase
+            .from('producers')
+            .insert({
+              name: producerName,
+              company: formData.producer_name?.company || null
+            })
+            .select('id')
+            .single();
+          
+          if (producerError) {
+            console.error('Error creating producer:', producerError);
+            toast({
+              title: "Error",
+              description: "Failed to create producer record",
+              variant: "destructive",
+            });
+            return;
+          }
+          producerId = newProducer.id;
+        } else {
+          producerId = existingProducer.id;
+        }
+        
+        // Create the payment report
+        const invoiceDate = formData.invoice_date || new Date().toISOString().split('T')[0];
+        const daysOverdue = Math.floor((new Date().getTime() - new Date(invoiceDate).getTime()) / (1000 * 60 * 60 * 24));
+        
+        // Extract producer email from form data
+        const producerEmail = formData.producer_name?.email || null;
+        
+        const { error: reportError } = await supabase
+          .from('payment_reports')
+          .insert({
+            reporter_id: submission.user_id,
+            producer_id: producerId,
+            amount_owed: parseFloat(formData.amount_owed),
+            project_name: formData.project_name || 'Not specified',
+            invoice_date: invoiceDate,
+            days_overdue: daysOverdue,
+            city: formData.city || null,
+            status: 'pending',
+            verified: true,
+            report_id: submission.report_id,
+            producer_email: producerEmail
+          });
+        
+        if (reportError) {
+          console.error('Error creating payment report:', reportError);
+          toast({
+            title: "Warning",
+            description: "Submission verified but payment report creation failed",
+            variant: "default",
+          });
+        }
 
       // Send verification email to crew member
       const { error: emailError } = await supabase.functions.invoke('send-email', {
@@ -835,6 +864,9 @@ export default function Admin() {
     loadAdminData();
     setSelectedItem(null);
     setAdminNotes("");
+    } finally {
+      setVerifyingSubmissionId(null);
+    }
   };
 
   const handleRejectSubmission = async (id: string) => {
@@ -2106,8 +2138,11 @@ export default function Admin() {
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleVerifySubmission(submission.id)}>
-                                    Verify
+                                  <DropdownMenuItem 
+                                    onClick={() => handleVerifySubmission(submission.id)}
+                                    disabled={!!verifyingSubmissionId}
+                                  >
+                                    {verifyingSubmissionId === submission.id ? "Verifying..." : "Verify"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleRejectSubmission(submission.id)}>
                                     Reject
@@ -2174,8 +2209,11 @@ export default function Admin() {
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleVerifySubmission(submission.id)}>
-                                    Verify
+                                  <DropdownMenuItem 
+                                    onClick={() => handleVerifySubmission(submission.id)}
+                                    disabled={!!verifyingSubmissionId}
+                                  >
+                                    {verifyingSubmissionId === submission.id ? "Verifying..." : "Verify"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleRejectSubmission(submission.id)}>
                                     Reject
@@ -2242,8 +2280,11 @@ export default function Admin() {
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
                                 <>
-                                  <DropdownMenuItem onClick={() => handleVerifySubmission(submission.id)}>
-                                    Verify
+                                  <DropdownMenuItem 
+                                    onClick={() => handleVerifySubmission(submission.id)}
+                                    disabled={!!verifyingSubmissionId}
+                                  >
+                                    {verifyingSubmissionId === submission.id ? "Verifying..." : "Verify"}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem onClick={() => handleRejectSubmission(submission.id)}>
                                     Reject
@@ -2712,8 +2753,11 @@ export default function Admin() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button onClick={() => handleVerifySubmission(selectedItem.id)}>
-                        Verify & Approve
+                      <Button 
+                        onClick={() => handleVerifySubmission(selectedItem.id)}
+                        disabled={!!verifyingSubmissionId}
+                      >
+                        {verifyingSubmissionId === selectedItem.id ? "Verifying..." : "Verify & Approve"}
                       </Button>
                       <Button 
                         variant="destructive" 
