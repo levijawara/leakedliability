@@ -1034,7 +1034,7 @@ export type Database = {
           {
             foreignKeyName: "payment_reports_report_id_fkey"
             columns: ["report_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "submissions"
             referencedColumns: ["report_id"]
           },
@@ -1812,7 +1812,7 @@ export type Database = {
           {
             foreignKeyName: "payment_reports_report_id_fkey"
             columns: ["report_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "submissions"
             referencedColumns: ["report_id"]
           },
