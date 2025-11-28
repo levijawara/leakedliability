@@ -1,54 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { AlertTriangle, FileText, Users, TrendingUp, Info, Search, Instagram } from "lucide-react";
+import { AlertTriangle, FileText, Users, TrendingUp, Info, Instagram } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { ProducerSearchAutocomplete } from "@/components/ProducerSearchAutocomplete";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Handle search submission
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchTerm.trim()) {
-      navigate(`/leaderboard?search=${encodeURIComponent(searchTerm.trim())}`);
-    }
-  };
-
-  // Debounced search logging
-  useEffect(() => {
-    if (searchLogTimeoutRef.current) {
-      clearTimeout(searchLogTimeoutRef.current);
-    }
-    
-    if (searchTerm.trim().length >= 2) {
-      searchLogTimeoutRef.current = setTimeout(async () => {
-        try {
-          // Log search asynchronously (no producer matching on homepage)
-          await supabase.from('search_logs').insert({
-            searched_name: searchTerm.trim(),
-            matched_producer_id: null,
-            source: 'homepage'
-          });
-        } catch (error) {
-          // Fail silently - don't disrupt user experience
-          console.debug('Search logging failed:', error);
-        }
-      }, 1500); // 1.5s debounce
-    }
-    
-    return () => {
-      if (searchLogTimeoutRef.current) {
-        clearTimeout(searchLogTimeoutRef.current);
-      }
-    };
-  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-muted/10 to-background">
@@ -130,25 +89,7 @@ const Index = () => {
               </p>
             </div>
             
-            <form onSubmit={handleSearch} className="w-full">
-              <div className="flex items-center gap-3">
-            <div
-              className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
-              aria-hidden="true"
-            >
-                  <Search className="h-5 w-5 text-muted-foreground animate-pulse" />
-                </div>
-
-                <Input
-                  type="text"
-                  aria-label="Search producers or production companies"
-                  placeholder="Search for producers or production companies..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
-                />
-              </div>
-            </form>
+            <ProducerSearchAutocomplete source="homepage" />
           </div>
         </div>
       </div>
