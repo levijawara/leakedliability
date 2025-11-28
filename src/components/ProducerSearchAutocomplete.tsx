@@ -21,7 +21,7 @@ interface ProducerSearchAutocompleteProps {
   onSearchChange?: (term: string) => void;
   placeholder?: string;
   className?: string;
-  source?: 'homepage' | 'leaderboard';
+  source?: 'homepage' | 'leaderboard' | 'profile_claim';
 }
 
 export function ProducerSearchAutocomplete({
