@@ -65,3 +65,9 @@ verify_jwt = false
 
 [functions.admin-redirect-liability]
 verify_jwt = true
+
+[functions.create-identity-verification-session]
+verify_jwt = true
+
+[functions.admin-approve-claim]
+verify_jwt = true
