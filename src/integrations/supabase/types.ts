@@ -498,6 +498,73 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_claim_history: {
+        Row: {
+          admin_id: string | null
+          created_at: string
+          id: string
+          matched_email_domain: string | null
+          matched_name: string | null
+          new_status: string
+          old_status: string | null
+          producer_id: string
+          rejection_reason: string | null
+          stripe_session_id: string | null
+          user_id: string
+          verification_report_id: string | null
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string
+          id?: string
+          matched_email_domain?: string | null
+          matched_name?: string | null
+          new_status: string
+          old_status?: string | null
+          producer_id: string
+          rejection_reason?: string | null
+          stripe_session_id?: string | null
+          user_id: string
+          verification_report_id?: string | null
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string
+          id?: string
+          matched_email_domain?: string | null
+          matched_name?: string | null
+          new_status?: string
+          old_status?: string | null
+          producer_id?: string
+          rejection_reason?: string | null
+          stripe_session_id?: string | null
+          user_id?: string
+          verification_report_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_claim_history_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "producers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "identity_claim_history_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+          {
+            foreignKeyName: "identity_claim_history_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
+            referencedColumns: ["producer_id"]
+          },
+        ]
+      }
       image_generations: {
         Row: {
           created_at: string | null
@@ -1318,6 +1385,8 @@ export type Database = {
           admin_creator_id: string | null
           auto_created: boolean | null
           average_days_to_pay: number | null
+          claimed_at: string | null
+          claimed_by_user_id: string | null
           company: string | null
           created_at: string
           created_by_admin: boolean | null
@@ -1334,6 +1403,8 @@ export type Database = {
           paid_jobs_count: number | null
           plateau_days: number | null
           pscs_score: number | null
+          stripe_verification_session_id: string | null
+          stripe_verification_status: string | null
           sub_name: string | null
           subscription_status: string | null
           subscription_tier: string | null
@@ -1353,6 +1424,8 @@ export type Database = {
           admin_creator_id?: string | null
           auto_created?: boolean | null
           average_days_to_pay?: number | null
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
           company?: string | null
           created_at?: string
           created_by_admin?: boolean | null
@@ -1369,6 +1442,8 @@ export type Database = {
           paid_jobs_count?: number | null
           plateau_days?: number | null
           pscs_score?: number | null
+          stripe_verification_session_id?: string | null
+          stripe_verification_status?: string | null
           sub_name?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
@@ -1388,6 +1463,8 @@ export type Database = {
           admin_creator_id?: string | null
           auto_created?: boolean | null
           average_days_to_pay?: number | null
+          claimed_at?: string | null
+          claimed_by_user_id?: string | null
           company?: string | null
           created_at?: string
           created_by_admin?: boolean | null
@@ -1404,6 +1481,8 @@ export type Database = {
           paid_jobs_count?: number | null
           plateau_days?: number | null
           pscs_score?: number | null
+          stripe_verification_session_id?: string | null
+          stripe_verification_status?: string | null
           sub_name?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null

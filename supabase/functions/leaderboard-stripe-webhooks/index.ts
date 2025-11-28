@@ -353,21 +353,188 @@ serve(async (req) => {
         break;
       }
 
-      case "invoice.payment_failed": {
-        const inv = event.data.object as Stripe.Invoice;
-        const customerId = inv.customer as string;
+      // ============ IDENTITY VERIFICATION EVENTS ============
+      case "identity.verification_session.verified": {
+        const session = event.data.object as any;
+        const producerId = session.metadata?.producer_id;
+        const userId = session.metadata?.user_id;
+        const producerName = session.metadata?.producer_name;
+        const userEmail = session.metadata?.user_email;
 
-        const { error } = await supabase
-          .from("user_entitlements")
-          .update({
-            status: "inactive",
-            updated_at: new Date().toISOString(),
-          })
-          .eq("stripe_customer_id", customerId)
-          .eq("entitlement_type", "leaderboard");
+        if (!producerId || !userId) {
+          log("identity verified but missing metadata", { producerId, userId });
+          break;
+        }
 
-        if (error) log("payment_failed update error", error);
-        else log("entitlement set inactive", { customerId });
+        log("identity verification verified", { producerId, userId });
+
+        // Get verification report for extracted name data
+        let verifiedFirstName = "";
+        let verifiedLastName = "";
+        
+        try {
+          if (session.last_verification_report) {
+            const report = await stripe.identity.verificationReports.retrieve(
+              session.last_verification_report
+            );
+            verifiedFirstName = report.document?.first_name || "";
+            verifiedLastName = report.document?.last_name || "";
+            log("extracted name from report", { verifiedFirstName, verifiedLastName });
+          }
+        } catch (e) {
+          log("could not retrieve verification report", String(e));
+        }
+
+        const verifiedFullName = `${verifiedFirstName} ${verifiedLastName}`.trim();
+
+        // Get producer details
+        const { data: producer, error: producerError } = await supabase
+          .from("producers")
+          .select("name, email")
+          .eq("id", producerId)
+          .single();
+
+        if (producerError || !producer) {
+          log("producer not found", { producerId });
+          break;
+        }
+
+        // Business Logic Checks
+        // A. Name matching (fuzzy - check if names are similar)
+        const normalizedProducerName = producer.name.toLowerCase().trim();
+        const normalizedVerifiedName = verifiedFullName.toLowerCase().trim();
+        
+        // Simple fuzzy match: check if either name contains the other or they share significant overlap
+        const nameMatch = 
+          normalizedProducerName.includes(normalizedVerifiedName) ||
+          normalizedVerifiedName.includes(normalizedProducerName) ||
+          normalizedProducerName.split(" ").some((part: string) => 
+            normalizedVerifiedName.includes(part) && part.length > 2
+          ) ||
+          normalizedVerifiedName.split(" ").some((part: string) => 
+            normalizedProducerName.includes(part) && part.length > 2
+          );
+
+        // B. Email domain matching
+        const emailDomainMatch = producer.email && userEmail &&
+          userEmail.split("@")[1] === producer.email.split("@")[1];
+
+        log("verification checks", { 
+          producerName: producer.name, 
+          verifiedName: verifiedFullName,
+          nameMatch, 
+          emailDomainMatch 
+        });
+
+        if (nameMatch || emailDomainMatch) {
+          // AUTO-APPROVE: Name or email domain matches
+          const { error: updateError } = await supabase
+            .from("producers")
+            .update({
+              stripe_verification_status: "verified",
+              has_claimed_account: true,
+              is_placeholder: false,
+              claimed_by_user_id: userId,
+              claimed_at: new Date().toISOString(),
+            })
+            .eq("id", producerId);
+
+          if (updateError) {
+            log("error updating producer", updateError);
+          }
+
+          // Log success
+          await supabase.from("identity_claim_history").insert({
+            producer_id: producerId,
+            user_id: userId,
+            old_status: "pending",
+            new_status: "verified",
+            stripe_session_id: session.id,
+            verification_report_id: session.last_verification_report,
+            matched_name: nameMatch ? verifiedFullName : null,
+            matched_email_domain: emailDomainMatch ? userEmail?.split("@")[1] : null,
+          });
+
+          log("claim auto-approved", { producerId, userId });
+
+          // TODO: Send success email to user
+          // await supabase.functions.invoke('send-email', { ... });
+
+        } else {
+          // PENDING ADMIN: Mismatch detected
+          const { error: updateError } = await supabase
+            .from("producers")
+            .update({
+              stripe_verification_status: "pending_admin",
+            })
+            .eq("id", producerId);
+
+          if (updateError) {
+            log("error updating producer to pending_admin", updateError);
+          }
+
+          // Log for admin review
+          await supabase.from("identity_claim_history").insert({
+            producer_id: producerId,
+            user_id: userId,
+            old_status: "pending",
+            new_status: "pending_admin",
+            stripe_session_id: session.id,
+            verification_report_id: session.last_verification_report,
+            rejection_reason: `Name mismatch: verified="${verifiedFullName}" vs producer="${producer.name}"`,
+          });
+
+          log("claim sent to admin review", { producerId, reason: "name mismatch" });
+
+          // TODO: Send admin notification email
+        }
+        break;
+      }
+
+      case "identity.verification_session.requires_input": {
+        const session = event.data.object as any;
+        const producerId = session.metadata?.producer_id;
+        
+        log("identity verification requires input", { producerId, sessionId: session.id });
+        // Keep status as pending - user needs to retry verification
+        // No database update needed
+        break;
+      }
+
+      case "identity.verification_session.canceled": {
+        const session = event.data.object as any;
+        const producerId = session.metadata?.producer_id;
+        const userId = session.metadata?.user_id;
+
+        log("identity verification canceled", { producerId, sessionId: session.id });
+
+        if (producerId) {
+          // Clear session and reset status
+          const { error: updateError } = await supabase
+            .from("producers")
+            .update({
+              stripe_verification_session_id: null,
+              stripe_verification_status: "unverified",
+            })
+            .eq("id", producerId)
+            .eq("stripe_verification_session_id", session.id);
+
+          if (updateError) {
+            log("error resetting producer after cancellation", updateError);
+          }
+
+          // Log cancellation
+          if (userId) {
+            await supabase.from("identity_claim_history").insert({
+              producer_id: producerId,
+              user_id: userId,
+              old_status: "pending",
+              new_status: "unverified",
+              stripe_session_id: session.id,
+              rejection_reason: "User canceled verification",
+            });
+          }
+        }
         break;
       }
 
