@@ -459,6 +459,13 @@ export type Database = {
             referencedRelation: "public_leaderboard"
             referencedColumns: ["producer_id"]
           },
+          {
+            foreignKeyName: "escrow_payments_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
+            referencedColumns: ["producer_id"]
+          },
         ]
       }
       fafo_entries: {
@@ -762,6 +769,13 @@ export type Database = {
             referencedRelation: "public_leaderboard"
             referencedColumns: ["producer_id"]
           },
+          {
+            foreignKeyName: "manual_email_logs_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
+            referencedColumns: ["producer_id"]
+          },
         ]
       }
       moderation_logs: {
@@ -838,6 +852,13 @@ export type Database = {
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+          {
+            foreignKeyName: "past_debts_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
             referencedColumns: ["producer_id"]
           },
         ]
@@ -918,6 +939,13 @@ export type Database = {
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+          {
+            foreignKeyName: "payment_confirmations_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
             referencedColumns: ["producer_id"]
           },
         ]
@@ -1032,6 +1060,13 @@ export type Database = {
             referencedColumns: ["producer_id"]
           },
           {
+            foreignKeyName: "payment_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
+            referencedColumns: ["producer_id"]
+          },
+          {
             foreignKeyName: "payment_reports_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: true
@@ -1075,6 +1110,13 @@ export type Database = {
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+          {
+            foreignKeyName: "producer_account_links_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
             referencedColumns: ["producer_id"]
           },
         ]
@@ -1132,6 +1174,13 @@ export type Database = {
             columns: ["producer_id"]
             isOneToOne: false
             referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+          {
+            foreignKeyName: "producer_self_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
             referencedColumns: ["producer_id"]
           },
         ]
@@ -1194,6 +1243,13 @@ export type Database = {
             referencedRelation: "public_leaderboard"
             referencedColumns: ["producer_id"]
           },
+          {
+            foreignKeyName: "producer_subscriptions_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
+            referencedColumns: ["producer_id"]
+          },
         ]
       }
       producers: {
@@ -1206,7 +1262,9 @@ export type Database = {
           created_at: string
           created_by_admin: boolean | null
           email: string | null
+          has_claimed_account: boolean | null
           id: string
+          is_placeholder: boolean | null
           last_closed_date: string | null
           momentum_active_until: string | null
           name: string
@@ -1239,7 +1297,9 @@ export type Database = {
           created_at?: string
           created_by_admin?: boolean | null
           email?: string | null
+          has_claimed_account?: boolean | null
           id?: string
+          is_placeholder?: boolean | null
           last_closed_date?: string | null
           momentum_active_until?: string | null
           name: string
@@ -1272,7 +1332,9 @@ export type Database = {
           created_at?: string
           created_by_admin?: boolean | null
           email?: string | null
+          has_claimed_account?: boolean | null
           id?: string
+          is_placeholder?: boolean | null
           last_closed_date?: string | null
           momentum_active_until?: string | null
           name?: string
@@ -1456,6 +1518,13 @@ export type Database = {
             columns: ["matched_producer_id"]
             isOneToOne: false
             referencedRelation: "public_leaderboard"
+            referencedColumns: ["producer_id"]
+          },
+          {
+            foreignKeyName: "search_logs_matched_producer_id_fkey"
+            columns: ["matched_producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
             referencedColumns: ["producer_id"]
           },
         ]
@@ -1810,6 +1879,13 @@ export type Database = {
             referencedColumns: ["producer_id"]
           },
           {
+            foreignKeyName: "payment_reports_producer_id_fkey"
+            columns: ["producer_id"]
+            isOneToOne: false
+            referencedRelation: "public_producer_search"
+            referencedColumns: ["producer_id"]
+          },
+          {
             foreignKeyName: "payment_reports_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: true
@@ -1817,6 +1893,30 @@ export type Database = {
             referencedColumns: ["report_id"]
           },
         ]
+      }
+      public_producer_search: {
+        Row: {
+          company_name: string | null
+          has_claimed_account: boolean | null
+          is_placeholder: boolean | null
+          producer_id: string | null
+          producer_name: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          has_claimed_account?: boolean | null
+          is_placeholder?: boolean | null
+          producer_id?: string | null
+          producer_name?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          has_claimed_account?: boolean | null
+          is_placeholder?: boolean | null
+          producer_id?: string | null
+          producer_name?: string | null
+        }
+        Relationships: []
       }
       suggestions_with_profile: {
         Row: {
