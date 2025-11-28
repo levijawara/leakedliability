@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, User as UserIcon } from "lucide-react";
+import { Loader2, LogOut, User as UserIcon, Shield, CheckCircle, Clock, Search } from "lucide-react";
 import { LeaderboardAccessStatus } from "@/components/LeaderboardAccessStatus";
 import { Footer } from "@/components/Footer";
+import { Badge } from "@/components/ui/badge";
+import { ProducerSearchAutocomplete } from "@/components/ProducerSearchAutocomplete";
 
 interface Profile {
   account_type: string;
@@ -28,6 +30,13 @@ interface SubmissionStats {
   report_dispute: number;
 }
 
+interface ClaimedProducer {
+  id: string;
+  name: string;
+  company: string | null;
+  stripe_verification_status: string | null;
+}
+
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -43,6 +52,8 @@ const Profile = () => {
     report_explanation: 0,
     report_dispute: 0,
   });
+  const [claimedProducer, setClaimedProducer] = useState<ClaimedProducer | null>(null);
+  const [loadingClaim, setLoadingClaim] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -56,11 +67,26 @@ const Profile = () => {
       setUser(session.user);
       await fetchProfile(session.user.id);
       await fetchSubmissionStats(session.user.id);
+      await fetchClaimedProducer(session.user.id);
       setLoading(false);
     };
 
     checkAuth();
   }, [navigate]);
+
+  const fetchClaimedProducer = async (userId: string) => {
+    setLoadingClaim(true);
+    const { data, error } = await supabase
+      .from("producers")
+      .select("id, name, company, stripe_verification_status")
+      .eq("claimed_by_user_id", userId)
+      .maybeSingle();
+
+    if (!error && data) {
+      setClaimedProducer(data);
+    }
+    setLoadingClaim(false);
+  };
 
   const fetchProfile = async (userId: string) => {
     const { data, error } = await supabase
@@ -252,6 +278,94 @@ const Profile = () => {
               </form>
             </CardContent>
           </Card>
+
+          {/* Claim Producer Profile Card - Only for producer/production_company accounts */}
+          {(profile?.account_type === 'producer' || profile?.account_type === 'production_company') && (
+            <Card className="mt-6 border-primary/20">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Shield className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle>Claim Your Producer Profile</CardTitle>
+                    <CardDescription>
+                      Verify your identity to claim ownership of your official leaderboard profile
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {loadingClaim ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : claimedProducer ? (
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-lg bg-muted/50 border">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium">{claimedProducer.name}</p>
+                          {claimedProducer.company && (
+                            <p className="text-sm text-muted-foreground">{claimedProducer.company}</p>
+                          )}
+                        </div>
+                        {claimedProducer.stripe_verification_status === 'verified' ? (
+                          <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Verified Owner
+                          </Badge>
+                        ) : claimedProducer.stripe_verification_status === 'pending' ? (
+                          <Badge variant="outline" className="text-orange-500 border-orange-500/20">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Verification in Progress
+                          </Badge>
+                        ) : claimedProducer.stripe_verification_status === 'pending_admin' ? (
+                          <Badge variant="outline" className="text-yellow-500 border-yellow-500/20">
+                            <Clock className="h-3 w-3 mr-1" />
+                            Pending Admin Review
+                          </Badge>
+                        ) : (
+                          <Button 
+                            size="sm" 
+                            onClick={() => navigate(`/claim/${claimedProducer.id}`)}
+                          >
+                            Complete Verification
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {claimedProducer.stripe_verification_status === 'verified' && (
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => navigate('/producer-dashboard')}
+                      >
+                        Go to Producer Dashboard
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Search for your name or company to find your profile and start the verification process.
+                    </p>
+                    <ProducerSearchAutocomplete 
+                      placeholder="Search for your name or company..."
+                      source="profile_claim"
+                    />
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-muted/30 text-sm text-muted-foreground">
+                      <Search className="h-4 w-4 mt-0.5 shrink-0" />
+                      <p>
+                        Identity verification requires a valid government ID and a matching selfie. 
+                        This helps protect your reputation on the leaderboard.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="mt-6">
             <CardHeader>
