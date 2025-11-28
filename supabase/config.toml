@@ -62,3 +62,6 @@ verify_jwt = true
 
 [functions.track-visit]
 verify_jwt = false
+
+[functions.admin-redirect-liability]
+verify_jwt = true

@@ -717,6 +717,66 @@ export type Database = {
           },
         ]
       }
+      liability_redirects: {
+        Row: {
+          created_at: string
+          from_producer_email: string | null
+          from_producer_id: string
+          from_producer_name: string
+          id: string
+          original_report_id: string
+          performed_by: string
+          reason: string | null
+          report_id: string
+          to_producer_email: string | null
+          to_producer_id: string
+          to_producer_name: string
+        }
+        Insert: {
+          created_at?: string
+          from_producer_email?: string | null
+          from_producer_id: string
+          from_producer_name: string
+          id?: string
+          original_report_id: string
+          performed_by: string
+          reason?: string | null
+          report_id: string
+          to_producer_email?: string | null
+          to_producer_id: string
+          to_producer_name: string
+        }
+        Update: {
+          created_at?: string
+          from_producer_email?: string | null
+          from_producer_id?: string
+          from_producer_name?: string
+          id?: string
+          original_report_id?: string
+          performed_by?: string
+          reason?: string | null
+          report_id?: string
+          to_producer_email?: string | null
+          to_producer_id?: string
+          to_producer_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_redirects_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_redirects_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_email_logs: {
         Row: {
           admin_id: string
