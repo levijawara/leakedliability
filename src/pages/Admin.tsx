@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,6 +106,8 @@ export default function Admin() {
     new_producer_email: ''
   });
   const [producers, setProducers] = useState<any[]>([]);
+  const [identityClaims, setIdentityClaims] = useState<any[]>([]);
+  const [processingClaimId, setProcessingClaimId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -354,6 +356,14 @@ export default function Admin() {
       .select('id, name, company, email')
       .order('name', { ascending: true });
     setProducers(producersList || []);
+
+    // Load identity claims pending admin review
+    const { data: claims } = await supabase
+      .from('producers')
+      .select('id, name, company, email, stripe_verification_status, claimed_by_user_id, stripe_verification_session_id')
+      .eq('stripe_verification_status', 'pending_admin')
+      .order('updated_at', { ascending: false });
+    setIdentityClaims(claims || []);
 
     // Load leading users for each submission type
     await loadLeadingUsers();
@@ -1362,6 +1372,67 @@ export default function Admin() {
     }
   };
 
+  const handleApproveIdentityClaim = async (producerId: string) => {
+    setProcessingClaimId(producerId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-approve-claim', {
+        body: { producer_id: producerId, approved: true }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: "✅ Identity Claim Approved",
+        description: "Producer profile has been verified and claimed.",
+      });
+      await loadAdminData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to approve claim",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingClaimId(null);
+    }
+  };
+
+  const handleRejectIdentityClaim = async (producerId: string, reason: string) => {
+    if (!reason.trim()) {
+      toast({
+        title: "Reason Required",
+        description: "Please provide a reason for rejection",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setProcessingClaimId(producerId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-approve-claim', {
+        body: { producer_id: producerId, approved: false, rejection_reason: reason }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      toast({
+        title: "Identity Claim Rejected",
+        description: "The claim has been rejected and the user notified.",
+      });
+      await loadAdminData();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reject claim",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingClaimId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -1671,13 +1742,19 @@ export default function Admin() {
       </Card>
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7 gap-1 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1">
           <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">💰 Payments Due</TabsTrigger>
           <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">✅ Paid</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">⚙️ Settings</TabsTrigger>
           <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">👥 Users</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">📧 Notifications</TabsTrigger>
           <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">📋 All Submissions</TabsTrigger>
+          <TabsTrigger value="identity_claims" className="text-xs sm:text-sm px-2 py-1.5">
+            🛡️ Identity Claims
+            {identityClaims.length > 0 && (
+              <Badge variant="destructive" className="ml-1">{identityClaims.length}</Badge>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="suggestions" className="text-xs sm:text-sm px-2 py-1.5">
             💡 Suggestions
             {suggestions.length > 0 && (
@@ -2778,6 +2855,97 @@ export default function Admin() {
             </TabsContent>
           );
         })}
+
+        {/* Identity Claims Tab */}
+        <TabsContent value="identity_claims">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-1">Identity Verification Claims</h2>
+              <p className="text-sm text-muted-foreground">Review and approve producer identity verification requests</p>
+            </div>
+            
+            {identityClaims.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No pending identity claims to review
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Producer Name</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {identityClaims.map((claim) => (
+                    <TableRow key={claim.id}>
+                      <TableCell className="font-medium">{claim.name}</TableCell>
+                      <TableCell>{claim.company || '-'}</TableCell>
+                      <TableCell>{claim.email || '-'}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className="text-yellow-500 border-yellow-500">
+                          Pending Admin Review
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="default"
+                            onClick={() => handleApproveIdentityClaim(claim.id)}
+                            disabled={processingClaimId === claim.id}
+                          >
+                            {processingClaimId === claim.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              'Approve'
+                            )}
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={processingClaimId === claim.id}
+                              >
+                                Reject
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-64">
+                              <div className="p-2">
+                                <Label className="text-xs">Rejection Reason</Label>
+                                <Textarea
+                                  id={`reject-reason-${claim.id}`}
+                                  placeholder="Enter reason for rejection..."
+                                  className="mt-1 text-sm"
+                                  rows={3}
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="w-full mt-2"
+                                  onClick={() => {
+                                    const textarea = document.getElementById(`reject-reason-${claim.id}`) as HTMLTextAreaElement;
+                                    handleRejectIdentityClaim(claim.id, textarea?.value || '');
+                                  }}
+                                >
+                                  Confirm Rejection
+                                </Button>
+                              </div>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </Card>
+        </TabsContent>
 
         {/* Suggestions Tab */}
         <TabsContent value="suggestions">
