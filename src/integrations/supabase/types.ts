@@ -2035,25 +2035,31 @@ export type Database = {
       }
       public_producer_search: {
         Row: {
+          claimed_by_user_id: string | null
           company_name: string | null
           has_claimed_account: boolean | null
           is_placeholder: boolean | null
           producer_id: string | null
           producer_name: string | null
+          stripe_verification_status: string | null
         }
         Insert: {
+          claimed_by_user_id?: string | null
           company_name?: string | null
           has_claimed_account?: boolean | null
           is_placeholder?: boolean | null
           producer_id?: string | null
           producer_name?: string | null
+          stripe_verification_status?: string | null
         }
         Update: {
+          claimed_by_user_id?: string | null
           company_name?: string | null
           has_claimed_account?: boolean | null
           is_placeholder?: boolean | null
           producer_id?: string | null
           producer_name?: string | null
+          stripe_verification_status?: string | null
         }
         Relationships: []
       }

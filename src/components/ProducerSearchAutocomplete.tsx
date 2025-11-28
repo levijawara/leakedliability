@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Ghost, User } from "lucide-react";
+import { Search, Ghost, User, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProducerSearchResult {
@@ -12,6 +12,8 @@ interface ProducerSearchResult {
   company_name: string | null;
   is_placeholder: boolean | null;
   has_claimed_account: boolean | null;
+  stripe_verification_status: string | null;
+  claimed_by_user_id: string | null;
 }
 
 interface ProducerSearchAutocompleteProps {
@@ -124,9 +126,16 @@ export function ProducerSearchAutocomplete({
       // Fail silently
     }
 
-    if (producer.is_placeholder) {
-      // Placeholder: redirect to paywall (subscribe page)
-      navigate('/subscribe');
+    // If already claimed/verified by someone else, just navigate to leaderboard
+    if (producer.has_claimed_account && producer.stripe_verification_status === 'verified') {
+      if (onSelect) {
+        onSelect(producer);
+      } else {
+        navigate(`/leaderboard?search=${encodeURIComponent(producer.producer_name)}`);
+      }
+    } else if (producer.is_placeholder || !producer.has_claimed_account) {
+      // Unclaimed placeholder: navigate to claim page
+      navigate(`/claim/${producer.producer_id}`);
     } else {
       // Real producer: call onSelect or navigate to leaderboard with search
       if (onSelect) {
@@ -223,7 +232,26 @@ export function ProducerSearchAutocomplete({
                   )}
                 </div>
                 
-                {producer.is_placeholder && (
+                {/* Verification Status Badges */}
+                {producer.has_claimed_account && producer.stripe_verification_status === 'verified' && (
+                  <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500/50 text-green-500 gap-1">
+                    <CheckCircle className="h-3 w-3" />
+                    Verified Owner
+                  </Badge>
+                )}
+                {producer.stripe_verification_status === 'pending' && (
+                  <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500/50 text-orange-500 gap-1">
+                    <Clock className="h-3 w-3" />
+                    Verifying
+                  </Badge>
+                )}
+                {producer.stripe_verification_status === 'pending_admin' && (
+                  <Badge variant="outline" className="text-xs flex-shrink-0 border-yellow-500/50 text-yellow-500 gap-1">
+                    <AlertTriangle className="h-3 w-3" />
+                    Pending Review
+                  </Badge>
+                )}
+                {(producer.is_placeholder || (!producer.has_claimed_account && (!producer.stripe_verification_status || producer.stripe_verification_status === 'unverified'))) && (
                   <Badge variant="outline" className="text-xs flex-shrink-0 border-muted-foreground/30 text-muted-foreground">
                     Unclaimed
                   </Badge>
