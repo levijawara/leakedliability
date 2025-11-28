@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, AlertTriangle, GitMerge, ArrowLeft } from "lucide-react";
+import { Loader2, AlertTriangle, GitMerge, ArrowLeft, ArrowRightLeft, Zap } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { mapDatabaseError } from "@/lib/errors";
 
 interface Producer {
@@ -41,6 +43,8 @@ export default function AdminProducerMerge() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  
+  // Merge state
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Producer[]>([]);
   const [selectedProducers, setSelectedProducers] = useState<string[]>([]);
@@ -51,6 +55,17 @@ export default function AdminProducerMerge() {
   const [confirmChecked, setConfirmChecked] = useState(false);
   const [merging, setMerging] = useState(false);
   const [searching, setSearching] = useState(false);
+
+  // Redirect state
+  const [redirectReportId, setRedirectReportId] = useState("");
+  const [redirectOriginalName, setRedirectOriginalName] = useState("");
+  const [redirectOriginalEmail, setRedirectOriginalEmail] = useState("");
+  const [redirectNewName, setRedirectNewName] = useState("");
+  const [redirectNewEmail, setRedirectNewEmail] = useState("");
+  const [redirectReason, setRedirectReason] = useState("");
+  const [redirecting, setRedirecting] = useState(false);
+  const [redirectConfirmChecked, setRedirectConfirmChecked] = useState(false);
+  const [showRedirectConfirmModal, setShowRedirectConfirmModal] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -135,7 +150,6 @@ export default function AdminProducerMerge() {
   const toggleProducerSelection = (producerId: string) => {
     setSelectedProducers(prev => {
       if (prev.includes(producerId)) {
-        // If deselecting and it was primary, clear primary
         if (primaryProducerId === producerId) {
           setPrimaryProducerId("");
         }
@@ -201,7 +215,6 @@ export default function AdminProducerMerge() {
         impactData[duplicate.id] = counts;
       }
 
-      // Calculate totals
       const totalImpact = Object.values(impactData).reduce((acc, curr) => ({
         payment_reports: acc.payment_reports + curr.payment_reports,
         producer_account_links: acc.producer_account_links + curr.producer_account_links,
@@ -272,14 +285,12 @@ export default function AdminProducerMerge() {
         description: `Merged ${duplicateIds.length} producer${duplicateIds.length > 1 ? 's' : ''} into primary producer`,
       });
 
-      // Reset everything
       setSelectedProducers([]);
       setPrimaryProducerId("");
       setShowConfirmModal(false);
       setConfirmChecked(false);
       setMergePreview(null);
       
-      // Refresh search results
       await handleSearch();
     } catch (error: any) {
       toast({
@@ -296,6 +307,91 @@ export default function AdminProducerMerge() {
     setSelectedProducers([]);
     setPrimaryProducerId("");
     setMergePreview(null);
+  };
+
+  // Redirect functions
+  const validateRedirectForm = () => {
+    if (!redirectReportId.trim()) {
+      toast({ title: "Report ID is required", variant: "destructive" });
+      return false;
+    }
+    if (!redirectOriginalName.trim()) {
+      toast({ title: "Original producer name is required", variant: "destructive" });
+      return false;
+    }
+    if (!redirectOriginalEmail.trim()) {
+      toast({ title: "Original producer email is required", variant: "destructive" });
+      return false;
+    }
+    if (!redirectNewName.trim()) {
+      toast({ title: "New producer name is required", variant: "destructive" });
+      return false;
+    }
+    if (!redirectNewEmail.trim()) {
+      toast({ title: "New producer email is required", variant: "destructive" });
+      return false;
+    }
+    return true;
+  };
+
+  const initiateRedirect = () => {
+    if (!validateRedirectForm()) return;
+    setShowRedirectConfirmModal(true);
+  };
+
+  const executeRedirect = async () => {
+    if (!redirectConfirmChecked) {
+      toast({
+        title: "Confirmation required",
+        description: "You must confirm you understand this action is logged",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setRedirecting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-redirect-liability', {
+        body: {
+          reportId: redirectReportId.trim(),
+          originalName: redirectOriginalName.trim(),
+          originalEmail: redirectOriginalEmail.trim(),
+          newName: redirectNewName.trim(),
+          newEmail: redirectNewEmail.trim(),
+          reason: redirectReason.trim() || undefined
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      toast({
+        title: "Liability redirected successfully",
+        description: data.message || `Redirected from "${redirectOriginalName}" to "${redirectNewName}"`,
+      });
+
+      // Reset form
+      setRedirectReportId("");
+      setRedirectOriginalName("");
+      setRedirectOriginalEmail("");
+      setRedirectNewName("");
+      setRedirectNewEmail("");
+      setRedirectReason("");
+      setShowRedirectConfirmModal(false);
+      setRedirectConfirmChecked(false);
+
+    } catch (error: any) {
+      toast({
+        title: "Redirect failed",
+        description: error.message || mapDatabaseError(error),
+        variant: "destructive",
+      });
+    } finally {
+      setRedirecting(false);
+    }
   };
 
   if (loading) {
@@ -321,15 +417,140 @@ export default function AdminProducerMerge() {
           <div>
             <h1 className="text-4xl font-black flex items-center gap-2">
               <GitMerge className="h-8 w-8" />
-              Producer Merge Tool
+              Producer Merge / Redirect
             </h1>
             <p className="text-muted-foreground mt-1">
-              Combine duplicate producer entries into a single record
+              Merge duplicates or redirect liability between producers
             </p>
           </div>
         </div>
       </div>
 
+      {/* REDIRECT SECTION */}
+      <Card className="border-orange-500/50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-orange-500" />
+            Liability Redirect
+          </CardTitle>
+          <CardDescription>
+            Transfer a specific report from one producer to another
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Warning: This action is logged</AlertTitle>
+            <AlertDescription>
+              Redirects permanently change which producer is liable for this report. 
+              This action cannot be undone without another redirect. All redirects are audited.
+            </AlertDescription>
+          </Alert>
+
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="reportId">Report ID</Label>
+              <Input
+                id="reportId"
+                placeholder="CR-20251128-XXXXX"
+                value={redirectReportId}
+                onChange={(e) => setRedirectReportId(e.target.value)}
+              />
+            </div>
+
+            <Separator />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4 p-4 rounded-lg border bg-muted/30">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                  Original Producer (Being Cleared)
+                </h3>
+                <div className="space-y-2">
+                  <Label htmlFor="originalName">Name</Label>
+                  <Input
+                    id="originalName"
+                    placeholder="Originally reported producer name"
+                    value={redirectOriginalName}
+                    onChange={(e) => setRedirectOriginalName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="originalEmail">Email</Label>
+                  <Input
+                    id="originalEmail"
+                    type="email"
+                    placeholder="Originally reported producer email"
+                    value={redirectOriginalEmail}
+                    onChange={(e) => setRedirectOriginalEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center">
+                <ArrowRightLeft className="h-8 w-8 text-orange-500" />
+              </div>
+
+              <div className="space-y-4 p-4 rounded-lg border border-orange-500/50 bg-orange-500/5">
+                <h3 className="font-semibold text-sm text-orange-600 dark:text-orange-400 uppercase tracking-wide">
+                  New Liable Producer
+                </h3>
+                <div className="space-y-2">
+                  <Label htmlFor="newName">Name</Label>
+                  <Input
+                    id="newName"
+                    placeholder="Newly accused producer name"
+                    value={redirectNewName}
+                    onChange={(e) => setRedirectNewName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="newEmail">Email</Label>
+                  <Input
+                    id="newEmail"
+                    type="email"
+                    placeholder="Newly accused producer email"
+                    value={redirectNewEmail}
+                    onChange={(e) => setRedirectNewEmail(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="reason">Reason (Optional)</Label>
+              <Textarea
+                id="reason"
+                placeholder="Why is liability being redirected? (e.g., Producer cooperated and provided actual liable party)"
+                value={redirectReason}
+                onChange={(e) => setRedirectReason(e.target.value)}
+                rows={2}
+              />
+            </div>
+
+            <Button 
+              onClick={initiateRedirect}
+              className="bg-orange-600 hover:bg-orange-700"
+              disabled={redirecting}
+            >
+              {redirecting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Redirecting...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 mr-2" />
+                  REDIRECT LIABILITY
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator className="my-8" />
+
+      {/* MERGE SECTION */}
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Warning: Irreversible Action</AlertTitle>
@@ -340,9 +561,12 @@ export default function AdminProducerMerge() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Search for Producers</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <GitMerge className="h-5 w-5" />
+            Producer Merge Tool
+          </CardTitle>
           <CardDescription>
-            Find potential duplicate producers by name
+            Combine duplicate producer entries into a single record
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -459,7 +683,7 @@ export default function AdminProducerMerge() {
         </CardContent>
       </Card>
 
-      {/* Preview Modal */}
+      {/* Merge Preview Modal */}
       <Dialog open={showPreviewModal} onOpenChange={setShowPreviewModal}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
@@ -471,7 +695,6 @@ export default function AdminProducerMerge() {
 
           {mergePreview && (
             <div className="space-y-6">
-              {/* Primary Producer */}
               <div className="rounded-lg border border-green-500 bg-green-500/10 p-4">
                 <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">
                   PRIMARY PRODUCER (Keeping)
@@ -492,7 +715,6 @@ export default function AdminProducerMerge() {
                 </div>
               </div>
 
-              {/* Duplicates Being Merged */}
               <div>
                 <h3 className="font-semibold mb-2">Merging from Duplicates:</h3>
                 <div className="space-y-2">
@@ -509,7 +731,6 @@ export default function AdminProducerMerge() {
                 </div>
               </div>
 
-              {/* Impact Summary */}
               <div className="rounded-lg border bg-muted/50 p-4">
                 <h3 className="font-semibold mb-3">Total Impact:</h3>
                 <div className="grid grid-cols-2 gap-3 text-sm">
@@ -569,7 +790,7 @@ export default function AdminProducerMerge() {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Modal */}
+      {/* Merge Confirmation Modal */}
       <Dialog open={showConfirmModal} onOpenChange={setShowConfirmModal}>
         <DialogContent>
           <DialogHeader>
@@ -621,6 +842,95 @@ export default function AdminProducerMerge() {
                 </>
               ) : (
                 "Execute Merge"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Redirect Confirmation Modal */}
+      <Dialog open={showRedirectConfirmModal} onOpenChange={setShowRedirectConfirmModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-orange-600">⚡ Confirm Liability Redirect</DialogTitle>
+            <DialogDescription>
+              Review the redirect details before proceeding
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="rounded-lg border p-4 space-y-2">
+              <div className="text-sm">
+                <span className="text-muted-foreground">Report ID:</span>
+                <span className="ml-2 font-mono font-medium">{redirectReportId}</span>
+              </div>
+              <Separator />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-muted-foreground block mb-1">From:</span>
+                  <div className="font-medium">{redirectOriginalName}</div>
+                  <div className="text-sm text-muted-foreground">{redirectOriginalEmail}</div>
+                </div>
+                <div>
+                  <span className="text-sm text-orange-600 dark:text-orange-400 block mb-1">To:</span>
+                  <div className="font-medium">{redirectNewName}</div>
+                  <div className="text-sm text-muted-foreground">{redirectNewEmail}</div>
+                </div>
+              </div>
+              {redirectReason && (
+                <>
+                  <Separator />
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Reason:</span>
+                    <span className="ml-2">{redirectReason}</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <Alert>
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                The original producer will be cleared of liability for this report.
+                If they have no other reports, they will become a placeholder (searchable but not on leaderboard).
+                The new producer will become liable and appear on the leaderboard.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="redirectConfirm"
+                checked={redirectConfirmChecked}
+                onCheckedChange={(checked) => setRedirectConfirmChecked(checked as boolean)}
+              />
+              <Label
+                htmlFor="redirectConfirm"
+                className="text-sm font-medium leading-none"
+              >
+                I understand this redirect will be logged and audited
+              </Label>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRedirectConfirmModal(false)} disabled={redirecting}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-orange-600 hover:bg-orange-700"
+              onClick={executeRedirect}
+              disabled={!redirectConfirmChecked || redirecting}
+            >
+              {redirecting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Redirecting...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4 mr-2" />
+                  Confirm Redirect
+                </>
               )}
             </Button>
           </DialogFooter>
