@@ -164,8 +164,15 @@ serve(async (req) => {
           );
         }
 
+        // Inject responseUrl if not provided
+        const siteUrl = Deno.env.get('PUBLIC_SITE_URL') || 'https://leakedliability.com';
+        const producerNotificationData = {
+          ...data,
+          responseUrl: data.responseUrl || `${siteUrl}/submit`,
+        };
+
         html = await renderAsync(
-          React.createElement(ProducerReportNotification, data)
+          React.createElement(ProducerReportNotification, producerNotificationData)
         );
         subject = `A Report Has Been Filed Involving Your Company – Report ID: ${data.reportId}`;
         break;

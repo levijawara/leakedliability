@@ -19,6 +19,7 @@ interface ProducerReportNotificationProps {
   daysOverdue: number;
   oldestDebtDays: number;
   projectName: string;
+  responseUrl: string;
 }
 
 export const ProducerReportNotification = ({
@@ -27,6 +28,7 @@ export const ProducerReportNotification = ({
   daysOverdue,
   oldestDebtDays,
   projectName,
+  responseUrl,
 }: ProducerReportNotificationProps) => (
   <Html>
     <Head />
@@ -84,7 +86,7 @@ export const ProducerReportNotification = ({
           </ul>
 
           <Link
-            href={`${Deno.env.get('SUPABASE_URL')?.replace('https://', 'https://').replace('.supabase.co', '.lovable.app') || 'https://leakedliability.lovable.app'}/submit`}
+            href={responseUrl}
             style={button}
           >
             Respond to Report
