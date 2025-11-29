@@ -122,45 +122,26 @@ All colors MUST be HSL.
   }
 }
 
-/* Christmas Lights Animations */
-.christmas-bulb-red {
+/* Christmas Lights - Hard ON/OFF States (No Smooth Transitions) */
+.christmas-bulb-off {
+  fill: #333;
+  opacity: 0.3;
+}
+
+.christmas-bulb-red-on {
   fill: #ff3b3b;
-  animation: christmasPulseRed 1.6s ease-in-out infinite alternate;
 }
 
-.christmas-bulb-green {
+.christmas-bulb-green-on {
   fill: #49ff4a;
-  animation: christmasPulseGreen 1.6s ease-in-out infinite alternate;
 }
 
-.christmas-glow-red {
-  fill: rgba(255, 60, 60, 0.4);
-  filter: blur(6px);
-  animation: christmasGlowRed 1.6s ease-in-out infinite alternate;
+.christmas-glow-red-on {
+  fill: rgba(255, 60, 60, 0.5);
+  filter: blur(8px);
 }
 
-.christmas-glow-green {
-  fill: rgba(70, 255, 70, 0.4);
-  filter: blur(6px);
-  animation: christmasGlowGreen 1.6s ease-in-out infinite alternate;
-}
-
-@keyframes christmasPulseRed {
-  from { opacity: 0.5; }
-  to { opacity: 1; }
-}
-
-@keyframes christmasPulseGreen {
-  from { opacity: 1; }
-  to { opacity: 0.5; }
-}
-
-@keyframes christmasGlowRed {
-  from { opacity: 0.2; }
-  to { opacity: 0.9; }
-}
-
-@keyframes christmasGlowGreen {
-  from { opacity: 0.9; }
-  to { opacity: 0.2; }
+.christmas-glow-green-on {
+  fill: rgba(70, 255, 70, 0.5);
+  filter: blur(8px);
 }
