@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -1446,7 +1447,9 @@ export default function Admin() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 pb-20 space-y-8">
+    <>
+      <Navigation />
+      <div className="container mx-auto pt-24 md:pt-28 pb-20 px-4 space-y-8">
       {maintenanceMode && (
         <Card className="mb-6 p-4 bg-yellow-500/10 border-yellow-500/50">
           <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400 font-semibold">
@@ -3569,6 +3572,7 @@ export default function Admin() {
       </Dialog>
       
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

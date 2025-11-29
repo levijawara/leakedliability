@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Loader2 } from "lucide-react";
 
 const schema = z.object({
@@ -77,7 +79,9 @@ export default function EscrowInitiate() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <>
+      <Navigation />
+      <div className="max-w-2xl mx-auto px-4 py-10 pt-24 md:pt-28">
       <h1 className="text-2xl font-semibold mb-2">Start Escrow Payment</h1>
       <p className="text-sm text-muted-foreground mb-6">
         This form creates a secure escrow payment session. We will email both 
@@ -185,6 +189,8 @@ export default function EscrowInitiate() {
           <span>{loading ? "Starting escrow..." : "Continue to secure payment"}</span>
         </button>
       </form>
-    </div>
+      <Footer />
+      </div>
+    </>
   );
 }

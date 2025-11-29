@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -172,8 +173,10 @@ export default function LeaderboardAnalytics() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6">
-      <div className="container max-w-6xl mx-auto">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background pt-20 md:pt-24 p-6">
+        <div className="container max-w-6xl mx-auto">
         <div className="flex gap-3 mb-6">
           <Button
             variant="ghost"
@@ -394,9 +397,10 @@ export default function LeaderboardAnalytics() {
           </div>
         </div>
 
+        </div>
+        
+        <Footer />
       </div>
-      
-      <Footer />
-    </div>
+    </>
   );
 }

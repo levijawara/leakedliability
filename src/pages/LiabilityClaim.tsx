@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -204,7 +206,9 @@ export default function LiabilityClaim() {
   const report = tokenData.payment_reports;
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background py-12 px-4 pt-24 md:pt-28">
       <div className="max-w-3xl mx-auto space-y-6">
         <Card>
           <CardHeader>
@@ -409,7 +413,9 @@ export default function LiabilityClaim() {
             </CardContent>
           </Card>
         )}
+        <Footer />
       </div>
-    </div>
+      </div>
+    </>
   );
 }
