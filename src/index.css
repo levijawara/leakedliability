@@ -124,7 +124,7 @@ All colors MUST be HSL.
 
 /* Christmas Lights - Hard ON/OFF States (No Smooth Transitions) */
 .christmas-bulb-off {
-  fill: #333;
+  fill: hsl(var(--muted-foreground));
   opacity: 0.3;
 }
 
@@ -136,12 +136,21 @@ All colors MUST be HSL.
   fill: #49ff4a;
 }
 
+.christmas-bulb-tungsten-on {
+  fill: #ffb347;
+}
+
 .christmas-glow-red-on {
-  fill: rgba(255, 60, 60, 0.5);
+  fill: rgba(255, 59, 59, 0.5);
   filter: blur(8px);
 }
 
 .christmas-glow-green-on {
-  fill: rgba(70, 255, 70, 0.5);
+  fill: rgba(73, 255, 74, 0.5);
+  filter: blur(8px);
+}
+
+.christmas-glow-tungsten-on {
+  fill: rgba(255, 179, 71, 0.5);
   filter: blur(8px);
 }

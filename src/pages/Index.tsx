@@ -24,9 +24,9 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="relative inline-block">
+          <div className="relative inline-block w-full max-w-5xl mx-auto" style={{ height: 'clamp(120px, 20vw, 200px)' }}>
             <ChristmasLights />
-            <h1 className="text-6xl md:text-8xl font-black tracking-tight relative z-10">
+            <h1 className="text-[4rem] sm:text-[6rem] md:text-[8rem] lg:text-[10rem] font-black tracking-tighter relative z-10 leading-none">
               Leaked Liability™
             </h1>
           </div>
