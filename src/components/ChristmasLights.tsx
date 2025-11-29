@@ -16,13 +16,13 @@ const generateBulbs = (): Bulb[] => {
   let id = 0;
   const colors: ('red' | 'green' | 'tungsten')[] = ['red', 'green', 'tungsten'];
 
-  // 5 main sagging paths matching the wire curves exactly
+  // 5 main sagging paths matching the wire curves exactly - shifted up
   const sagPaths = [
-    { startX: -30, startY: 20, controlY: 80, endX: 830, endY: 25, layer: 'back' as const },
-    { startX: -20, startY: 45, controlY: 110, endX: 820, endY: 50, layer: 'front' as const },
-    { startX: -25, startY: 70, controlY: 140, endX: 825, endY: 75, layer: 'back' as const },
-    { startX: -15, startY: 95, controlY: 160, endX: 815, endY: 100, layer: 'front' as const },
-    { startX: -10, startY: 120, controlY: 190, endX: 830, endY: 125, layer: 'back' as const },
+    { startX: -30, startY: 5, controlY: 50, endX: 830, endY: 10, layer: 'back' as const },
+    { startX: -20, startY: 25, controlY: 70, endX: 820, endY: 30, layer: 'front' as const },
+    { startX: -25, startY: 45, controlY: 90, endX: 825, endY: 50, layer: 'back' as const },
+    { startX: -15, startY: 65, controlY: 110, endX: 815, endY: 70, layer: 'front' as const },
+    { startX: -10, startY: 85, controlY: 130, endX: 830, endY: 90, layer: 'back' as const },
   ];
 
   // Helper to get Y position on a quadratic bezier curve
@@ -50,14 +50,14 @@ const generateBulbs = (): Bulb[] => {
     }
   });
 
-  // Left tail bulbs (3-4 bulbs)
+  // Left tail bulbs (3-4 bulbs) - shorter tail
   const leftTailCount = 3 + Math.floor(Math.random() * 2);
   for (let i = 0; i < leftTailCount; i++) {
     const t = (i + 1) / (leftTailCount + 1);
     bulbs.push({
       id: id++,
       x: -30 + (t * 10) + (Math.random() - 0.5) * 8,
-      y: 60 + (t * 120) + (Math.random() - 0.5) * 12,
+      y: 40 + (t * 60) + (Math.random() - 0.5) * 12,
       rotation: -15 + Math.random() * 20,
       color: colors[i % 3],
       layer: 'front',
@@ -65,14 +65,14 @@ const generateBulbs = (): Bulb[] => {
     });
   }
 
-  // Right tail bulbs (3-4 bulbs)
+  // Right tail bulbs (3-4 bulbs) - shorter tail
   const rightTailCount = 3 + Math.floor(Math.random() * 2);
   for (let i = 0; i < rightTailCount; i++) {
     const t = (i + 1) / (rightTailCount + 1);
     bulbs.push({
       id: id++,
       x: 830 + (t * 10) + (Math.random() - 0.5) * 8,
-      y: 60 + (t * 140) + (Math.random() - 0.5) * 12,
+      y: 40 + (t * 70) + (Math.random() - 0.5) * 12,
       rotation: 12 + Math.random() * 25,
       color: colors[(i + 1) % 3],
       layer: 'front',
@@ -85,16 +85,16 @@ const generateBulbs = (): Bulb[] => {
 
 // Generate wire paths - exact catenary curves
 const generateWirePaths = () => [
-  // Main sagging wires (full width)
-  { d: "M-30 20 Q400 80 830 25", layer: 'back' as const },
-  { d: "M-20 45 Q380 110 820 50", layer: 'front' as const },
-  { d: "M-25 70 Q420 140 825 75", layer: 'back' as const },
-  { d: "M-15 95 Q390 160 815 100", layer: 'front' as const },
-  { d: "M-10 120 Q410 190 830 125", layer: 'back' as const },
+  // Main sagging wires (full width) - shifted up
+  { d: "M-30 5 Q400 50 830 10", layer: 'back' as const },
+  { d: "M-20 25 Q380 70 820 30", layer: 'front' as const },
+  { d: "M-25 45 Q420 90 825 50", layer: 'back' as const },
+  { d: "M-15 65 Q390 110 815 70", layer: 'front' as const },
+  { d: "M-10 85 Q410 130 830 90", layer: 'back' as const },
 
-  // Tail ends (sloppy, uneven lengths)
-  { d: "M-30 60 Q-40 120 -20 180", layer: 'front' as const },
-  { d: "M830 60 Q850 130 840 200", layer: 'front' as const },
+  // Tail ends (shorter, sloppy)
+  { d: "M-30 40 Q-40 70 -20 100", layer: 'front' as const },
+  { d: "M830 40 Q850 80 840 110", layer: 'front' as const },
 ];
 
 const BulbSVG = ({ 
@@ -165,8 +165,8 @@ const ChristmasLightsLayer = ({ bulbs, bulbStates, layer, wirePaths }: Christmas
   return (
     <svg
       width="100%"
-      height="180"
-      viewBox="0 0 800 180"
+      height="120"
+      viewBox="0 0 800 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="overflow-visible absolute inset-0"
