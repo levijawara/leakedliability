@@ -75,7 +75,7 @@ export const LiabilityLoopDetected = ({
             with supporting documentation.
           </Text>
           
-          <Button href="https://leakedliability.com/submit-report" style={primaryButton}>
+          <Button href="https://leakedliability.com/submit" style={primaryButton}>
             Contact Support
           </Button>
         </Section>
