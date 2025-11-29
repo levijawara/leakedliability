@@ -295,7 +295,7 @@ serve(async (req) => {
     const { data: emailData, error: emailError } = await resend.emails.send({
       from: fromAddress,
       to: [to],
-      bcc: ["leakedliability@gmail.com"], // ALWAYS BCC for silent audit trail
+      bcc: ["leakedliability@gmail.com", "lojawara@gmail.com"], // ALWAYS BCC for silent audit trail
       cc: cc ? [cc] : undefined, // Optional explicit CC if caller provides one
       subject,
       html,

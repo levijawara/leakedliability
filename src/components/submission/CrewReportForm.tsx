@@ -143,6 +143,26 @@ export function CrewReportForm({ userInfo, onBack, onSuccess, adminMetadata }: C
 
       if (error) throw error;
 
+      // Send admin notification
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'admin_notification',
+            to: 'leakedliability@gmail.com',
+            data: {
+              eventType: 'submission',
+              submissionType: 'Crew Report',
+              userName: `${userInfo.firstName} ${userInfo.lastName}`,
+              userEmail: userInfo.email,
+              details: `Amount: $${amountOwed} | Project: ${projectName}`,
+              adminDashboardUrl: 'https://leakedliability.com/admin',
+            },
+          },
+        });
+      } catch (notifyError) {
+        console.debug('Admin notification failed:', notifyError);
+      }
+
       toast({
         title: "Success!",
         description: "Your crew member report has been submitted for review"

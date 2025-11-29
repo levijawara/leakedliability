@@ -211,6 +211,26 @@ export function VendorReportForm({ userInfo, onBack, onSuccess, adminMetadata }:
 
       if (error) throw error;
 
+      // Send admin notification
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'admin_notification',
+            to: 'leakedliability@gmail.com',
+            data: {
+              eventType: 'submission',
+              submissionType: 'Vendor Report',
+              userName: userInfo.contactName,
+              userEmail: userInfo.contactEmail,
+              details: `Amount: $${amountOwed} | Project: ${projectName} | Invoice: ${invoiceNumber}`,
+              adminDashboardUrl: 'https://leakedliability.com/admin',
+            },
+          },
+        });
+      } catch (notifyError) {
+        console.debug('Admin notification failed:', notifyError);
+      }
+
       toast({
         title: "Success!",
         description: "Your vendor report has been submitted for review"

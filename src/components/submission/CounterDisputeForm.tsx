@@ -191,6 +191,26 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
 
       if (error) throw error;
 
+      // Send admin notification
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'admin_notification',
+            to: 'leakedliability@gmail.com',
+            data: {
+              eventType: 'submission',
+              submissionType: 'Counter-Dispute',
+              userName: `${userInfo.firstName} ${userInfo.lastName}`,
+              userEmail: userInfo.email,
+              details: `Original Report: ${originalReportRef}`,
+              adminDashboardUrl: 'https://leakedliability.com/admin',
+            },
+          },
+        });
+      } catch (notifyError) {
+        console.debug('Admin notification failed:', notifyError);
+      }
+
       toast({
         title: "Success!",
         description: "Your counter-dispute has been submitted for review"

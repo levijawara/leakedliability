@@ -216,7 +216,7 @@ export default function Leaderboard() {
     checkAdmin();
   }, []);
 
-  // Log search terms with debouncing
+  // Log search terms with debouncing and send admin notification
   useEffect(() => {
     if (searchLogTimeoutRef.current) {
       clearTimeout(searchLogTimeoutRef.current);
@@ -225,6 +225,11 @@ export default function Leaderboard() {
     if (searchTerm.trim().length >= 2) {
       searchLogTimeoutRef.current = setTimeout(async () => {
         try {
+          // Get current user info
+          const { data: { user } } = await supabase.auth.getUser();
+          const userEmail = user?.email || null;
+          const userId = user?.id || null;
+          
           // Find matched producer
           const matchedProducer = producers?.find((p) => {
             const search = searchTerm.toLowerCase();
@@ -233,13 +238,34 @@ export default function Leaderboard() {
             return name.includes(search) || company.includes(search);
           });
           
-          // Log search asynchronously
+          // Log search asynchronously with user info
           await supabase.from('search_logs').insert({
             searched_name: searchTerm.trim(),
             matched_producer_id: matchedProducer?.producer_id || null,
             source: 'leaderboard',
-            user_ip: null
+            user_ip: null,
+            user_id: userId,
+            user_email: userEmail
           });
+          
+          // Send admin notification (skip for admin accounts)
+          const ADMIN_EMAILS = ['leakedliability@gmail.com', 'lojawara@gmail.com'];
+          if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+            await supabase.functions.invoke('send-email', {
+              body: {
+                type: 'admin_notification',
+                to: 'leakedliability@gmail.com',
+                data: {
+                  eventType: 'search',
+                  searchTerm: searchTerm.trim(),
+                  source: 'leaderboard',
+                  userEmail: userEmail || null,
+                  timestamp: new Date().toISOString(),
+                  adminDashboardUrl: 'https://leakedliability.com/admin',
+                },
+              },
+            });
+          }
         } catch (error) {
           // Fail silently - don't disrupt user experience
           console.debug('Search logging failed:', error);
