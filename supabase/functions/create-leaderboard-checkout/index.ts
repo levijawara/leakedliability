@@ -25,6 +25,7 @@ const logStep = (step: string, details?: any) => {
 interface CheckoutRequest {
   tier?: string; // e.g., 'crew_t1', 'producer_t1', 'producer_t2'
   billing_frequency?: string; // 'monthly' or 'annual'
+  return_to?: string; // Optional redirect path after checkout success
 }
 
 serve(async (req) => {
@@ -53,7 +54,7 @@ serve(async (req) => {
 
     // Parse request body for tier selection
     const body: CheckoutRequest = await req.json().catch(() => ({}));
-    const { tier = 'crew_t1', billing_frequency = 'monthly' } = body;
+    const { tier = 'crew_t1', billing_frequency = 'monthly', return_to } = body;
     
     // Validate tier and billing frequency
     const validTiers = ['crew_t1', 'producer_t1', 'producer_t2'];
@@ -95,6 +96,11 @@ serve(async (req) => {
 
     // Create checkout session
     const origin = req.headers.get("origin") || "http://localhost:3000";
+    
+    // Build success URL - use return_to if provided, otherwise default to leaderboard
+    const successPath = return_to ? return_to : '/leaderboard';
+    const successUrl = `${origin}${successPath}?session_id={CHECKOUT_SESSION_ID}`;
+    
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
@@ -105,8 +111,8 @@ serve(async (req) => {
         },
       ],
       mode: "subscription",
-      success_url: `${origin}/leaderboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/leaderboard`,
+      success_url: successUrl,
+      cancel_url: `${origin}/subscribe`,
       metadata: {
         user_id: user.id,
         entitlement_type: 'leaderboard',
