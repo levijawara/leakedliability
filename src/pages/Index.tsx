@@ -16,7 +16,7 @@ const Index = () => {
       
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-0">
-        <div className="max-w-4xl mx-auto text-center space-y-6">
+        <div className="max-w-[1600px] mx-auto text-center space-y-6">
           <div className="inline-block mb-4">
             <div className="inline-flex items-center gap-2 bg-status-critical/10 border border-status-critical/20 rounded-full px-4 py-2">
               <AlertTriangle className="h-4 w-4 text-status-critical" />
@@ -26,7 +26,7 @@ const Index = () => {
 
           <div className="relative inline-block w-full mx-auto" style={{ height: 'clamp(80px, 14vw, 140px)' }}>
             <ChristmasLights />
-            <h1 className="text-[2.2rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[6.5rem] font-black tracking-tighter relative z-10 leading-none whitespace-nowrap">
+            <h1 className="text-[2.2rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[7rem] xl:text-[8rem] font-black tracking-tighter relative z-10 leading-none whitespace-nowrap">
               Leaked Liability<span className="text-[70%] align-super">™</span>
             </h1>
           </div>

@@ -129,28 +129,28 @@ All colors MUST be HSL.
 }
 
 .christmas-bulb-red-on {
-  fill: #ff3b3b;
+  fill: rgb(255, 35, 35);  /* 25% more saturated */
 }
 
 .christmas-bulb-green-on {
-  fill: #49ff4a;
+  fill: rgb(35, 255, 35);  /* 25% more saturated */
 }
 
 .christmas-bulb-tungsten-on {
-  fill: #FFD86B;
+  fill: rgb(255, 235, 150);  /* lighter & warmer */
 }
 
 .christmas-glow-red-on {
-  fill: rgba(255, 59, 59, 0.5);
+  fill: rgba(255, 35, 35, 0.5);
   filter: blur(8px);
 }
 
 .christmas-glow-green-on {
-  fill: rgba(73, 255, 74, 0.5);
+  fill: rgba(35, 255, 35, 0.5);
   filter: blur(8px);
 }
 
 .christmas-glow-tungsten-on {
-  fill: rgba(255, 216, 107, 0.5);
+  fill: rgba(255, 235, 150, 0.5);
   filter: blur(8px);
 }
