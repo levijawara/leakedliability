@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck, ArrowRight, CreditCard, CheckCircle2 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export default function EscrowHub() {
   const navigate = useNavigate();
@@ -77,6 +78,7 @@ export default function EscrowHub() {
         </ul>
       </section>
     </div>
+    <Footer />
     </>
   );
 }
