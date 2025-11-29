@@ -5,75 +5,71 @@ interface Bulb {
   x: number;
   y: number;
   rotation: number;
-  isRed: boolean;
+  color: 'red' | 'green' | 'tungsten';
+  layer: 'front' | 'back';
   isTail: boolean;
 }
 
-// Generate chaotic bulb positions
+// Generate candy-cane spiral bulb positions - wrapping around the text
 const generateBulbs = (): Bulb[] => {
   const bulbs: Bulb[] = [];
   let id = 0;
+  const colors: ('red' | 'green' | 'tungsten')[] = ['red', 'green', 'tungsten'];
 
-  // Main wrap bulbs - diagonal chaos across the header
-  // Wire 1: top-left to bottom-right diagonal
-  for (let i = 0; i < 12; i++) {
-    const progress = i / 11;
-    bulbs.push({
-      id: id++,
-      x: 50 + progress * 700 + (Math.random() - 0.5) * 40,
-      y: 15 + progress * 50 + (Math.random() - 0.5) * 20,
-      rotation: (Math.random() - 0.5) * 30,
-      isRed: i % 2 === 0,
-      isTail: false,
-    });
-  }
+  // Create 6 diagonal "spiral" paths across the header
+  // Each path alternates between front and back to create wrapping illusion
+  const spiralPaths = [
+    { startX: -20, startY: 70, endX: 180, endY: -30, layer: 'back' as const },
+    { startX: 80, startY: 90, endX: 280, endY: -10, layer: 'front' as const },
+    { startX: 180, startY: 85, endX: 420, endY: -25, layer: 'back' as const },
+    { startX: 300, startY: 95, endX: 540, endY: -5, layer: 'front' as const },
+    { startX: 420, startY: 80, endX: 660, endY: -20, layer: 'back' as const },
+    { startX: 540, startY: 90, endX: 780, endY: 0, layer: 'front' as const },
+    { startX: 650, startY: 85, endX: 850, endY: -15, layer: 'back' as const },
+  ];
 
-  // Wire 2: bottom-left to top-right diagonal (crossing)
-  for (let i = 0; i < 10; i++) {
-    const progress = i / 9;
-    bulbs.push({
-      id: id++,
-      x: 80 + progress * 640 + (Math.random() - 0.5) * 35,
-      y: 65 - progress * 45 + (Math.random() - 0.5) * 15,
-      rotation: (Math.random() - 0.5) * 25,
-      isRed: i % 2 === 1,
-      isTail: false,
-    });
-  }
+  spiralPaths.forEach((path, pathIndex) => {
+    const bulbsPerPath = 5 + Math.floor(Math.random() * 3); // 5-7 bulbs per path
+    
+    for (let i = 0; i < bulbsPerPath; i++) {
+      const progress = i / (bulbsPerPath - 1);
+      const baseX = path.startX + (path.endX - path.startX) * progress;
+      const baseY = path.startY + (path.endY - path.startY) * progress;
+      
+      bulbs.push({
+        id: id++,
+        x: baseX + (Math.random() - 0.5) * 30,
+        y: baseY + (Math.random() - 0.5) * 20,
+        rotation: (Math.random() - 0.5) * 40,
+        color: colors[(id + pathIndex) % 3],
+        layer: path.layer,
+        isTail: false,
+      });
+    }
+  });
 
-  // Wire 3: another sloppy diagonal
-  for (let i = 0; i < 8; i++) {
-    const progress = i / 7;
-    bulbs.push({
-      id: id++,
-      x: 120 + progress * 560 + (Math.random() - 0.5) * 50,
-      y: 40 + Math.sin(progress * Math.PI) * 25 + (Math.random() - 0.5) * 18,
-      rotation: (Math.random() - 0.5) * 35,
-      isRed: i % 2 === 0,
-      isTail: false,
-    });
-  }
-
-  // Left tail (shorter - 3 bulbs dangling off the "L")
+  // Left dangling tail (3 bulbs - shorter)
   for (let i = 0; i < 3; i++) {
     bulbs.push({
       id: id++,
-      x: 25 + (Math.random() - 0.5) * 15,
-      y: 45 + i * 22 + Math.random() * 10,
-      rotation: -15 + Math.random() * 20,
-      isRed: i % 2 === 0,
+      x: -10 + (Math.random() - 0.5) * 15,
+      y: 60 + i * 25 + Math.random() * 12,
+      rotation: -20 + Math.random() * 25,
+      color: colors[i % 3],
+      layer: 'front',
       isTail: true,
     });
   }
 
-  // Right tail (longer - 5 bulbs dangling off the "™")
+  // Right dangling tail (5 bulbs - longer)
   for (let i = 0; i < 5; i++) {
     bulbs.push({
       id: id++,
-      x: 775 + (Math.random() - 0.5) * 20,
-      y: 35 + i * 18 + Math.random() * 8,
-      rotation: 10 + Math.random() * 25,
-      isRed: i % 2 === 1,
+      x: 820 + (Math.random() - 0.5) * 20,
+      y: 45 + i * 22 + Math.random() * 10,
+      rotation: 15 + Math.random() * 30,
+      color: colors[(i + 1) % 3],
+      layer: 'front',
       isTail: true,
     });
   }
@@ -81,8 +77,148 @@ const generateBulbs = (): Bulb[] => {
   return bulbs;
 };
 
+// Generate wire paths for candy-cane spiral effect
+const generateWirePaths = () => [
+  // Diagonal spiral paths - alternating front/back
+  { d: "M-30 75 Q80 50, 190 -20", layer: 'back' as const },
+  { d: "M70 95 Q180 60, 290 5", layer: 'front' as const },
+  { d: "M170 90 Q300 45, 430 -15", layer: 'back' as const },
+  { d: "M290 100 Q420 55, 550 10", layer: 'front' as const },
+  { d: "M410 85 Q540 40, 670 -10", layer: 'back' as const },
+  { d: "M530 95 Q660 50, 790 15", layer: 'front' as const },
+  { d: "M640 90 Q750 55, 860 0", layer: 'back' as const },
+  // Left tail wire
+  { d: "M30 50 Q-5 80, 0 155", layer: 'front' as const },
+  // Right tail wire  
+  { d: "M800 40 Q830 70, 825 175", layer: 'front' as const },
+];
+
+const BulbSVG = ({ 
+  bulb, 
+  isOn 
+}: { 
+  bulb: Bulb; 
+  isOn: boolean;
+}) => {
+  const colorClass = bulb.color === 'red' 
+    ? 'christmas-bulb-red-on' 
+    : bulb.color === 'green' 
+      ? 'christmas-bulb-green-on' 
+      : 'christmas-bulb-tungsten-on';
+  
+  const glowClass = bulb.color === 'red'
+    ? 'christmas-glow-red-on'
+    : bulb.color === 'green'
+      ? 'christmas-glow-green-on'
+      : 'christmas-glow-tungsten-on';
+
+  return (
+    <g transform={`translate(${bulb.x}, ${bulb.y}) rotate(${bulb.rotation})`}>
+      {/* Glow (only when ON) - 20% smaller: was r=12, now r=9.6 */}
+      {isOn && (
+        <circle
+          cx="0"
+          cy="0"
+          r="9.6"
+          className={glowClass}
+        />
+      )}
+      
+      {/* Bulb cap - 20% smaller: was 6x6, now 4.8x4.8 */}
+      <rect
+        x="-2.4"
+        y="-11.2"
+        width="4.8"
+        height="4.8"
+        fill="hsl(var(--muted-foreground))"
+        opacity="0.7"
+        rx="0.8"
+      />
+      
+      {/* Bulb body - 20% smaller: was rx=6,ry=8, now rx=4.8,ry=6.4 */}
+      <ellipse
+        cx="0"
+        cy="0"
+        rx="4.8"
+        ry="6.4"
+        className={isOn ? colorClass : "christmas-bulb-off"}
+      />
+    </g>
+  );
+};
+
+interface ChristmasLightsLayerProps {
+  bulbs: Bulb[];
+  bulbStates: boolean[];
+  layer: 'front' | 'back';
+  wirePaths: { d: string; layer: 'front' | 'back' }[];
+}
+
+const ChristmasLightsLayer = ({ bulbs, bulbStates, layer, wirePaths }: ChristmasLightsLayerProps) => {
+  const layerBulbs = bulbs.filter(b => b.layer === layer);
+  const layerWires = wirePaths.filter(w => w.layer === layer);
+
+  return (
+    <svg
+      width="100%"
+      height="180"
+      viewBox="0 0 800 180"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="overflow-visible absolute inset-0"
+      preserveAspectRatio="xMidYMid meet"
+      style={{ pointerEvents: 'none' }}
+    >
+      {/* Wire paths for this layer */}
+      {layerWires.map((wire, i) => (
+        <path
+          key={i}
+          d={wire.d}
+          stroke="hsl(var(--muted-foreground))"
+          strokeWidth="2"
+          fill="none"
+          opacity="0.4"
+        />
+      ))}
+
+      {/* Bulbs for this layer */}
+      {layerBulbs.map((bulb) => {
+        const originalIndex = bulbs.findIndex(b => b.id === bulb.id);
+        return (
+          <BulbSVG 
+            key={bulb.id} 
+            bulb={bulb} 
+            isOn={bulbStates[originalIndex]} 
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
+export const ChristmasLightsBack = ({ bulbs, bulbStates, wirePaths }: { 
+  bulbs: Bulb[]; 
+  bulbStates: boolean[];
+  wirePaths: { d: string; layer: 'front' | 'back' }[];
+}) => (
+  <div className="absolute inset-0 z-[5]">
+    <ChristmasLightsLayer bulbs={bulbs} bulbStates={bulbStates} layer="back" wirePaths={wirePaths} />
+  </div>
+);
+
+export const ChristmasLightsFront = ({ bulbs, bulbStates, wirePaths }: { 
+  bulbs: Bulb[]; 
+  bulbStates: boolean[];
+  wirePaths: { d: string; layer: 'front' | 'back' }[];
+}) => (
+  <div className="absolute inset-0 z-[15]">
+    <ChristmasLightsLayer bulbs={bulbs} bulbStates={bulbStates} layer="front" wirePaths={wirePaths} />
+  </div>
+);
+
 export const ChristmasLights = () => {
   const [bulbs] = useState<Bulb[]>(() => generateBulbs());
+  const [wirePaths] = useState(() => generateWirePaths());
   const [bulbStates, setBulbStates] = useState<boolean[]>(() => 
     new Array(bulbs.length).fill(false)
   );
@@ -172,107 +308,9 @@ export const ChristmasLights = () => {
   }, [phase]);
 
   return (
-    <div className="pointer-events-none absolute inset-x-0 -top-6 md:-top-8 flex justify-center z-[5]">
-      <svg
-        width="100%"
-        height="140"
-        viewBox="0 0 800 140"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="overflow-visible max-w-4xl"
-        preserveAspectRatio="xMidYMid meet"
-      >
-        {/* Wire 1: diagonal top-left to bottom-right */}
-        <path
-          d="M20 20 Q200 35, 400 45 T780 70"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2.5"
-          fill="none"
-          opacity="0.5"
-        />
-        
-        {/* Wire 2: diagonal bottom-left to top-right */}
-        <path
-          d="M60 70 Q300 50, 500 30 T750 25"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2.5"
-          fill="none"
-          opacity="0.5"
-        />
-        
-        {/* Wire 3: messy middle wrap */}
-        <path
-          d="M100 45 Q250 60, 400 35 Q550 15, 720 50"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2.5"
-          fill="none"
-          opacity="0.5"
-        />
-
-        {/* Left dangling tail wire */}
-        <path
-          d="M50 25 Q30 50, 35 110"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2"
-          fill="none"
-          opacity="0.4"
-        />
-
-        {/* Right dangling tail wire (longer) */}
-        <path
-          d="M760 30 Q785 60, 775 130"
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2"
-          fill="none"
-          opacity="0.4"
-        />
-
-        {/* Bulbs */}
-        {bulbs.map((bulb, index) => {
-          const isOn = bulbStates[index];
-          
-          return (
-            <g 
-              key={bulb.id} 
-              transform={`translate(${bulb.x}, ${bulb.y}) rotate(${bulb.rotation})`}
-            >
-              {/* Glow (only when ON) */}
-              {isOn && (
-                <circle
-                  cx="0"
-                  cy="0"
-                  r="12"
-                  className={bulb.isRed ? "christmas-glow-red-on" : "christmas-glow-green-on"}
-                />
-              )}
-              
-              {/* Bulb cap */}
-              <rect
-                x="-3"
-                y="-14"
-                width="6"
-                height="6"
-                fill="hsl(var(--muted-foreground))"
-                opacity="0.7"
-                rx="1"
-              />
-              
-              {/* Bulb body */}
-              <ellipse
-                cx="0"
-                cy="0"
-                rx="6"
-                ry="8"
-                className={
-                  isOn 
-                    ? (bulb.isRed ? "christmas-bulb-red-on" : "christmas-bulb-green-on")
-                    : "christmas-bulb-off"
-                }
-              />
-            </g>
-          );
-        })}
-      </svg>
-    </div>
+    <>
+      <ChristmasLightsBack bulbs={bulbs} bulbStates={bulbStates} wirePaths={wirePaths} />
+      <ChristmasLightsFront bulbs={bulbs} bulbStates={bulbStates} wirePaths={wirePaths} />
+    </>
   );
 };
