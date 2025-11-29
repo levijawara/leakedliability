@@ -199,6 +199,34 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
 
       if (error) throw error;
 
+      // Send admin notification
+      try {
+        const submissionTypeLabel = submissionType === 'payment_documentation' 
+          ? 'Payment Documentation' 
+          : submissionType === 'report_explanation' 
+            ? 'Report Explanation' 
+            : 'Report Dispute';
+        
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'admin_notification',
+            to: 'leakedliability@gmail.com',
+            data: {
+              eventType: 'submission',
+              submissionType: `Producer ${submissionTypeLabel}`,
+              userName: participantType === "producer" 
+                ? `${userInfo.firstName} ${userInfo.lastName}`
+                : userInfo.firstName,
+              userEmail: userInfo.email,
+              details: `Report ID: ${reportId} | Crew: ${crewMemberName}`,
+              adminDashboardUrl: 'https://leakedliability.com/admin',
+            },
+          },
+        });
+      } catch (notifyError) {
+        console.debug('Admin notification failed:', notifyError);
+      }
+
       toast({
         title: "Success!",
         description: "Your submission has been received and will be reviewed"

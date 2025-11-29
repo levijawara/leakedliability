@@ -87,17 +87,44 @@ export function ProducerSearchAutocomplete({
       }
     }, 300);
 
-    // Debounced search logging
+    // Debounced search logging with admin notification
     if (logTimeoutRef.current) {
       clearTimeout(logTimeoutRef.current);
     }
     logTimeoutRef.current = setTimeout(async () => {
       try {
+        // Get current user info
+        const { data: { user } } = await supabase.auth.getUser();
+        const userEmail = user?.email || null;
+        const userId = user?.id || null;
+        
+        // Log search with user info
         await supabase.from('search_logs').insert({
           searched_name: searchTerm.trim(),
           matched_producer_id: null,
-          source
+          source,
+          user_id: userId,
+          user_email: userEmail
         });
+        
+        // Send admin notification (skip for admin accounts)
+        const ADMIN_EMAILS = ['leakedliability@gmail.com', 'lojawara@gmail.com'];
+        if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'admin_notification',
+              to: 'leakedliability@gmail.com',
+              data: {
+                eventType: 'search',
+                searchTerm: searchTerm.trim(),
+                source,
+                userEmail: userEmail || null,
+                timestamp: new Date().toISOString(),
+                adminDashboardUrl: 'https://leakedliability.com/admin',
+              },
+            },
+          });
+        }
       } catch {
         // Fail silently
       }
