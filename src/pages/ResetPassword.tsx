@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -154,7 +155,9 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4 pt-24 md:pt-28">
       {isIGBrowser && (
         <div className="max-w-md w-full mb-4 p-4 bg-destructive/10 border border-destructive rounded-lg">
           <p className="text-sm text-destructive font-semibold">⚠️ Instagram Browser Detected</p>
@@ -268,6 +271,7 @@ export default function ResetPassword() {
       </Card>
       
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

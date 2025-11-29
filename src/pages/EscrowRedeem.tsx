@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 
 export default function EscrowRedeem() {
   const [code, setCode] = useState("");
@@ -13,7 +15,9 @@ export default function EscrowRedeem() {
   };
 
   return (
-    <div className="max-w-md mx-auto px-4 py-10 space-y-4">
+    <>
+      <Navigation />
+      <div className="max-w-md mx-auto px-4 py-10 pt-24 md:pt-28 space-y-4">
       <h1 className="text-2xl font-semibold">Redeem Escrow Code</h1>
       <p className="text-sm text-muted-foreground">
         Enter the escrow payment code you received from Leaked Liability to 
@@ -33,6 +37,8 @@ export default function EscrowRedeem() {
           Continue
         </button>
       </form>
-    </div>
+      <Footer />
+      </div>
+    </>
   );
 }

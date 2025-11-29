@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 
 interface BanRecord {
@@ -99,7 +100,9 @@ export default function BanPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-background p-6">
+    <>
+      <Navigation />
+      <main className="min-h-screen flex items-center justify-center bg-background p-6 pt-24 md:pt-28">
       <article className="max-w-3xl bg-card rounded-2xl p-8 shadow-lg border border-border">
         <h1 className="text-2xl font-semibold mb-4 text-foreground">{pageContent.title}</h1>
         
@@ -129,7 +132,8 @@ export default function BanPage() {
         </div>
       </article>
       
-      <Footer />
-    </main>
+        <Footer />
+      </main>
+    </>
   );
 }

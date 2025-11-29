@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
@@ -129,7 +130,9 @@ export default function ProducerDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background pt-20 md:pt-24">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <Button
           variant="ghost"
@@ -241,9 +244,10 @@ export default function ProducerDashboard() {
           </p>
           <ProducerSelfReportForm />
         </Card>
-      </div>
+        </div>
       
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

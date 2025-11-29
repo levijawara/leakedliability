@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -388,7 +389,9 @@ export default function AdminEditReport() {
   const changes = getChanges();
 
   return (
-    <div className="min-h-screen bg-background py-8">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background pt-20 md:pt-24 py-8">
       <div className="container max-w-5xl mx-auto px-4">
         <Button
           variant="ghost"
@@ -732,5 +735,6 @@ export default function AdminEditReport() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+    </>
   );
 }

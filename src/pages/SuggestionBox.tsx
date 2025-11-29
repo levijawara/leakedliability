@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
@@ -62,8 +63,10 @@ export default function SuggestionBox() {
   const isValid = charCount >= 5 && charCount <= 4000;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-3xl mx-auto px-4 py-12">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background pt-20 md:pt-24">
+        <div className="container max-w-3xl mx-auto px-4 py-12">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -113,10 +116,11 @@ export default function SuggestionBox() {
               {isSubmitting ? "Submitting..." : "Submit Suggestion"}
             </Button>
           </form>
-        </Card>
-      </div>
+          </Card>
+        </div>
       
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 }

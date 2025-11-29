@@ -1,7 +1,7 @@
-import { Wrench, LogIn } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 
 interface MaintenanceProps {
@@ -9,24 +9,11 @@ interface MaintenanceProps {
 }
 
 const Maintenance = ({ message }: MaintenanceProps) => {
-  const navigate = useNavigate();
-
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <div className="absolute top-4 right-4 flex items-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate('/auth')}
-          className="gap-2"
-        >
-          <LogIn className="h-4 w-4" />
-          <span className="hidden sm:inline">Login / Sign Up</span>
-        </Button>
-        <ThemeToggle />
-      </div>
-      
-      <div className="flex-1 flex items-center justify-center p-4">
+    <>
+      <Navigation />
+      <div className="min-h-screen flex flex-col bg-background pt-20 md:pt-24">
+        <div className="flex-1 flex items-center justify-center p-4">
         <div className="max-w-md w-full text-center space-y-8">
           <div className="flex justify-center">
             <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
@@ -64,8 +51,9 @@ const Maintenance = ({ message }: MaintenanceProps) => {
         </div>
       </div>
       
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

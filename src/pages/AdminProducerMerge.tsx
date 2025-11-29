@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -407,7 +408,9 @@ export default function AdminProducerMerge() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 space-y-6">
+    <>
+      <Navigation />
+      <div className="container mx-auto pt-24 md:pt-28 py-8 px-4 space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="outline" onClick={() => navigate("/admin")}>
@@ -937,6 +940,7 @@ export default function AdminProducerMerge() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }
 

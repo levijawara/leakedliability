@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
 import html2canvas from "html2canvas";
 import { ArrowLeft } from "lucide-react";
@@ -145,8 +147,10 @@ export default function HoldThatLGenerator() {
   const cleanHandle = formData.igHandle.replace(/^@/, "");
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-5xl mx-auto px-4 py-8">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-background pt-20 md:pt-24">
+        <div className="container max-w-5xl mx-auto px-4 py-8">
         <Button
           variant="ghost"
           onClick={() => navigate("/admin")}
@@ -314,7 +318,9 @@ export default function HoldThatLGenerator() {
             </div>
           </div>
         </div>
+        <Footer />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

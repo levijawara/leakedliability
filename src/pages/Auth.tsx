@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -214,7 +215,9 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4 pt-24 md:pt-28">
       <Card className="w-full max-w-md p-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black mb-2">Leaked Liability™</h1>
@@ -408,6 +411,7 @@ export default function Auth() {
       />
       
       <Footer />
-    </div>
+      </div>
+    </>
   );
 }

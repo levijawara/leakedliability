@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -203,7 +205,9 @@ export default function PayEscrow() {
 
   // Payment Form State
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
+    <>
+      <Navigation />
+      <div className="min-h-screen flex items-center justify-center p-4 pt-24 md:pt-28 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
       <Card className="w-full max-w-md border-blue-200 dark:border-blue-800 shadow-lg">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
@@ -283,6 +287,8 @@ export default function PayEscrow() {
           </p>
         </CardContent>
       </Card>
-    </div>
+      <Footer />
+      </div>
+    </>
   );
 }
