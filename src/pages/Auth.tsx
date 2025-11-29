@@ -169,7 +169,11 @@ export default function Auth() {
         title: "Welcome back!",
         description: "Successfully signed in.",
       });
-      navigate("/");
+      
+      // Handle redirect param from protected routes (e.g., ClaimProducer)
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectTo = searchParams.get('redirect');
+      navigate(redirectTo || "/");
     } catch (error: any) {
       toast({
         title: "Error",

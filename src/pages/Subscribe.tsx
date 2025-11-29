@@ -29,11 +29,16 @@ const Subscribe = () => {
         return;
       }
 
+      // Get returnTo param for post-checkout redirect (e.g., from ClaimProducer)
+      const searchParams = new URLSearchParams(window.location.search);
+      const returnTo = searchParams.get('returnTo');
+
       const { data, error } = await supabase.functions.invoke('create-leaderboard-checkout', {
         headers: { Authorization: `Bearer ${session.access_token}` },
         body: {
           tier,
-          billing_frequency: billingFrequency
+          billing_frequency: billingFrequency,
+          return_to: returnTo // Pass to checkout for success URL
         }
       });
 

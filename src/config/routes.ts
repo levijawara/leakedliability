@@ -23,11 +23,15 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/reset-password", component: "ResetPassword", name: "Reset Password", icon: "Key", description: "Password reset", category: "public" },
   { path: "/verify-email", component: "VerifyEmail", name: "Verify Email", icon: "Mail", description: "Email verification", category: "public" },
 
+  // Results / Tools
+  { path: "/results", component: "Results", name: "Results", icon: "BarChart2", description: "Report verification results", category: "public" },
+  { path: "/results/fafo-generator", component: "FAFOGenerator", name: "FAFO Generator", icon: "Zap", description: "Admin testing tool", category: "admin", requiresAuth: true, requiresAdmin: true },
+
   // Authenticated Routes
   { path: "/profile", component: "Profile", name: "Profile", icon: "User", description: "Profile & settings", category: "authenticated", requiresAuth: true },
   { path: "/submit", component: "SubmitReport", name: "Submit Report", icon: "FileText", description: "Report submission walkthrough", category: "authenticated", requiresAuth: true },
   { path: "/producer-dashboard", component: "ProducerDashboard", name: "Producer Dashboard", icon: "LayoutDashboard", description: "Producer portal", category: "authenticated", requiresAuth: true },
-  { path: "/suggestion-box", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
+  { path: "/suggestions", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
   { path: "/confirm", component: "ConfirmReport", name: "Confirm Report", icon: "FileCheck", description: "Corroborate debts", category: "authenticated", requiresAuth: true },
 
   // Leaderboard Routes
@@ -35,10 +39,15 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/subscribe", component: "Subscribe", name: "Subscribe", icon: "CreditCard", description: "Subscription tier selection", category: "leaderboard" },
   { path: "/hold-that-l", component: "HoldThatLGenerator", name: "Hold That L Generator", icon: "Star", description: "Shareable debt graphics", category: "leaderboard" },
 
+  // Claim Routes
+  { path: "/claim/:producerId", component: "ClaimProducer", name: "Claim Producer", icon: "UserCheck", description: "Verified claim submission", category: "public" },
+  { path: "/liability/claim/:token", component: "LiabilityClaim", name: "Liability Claim", icon: "ShieldCheck", description: "Secure liability claim link", category: "public" },
+
   // Admin Routes
   { path: "/admin", component: "Admin", name: "Admin Dashboard", icon: "Shield", description: "Admin control panel", category: "admin", requiresAuth: true, requiresAdmin: true, tabs: ["Submissions", "Payments Due", "Paid Reports", "Disputes", "Users", "Producers", "Settings"] },
-  { path: "/admin/edit/:id", component: "AdminEditReport", name: "Edit Report", icon: "FileText", description: "Modify report", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin/edit-report/:id", component: "AdminEditReport", name: "Edit Report", icon: "FileText", description: "Modify report", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/search-insights", component: "AdminSearchInsights", name: "Search Insights", icon: "Search", description: "Leaderboard analytics", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin/analytics/daily-visitors", component: "DailyVisitors", name: "Daily Visitors", icon: "BarChart3", description: "Daily visitor metrics", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/merge-producers", component: "AdminProducerMerge", name: "Merge/Redirect", icon: "Users", description: "Merge duplicates", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin-submit-existing", component: "AdminSubmitExisting", name: "Submit for Existing User", icon: "UserPlus", description: "Admin proxy submission (existing user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin-submit-new", component: "AdminSubmitNew", name: "Submit for New User", icon: "UserPlus", description: "Admin proxy submission (new user)", category: "admin", requiresAuth: true, requiresAdmin: true },
@@ -47,12 +56,12 @@ export const ROUTES: RouteMetadata[] = [
   // System Routes
   { path: "/sitemap", component: "Sitemap", name: "Platform Sitemap", icon: "Map", description: "Complete navigation map", category: "system", requiresAuth: true, requiresAdmin: true },
   { path: "/maintenance", component: "Maintenance", name: "Maintenance Mode", icon: "Settings", description: "System maintenance", category: "system" },
-  { path: "/banned", component: "BanPage", name: "Account Banned", icon: "ShieldAlert", description: "Ban notice", category: "system" },
+  { path: "/ban/:banId", component: "BanPage", name: "Account Banned", icon: "ShieldAlert", description: "Ban notice", category: "system" },
   { path: "/escrow", component: "EscrowHub", name: "Crew Payment Escrow", icon: "DollarSign", description: "Escrow service hub page", category: "public" },
   { path: "/escrow/initiate", component: "EscrowInitiate", name: "Initiate Escrow", icon: "DollarSign", description: "Producer-initiated escrow payment form", category: "public" },
   { path: "/escrow/redeem", component: "EscrowRedeem", name: "Redeem Escrow Code", icon: "CreditCard", description: "Enter escrow payment code", category: "public" },
   { path: "/pay/:code", component: "PayEscrow", name: "Escrow Payment", icon: "DollarSign", description: "Anonymous payment", category: "system" },
-  { path: "/pay/:code/success", component: "PayEscrow", name: "Payment Success", icon: "FileCheck", description: "Post-payment screen", category: "system" },
+  { path: "/pay/:code/success", component: "PayEscrow", name: "Payment Success", icon: "FileCheck", description: "Post-payment confirmation", category: "system" },
   { path: "*", component: "NotFound", name: "404 Not Found", icon: "FileX", description: "Fallback route", category: "system" },
 ];
 
