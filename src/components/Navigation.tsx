@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, FileText, Info, AlertTriangle, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare, DollarSign } from "lucide-react";
+import { Home, TrendingUp, FileText, Info, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare, DollarSign } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -55,7 +55,6 @@ export function Navigation() {
     { icon: Info, label: "Why It Works", path: "/why-it-works" },
     { icon: TrendingUp, label: "Leaderboard", path: "/leaderboard" },
     { icon: FileText, label: "Submission Forms", path: "/submit" },
-    { icon: AlertTriangle, label: "Disclaimer", path: "/disclaimer" },
     { icon: HelpCircle, label: "FAQ", path: "/faq" },
   ];
 
@@ -110,10 +109,6 @@ export function Navigation() {
                 <DropdownMenuItem onClick={() => navigate("/why-it-works")}>
                   <Info className="h-4 w-4 mr-2" />
                   Why It Works
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/disclaimer")}>
-                  <AlertTriangle className="h-4 w-4 mr-2" />
-                  Disclaimer
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/faq")}>
                   <HelpCircle className="h-4 w-4 mr-2" />
@@ -307,10 +302,6 @@ export function Navigation() {
                   <DropdownMenuItem onClick={() => handleNavigate("/escrow")}>
                     <DollarSign className="h-4 w-4 mr-2" />
                     Escrow
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleNavigate("/disclaimer")}>
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    Disclaimer
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleNavigate("/faq")}>
                     <HelpCircle className="h-4 w-4 mr-2" />

@@ -16,6 +16,7 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/how-it-works", component: "HowItWorks", name: "How It Works", icon: "Info", description: "Full breakdown of reporting → verification → leaderboard", category: "public" },
   { path: "/why-it-works", component: "WhyItWorks", name: "Why It Works", icon: "Lightbulb", description: "Rationale behind LL™", category: "public" },
   { path: "/disclaimer", component: "Disclaimer", name: "Disclaimer", icon: "AlertTriangle", description: "Legal disclaimer", category: "public" },
+  { path: "/privacy-policy", component: "PrivacyPolicy", name: "Privacy Policy", icon: "Lock", description: "Privacy policy and data handling", category: "public" },
   { path: "/faq", component: "FAQ", name: "FAQ", icon: "HelpCircle", description: "Frequently asked questions", category: "public" },
 
   // Auth Routes
