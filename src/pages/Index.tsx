@@ -24,10 +24,10 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="relative inline-block w-full max-w-5xl mx-auto" style={{ height: 'clamp(120px, 20vw, 200px)' }}>
+          <div className="relative inline-block w-full max-w-5xl mx-auto" style={{ height: 'clamp(100px, 18vw, 180px)' }}>
             <ChristmasLights />
-            <h1 className="text-[4rem] sm:text-[6rem] md:text-[8rem] lg:text-[10rem] font-black tracking-tighter relative z-10 leading-none">
-              Leaked Liability™
+            <h1 className="text-[3.3rem] sm:text-[5rem] md:text-[6.6rem] lg:text-[8.25rem] font-black tracking-tighter relative z-10 leading-none">
+              Leaked Liability<span className="text-[70%] align-super">™</span>
             </h1>
           </div>
 

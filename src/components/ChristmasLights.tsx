@@ -16,16 +16,32 @@ const generateBulbs = (): Bulb[] => {
   let id = 0;
   const colors: ('red' | 'green' | 'tungsten')[] = ['red', 'green', 'tungsten'];
 
-  // Create 6 diagonal "spiral" paths across the header
-  // Each path alternates between front and back to create wrapping illusion
+  // Create THREE HORIZONTAL BANDS of diagonal spiral paths to cover entire header
+  // Each band alternates between front and back to create wrapping illusion
   const spiralPaths = [
-    { startX: -20, startY: 70, endX: 180, endY: -30, layer: 'back' as const },
-    { startX: 80, startY: 90, endX: 280, endY: -10, layer: 'front' as const },
-    { startX: 180, startY: 85, endX: 420, endY: -25, layer: 'back' as const },
-    { startX: 300, startY: 95, endX: 540, endY: -5, layer: 'front' as const },
-    { startX: 420, startY: 80, endX: 660, endY: -20, layer: 'back' as const },
-    { startX: 540, startY: 90, endX: 780, endY: 0, layer: 'front' as const },
-    { startX: 650, startY: 85, endX: 850, endY: -15, layer: 'back' as const },
+    // UPPER BAND - crossing through top of letters (Y: ~25-45 → Y: ~-40 to -20)
+    { startX: -30, startY: 30, endX: 180, endY: -35, layer: 'back' as const },
+    { startX: 90, startY: 40, endX: 300, endY: -25, layer: 'front' as const },
+    { startX: 210, startY: 35, endX: 440, endY: -30, layer: 'back' as const },
+    { startX: 350, startY: 45, endX: 560, endY: -20, layer: 'front' as const },
+    { startX: 470, startY: 30, endX: 680, endY: -35, layer: 'back' as const },
+    { startX: 590, startY: 40, endX: 820, endY: -25, layer: 'front' as const },
+    
+    // MIDDLE BAND - crossing through center of letters (Y: ~65-85 → Y: ~15-35)
+    { startX: -20, startY: 70, endX: 190, endY: 20, layer: 'front' as const },
+    { startX: 100, startY: 80, endX: 320, endY: 30, layer: 'back' as const },
+    { startX: 230, startY: 75, endX: 460, endY: 25, layer: 'front' as const },
+    { startX: 370, startY: 85, endX: 580, endY: 35, layer: 'back' as const },
+    { startX: 490, startY: 70, endX: 700, endY: 20, layer: 'front' as const },
+    { startX: 610, startY: 80, endX: 830, endY: 30, layer: 'back' as const },
+    
+    // LOWER BAND - crossing through bottom of letters (Y: ~105-125 → Y: ~55-75)
+    { startX: -10, startY: 110, endX: 200, endY: 60, layer: 'back' as const },
+    { startX: 110, startY: 120, endX: 330, endY: 70, layer: 'front' as const },
+    { startX: 250, startY: 115, endX: 480, endY: 65, layer: 'back' as const },
+    { startX: 390, startY: 125, endX: 600, endY: 75, layer: 'front' as const },
+    { startX: 510, startY: 110, endX: 720, endY: 60, layer: 'back' as const },
+    { startX: 630, startY: 120, endX: 850, endY: 70, layer: 'front' as const },
   ];
 
   spiralPaths.forEach((path, pathIndex) => {
@@ -77,20 +93,36 @@ const generateBulbs = (): Bulb[] => {
   return bulbs;
 };
 
-// Generate wire paths for candy-cane spiral effect
+// Generate wire paths for candy-cane spiral effect - THREE BANDS
 const generateWirePaths = () => [
-  // Diagonal spiral paths - alternating front/back
-  { d: "M-30 75 Q80 50, 190 -20", layer: 'back' as const },
-  { d: "M70 95 Q180 60, 290 5", layer: 'front' as const },
-  { d: "M170 90 Q300 45, 430 -15", layer: 'back' as const },
-  { d: "M290 100 Q420 55, 550 10", layer: 'front' as const },
-  { d: "M410 85 Q540 40, 670 -10", layer: 'back' as const },
-  { d: "M530 95 Q660 50, 790 15", layer: 'front' as const },
-  { d: "M640 90 Q750 55, 860 0", layer: 'back' as const },
+  // UPPER BAND wires
+  { d: "M-40 35 Q75 0, 190 -30", layer: 'back' as const },
+  { d: "M80 45 Q195 5, 310 -20", layer: 'front' as const },
+  { d: "M200 40 Q325 0, 450 -25", layer: 'back' as const },
+  { d: "M340 50 Q455 10, 570 -15", layer: 'front' as const },
+  { d: "M460 35 Q575 -5, 690 -30", layer: 'back' as const },
+  { d: "M580 45 Q705 5, 830 -20", layer: 'front' as const },
+  
+  // MIDDLE BAND wires
+  { d: "M-30 75 Q85 45, 200 25", layer: 'front' as const },
+  { d: "M90 85 Q215 50, 330 35", layer: 'back' as const },
+  { d: "M220 80 Q355 45, 470 30", layer: 'front' as const },
+  { d: "M360 90 Q485 55, 590 40", layer: 'back' as const },
+  { d: "M480 75 Q605 40, 710 25", layer: 'front' as const },
+  { d: "M600 85 Q725 50, 840 35", layer: 'back' as const },
+  
+  // LOWER BAND wires
+  { d: "M-20 115 Q95 85, 210 65", layer: 'back' as const },
+  { d: "M100 125 Q225 90, 340 75", layer: 'front' as const },
+  { d: "M240 120 Q375 85, 490 70", layer: 'back' as const },
+  { d: "M380 130 Q505 95, 610 80", layer: 'front' as const },
+  { d: "M500 115 Q625 80, 730 65", layer: 'back' as const },
+  { d: "M620 125 Q755 90, 860 75", layer: 'front' as const },
+  
   // Left tail wire
-  { d: "M30 50 Q-5 80, 0 155", layer: 'front' as const },
+  { d: "M30 50 Q-5 90, 0 165", layer: 'front' as const },
   // Right tail wire  
-  { d: "M800 40 Q830 70, 825 175", layer: 'front' as const },
+  { d: "M800 40 Q830 80, 825 185", layer: 'front' as const },
 ];
 
 const BulbSVG = ({ 
