@@ -616,7 +616,7 @@ export default function Admin() {
         // Extract producer email from form data
         const producerEmail = formData.producer_name?.email || null;
         
-        const { error: reportError } = await supabase
+        const { data: newPaymentReport, error: reportError } = await supabase
           .from('payment_reports')
           .insert({
             reporter_id: submission.user_id,
@@ -630,7 +630,9 @@ export default function Admin() {
             verified: true,
             report_id: submission.report_id,
             producer_email: producerEmail
-          });
+          })
+          .select('id')
+          .single();
         
         if (reportError) {
           console.error('Error creating payment report:', reportError);
@@ -665,8 +667,8 @@ export default function Admin() {
         });
       }
 
-        // Send notification email to producer (or queue it)
-        if (producerEmail) {
+        // Send liability notification to producer (includes escrow code generation)
+        if (producerEmail && newPaymentReport?.id) {
           // Check if producer notifications are enabled
           const { data: settings } = await supabase
             .from("site_settings")
@@ -676,22 +678,19 @@ export default function Admin() {
           const shouldSendNow = settings?.send_producer_notifications ?? true;
 
           if (shouldSendNow) {
-            // Send immediately
-            const { error: producerEmailError } = await supabase.functions.invoke('send-email', {
+            // Send full liability notification with escrow code
+            const { error: liabilityError } = await supabase.functions.invoke('send-liability-notification', {
               body: {
-                type: 'producer_report_notification',
-                to: producerEmail,
-                data: {
-                  reportId: submission.report_id,
-                  amountOwed: parseFloat(formData.amount_owed),
-                  daysOverdue: daysOverdue,
-                  projectName: formData.project_name || "Not specified",
-                }
+                report_id: newPaymentReport.id,
+                accused_name: producerName,
+                accused_email: producerEmail,
+                accused_role: 'producer',
+                accuser_id: submission.user_id
               }
             });
 
-            if (producerEmailError) {
-              console.error('Producer email sending failed:', producerEmailError);
+            if (liabilityError) {
+              console.error('Liability notification failed:', liabilityError);
               toast({
                 title: "Warning",
                 description: "Submission verified but producer notification email failed",
@@ -700,30 +699,22 @@ export default function Admin() {
             }
           } else {
             // Queue for later
-            const { data: paymentReport } = await supabase
-              .from('payment_reports')
-              .select('id')
-              .eq('report_id', submission.report_id)
-              .single();
-
-            if (paymentReport) {
-              await supabase
-                .from('queued_producer_notifications')
-                .insert({
-                  payment_report_id: paymentReport.id,
-                  producer_email: producerEmail,
-                  report_id: submission.report_id,
-                  amount_owed: parseFloat(formData.amount_owed),
-                  days_overdue: daysOverdue,
-                  project_name: formData.project_name || "Not specified",
-                });
-
-              toast({
-                title: "Notification Queued",
-                description: "Producer notification queued (toggle is OFF)",
-                variant: "default",
+            await supabase
+              .from('queued_producer_notifications')
+              .insert({
+                payment_report_id: newPaymentReport.id,
+                producer_email: producerEmail,
+                report_id: submission.report_id,
+                amount_owed: parseFloat(formData.amount_owed),
+                days_overdue: daysOverdue,
+                project_name: formData.project_name || "Not specified",
               });
-            }
+
+            toast({
+              title: "Notification Queued",
+              description: "Producer notification queued (toggle is OFF)",
+              variant: "default",
+            });
           }
         }
     }
@@ -776,7 +767,10 @@ export default function Admin() {
       // Extract producer email from form data
       const producerEmail = formData.producer_name?.email || null;
       
-      const { error: reportError } = await supabase
+      // Generate a report_id for vendor reports
+      const vendorReportId = `VR-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`;
+      
+      const { data: newPaymentReport, error: reportError } = await supabase
         .from('payment_reports')
         .insert({
           reporter_id: submission.user_id,
@@ -788,8 +782,12 @@ export default function Admin() {
           city: formData.city || null,
           status: 'pending',
           verified: true,
-          producer_email: producerEmail
-        });
+          producer_email: producerEmail,
+          report_id: vendorReportId,
+          reporter_type: 'vendor'
+        })
+        .select('id')
+        .single();
       
       if (reportError) {
         console.error('Error creating payment report:', reportError);
@@ -826,8 +824,8 @@ export default function Admin() {
         });
       }
 
-      // Send notification email to producer (or queue it) - same logic as crew reports
-      if (producerEmail) {
+      // Send liability notification to producer (includes escrow code generation)
+      if (producerEmail && newPaymentReport?.id) {
         const { data: settings } = await supabase
           .from("site_settings")
           .select("send_producer_notifications")
@@ -836,21 +834,18 @@ export default function Admin() {
         const shouldSendNow = settings?.send_producer_notifications ?? true;
 
         if (shouldSendNow) {
-          const { error: producerEmailError } = await supabase.functions.invoke('send-email', {
+          const { error: liabilityError } = await supabase.functions.invoke('send-liability-notification', {
             body: {
-              type: 'producer_report_notification',
-              to: producerEmail,
-              data: {
-                reportId: 'Vendor Report',
-                amountOwed: parseFloat(formData.amount_owed),
-                daysOverdue: Math.max(0, daysOverdue),
-                projectName: formData.project_name || "Not specified",
-              }
+              report_id: newPaymentReport.id,
+              accused_name: producerName,
+              accused_email: producerEmail,
+              accused_role: 'producer',
+              accuser_id: submission.user_id
             }
           });
 
-          if (producerEmailError) {
-            console.error('Producer email sending failed:', producerEmailError);
+          if (liabilityError) {
+            console.error('Liability notification failed:', liabilityError);
           }
         }
       }
