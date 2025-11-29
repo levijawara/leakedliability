@@ -16,13 +16,13 @@ const generateBulbs = (): Bulb[] => {
   let id = 0;
   const colors: ('red' | 'green' | 'tungsten')[] = ['red', 'green', 'tungsten'];
 
-  // 5 full-width sagging wire paths - like real draped Christmas lights
+  // 5 main sagging paths matching the wire curves exactly
   const sagPaths = [
-    { startX: -30, startY: 15, controlY: 55, endX: 830, endY: 20, layer: 'back' as const },
-    { startX: -25, startY: 35, controlY: 85, endX: 825, endY: 40, layer: 'front' as const },
-    { startX: -20, startY: 55, controlY: 110, endX: 820, endY: 60, layer: 'back' as const },
-    { startX: -15, startY: 75, controlY: 135, endX: 815, endY: 80, layer: 'front' as const },
-    { startX: -10, startY: 95, controlY: 155, endX: 810, endY: 100, layer: 'back' as const },
+    { startX: -30, startY: 20, controlY: 80, endX: 830, endY: 25, layer: 'back' as const },
+    { startX: -20, startY: 45, controlY: 110, endX: 820, endY: 50, layer: 'front' as const },
+    { startX: -25, startY: 70, controlY: 140, endX: 825, endY: 75, layer: 'back' as const },
+    { startX: -15, startY: 95, controlY: 160, endX: 815, endY: 100, layer: 'front' as const },
+    { startX: -10, startY: 120, controlY: 190, endX: 830, endY: 125, layer: 'back' as const },
   ];
 
   // Helper to get Y position on a quadratic bezier curve
@@ -31,7 +31,7 @@ const generateBulbs = (): Bulb[] => {
   };
 
   sagPaths.forEach((path, pathIndex) => {
-    const bulbsPerPath = 9 + Math.floor(Math.random() * 3); // 9-11 bulbs per wire
+    const bulbsPerPath = 8 + Math.floor(Math.random() * 3); // 8-10 bulbs per wire
     
     for (let i = 0; i < bulbsPerPath; i++) {
       const t = i / (bulbsPerPath - 1);
@@ -50,12 +50,14 @@ const generateBulbs = (): Bulb[] => {
     }
   });
 
-  // Left dangling tail (4 bulbs)
-  for (let i = 0; i < 4; i++) {
+  // Left tail bulbs (3-4 bulbs)
+  const leftTailCount = 3 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < leftTailCount; i++) {
+    const t = (i + 1) / (leftTailCount + 1);
     bulbs.push({
       id: id++,
-      x: -15 + (Math.random() - 0.5) * 12,
-      y: 50 + i * 28 + Math.random() * 10,
+      x: -30 + (t * 10) + (Math.random() - 0.5) * 8,
+      y: 60 + (t * 120) + (Math.random() - 0.5) * 12,
       rotation: -15 + Math.random() * 20,
       color: colors[i % 3],
       layer: 'front',
@@ -63,12 +65,14 @@ const generateBulbs = (): Bulb[] => {
     });
   }
 
-  // Right dangling tail (5 bulbs)
-  for (let i = 0; i < 5; i++) {
+  // Right tail bulbs (3-4 bulbs)
+  const rightTailCount = 3 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < rightTailCount; i++) {
+    const t = (i + 1) / (rightTailCount + 1);
     bulbs.push({
       id: id++,
-      x: 815 + (Math.random() - 0.5) * 15,
-      y: 45 + i * 25 + Math.random() * 10,
+      x: 830 + (t * 10) + (Math.random() - 0.5) * 8,
+      y: 60 + (t * 140) + (Math.random() - 0.5) * 12,
       rotation: 12 + Math.random() * 25,
       color: colors[(i + 1) % 3],
       layer: 'front',
@@ -79,19 +83,18 @@ const generateBulbs = (): Bulb[] => {
   return bulbs;
 };
 
-// Generate wire paths - 5 full-width sagging curves like real draped lights
+// Generate wire paths - exact catenary curves
 const generateWirePaths = () => [
-  // 5 sagging wires spanning full width - each sags in the middle
-  { d: "M-30 15 Q400 55, 830 20", layer: 'back' as const },
-  { d: "M-25 35 Q400 85, 825 40", layer: 'front' as const },
-  { d: "M-20 55 Q400 110, 820 60", layer: 'back' as const },
-  { d: "M-15 75 Q400 135, 815 80", layer: 'front' as const },
-  { d: "M-10 95 Q400 155, 810 100", layer: 'back' as const },
-  
-  // Left tail wire
-  { d: "M-20 50 Q-30 100, -15 170", layer: 'front' as const },
-  // Right tail wire  
-  { d: "M815 45 Q835 100, 820 180", layer: 'front' as const },
+  // Main sagging wires (full width)
+  { d: "M-30 20 Q400 80 830 25", layer: 'back' as const },
+  { d: "M-20 45 Q380 110 820 50", layer: 'front' as const },
+  { d: "M-25 70 Q420 140 825 75", layer: 'back' as const },
+  { d: "M-15 95 Q390 160 815 100", layer: 'front' as const },
+  { d: "M-10 120 Q410 190 830 125", layer: 'back' as const },
+
+  // Tail ends (sloppy, uneven lengths)
+  { d: "M-30 60 Q-40 120 -20 180", layer: 'front' as const },
+  { d: "M830 60 Q850 130 840 200", layer: 'front' as const },
 ];
 
 const BulbSVG = ({ 
@@ -172,14 +175,14 @@ const ChristmasLightsLayer = ({ bulbs, bulbStates, layer, wirePaths }: Christmas
     >
       {/* Wire paths for this layer */}
       {layerWires.map((wire, i) => (
-        <path
-          key={i}
-          d={wire.d}
-          stroke="hsl(var(--muted-foreground))"
-          strokeWidth="2"
-          fill="none"
-          opacity="0.4"
-        />
+          <path
+            key={i}
+            d={wire.d}
+            stroke="black"
+            strokeWidth="2"
+            fill="none"
+            strokeOpacity={0.8}
+          />
       ))}
 
       {/* Bulbs for this layer */}
