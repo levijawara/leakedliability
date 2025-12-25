@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client"; // Force rebuild
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
@@ -54,6 +54,7 @@ const AppContent = () => {
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
   // Dev-mode route config validator
   if (import.meta.env.DEV) {
@@ -115,8 +116,11 @@ const AppContent = () => {
     return null;
   }
 
-  // Show maintenance page if enabled and user is not admin
-  if (maintenanceMode && !isAdmin) {
+  // Allow auth routes even during maintenance so admins can log in
+  const isAuthRoute = location.pathname === '/auth' || location.pathname === '/reset-password';
+  
+  // Show maintenance page if enabled, user is not admin, AND not on auth page
+  if (maintenanceMode && !isAdmin && !isAuthRoute) {
     return <Maintenance message={maintenanceMessage} />;
   }
 
