@@ -1,6 +1,28 @@
 // Normalize and standardize role names across call sheets
 
 /**
+ * Master list of standard film/TV production departments
+ */
+export const MASTER_DEPARTMENTS = [
+  'Production',
+  'Directing',
+  'Camera',
+  'Grip',
+  'Electric',
+  'Sound',
+  'Art',
+  'Props',
+  'Costume',
+  'Hair & Makeup',
+  'Locations',
+  'Transportation',
+  'Craft Services',
+  'Other',
+] as const;
+
+export type MasterDepartment = typeof MASTER_DEPARTMENTS[number];
+
+/**
  * Common role aliases and their canonical forms
  */
 export const ROLE_ALIASES: Record<string, string> = {
