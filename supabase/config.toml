@@ -92,5 +92,24 @@ verify_jwt = false
 [functions.merge-departments]
 verify_jwt = false
 
+# EC Edge Functions (Call Sheet Parsing) - Batch 3
+[functions.ingest-ig-credits]
+verify_jwt = false
+
+[functions.parse-queue]
+verify_jwt = false
+
+[functions.reparse-pending-sheets]
+verify_jwt = false
+
+[functions.backfill-content-hashes]
+verify_jwt = false
+
+[functions.backfill-parsed-contacts]
+verify_jwt = false
+
+[functions.admin-clear-storage]
+verify_jwt = false
+
 [auth]
 enabled = true
