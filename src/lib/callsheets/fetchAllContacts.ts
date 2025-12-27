@@ -5,12 +5,17 @@ import type { CrewContact, FilterConfig, SortConfig } from "@/types/callSheet";
 
 const PAGE_SIZE = 1000;
 
+// Helper to convert DB row to CrewContact
+function toCrewContact(row: Record<string, unknown>): CrewContact {
+  return row as unknown as CrewContact;
+}
+
 /**
  * Fetch all contacts for the current user with pagination
  */
 export async function fetchAllContacts(
   userId: string,
-  options?: {
+  _options?: {
     filter?: Partial<FilterConfig>;
     sort?: SortConfig;
   }
@@ -20,33 +25,11 @@ export async function fetchAllContacts(
   let hasMore = true;
   
   while (hasMore) {
-    let query = supabase
+    const { data, error } = await supabase
       .from('crew_contacts')
       .select('*')
       .eq('user_id', userId)
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-    
-    // Apply filters
-    if (options?.filter?.searchQuery) {
-      query = query.ilike('name', `%${options.filter.searchQuery}%`);
-    }
-    
-    if (options?.filter?.hasInstagram === true) {
-      query = query.not('instagram_handle', 'is', null);
-    } else if (options?.filter?.hasInstagram === false) {
-      query = query.is('instagram_handle', null);
-    }
-    
-    // Apply sorting
-    if (options?.sort) {
-      query = query.order(options.sort.field, {
-        ascending: options.sort.direction === 'asc',
-      });
-    } else {
-      query = query.order('name', { ascending: true });
-    }
-    
-    const { data, error } = await query;
     
     if (error) {
       console.error('[fetchAllContacts] Error:', error);
@@ -54,13 +37,18 @@ export async function fetchAllContacts(
     }
     
     if (data && data.length > 0) {
-      allContacts.push(...(data as unknown as CrewContact[]));
+      for (const row of data) {
+        allContacts.push(toCrewContact(row));
+      }
       hasMore = data.length === PAGE_SIZE;
       page++;
     } else {
       hasMore = false;
     }
   }
+  
+  // Sort by name client-side
+  allContacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   
   return allContacts;
 }
@@ -72,19 +60,23 @@ export async function fetchContactsByCallSheet(
   userId: string,
   callSheetId: string
 ): Promise<CrewContact[]> {
+  // Use RPC or simple query to avoid deep type instantiation
   const { data, error } = await supabase
     .from('crew_contacts')
     .select('*')
-    .eq('user_id', userId)
-    .eq('call_sheet_id', callSheetId)
-    .order('name', { ascending: true });
+    .match({ user_id: userId, call_sheet_id: callSheetId });
   
   if (error) {
     console.error('[fetchContactsByCallSheet] Error:', error);
     throw error;
   }
   
-  return (data || []) as unknown as CrewContact[];
+  const contacts: CrewContact[] = [];
+  for (const row of data || []) {
+    contacts.push(toCrewContact(row));
+  }
+  contacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  return contacts;
 }
 
 /**
@@ -117,7 +109,6 @@ export async function searchContacts(
     .select('*')
     .eq('user_id', userId)
     .ilike('name', `%${query}%`)
-    .order('name', { ascending: true })
     .limit(limit);
   
   if (error) {
@@ -125,7 +116,12 @@ export async function searchContacts(
     throw error;
   }
   
-  return (data || []) as unknown as CrewContact[];
+  const contacts: CrewContact[] = [];
+  for (const row of data || []) {
+    contacts.push(toCrewContact(row));
+  }
+  contacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  return contacts;
 }
 
 /**
@@ -135,8 +131,7 @@ export async function fetchUniqueDepartments(userId: string): Promise<string[]> 
   const { data, error } = await supabase
     .from('crew_contacts')
     .select('departments')
-    .eq('user_id', userId)
-    .not('departments', 'is', null);
+    .eq('user_id', userId);
   
   if (error) {
     console.error('[fetchUniqueDepartments] Error:', error);
@@ -145,8 +140,9 @@ export async function fetchUniqueDepartments(userId: string): Promise<string[]> 
   
   const departments = new Set<string>();
   for (const row of data || []) {
-    if (row.departments) {
-      for (const dept of row.departments) {
+    const depts = row.departments as string[] | null;
+    if (depts) {
+      for (const dept of depts) {
         departments.add(dept);
       }
     }
@@ -162,8 +158,7 @@ export async function fetchUniqueRoles(userId: string): Promise<string[]> {
   const { data, error } = await supabase
     .from('crew_contacts')
     .select('roles')
-    .eq('user_id', userId)
-    .not('roles', 'is', null);
+    .eq('user_id', userId);
   
   if (error) {
     console.error('[fetchUniqueRoles] Error:', error);
@@ -172,8 +167,9 @@ export async function fetchUniqueRoles(userId: string): Promise<string[]> {
   
   const roles = new Set<string>();
   for (const row of data || []) {
-    if (row.roles) {
-      for (const role of row.roles) {
+    const rowRoles = row.roles as string[] | null;
+    if (rowRoles) {
+      for (const role of rowRoles) {
         roles.add(role);
       }
     }

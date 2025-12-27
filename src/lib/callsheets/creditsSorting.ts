@@ -1,6 +1,6 @@
 // Sort contacts by various criteria (role, department, name)
 
-import type { CrewContact, SortConfig, SortDirection, SortField } from "@/types/callSheet";
+import type { CrewContact, SortConfig } from "@/types/callSheet";
 
 /**
  * Standard department order for film/TV productions
@@ -40,7 +40,6 @@ export const DEPARTMENT_ORDER: string[] = [
  * Role hierarchy within departments (higher = more senior)
  */
 export const ROLE_HIERARCHY: Record<string, number> = {
-  // Production
   'Executive Producer': 100,
   'Producer': 95,
   'Line Producer': 90,
@@ -50,14 +49,10 @@ export const ROLE_HIERARCHY: Record<string, number> = {
   'Production Secretary': 75,
   'Production Assistant': 70,
   'PA': 70,
-  
-  // Directing
   'Director': 100,
   '1st AD': 90,
   '2nd AD': 85,
   '2nd 2nd AD': 80,
-  
-  // Camera
   'DP': 100,
   'Director of Photography': 100,
   'Cinematographer': 100,
@@ -66,16 +61,12 @@ export const ROLE_HIERARCHY: Record<string, number> = {
   '2nd AC': 80,
   'DIT': 80,
   'Loader': 75,
-  
-  // Keys
   'Key Grip': 95,
   'Best Boy Grip': 90,
   'Gaffer': 95,
   'Best Boy Electric': 90,
   'Key Hair': 95,
   'Key Makeup': 95,
-  
-  // Default
   'Default': 50,
 };
 
@@ -95,17 +86,28 @@ export function getDepartmentIndex(department: string | null): number {
  */
 export function getRoleScore(role: string | null): number {
   if (!role) return ROLE_HIERARCHY['Default'];
-  
-  // Check exact match
   if (ROLE_HIERARCHY[role]) return ROLE_HIERARCHY[role];
   
-  // Check partial match
   const lowerRole = role.toLowerCase();
   for (const [key, score] of Object.entries(ROLE_HIERARCHY)) {
     if (lowerRole.includes(key.toLowerCase())) return score;
   }
   
   return ROLE_HIERARCHY['Default'];
+}
+
+/**
+ * Get primary department from contact (first in array)
+ */
+function getPrimaryDepartment(contact: CrewContact): string | null {
+  return contact.departments?.[0] || null;
+}
+
+/**
+ * Get primary role from contact (first in array)
+ */
+function getPrimaryRole(contact: CrewContact): string | null {
+  return contact.roles?.[0] || null;
 }
 
 /**
@@ -122,17 +124,15 @@ export function compareContacts(
     case 'name':
       return multiplier * (a.name || '').localeCompare(b.name || '');
       
-    case 'department': {
-      const deptDiff = getDepartmentIndex(a.department) - getDepartmentIndex(b.department);
+    case 'departments': {
+      const deptDiff = getDepartmentIndex(getPrimaryDepartment(a)) - getDepartmentIndex(getPrimaryDepartment(b));
       if (deptDiff !== 0) return multiplier * deptDiff;
-      // Secondary sort by role within department
-      return (getRoleScore(b.role) - getRoleScore(a.role));
+      return (getRoleScore(getPrimaryRole(b)) - getRoleScore(getPrimaryRole(a)));
     }
     
-    case 'role': {
-      const roleDiff = getRoleScore(b.role) - getRoleScore(a.role);
+    case 'roles': {
+      const roleDiff = getRoleScore(getPrimaryRole(b)) - getRoleScore(getPrimaryRole(a));
       if (roleDiff !== 0) return multiplier * roleDiff;
-      // Secondary sort by name
       return (a.name || '').localeCompare(b.name || '');
     }
     
@@ -165,15 +165,13 @@ export function groupByDepartment(
 ): Map<string, CrewContact[]> {
   const groups = new Map<string, CrewContact[]>();
   
-  // Initialize groups in order
   for (const dept of DEPARTMENT_ORDER) {
     groups.set(dept, []);
   }
   groups.set('Unknown', []);
   
-  // Assign contacts to groups
   for (const contact of contacts) {
-    const dept = contact.department || 'Unknown';
+    const dept = getPrimaryDepartment(contact) || 'Unknown';
     const matchedDept = DEPARTMENT_ORDER.find(
       d => d.toLowerCase() === dept.toLowerCase()
     ) || 'Unknown';
@@ -183,12 +181,10 @@ export function groupByDepartment(
     groups.set(matchedDept, group);
   }
   
-  // Sort contacts within each group by role
   for (const [dept, group] of groups.entries()) {
-    groups.set(dept, sortContacts(group, { field: 'role', direction: 'desc' }));
+    groups.set(dept, sortContacts(group, { field: 'roles', direction: 'desc' }));
   }
   
-  // Remove empty groups
   for (const [dept, group] of groups.entries()) {
     if (group.length === 0) groups.delete(dept);
   }
@@ -202,7 +198,6 @@ export function groupByDepartment(
 export function getUniqueDepartments(contacts: CrewContact[]): string[] {
   const depts = new Set<string>();
   for (const contact of contacts) {
-    if (contact.department) depts.add(contact.department);
     if (contact.departments) {
       for (const d of contact.departments) depts.add(d);
     }
@@ -216,7 +211,9 @@ export function getUniqueDepartments(contacts: CrewContact[]): string[] {
 export function getUniqueRoles(contacts: CrewContact[]): string[] {
   const roles = new Set<string>();
   for (const contact of contacts) {
-    if (contact.role) roles.add(contact.role);
+    if (contact.roles) {
+      for (const r of contact.roles) roles.add(r);
+    }
   }
   return Array.from(roles).sort((a, b) => getRoleScore(b) - getRoleScore(a));
 }

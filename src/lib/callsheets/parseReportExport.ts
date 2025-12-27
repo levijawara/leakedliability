@@ -130,12 +130,16 @@ export function generateBatchSummary(
 export function formatContactForReport(contact: CrewContact): string {
   const parts = [contact.name];
   
-  if (contact.role) parts.push(`(${contact.role})`);
-  if (contact.department) parts.push(`[${contact.department}]`);
+  const role = contact.roles?.[0];
+  const department = contact.departments?.[0];
+  if (role) parts.push(`(${role})`);
+  if (department) parts.push(`[${department}]`);
   
   const details: string[] = [];
-  if (contact.email) details.push(contact.email);
-  if (contact.phone) details.push(contact.phone);
+  const email = contact.emails?.[0];
+  const phone = contact.phones?.[0];
+  if (email) details.push(email);
+  if (phone) details.push(phone);
   if (contact.instagram_handle) details.push(contact.instagram_handle);
   
   if (details.length > 0) {
@@ -158,10 +162,9 @@ export function exportContactsSummary(contacts: CrewContact[]): string {
     '',
   ];
   
-  // Group by department
   const byDepartment = new Map<string, CrewContact[]>();
   for (const contact of contacts) {
-    const dept = contact.department || 'Unknown';
+    const dept = contact.departments?.[0] || 'Unknown';
     if (!byDepartment.has(dept)) {
       byDepartment.set(dept, []);
     }
