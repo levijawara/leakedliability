@@ -5,7 +5,7 @@ import { AlertTriangle, FileText, Users, TrendingUp, Info, Instagram } from "luc
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { ProducerSearchAutocomplete } from "@/components/ProducerSearchAutocomplete";
-import { ChristmasLights } from "@/components/ChristmasLights";
+
 
 const Index = () => {
   const navigate = useNavigate();
@@ -24,14 +24,9 @@ const Index = () => {
             </div>
           </div>
 
-          <div className="relative inline-block w-full mx-auto">
-            <h1 className="text-[4.4rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[7rem] xl:text-[8rem] font-black tracking-tighter relative z-10 leading-tight sm:leading-none sm:whitespace-nowrap">
-              Leaked Liability<span className="text-[70%] align-super">™</span>
-            </h1>
-            <div className="absolute inset-0 pointer-events-none">
-              <ChristmasLights />
-            </div>
-          </div>
+          <h1 className="text-[4.4rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[7rem] xl:text-[8rem] font-black tracking-tighter leading-tight sm:leading-none sm:whitespace-nowrap">
+            Leaked Liability<span className="text-[70%] align-super">™</span>
+          </h1>
 
           <a 
             href="https://www.instagram.com/leakedliability/"
