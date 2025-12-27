@@ -7,6 +7,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -62,7 +63,7 @@ export function CrewContactsGrid({
           .order("name");
 
         if (error) throw error;
-        setContacts((data || []) as CrewContact[]);
+        setContacts((data || []) as unknown as CrewContact[]);
       } catch (error: any) {
         toast.error(error.message || "Failed to load contacts");
       } finally {
@@ -159,24 +160,24 @@ export function CrewContactsGrid({
   };
 
   const handleExportCSV = () => {
-    const csv = exportContacts(filteredContacts, { format: "csv", includeFields: ["name", "emails", "phones", "roles", "departments", "instagram_handle"] });
-    const blob = new Blob([csv], { type: "text/csv" });
+    const result = exportContacts(filteredContacts, { format: "csv", includeFields: ["name", "emails", "phones", "roles", "departments", "instagram_handle"] });
+    const blob = new Blob([result.content], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `crew-contacts-${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = result.filename;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Contacts exported to CSV");
   };
 
   const handleExportVCard = () => {
-    const vcard = exportContacts(filteredContacts, { format: "vcard", includeFields: ["name", "emails", "phones", "roles", "departments", "instagram_handle"] });
-    const blob = new Blob([vcard], { type: "text/vcard" });
+    const result = exportContacts(filteredContacts, { format: "vcard", includeFields: ["name", "emails", "phones", "roles", "departments", "instagram_handle"] });
+    const blob = new Blob([result.content], { type: "text/vcard" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `crew-contacts-${new Date().toISOString().split("T")[0]}.vcf`;
+    a.download = result.filename;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Contacts exported to vCard");
