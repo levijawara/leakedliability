@@ -71,3 +71,10 @@ verify_jwt = true
 
 [functions.admin-approve-claim]
 verify_jwt = true
+
+# EC Edge Functions (Call Sheet Parsing) - Batch 1
+[functions.parse-call-sheet]
+verify_jwt = false
+
+[functions.insert-selected-contacts]
+verify_jwt = false
