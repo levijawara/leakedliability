@@ -37,22 +37,28 @@ export function contactToVCard(contact: CrewContact): string {
     `FN:${contact.name}`,
   ];
   
-  // Parse name parts
   const nameParts = contact.name.split(' ');
   const lastName = nameParts.length > 1 ? nameParts.pop() : '';
   const firstName = nameParts.join(' ');
   lines.push(`N:${lastName};${firstName};;;`);
   
-  if (contact.email) {
-    lines.push(`EMAIL:${contact.email}`);
+  // Use first email from array
+  const email = contact.emails?.[0];
+  if (email) {
+    lines.push(`EMAIL:${email}`);
   }
   
-  if (contact.phone) {
-    lines.push(`TEL:${contact.phone}`);
+  // Use first phone from array
+  const phone = contact.phones?.[0];
+  if (phone) {
+    lines.push(`TEL:${phone}`);
   }
   
-  if (contact.role || contact.department) {
-    const title = [contact.role, contact.department].filter(Boolean).join(' - ');
+  // Use first role and department from arrays
+  const role = contact.roles?.[0];
+  const department = contact.departments?.[0];
+  if (role || department) {
+    const title = [role, department].filter(Boolean).join(' - ');
     lines.push(`TITLE:${title}`);
   }
   
@@ -101,18 +107,16 @@ export function exportContacts(
   contacts: CrewContact[],
   options: ExportOptions
 ): { content: string; filename: string; mimeType: string } {
-  // Apply filters
   let filtered = [...contacts];
   
   if (options.filterDepartment) {
     filtered = filtered.filter(c => 
-      c.department === options.filterDepartment ||
       c.departments?.includes(options.filterDepartment!)
     );
   }
   
   if (options.filterRole) {
-    filtered = filtered.filter(c => c.role === options.filterRole);
+    filtered = filtered.filter(c => c.roles?.includes(options.filterRole!));
   }
   
   const timestamp = new Date().toISOString().split('T')[0];
@@ -166,15 +170,20 @@ function fieldToLabel(field: keyof CrewContact): string {
     id: 'ID',
     user_id: 'User ID',
     name: 'Name',
-    email: 'Email',
-    phone: 'Phone',
-    role: 'Role',
-    department: 'Department',
+    emails: 'Emails',
+    phones: 'Phones',
+    roles: 'Roles',
     departments: 'Departments',
     instagram_handle: 'Instagram',
     notes: 'Notes',
     source_files: 'Source Files',
     call_sheet_id: 'Call Sheet ID',
+    confidence: 'Confidence',
+    hidden_emails: 'Hidden Emails',
+    hidden_phones: 'Hidden Phones',
+    hidden_roles: 'Hidden Roles',
+    hidden_departments: 'Hidden Departments',
+    hidden_ig_handle: 'Hidden IG',
     created_at: 'Created At',
     updated_at: 'Updated At',
     is_selected: 'Selected',
@@ -187,5 +196,5 @@ function fieldToLabel(field: keyof CrewContact): string {
  * Get default export fields
  */
 export function getDefaultExportFields(): (keyof CrewContact)[] {
-  return ['name', 'email', 'phone', 'role', 'department', 'instagram_handle', 'notes'];
+  return ['name', 'emails', 'phones', 'roles', 'departments', 'instagram_handle', 'notes'];
 }

@@ -4,7 +4,6 @@ import type { CrewContact } from "@/types/callSheet";
 
 /**
  * Mask an email address for display
- * john.doe@gmail.com -> j***e@g***l.com
  */
 export function maskEmail(email: string): string {
   const [local, domain] = email.split('@');
@@ -16,7 +15,7 @@ export function maskEmail(email: string): string {
   
   const domainParts = domain.split('.');
   const maskedDomain = domainParts.map((part, i) => {
-    if (i === domainParts.length - 1) return part; // Keep TLD
+    if (i === domainParts.length - 1) return part;
     return part.length > 2
       ? `${part[0]}***${part[part.length - 1]}`
       : `${part[0]}***`;
@@ -27,7 +26,6 @@ export function maskEmail(email: string): string {
 
 /**
  * Mask a phone number for display
- * (555) 123-4567 -> (555) ***-**67
  */
 export function maskPhone(phone: string): string {
   const cleaned = phone.replace(/\D/g, '');
@@ -38,7 +36,6 @@ export function maskPhone(phone: string): string {
     return `+${cleaned[0]} (${cleaned.slice(1, 4)}) ***-**${cleaned.slice(-2)}`;
   }
   
-  // Fallback: show first 3 and last 2 digits
   if (cleaned.length >= 5) {
     return `${cleaned.slice(0, 3)}${'*'.repeat(cleaned.length - 5)}${cleaned.slice(-2)}`;
   }
@@ -48,7 +45,6 @@ export function maskPhone(phone: string): string {
 
 /**
  * Mask a name for display
- * John Smith -> J*** S***
  */
 export function maskName(name: string): string {
   return name.split(' ')
@@ -58,7 +54,6 @@ export function maskName(name: string): string {
 
 /**
  * Mask an Instagram handle
- * @johndoe -> @j*****e
  */
 export function maskInstagram(handle: string): string {
   const cleaned = handle.replace(/^@/, '');
@@ -74,20 +69,20 @@ export function maskInstagram(handle: string): string {
 export function maskContact(
   contact: CrewContact,
   options: {
-    maskEmail?: boolean;
-    maskPhone?: boolean;
+    maskEmails?: boolean;
+    maskPhones?: boolean;
     maskName?: boolean;
     maskInstagram?: boolean;
   } = {}
 ): CrewContact {
   const masked = { ...contact };
   
-  if (options.maskEmail && contact.email) {
-    masked.email = maskEmail(contact.email);
+  if (options.maskEmails && contact.emails) {
+    masked.emails = contact.emails.map(maskEmail);
   }
   
-  if (options.maskPhone && contact.phone) {
-    masked.phone = maskPhone(contact.phone);
+  if (options.maskPhones && contact.phones) {
+    masked.phones = contact.phones.map(maskPhone);
   }
   
   if (options.maskName) {
@@ -129,19 +124,16 @@ export function isInstagram(value: string): boolean {
 export function redactSensitiveText(text: string): string {
   let redacted = text;
   
-  // Redact emails
   redacted = redacted.replace(
     /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
     '[EMAIL REDACTED]'
   );
   
-  // Redact phone numbers (various formats)
   redacted = redacted.replace(
     /(\+?\d{1,2}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g,
     '[PHONE REDACTED]'
   );
   
-  // Redact SSN-like patterns
   redacted = redacted.replace(
     /\b\d{3}[-.\s]?\d{2}[-.\s]?\d{4}\b/g,
     '[SSN REDACTED]'
@@ -156,11 +148,11 @@ export function redactSensitiveText(text: string): string {
 export function generatePrivacySummary(contacts: CrewContact[]): string {
   const summary = {
     totalContacts: contacts.length,
-    withEmail: contacts.filter(c => c.email).length,
-    withPhone: contacts.filter(c => c.phone).length,
+    withEmail: contacts.filter(c => c.emails && c.emails.length > 0).length,
+    withPhone: contacts.filter(c => c.phones && c.phones.length > 0).length,
     withInstagram: contacts.filter(c => c.instagram_handle).length,
-    departments: new Set(contacts.map(c => c.department).filter(Boolean)).size,
-    roles: new Set(contacts.map(c => c.role).filter(Boolean)).size,
+    departments: new Set(contacts.flatMap(c => c.departments || [])).size,
+    roles: new Set(contacts.flatMap(c => c.roles || [])).size,
   };
   
   return `Contact Database Summary:

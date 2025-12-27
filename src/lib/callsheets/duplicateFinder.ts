@@ -16,12 +16,10 @@ export function stringSimilarity(str1: string, str2: string): number {
   const longer = s1.length > s2.length ? s1 : s2;
   const shorter = s1.length <= s2.length ? s1 : s2;
   
-  // Quick check: if one contains the other
   if (longer.includes(shorter)) {
     return shorter.length / longer.length;
   }
   
-  // Levenshtein distance
   const matrix: number[][] = [];
   for (let i = 0; i <= shorter.length; i++) {
     matrix[i] = [i];
@@ -49,7 +47,7 @@ export function stringSimilarity(str1: string, str2: string): number {
  * Normalize phone number for comparison
  */
 export function normalizePhone(phone: string): string {
-  return phone.replace(/\D/g, '').slice(-10); // Last 10 digits
+  return phone.replace(/\D/g, '').slice(-10);
 }
 
 /**
@@ -57,6 +55,15 @@ export function normalizePhone(phone: string): string {
  */
 export function normalizeEmail(email: string): string {
   return email.toLowerCase().trim();
+}
+
+/**
+ * Check if two arrays share any common values
+ */
+function arraysShareValue(arr1: string[] | null, arr2: string[] | null, normalizer?: (s: string) => string): boolean {
+  if (!arr1 || !arr2 || arr1.length === 0 || arr2.length === 0) return false;
+  const set1 = new Set(arr1.map(s => normalizer ? normalizer(s) : s.toLowerCase()));
+  return arr2.some(s => set1.has(normalizer ? normalizer(s) : s.toLowerCase()));
 }
 
 /**
@@ -82,20 +89,16 @@ export function calculateMatchScore(
     reasons.push('Names somewhat similar');
   }
   
-  // Email matching (30 points for exact match)
-  if (contact1.email && contact2.email) {
-    if (normalizeEmail(contact1.email) === normalizeEmail(contact2.email)) {
-      score += 30;
-      reasons.push('Same email address');
-    }
+  // Email matching (30 points for shared email)
+  if (arraysShareValue(contact1.emails, contact2.emails, normalizeEmail)) {
+    score += 30;
+    reasons.push('Same email address');
   }
   
-  // Phone matching (30 points for exact match)
-  if (contact1.phone && contact2.phone) {
-    if (normalizePhone(contact1.phone) === normalizePhone(contact2.phone)) {
-      score += 30;
-      reasons.push('Same phone number');
-    }
+  // Phone matching (30 points for shared phone)
+  if (arraysShareValue(contact1.phones, contact2.phones, normalizePhone)) {
+    score += 30;
+    reasons.push('Same phone number');
   }
   
   // Instagram matching (20 points)
@@ -109,11 +112,9 @@ export function calculateMatchScore(
   }
   
   // Same department (5 points bonus)
-  if (contact1.department && contact2.department) {
-    if (contact1.department.toLowerCase() === contact2.department.toLowerCase()) {
-      score += 5;
-      reasons.push('Same department');
-    }
+  if (arraysShareValue(contact1.departments, contact2.departments)) {
+    score += 5;
+    reasons.push('Same department');
   }
   
   return { score, reasons };
@@ -143,7 +144,6 @@ export function findDuplicates(
     }
   }
   
-  // Sort by match score descending
   return duplicates.sort((a, b) => b.matchScore - a.matchScore);
 }
 
@@ -175,84 +175,16 @@ export function findMatchesFor(
 }
 
 /**
- * Group duplicates into clusters
- */
-export function clusterDuplicates(
-  duplicates: DuplicateMatch[]
-): CrewContact[][] {
-  const clusters: Map<string, Set<string>> = new Map();
-  const contactMap: Map<string, CrewContact> = new Map();
-  
-  // Build union-find structure
-  for (const dup of duplicates) {
-    contactMap.set(dup.contact1.id, dup.contact1);
-    contactMap.set(dup.contact2.id, dup.contact2);
-    
-    const cluster1 = findCluster(clusters, dup.contact1.id);
-    const cluster2 = findCluster(clusters, dup.contact2.id);
-    
-    // Merge clusters
-    const mergedCluster = new Set([...cluster1, ...cluster2]);
-    for (const id of mergedCluster) {
-      clusters.set(id, mergedCluster);
-    }
-  }
-  
-  // Convert to array of contact arrays
-  const seen = new Set<string>();
-  const result: CrewContact[][] = [];
-  
-  for (const [id, cluster] of clusters.entries()) {
-    const clusterKey = Array.from(cluster).sort().join(',');
-    if (seen.has(clusterKey)) continue;
-    seen.add(clusterKey);
-    
-    const contacts = Array.from(cluster)
-      .map(cid => contactMap.get(cid))
-      .filter((c): c is CrewContact => c !== undefined);
-    
-    if (contacts.length > 1) {
-      result.push(contacts);
-    }
-  }
-  
-  return result;
-}
-
-/**
- * Helper to find cluster for a contact ID
- */
-function findCluster(clusters: Map<string, Set<string>>, id: string): Set<string> {
-  const existing = clusters.get(id);
-  if (existing) return existing;
-  
-  const newCluster = new Set([id]);
-  clusters.set(id, newCluster);
-  return newCluster;
-}
-
-/**
  * Get duplicate statistics
  */
 export function getDuplicateStats(contacts: CrewContact[]): {
   totalContacts: number;
-  uniqueContacts: number;
   duplicatePairs: number;
-  duplicateClusters: number;
 } {
   const duplicates = findDuplicates(contacts);
-  const clusters = clusterDuplicates(duplicates);
-  
-  const duplicateIds = new Set<string>();
-  for (const dup of duplicates) {
-    duplicateIds.add(dup.contact1.id);
-    duplicateIds.add(dup.contact2.id);
-  }
   
   return {
     totalContacts: contacts.length,
-    uniqueContacts: contacts.length - duplicateIds.size + clusters.length,
     duplicatePairs: duplicates.length,
-    duplicateClusters: clusters.length,
   };
 }

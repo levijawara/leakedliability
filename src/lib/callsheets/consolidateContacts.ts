@@ -22,15 +22,22 @@ export function namesMatch(name1: string, name2: string): boolean {
   
   if (n1 === n2) return true;
   
-  // Check if one contains the other (e.g., "John Smith" vs "John")
   if (n1.includes(n2) || n2.includes(n1)) {
     const shorter = n1.length < n2.length ? n1 : n2;
     const longer = n1.length >= n2.length ? n1 : n2;
-    // Only match if shorter is at least 60% of longer
     if (shorter.length / longer.length >= 0.6) return true;
   }
   
   return false;
+}
+
+/**
+ * Merge arrays, removing duplicates
+ */
+function mergeArrays(arr1: string[] | null, arr2: string[] | null): string[] | null {
+  const all = [...(arr1 || []), ...(arr2 || [])];
+  if (all.length === 0) return null;
+  return [...new Set(all)];
 }
 
 /**
@@ -42,40 +49,15 @@ export function mergeContacts(
 ): CrewContact {
   return {
     ...primary,
-    email: primary.email || secondary.email,
-    phone: primary.phone || secondary.phone,
-    role: primary.role || secondary.role,
-    department: primary.department || secondary.department,
+    emails: mergeArrays(primary.emails, secondary.emails),
+    phones: mergeArrays(primary.phones, secondary.phones),
+    roles: mergeArrays(primary.roles, secondary.roles),
+    departments: mergeArrays(primary.departments, secondary.departments),
     instagram_handle: primary.instagram_handle || secondary.instagram_handle,
     notes: primary.notes || secondary.notes,
-    departments: mergeDepartments(primary.departments, secondary.departments),
-    source_files: mergeSourceFiles(primary.source_files, secondary.source_files),
+    source_files: mergeArrays(primary.source_files, secondary.source_files),
     updated_at: new Date().toISOString(),
   };
-}
-
-/**
- * Merge department arrays, removing duplicates
- */
-function mergeDepartments(
-  deps1: string[] | null,
-  deps2: string[] | null
-): string[] | null {
-  const all = [...(deps1 || []), ...(deps2 || [])];
-  if (all.length === 0) return null;
-  return [...new Set(all)];
-}
-
-/**
- * Merge source file arrays, removing duplicates
- */
-function mergeSourceFiles(
-  files1: string[] | null,
-  files2: string[] | null
-): string[] | null {
-  const all = [...(files1 || []), ...(files2 || [])];
-  if (all.length === 0) return null;
-  return [...new Set(all)];
 }
 
 /**
@@ -89,7 +71,6 @@ export function consolidateContactsByName(
   for (const contact of contacts) {
     const normalizedName = normalizeName(contact.name);
     
-    // Find existing match
     let matched = false;
     for (const [key, existing] of consolidated.entries()) {
       if (namesMatch(contact.name, existing.name)) {
@@ -119,14 +100,19 @@ export function parsedToCrewContact(
   return {
     user_id: userId,
     name: parsed.name,
-    email: parsed.email || null,
-    phone: parsed.phone || null,
-    role: parsed.role || null,
-    department: parsed.department || null,
+    emails: parsed.email ? [parsed.email] : null,
+    phones: parsed.phone ? [parsed.phone] : null,
+    roles: parsed.role ? [parsed.role] : null,
     departments: parsed.department ? [parsed.department] : null,
     instagram_handle: parsed.instagram_handle || null,
     notes: null,
     source_files: [filename],
     call_sheet_id: callSheetId,
+    confidence: parsed.confidence || null,
+    hidden_emails: null,
+    hidden_phones: null,
+    hidden_roles: null,
+    hidden_departments: null,
+    hidden_ig_handle: null,
   };
 }
