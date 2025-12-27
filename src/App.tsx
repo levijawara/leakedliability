@@ -46,6 +46,7 @@ import DailyVisitors from "./pages/DailyVisitors";
 import Results from "./pages/Results";
 import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
+import { ContactsDashboard, CallSheets, CallSheetReview } from "./pages/callsheets";
 
 const queryClient = new QueryClient();
 
@@ -165,6 +166,9 @@ const AppContent = () => {
         <Route path="/escrow/initiate" element={<EscrowInitiate />} />
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
+        <Route path="/my-contacts" element={<ContactsDashboard />} />
+        <Route path="/call-sheets" element={<CallSheets />} />
+        <Route path="/call-sheets/review/:id" element={<CallSheetReview />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
