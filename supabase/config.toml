@@ -78,3 +78,19 @@ verify_jwt = false
 
 [functions.insert-selected-contacts]
 verify_jwt = false
+
+# EC Edge Functions (Call Sheet Parsing) - Batch 2
+[functions.merge-contacts]
+verify_jwt = false
+
+[functions.update-contact]
+verify_jwt = false
+
+[functions.delete-call-sheet]
+verify_jwt = false
+
+[functions.merge-departments]
+verify_jwt = false
+
+[auth]
+enabled = true
