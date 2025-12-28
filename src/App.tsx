@@ -46,6 +46,7 @@ import DailyVisitors from "./pages/DailyVisitors";
 import Results from "./pages/Results";
 import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
+import AdminImportContacts from "./pages/AdminImportContacts";
 import { ContactsDashboard, CallSheets, CallSheetReview } from "./pages/callsheets";
 
 const queryClient = new QueryClient();
@@ -169,6 +170,7 @@ const AppContent = () => {
         <Route path="/my-contacts" element={<ContactsDashboard />} />
         <Route path="/call-sheets" element={<CallSheets />} />
         <Route path="/call-sheets/review/:id" element={<CallSheetReview />} />
+        <Route path="/admin/import-contacts" element={<AdminImportContacts />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>
