@@ -61,7 +61,16 @@ export default function AdminImportContacts() {
     setIsParsing(true);
     try {
       const text = await file.text();
-      const contacts: LegacyContact[] = JSON.parse(text);
+      
+      // Sanitize invalid JSON values (NaN, Infinity, -Infinity) that may exist in legacy exports
+      const sanitizedText = text
+        .replace(/:\s*NaN\b/g, ': null')
+        .replace(/:\s*Infinity\b/g, ': null')
+        .replace(/:\s*-Infinity\b/g, ': null');
+      
+      const hadInvalidValues = sanitizedText !== text;
+      
+      const contacts: LegacyContact[] = JSON.parse(sanitizedText);
       
       if (!Array.isArray(contacts)) {
         toast({ title: "Invalid JSON", description: "File must contain an array of contacts", variant: "destructive" });
@@ -69,6 +78,10 @@ export default function AdminImportContacts() {
         return;
       }
 
+      if (hadInvalidValues) {
+        toast({ title: "File sanitized", description: "Converted NaN/Infinity values to null" });
+      }
+      
       toast({ title: "File loaded", description: `Found ${contacts.length} contacts. Starting import...` });
       setIsParsing(false);
       await processImport(contacts);
