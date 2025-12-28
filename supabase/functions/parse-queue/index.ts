@@ -1,81 +1,30 @@
+/**
+ * parse-queue: Background queue processor for call sheets
+ * Uses shared modules for unified parsing logic
+ * Guarantees terminal state (parsed/error) for every sheet
+ */
+
 import { createClient, SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// Import PDF.js with proper Deno-compatible CDN
-import { getDocument, GlobalWorkerOptions } from "https://esm.sh/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-
-// Disable worker since we're in a serverless environment
-GlobalWorkerOptions.workerSrc = "";
+import { extractTextFromFile } from "../_shared/pdfExtractor.ts";
+import { parseCallSheetText, normalizeContact, type NormalizedContact } from "../_shared/callSheetParser.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface ParsedContact {
-  name: string;
-  role?: string;
-  roles?: string[];
-  department?: string;
-  departments?: string[];
-  phone?: string;
-  phones?: string[];
-  email?: string;
-  emails?: string[];
-  ig_handle?: string;
-  instagram_handle?: string;
-  confidence: number;
-}
-
-interface NormalizedContact {
-  name: string;
-  roles: string[];
-  departments: string[];
-  phones: string[];
-  emails: string[];
-  ig_handle: string | null;
-  confidence: number;
-}
-
 interface CallSheet {
   id: string;
   file_path: string;
+  file_name: string;
   user_id: string;
   status?: string;
   updated_at?: string;
 }
 
-// AI prompt for parsing call sheet content
-const PARSE_PROMPT = `You are a call sheet parser. Extract crew contacts from this call sheet content.
-
-For each person found, extract:
-- name: Full name
-- roles: Array of job titles/roles (e.g., ["Director", "Producer"])
-- departments: Array of departments (e.g., ["Camera", "Production"])
-- phones: Array of phone numbers (formatted as strings)
-- emails: Array of email addresses
-- ig_handle: Instagram handle if found (without @)
-- confidence: 0.0-1.0 score based on data completeness
-
-Return ONLY a JSON array of contacts. Example:
-[
-  {
-    "name": "John Smith",
-    "roles": ["Director of Photography"],
-    "departments": ["Camera"],
-    "phones": ["555-123-4567"],
-    "emails": ["john@example.com"],
-    "ig_handle": "johnsmith_dp",
-    "confidence": 0.95
-  }
-]
-
-If you cannot parse any contacts, return an empty array: []
-
-Call sheet content:
-`;
-
 /**
  * Watchdog: Auto-fail sheets stuck in "parsing" for > 5 minutes
+ * Uses updated_at column (now exists after migration)
  */
 async function unstickOldParsingSheets(supabase: SupabaseClient): Promise<number> {
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
@@ -89,7 +38,7 @@ async function unstickOldParsingSheets(supabase: SupabaseClient): Promise<number
     .lt("updated_at", fiveMinutesAgo);
   
   if (error) {
-    console.error("[parse-queue] Watchdog: Error checking stuck sheets:", error);
+    console.error("[parse-queue] Watchdog error:", error);
     return 0;
   }
   
@@ -98,7 +47,7 @@ async function unstickOldParsingSheets(supabase: SupabaseClient): Promise<number
     return 0;
   }
   
-  console.log(`[parse-queue] Watchdog: Found ${stuckSheets.length} stuck sheet(s), marking as error`);
+  console.log(`[parse-queue] Watchdog: Found ${stuckSheets.length} stuck sheet(s)`);
   
   for (const sheet of stuckSheets) {
     await supabase
@@ -106,143 +55,14 @@ async function unstickOldParsingSheets(supabase: SupabaseClient): Promise<number
       .update({
         status: "error",
         error_message: "Parser timeout (exceeded 5 minutes)",
-      } as Record<string, unknown>)
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", sheet.id);
     
     console.log(`[parse-queue] Watchdog: Marked sheet ${sheet.id} as error (timeout)`);
   }
   
   return stuckSheets.length;
-}
-
-/**
- * Extract text from PDF using pdfjs
- */
-async function extractPdfText(pdfBytes: Uint8Array): Promise<{ text: string; pageCount: number; chars: number }> {
-  console.log("[parse-queue] PDF.js: Starting text extraction...");
-  
-  // Verify PDF.js is loaded correctly
-  if (typeof getDocument !== "function") {
-    console.error("[parse-queue] PDF.js: getDocument not available");
-    throw new Error("PDF.js library not loaded correctly");
-  }
-  
-  console.log("[parse-queue] PDF.js: Library loaded successfully");
-  
-  try {
-    const loadingTask = getDocument({ data: pdfBytes });
-    const pdf = await loadingTask.promise;
-    
-    const pageCount = pdf.numPages;
-    console.log(`[parse-queue] PDF.js: Document loaded, ${pageCount} pages`);
-    
-    let fullText = "";
-    
-    for (let i = 1; i <= pageCount; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      
-      const pageText = textContent.items
-        .map((item: unknown) => {
-          const textItem = item as { str?: string };
-          return textItem.str || "";
-        })
-        .join(" ");
-      
-      fullText += `\n--- PAGE ${i} ---\n${pageText}`;
-      console.log(`[parse-queue] PDF.js: Page ${i}/${pageCount} extracted, ${pageText.length} chars`);
-    }
-    
-    const chars = fullText.length;
-    console.log(`[parse-queue] PDF.js: Extraction complete - ${chars} total characters from ${pageCount} pages`);
-    
-    return { text: fullText.trim(), pageCount, chars };
-  } catch (error: unknown) {
-    console.error("[parse-queue] PDF.js: Extraction error:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
-    throw new Error(`Failed to extract PDF text: ${message}`);
-  }
-}
-
-/**
- * Normalize contact fields to consistent schema
- */
-function normalizeContact(raw: ParsedContact): NormalizedContact {
-  const roles = Array.isArray(raw.roles) ? raw.roles : (raw.role ? [raw.role] : []);
-  const departments = Array.isArray(raw.departments) ? raw.departments : (raw.department ? [raw.department] : []);
-  const phones = Array.isArray(raw.phones) ? raw.phones : (raw.phone ? [raw.phone] : []);
-  const emails = Array.isArray(raw.emails) ? raw.emails : (raw.email ? [raw.email] : []);
-  const igHandle = raw.ig_handle || raw.instagram_handle || null;
-  
-  return {
-    name: String(raw.name || "Unknown").trim(),
-    roles: roles.map(r => String(r).trim()).filter(Boolean),
-    departments: departments.map(d => String(d).trim()).filter(Boolean),
-    phones: phones.map(p => String(p).trim()).filter(Boolean),
-    emails: emails.map(e => String(e).trim().toLowerCase()).filter(Boolean),
-    ig_handle: igHandle ? String(igHandle).replace(/^@/, "").trim() : null,
-    confidence: typeof raw.confidence === "number" ? raw.confidence : 0.5,
-  };
-}
-
-async function parseWithAI(content: string): Promise<NormalizedContact[]> {
-  const apiKey = Deno.env.get("LOVABLE_API_KEY");
-  if (!apiKey) {
-    console.error("[parse-queue] AI: LOVABLE_API_KEY not configured");
-    throw new Error("AI Gateway not configured");
-  }
-
-  console.log(`[parse-queue] AI: Sending ${content.length} chars to model...`);
-
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "openai/gpt-5-mini",
-      messages: [
-        {
-          role: "user",
-          content: PARSE_PROMPT + content.substring(0, 15000),
-        },
-      ],
-      max_completion_tokens: 4000,
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[parse-queue] AI: Gateway error:", errorText);
-    throw new Error(`AI Gateway error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const aiResponse = data.choices?.[0]?.message?.content || "[]";
-  console.log("[parse-queue] AI: Response received, length:", aiResponse.length);
-
-  // Extract JSON from response (handle markdown code blocks)
-  let jsonStr = aiResponse;
-  const jsonMatch = aiResponse.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1].trim();
-  }
-
-  try {
-    const contacts = JSON.parse(jsonStr);
-    if (!Array.isArray(contacts)) {
-      console.error("[parse-queue] AI: Response is not an array");
-      return [];
-    }
-    
-    const normalized = contacts.map(normalizeContact);
-    console.log(`[parse-queue] AI: Parsed and normalized ${normalized.length} contacts`);
-    return normalized;
-  } catch (e) {
-    console.error("[parse-queue] AI: Failed to parse response as JSON:", e);
-    return [];
-  }
 }
 
 /**
@@ -253,13 +73,13 @@ async function processCallSheet(
   sheet: CallSheet
 ): Promise<{ success: boolean; contacts: number; error?: string }> {
   console.log(`[parse-queue] === START Processing sheet ${sheet.id} ===`);
-  console.log(`[parse-queue] File path: ${sheet.file_path}`);
+  console.log(`[parse-queue] File: ${sheet.file_name || sheet.file_path}`);
   
   // Track state for finally block
   let finalStatus: "parsed" | "error" = "error";
   let errorMessage: string | null = null;
   let parsedContacts: NormalizedContact[] = [];
-  let parsedContactsForStorage: Record<string, unknown>[] = [];
+  let pageCount = 0;
 
   try {
     // Update status to parsing immediately
@@ -269,7 +89,7 @@ async function processCallSheet(
       .update({ 
         status: "parsing",
         updated_at: new Date().toISOString(),
-      } as Record<string, unknown>)
+      })
       .eq("id", sheet.id);
 
     // Download file from storage
@@ -282,40 +102,28 @@ async function processCallSheet(
       throw new Error(`Failed to download file: ${downloadError?.message || "No data"}`);
     }
 
-    console.log(`[parse-queue] File downloaded successfully, size: ${fileData.size} bytes`);
+    console.log(`[parse-queue] File downloaded: ${fileData.size} bytes`);
 
-    // Convert to text (handle different file types)
-    let textContent = "";
-    const fileName = sheet.file_path.toLowerCase();
+    // Extract text using shared module
+    const fileName = sheet.file_name || sheet.file_path.split('/').pop() || 'unknown';
+    const extraction = await extractTextFromFile(fileData, fileName);
     
-    if (fileName.endsWith(".txt") || fileName.endsWith(".csv")) {
-      textContent = await fileData.text();
-      console.log(`[parse-queue] Text file extracted, length: ${textContent.length} chars`);
-    } else if (fileName.endsWith(".pdf")) {
-      console.log("[parse-queue] Processing as PDF...");
-      const pdfBytes = new Uint8Array(await fileData.arrayBuffer());
-      const { text, pageCount, chars } = await extractPdfText(pdfBytes);
-      
-      if (chars < 50) {
-        throw new Error("PDF has no extractable text (may be scanned/image-based)");
-      }
-      
-      textContent = text;
-      console.log(`[parse-queue] PDF processed: ${pageCount} pages, ${chars} chars`);
-    } else {
-      // Try to read as text
-      textContent = await fileData.text();
-      console.log(`[parse-queue] Other file type extracted, length: ${textContent.length} chars`);
-    }
+    pageCount = extraction.pageCount;
+    console.log(`[parse-queue] Extracted ${extraction.text.length} chars from ${pageCount} pages`);
 
-    if (!textContent || textContent.length < 10) {
+    if (!extraction.text || extraction.text.length < 10) {
       throw new Error("File content too short or empty");
     }
 
-    // Parse with AI
-    console.log("[parse-queue] Calling AI to parse contacts...");
-    parsedContacts = await parseWithAI(textContent);
-    console.log(`[parse-queue] AI returned ${parsedContacts.length} contacts`);
+    // Parse with shared module (AI + cleanup + fallback)
+    console.log("[parse-queue] Parsing contacts...");
+    const parseResult = await parseCallSheetText(extraction.text, {
+      useAI: true,
+      includeCleanup: true,
+    });
+
+    parsedContacts = parseResult.contacts;
+    console.log(`[parse-queue] Parsed ${parsedContacts.length} contacts via ${parseResult.parsing_method}`);
 
     // Insert contacts into crew_contacts
     if (parsedContacts.length > 0) {
@@ -330,34 +138,23 @@ async function processCallSheet(
         ig_handle: c.ig_handle,
         confidence: c.confidence,
         source_files: [sheet.file_path],
-        needs_review: c.confidence < 0.7,
+        needs_review: c.needs_review,
       }));
 
       const { error: insertError } = await supabase
         .from("crew_contacts")
-        .insert(contactsToInsert as Record<string, unknown>[]);
+        .insert(contactsToInsert);
 
       if (insertError) {
         console.error("[parse-queue] Insert error (non-fatal):", insertError);
       } else {
-        console.log(`[parse-queue] Inserted ${contactsToInsert.length} contacts into crew_contacts`);
+        console.log(`[parse-queue] Inserted ${contactsToInsert.length} contacts`);
       }
     }
 
-    // Prepare contacts for storage in call_sheets.parsed_contacts
-    parsedContactsForStorage = parsedContacts.map(c => ({
-      name: c.name,
-      role: c.roles[0] || "",
-      department: c.departments[0] || "",
-      phone: c.phones[0] || null,
-      email: c.emails[0] || null,
-      instagram_handle: c.ig_handle,
-      confidence: c.confidence,
-    }));
-
     // Mark success
     finalStatus = "parsed";
-    console.log(`[parse-queue] Processing succeeded with ${parsedContacts.length} contacts`);
+    console.log(`[parse-queue] Processing succeeded: ${parsedContacts.length} contacts`);
 
   } catch (err: unknown) {
     // Capture error for finally block
@@ -368,16 +165,28 @@ async function processCallSheet(
     // GUARANTEED terminal state update - this ALWAYS runs
     console.log(`[parse-queue] FINALLY: Writing terminal state -> ${finalStatus}`);
     
+    // Prepare contacts for storage in parsed_contacts column
+    const parsedContactsForStorage = parsedContacts.map(c => ({
+      name: c.name,
+      role: c.roles[0] || "",
+      department: c.departments[0] || "",
+      phone: c.phones[0] || null,
+      email: c.emails[0] || null,
+      instagram_handle: c.ig_handle,
+      confidence: c.confidence,
+    }));
+
     const updatePayload: Record<string, unknown> = {
       status: finalStatus,
       parsed_date: new Date().toISOString(),
       contacts_extracted: parsedContacts.length,
-      parsed_contacts: parsedContactsForStorage,
+      parsed_contacts: errorMessage 
+        ? [{ _error: errorMessage.substring(0, 500) }] 
+        : parsedContactsForStorage,
       updated_at: new Date().toISOString(),
     };
     
     if (errorMessage) {
-      // Truncate error message to avoid DB issues
       updatePayload.error_message = errorMessage.substring(0, 500);
     }
     
@@ -435,7 +244,7 @@ Deno.serve(async (req) => {
       console.log("[parse-queue] Fetching specific sheet:", callSheetId);
       const { data, error: fetchError } = await supabase
         .from("call_sheets")
-        .select("id, file_path, user_id, status, updated_at")
+        .select("id, file_path, file_name, user_id, status, updated_at")
         .eq("id", callSheetId)
         .single();
 
@@ -456,7 +265,7 @@ Deno.serve(async (req) => {
       console.log("[parse-queue] Fetching queued sheets...");
       const { data, error: fetchError } = await supabase
         .from("call_sheets")
-        .select("id, file_path, user_id, updated_at")
+        .select("id, file_path, file_name, user_id, updated_at")
         .eq("status", "queued")
         .order("uploaded_at", { ascending: true })
         .limit(limit);
@@ -480,7 +289,7 @@ Deno.serve(async (req) => {
 
     console.log("[parse-queue] Processing", queuedSheets.length, "sheet(s)...");
 
-    // Process each sheet
+    // Process each sheet sequentially
     const results = [];
     for (const sheet of queuedSheets) {
       const result = await processCallSheet(supabase, sheet);
@@ -500,16 +309,19 @@ Deno.serve(async (req) => {
         success: true,
         processed: queuedSheets.length,
         successful: successCount,
-        total_contacts: totalContacts,
+        totalContacts,
         results,
+        watchdogUnstuck: unstuckCount,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (error: unknown) {
-    console.error("[parse-queue] FATAL ERROR:", error);
-    const message = error instanceof Error ? error.message : "Failed to process queue";
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("[parse-queue] Fatal error:", message);
+    
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

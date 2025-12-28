@@ -138,6 +138,7 @@ export type Database = {
         Row: {
           contacts_extracted: number | null
           content_hash: string | null
+          error_message: string | null
           file_name: string
           file_path: string
           id: string
@@ -145,12 +146,14 @@ export type Database = {
           parsed_date: string | null
           review_completed_at: string | null
           status: string | null
+          updated_at: string | null
           uploaded_at: string | null
           user_id: string
         }
         Insert: {
           contacts_extracted?: number | null
           content_hash?: string | null
+          error_message?: string | null
           file_name: string
           file_path: string
           id?: string
@@ -158,12 +161,14 @@ export type Database = {
           parsed_date?: string | null
           review_completed_at?: string | null
           status?: string | null
+          updated_at?: string | null
           uploaded_at?: string | null
           user_id: string
         }
         Update: {
           contacts_extracted?: number | null
           content_hash?: string | null
+          error_message?: string | null
           file_name?: string
           file_path?: string
           id?: string
@@ -171,6 +176,7 @@ export type Database = {
           parsed_date?: string | null
           review_completed_at?: string | null
           status?: string | null
+          updated_at?: string | null
           uploaded_at?: string | null
           user_id?: string
         }
