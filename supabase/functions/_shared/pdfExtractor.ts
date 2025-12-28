@@ -3,11 +3,8 @@
  * Unified PDF text extraction for both parse-queue and parse-call-sheet
  */
 
-// Import PDF.js with Deno-compatible CDN - using consistent version
-import { getDocument, GlobalWorkerOptions } from "https://esm.sh/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-
-// Disable worker since we're in a serverless environment
-GlobalWorkerOptions.workerSrc = "";
+// Import pdfjs-serverless - designed for serverless environments (no web workers needed)
+import { getDocument } from "https://esm.sh/pdfjs-serverless";
 
 export interface PDFExtractionResult {
   text: string;
