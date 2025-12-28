@@ -120,7 +120,7 @@ export const CallSheets = () => {
   const handleReparseSheet = async (sheetId: string) => {
     const { error } = await supabase
       .from("call_sheets")
-      .update({ status: "processing", parsed_contacts: null })
+      .update({ status: "queued", parsed_contacts: null })
       .eq("id", sheetId);
 
     if (error) {
