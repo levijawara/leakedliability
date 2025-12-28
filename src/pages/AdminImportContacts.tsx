@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Upload, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, CheckCircle, AlertCircle, FileJson, Loader2 } from 'lucide-react';
 
 interface LegacyContact {
   "First Name"?: string;
@@ -30,28 +30,50 @@ const USER_ID = '8cbf9f5c-6e68-4df9-aa52-1a176b16f7b7'; // Admin user
 
 export default function AdminImportContacts() {
   const [isImporting, setIsImporting] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [totalBatches, setTotalBatches] = useState(0);
   const [currentBatch, setCurrentBatch] = useState(0);
   const [stats, setStats] = useState<ImportStats>({ inserted: 0, updated: 0, skipped: 0, errors: 0 });
   const [completed, setCompleted] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+    await processFile(file);
+  };
 
+  const handleDrop = async (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    const file = event.dataTransfer.files?.[0];
+    if (file && file.name.endsWith('.json')) {
+      await processFile(file);
+    } else {
+      toast({ title: "Invalid file", description: "Please upload a JSON file", variant: "destructive" });
+    }
+  };
+
+  const processFile = async (file: File) => {
+    setIsParsing(true);
     try {
       const text = await file.text();
       const contacts: LegacyContact[] = JSON.parse(text);
       
       if (!Array.isArray(contacts)) {
         toast({ title: "Invalid JSON", description: "File must contain an array of contacts", variant: "destructive" });
+        setIsParsing(false);
         return;
       }
 
+      toast({ title: "File loaded", description: `Found ${contacts.length} contacts. Starting import...` });
+      setIsParsing(false);
       await processImport(contacts);
     } catch (err) {
+      setIsParsing(false);
       toast({ title: "Error parsing file", description: String(err), variant: "destructive" });
     }
   };
@@ -131,22 +153,46 @@ export default function AdminImportContacts() {
           </p>
 
           {!isImporting && !completed && (
-            <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <Upload className="w-8 h-8 mb-2 text-muted-foreground" />
-                  <p className="mb-2 text-sm text-muted-foreground">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
-                  </p>
-                  <p className="text-xs text-muted-foreground">JSON file only</p>
+            <div className="space-y-4">
+              {isParsing ? (
+                <div className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-primary rounded-lg bg-primary/5">
+                  <Loader2 className="w-8 h-8 mb-2 text-primary animate-spin" />
+                  <p className="text-sm font-medium">Parsing file...</p>
                 </div>
-                <input 
-                  type="file" 
-                  className="hidden" 
-                  accept=".json"
-                  onChange={handleFileUpload}
-                />
-              </label>
+              ) : (
+                <div
+                  className={`flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg transition-all cursor-pointer ${
+                    isDragOver 
+                      ? 'border-primary bg-primary/10 scale-[1.02]' 
+                      : 'border-muted-foreground/30 hover:border-primary hover:bg-muted/50'
+                  }`}
+                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <FileJson className={`w-10 h-10 mb-3 ${isDragOver ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <p className="mb-1 text-sm text-muted-foreground">
+                    Drag and drop your JSON file here
+                  </p>
+                  <p className="text-xs text-muted-foreground mb-3">or</p>
+                  <Button 
+                    type="button" 
+                    variant="secondary"
+                    onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Browse Files
+                  </Button>
+                  <input 
+                    ref={fileInputRef}
+                    type="file" 
+                    className="hidden" 
+                    accept=".json"
+                    onChange={handleFileUpload}
+                  />
+                </div>
+              )}
             </div>
           )}
 
