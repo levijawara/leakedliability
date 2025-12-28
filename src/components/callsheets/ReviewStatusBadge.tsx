@@ -22,7 +22,7 @@ export function ReviewStatusBadge({ status, className }: ReviewStatusBadgeProps)
       label: "Queued",
       variant: "secondary",
     },
-    processing: {
+    parsing: {
       icon: Loader2,
       label: "Processing",
       variant: "outline",
