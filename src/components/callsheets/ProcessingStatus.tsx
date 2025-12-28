@@ -2,7 +2,7 @@ import { Loader2, CheckCircle, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ProcessingStatusProps {
-  status: "queued" | "processing" | "parsed" | "error" | "reviewed";
+  status: "queued" | "parsing" | "parsed" | "error" | "reviewed";
   message?: string;
   className?: string;
 }
@@ -20,7 +20,7 @@ export function ProcessingStatus({
       color: "text-muted-foreground",
       bgColor: "bg-muted",
     },
-    processing: {
+    parsing: {
       icon: Loader2,
       label: "Processing",
       description: message || "Extracting contacts from your call sheet",
