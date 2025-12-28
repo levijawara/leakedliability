@@ -65,15 +65,15 @@ async function parseWithAI(content: string): Promise<ParsedContact[]> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "openai/gpt-5-mini",
       messages: [
         {
           role: "user",
           content: PARSE_PROMPT + content.substring(0, 15000), // Limit content size
         },
       ],
-      temperature: 0.1,
-      max_tokens: 4000,
+      max_completion_tokens: 4000, // GPT-5 uses max_completion_tokens, not max_tokens
+      // Note: GPT-5 models do not support temperature parameter
     }),
   });
 
