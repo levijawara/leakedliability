@@ -165,7 +165,7 @@ export const CallSheets = () => {
     total: callSheets.length,
     parsed: callSheets.filter((s) => s.status === "parsed").length,
     reviewed: callSheets.filter((s) => s.status === "reviewed").length,
-    pending: callSheets.filter((s) => s.status === "processing").length,
+    pending: callSheets.filter((s) => s.status === "queued" || s.status === "parsing").length,
   };
 
   if (loading) {

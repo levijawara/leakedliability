@@ -32,7 +32,7 @@ export interface CallSheet {
   file_path: string;
   file_type: string;
   file_size: number;
-  status: 'queued' | 'processing' | 'parsed' | 'error' | 'reviewed';
+  status: 'queued' | 'parsing' | 'parsed' | 'error' | 'reviewed';
   parsed_contacts: ParsedContact[] | null;
   content_hash: string | null;
   error_message: string | null;

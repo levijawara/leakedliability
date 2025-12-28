@@ -113,10 +113,10 @@ async function processCallSheet(
   console.log("[parse-queue] Processing sheet:", sheet.id);
 
   try {
-    // Update status to processing
+    // Update status to parsing
     await supabase
       .from("call_sheets")
-      .update({ status: "processing" } as Record<string, unknown>)
+      .update({ status: "parsing" } as Record<string, unknown>)
       .eq("id", sheet.id);
 
     // Download file from storage
