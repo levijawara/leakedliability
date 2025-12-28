@@ -97,6 +97,42 @@ export async function fetchContactCount(userId: string): Promise<number> {
 }
 
 /**
+ * Fetch contacts without IG handles (paginated)
+ */
+export async function fetchContactsWithoutIG(userId: string): Promise<CrewContact[]> {
+  const allContacts: CrewContact[] = [];
+  let page = 0;
+  let hasMore = true;
+  
+  while (hasMore) {
+    const { data, error } = await supabase
+      .from('crew_contacts')
+      .select('*')
+      .eq('user_id', userId)
+      .is('ig_handle', null)
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    
+    if (error) {
+      console.error('[fetchContactsWithoutIG] Error:', error);
+      throw error;
+    }
+    
+    if (data && data.length > 0) {
+      for (const row of data) {
+        allContacts.push(toCrewContact(row));
+      }
+      hasMore = data.length === PAGE_SIZE;
+      page++;
+    } else {
+      hasMore = false;
+    }
+  }
+  
+  allContacts.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+  return allContacts;
+}
+
+/**
  * Search contacts by query
  */
 export async function searchContacts(
