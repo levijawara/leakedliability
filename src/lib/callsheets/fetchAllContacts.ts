@@ -5,9 +5,12 @@ import type { CrewContact, FilterConfig, SortConfig } from "@/types/callSheet";
 
 const PAGE_SIZE = 1000;
 
-// Helper to convert DB row to CrewContact
+// Helper to convert DB row to CrewContact (maps ig_handle -> instagram_handle)
 function toCrewContact(row: Record<string, unknown>): CrewContact {
-  return row as unknown as CrewContact;
+  return {
+    ...row,
+    instagram_handle: row.ig_handle as string | null,
+  } as unknown as CrewContact;
 }
 
 /**
