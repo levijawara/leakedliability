@@ -201,12 +201,12 @@ serve(async (req) => {
 
     // Extract text from file using shared module
     console.log('[PARSE_CALL_SHEET] Extracting text from file...');
-    const fileBlob = new Blob([pdfBytes]);
+    const fileBlob = new Blob([pdfBytes.buffer as ArrayBuffer]);
     const extraction = await extractTextFromFile(fileBlob, targetFileName);
     const rawText = extraction.text;
     const pageCount = extraction.pageCount;
 
-    if (!extraction.hasText) {
+    if (extraction.isScanned || rawText.trim().length < 50) {
       return errorResponse('File has no extractable text (may be scanned/image-based)');
     }
 
