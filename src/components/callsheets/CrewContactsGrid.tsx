@@ -17,6 +17,7 @@ import { CrewContactCard } from "./CrewContactCard";
 import { ViewToggle } from "./ViewToggle";
 import { SortToggle } from "./SortToggle";
 import { exportContacts } from "@/lib/callsheets/contactsExport";
+import { fetchAllContacts } from "@/lib/callsheets/fetchAllContacts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -46,24 +47,18 @@ export function CrewContactsGrid({
     hasInstagram: null,
   });
 
-  // Fetch contacts if not provided
+  // Fetch contacts if not provided (paginated to bypass 1000 row limit)
   useEffect(() => {
     if (initialContacts) return;
 
-    const fetchContacts = async () => {
+    const loadContacts = async () => {
       setIsLoading(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error("Not authenticated");
 
-        const { data, error } = await supabase
-          .from("crew_contacts")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("name");
-
-        if (error) throw error;
-        setContacts((data || []) as unknown as CrewContact[]);
+        const allContacts = await fetchAllContacts(user.id);
+        setContacts(allContacts);
       } catch (error: any) {
         toast.error(error.message || "Failed to load contacts");
       } finally {
@@ -71,7 +66,7 @@ export function CrewContactsGrid({
       }
     };
 
-    fetchContacts();
+    loadContacts();
   }, [initialContacts]);
 
   // Extract unique departments and roles for filter options

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Search, Check, X, ExternalLink, RefreshCw, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchContactsWithoutIG } from "@/lib/callsheets/fetchAllContacts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,7 +38,7 @@ export function IGMatchingPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [isApplying, setIsApplying] = useState(false);
 
-  // Fetch contacts without IG handles
+  // Fetch contacts without IG handles (paginated to bypass 1000 row limit)
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -48,15 +49,8 @@ export function IGMatchingPanel() {
           return;
         }
 
-        // Fetch contacts missing IG handles
-        const { data: contactsData, error: contactsError } = await supabase
-          .from("crew_contacts")
-          .select("*")
-          .eq("user_id", user.id)
-          .is("ig_handle", null)
-          .order("name");
-
-        if (contactsError) throw contactsError;
+        // Fetch contacts missing IG handles using paginated utility
+        const contactsData = await fetchContactsWithoutIG(user.id);
 
         // Fetch all IG usernames for matching
         const { data: igData, error: igError } = await supabase
@@ -66,7 +60,7 @@ export function IGMatchingPanel() {
 
         if (igError) throw igError;
 
-        setContacts((contactsData || []) as unknown as CrewContact[]);
+        setContacts(contactsData);
         setIgUsernames((igData || []) as IGUsername[]);
       } catch (error) {
         console.error("[IGMatchingPanel] fetch error:", error);

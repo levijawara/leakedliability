@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllContacts } from "@/lib/callsheets/fetchAllContacts";
 import { toast } from "sonner";
 import { findDuplicates } from "@/lib/callsheets/duplicateFinder";
 import { MergeContactsModal } from "./MergeContactsModal";
@@ -43,14 +44,8 @@ export function DuplicateFinderModal({
         return;
       }
 
-      const { data, error } = await supabase
-        .from("crew_contacts")
-        .select("*")
-        .eq("user_id", user.id);
-
-      if (error) throw error;
-
-      const contacts = (data || []) as unknown as CrewContact[];
+      // Use paginated fetch to get ALL contacts (bypasses 1000 row limit)
+      const contacts = await fetchAllContacts(user.id);
       const matches = findDuplicates(contacts);
       setDuplicates(matches);
       setCurrentIndex(0);

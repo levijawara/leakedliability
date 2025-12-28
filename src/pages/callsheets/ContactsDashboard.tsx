@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllContacts } from "@/lib/callsheets/fetchAllContacts";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -35,23 +36,18 @@ export const ContactsDashboard = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("crew_contacts")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("name");
-
-    if (error) {
+    try {
+      const allContacts = await fetchAllContacts(user.id);
+      setContacts(allContacts);
+    } catch (error: any) {
       toast({
         title: "Error loading contacts",
         description: error.message,
         variant: "destructive",
       });
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    setContacts((data || []) as unknown as CrewContact[]);
-    setLoading(false);
   }, [navigate, toast]);
 
   useEffect(() => {
