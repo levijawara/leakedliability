@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Star } from "lucide-react";
+import { ViewToggle } from "./ViewToggle";
 
 interface ContactFiltersProps {
   searchQuery: string;
@@ -12,6 +13,8 @@ interface ContactFiltersProps {
   departments: string[];
   favoritesOnly: boolean;
   onFavoritesChange: (value: boolean) => void;
+  view: 'list' | 'cards';
+  onViewChange: (view: 'list' | 'cards') => void;
 }
 
 export function ContactFilters({
@@ -22,6 +25,8 @@ export function ContactFilters({
   departments,
   favoritesOnly,
   onFavoritesChange,
+  view,
+  onViewChange,
 }: ContactFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-muted/50">
@@ -74,6 +79,11 @@ export function ContactFilters({
             Favorites only
           </Label>
         </div>
+      </div>
+
+      {/* View Toggle */}
+      <div className="flex items-end pb-1">
+        <ViewToggle view={view} onViewChange={onViewChange} />
       </div>
     </div>
   );
