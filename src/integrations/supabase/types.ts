@@ -134,6 +134,54 @@ export type Database = {
         }
         Relationships: []
       }
+      call_sheets: {
+        Row: {
+          contacts_extracted: number | null
+          content_hash: string | null
+          error_message: string | null
+          file_name: string
+          file_path: string
+          id: string
+          parsed_contacts: Json | null
+          parsed_date: string | null
+          review_completed_at: string | null
+          status: string | null
+          updated_at: string | null
+          uploaded_at: string | null
+          user_id: string
+        }
+        Insert: {
+          contacts_extracted?: number | null
+          content_hash?: string | null
+          error_message?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          parsed_contacts?: Json | null
+          parsed_date?: string | null
+          review_completed_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_at?: string | null
+          user_id: string
+        }
+        Update: {
+          contacts_extracted?: number | null
+          content_hash?: string | null
+          error_message?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          parsed_contacts?: Json | null
+          parsed_date?: string | null
+          review_completed_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+          uploaded_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       confirmation_cash_transactions: {
         Row: {
           amount: number
@@ -203,6 +251,120 @@ export type Database = {
           total_collected?: number
           total_distributed?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      crew_contacts: {
+        Row: {
+          confidence: number | null
+          created_at: string | null
+          departments: string[] | null
+          emails: string[] | null
+          hidden_departments: string[] | null
+          hidden_emails: string[] | null
+          hidden_ig_handle: boolean | null
+          hidden_phones: string[] | null
+          hidden_roles: string[] | null
+          id: string
+          ig_handle: string | null
+          is_favorite: boolean | null
+          name: string
+          needs_review: boolean | null
+          phones: string[] | null
+          project_title: string | null
+          roles: string[] | null
+          source_files: string[] | null
+          user_id: string
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string | null
+          departments?: string[] | null
+          emails?: string[] | null
+          hidden_departments?: string[] | null
+          hidden_emails?: string[] | null
+          hidden_ig_handle?: boolean | null
+          hidden_phones?: string[] | null
+          hidden_roles?: string[] | null
+          id?: string
+          ig_handle?: string | null
+          is_favorite?: boolean | null
+          name: string
+          needs_review?: boolean | null
+          phones?: string[] | null
+          project_title?: string | null
+          roles?: string[] | null
+          source_files?: string[] | null
+          user_id: string
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string | null
+          departments?: string[] | null
+          emails?: string[] | null
+          hidden_departments?: string[] | null
+          hidden_emails?: string[] | null
+          hidden_ig_handle?: boolean | null
+          hidden_phones?: string[] | null
+          hidden_roles?: string[] | null
+          id?: string
+          ig_handle?: string | null
+          is_favorite?: boolean | null
+          name?: string
+          needs_review?: boolean | null
+          phones?: string[] | null
+          project_title?: string | null
+          roles?: string[] | null
+          source_files?: string[] | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      custom_departments: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      custom_role_mappings: {
+        Row: {
+          canonical_role: string | null
+          created_at: string | null
+          department: string
+          id: string
+          role_name: string
+          source_file: string | null
+        }
+        Insert: {
+          canonical_role?: string | null
+          created_at?: string | null
+          department: string
+          id?: string
+          role_name: string
+          source_file?: string | null
+        }
+        Update: {
+          canonical_role?: string | null
+          created_at?: string | null
+          department?: string
+          id?: string
+          role_name?: string
+          source_file?: string | null
         }
         Relationships: []
       }
@@ -564,6 +726,36 @@ export type Database = {
             referencedColumns: ["producer_id"]
           },
         ]
+      }
+      ig_usernames: {
+        Row: {
+          co_workers: string[] | null
+          created_at: string | null
+          handle: string
+          id: string
+          occurrences: number | null
+          raw_credits: string[] | null
+          roles: string[] | null
+        }
+        Insert: {
+          co_workers?: string[] | null
+          created_at?: string | null
+          handle: string
+          id?: string
+          occurrences?: number | null
+          raw_credits?: string[] | null
+          roles?: string[] | null
+        }
+        Update: {
+          co_workers?: string[] | null
+          created_at?: string | null
+          handle?: string
+          id?: string
+          occurrences?: number | null
+          raw_credits?: string[] | null
+          roles?: string[] | null
+        }
+        Relationships: []
       }
       image_generations: {
         Row: {
@@ -1619,6 +1811,39 @@ export type Database = {
           },
         ]
       }
+      role_dictionary: {
+        Row: {
+          aliases: string[] | null
+          created_at: string | null
+          department: string
+          display_name: string
+          id: string
+          is_custom: boolean | null
+          role_name: string
+          source: string | null
+        }
+        Insert: {
+          aliases?: string[] | null
+          created_at?: string | null
+          department: string
+          display_name: string
+          id?: string
+          is_custom?: boolean | null
+          role_name: string
+          source?: string | null
+        }
+        Update: {
+          aliases?: string[] | null
+          created_at?: string | null
+          department?: string
+          display_name?: string
+          id?: string
+          is_custom?: boolean | null
+          role_name?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       search_logs: {
         Row: {
           created_at: string | null
@@ -2144,6 +2369,7 @@ export type Database = {
       }
       refresh_all_producer_stats: { Args: never; Returns: undefined }
       revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }
+      upsert_ig_handles: { Args: { handles_data: Json }; Returns: Json }
     }
     Enums: {
       account_type:
