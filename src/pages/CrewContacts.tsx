@@ -1,0 +1,199 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { ContactsTable } from "@/components/contacts/ContactsTable";
+import { ContactFilters } from "@/components/contacts/ContactFilters";
+import { ExportButton } from "@/components/contacts/ExportButton";
+import { Users } from "lucide-react";
+
+export interface CrewContact {
+  id: string;
+  name: string;
+  emails: string[] | null;
+  phones: string[] | null;
+  roles: string[] | null;
+  departments: string[] | null;
+  ig_handle: string | null;
+  project_title: string | null;
+  source_files: string[] | null;
+  confidence: number | null;
+  needs_review: boolean | null;
+  is_favorite: boolean | null;
+  created_at: string | null;
+}
+
+export default function CrewContacts() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [contacts, setContacts] = useState<CrewContact[]>([]);
+  const [filteredContacts, setFilteredContacts] = useState<CrewContact[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in to view contacts.",
+          variant: "destructive"
+        });
+        navigate("/auth");
+        return;
+      }
+      setUser(session.user);
+      fetchContacts(session.user.id);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUser(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
+
+  const fetchContacts = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('crew_contacts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setContacts(data || []);
+      setFilteredContacts(data || []);
+    } catch (error: any) {
+      console.error('[CrewContacts] Fetch error:', error);
+      toast({
+        title: "Failed to load contacts",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter contacts when filters change
+  useEffect(() => {
+    let result = [...contacts];
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(c =>
+        c.name.toLowerCase().includes(query) ||
+        c.emails?.some(e => e.toLowerCase().includes(query)) ||
+        c.roles?.some(r => r.toLowerCase().includes(query)) ||
+        c.project_title?.toLowerCase().includes(query)
+      );
+    }
+
+    // Department filter
+    if (departmentFilter !== "all") {
+      result = result.filter(c =>
+        c.departments?.some(d => d.toLowerCase() === departmentFilter.toLowerCase())
+      );
+    }
+
+    // Favorites filter
+    if (favoritesOnly) {
+      result = result.filter(c => c.is_favorite === true);
+    }
+
+    setFilteredContacts(result);
+  }, [contacts, searchQuery, departmentFilter, favoritesOnly]);
+
+  // Get unique departments for filter
+  const uniqueDepartments = Array.from(
+    new Set(contacts.flatMap(c => c.departments || []).filter(Boolean))
+  ).sort();
+
+  const handleContactUpdate = (updatedContact: CrewContact) => {
+    setContacts(prev =>
+      prev.map(c => c.id === updatedContact.id ? updatedContact : c)
+    );
+  };
+
+  const handleContactDelete = (contactId: string) => {
+    setContacts(prev => prev.filter(c => c.id !== contactId));
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Navigation />
+      
+      <main className="flex-1 container mx-auto px-4 py-8 md:pt-24">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Users className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Crew Contacts</h1>
+                <p className="text-muted-foreground">
+                  Manage contacts extracted from your call sheets
+                </p>
+              </div>
+            </div>
+            <ExportButton contacts={filteredContacts} />
+          </div>
+
+          {/* Filters */}
+          <ContactFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            departmentFilter={departmentFilter}
+            onDepartmentChange={setDepartmentFilter}
+            departments={uniqueDepartments}
+            favoritesOnly={favoritesOnly}
+            onFavoritesChange={setFavoritesOnly}
+          />
+
+          {/* Contacts Table */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Your Contacts</CardTitle>
+              <CardDescription>
+                {filteredContacts.length} of {contacts.length} contacts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContactsTable
+                contacts={filteredContacts}
+                userId={user?.id}
+                onContactUpdate={handleContactUpdate}
+                onContactDelete={handleContactDelete}
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
