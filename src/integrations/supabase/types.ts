@@ -142,8 +142,11 @@ export type Database = {
           file_name: string
           file_path: string
           id: string
+          last_error_at: string | null
           parsed_contacts: Json | null
           parsed_date: string | null
+          parsing_started_at: string | null
+          retry_count: number | null
           review_completed_at: string | null
           status: string | null
           updated_at: string | null
@@ -157,8 +160,11 @@ export type Database = {
           file_name: string
           file_path: string
           id?: string
+          last_error_at?: string | null
           parsed_contacts?: Json | null
           parsed_date?: string | null
+          parsing_started_at?: string | null
+          retry_count?: number | null
           review_completed_at?: string | null
           status?: string | null
           updated_at?: string | null
@@ -172,8 +178,11 @@ export type Database = {
           file_name?: string
           file_path?: string
           id?: string
+          last_error_at?: string | null
           parsed_contacts?: Json | null
           parsed_date?: string | null
+          parsing_started_at?: string | null
+          retry_count?: number | null
           review_completed_at?: string | null
           status?: string | null
           updated_at?: string | null
