@@ -200,7 +200,7 @@ export default function ProducerSelfReportForm() {
       {shareLink && (
         <Card className="mt-4 p-4 bg-muted/30 border-primary/20">
           <h4 className="font-semibold mb-2 flex items-center gap-2">
-            <span>✅</span> Crew/Vendor Confirmation Link
+            Crew/Vendor Confirmation Link
           </h4>
           <p className="text-sm text-muted-foreground mb-3">
             Share this link with at least three collaborators who can confirm this debt. 

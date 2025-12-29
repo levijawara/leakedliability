@@ -344,7 +344,7 @@ export default function AdminEditReport() {
       });
 
       toast({
-        title: "✅ Report Updated",
+        title: "Report Updated",
         description: "Payment report has been successfully updated and PSCS scores recalculated",
       });
 

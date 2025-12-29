@@ -157,10 +157,10 @@ export default function ResetPassword() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4 pt-24 md:pt-28">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-24 md:pt-28">
       {isIGBrowser && (
-        <div className="max-w-md w-full mb-4 p-4 bg-destructive/10 border border-destructive rounded-lg">
-          <p className="text-sm text-destructive font-semibold">⚠️ Instagram Browser Detected</p>
+        <div className="max-w-md w-full mb-4 p-4 bg-destructive/10 border border-destructive rounded-sm">
+          <p className="text-sm text-destructive font-semibold">Instagram Browser Detected</p>
           <p className="text-xs text-destructive/80 mt-1">
             Password resets don't work in Instagram's browser. Tap the "..." menu and select "Open in Safari/Chrome" to continue.
           </p>

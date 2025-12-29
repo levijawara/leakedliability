@@ -169,7 +169,7 @@ export default function AdminSearchInsights() {
           <Card>
             <CardHeader>
               <CardTitle>Most Searched Producers</CardTitle>
-              <CardDescription>Ranked by total searches (🔥 = trending in last 7 days)</CardDescription>
+              <CardDescription>Ranked by total searches (trending in last 7 days)</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">

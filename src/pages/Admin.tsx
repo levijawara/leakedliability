@@ -1822,23 +1822,23 @@ export default function Admin() {
                       <div className="text-2xl font-bold">{searchResults.stats.crew_report}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Payment Documentations 🧾</div>
+                      <div className="text-sm text-muted-foreground">Payment Documentations</div>
                       <div className="text-2xl font-bold">{searchResults.stats.payment_documentation}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Payment Confirmations ✅</div>
+                      <div className="text-sm text-muted-foreground">Payment Confirmations</div>
                       <div className="text-2xl font-bold">{searchResults.stats.payment_confirmation}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Report Explanations ☮️</div>
+                      <div className="text-sm text-muted-foreground">Report Explanations</div>
                       <div className="text-2xl font-bold">{searchResults.stats.report_explanation}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Counter-Disputes ‼️</div>
+                      <div className="text-sm text-muted-foreground">Counter-Disputes</div>
                       <div className="text-2xl font-bold">{searchResults.stats.counter_dispute}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Report Disputes ⁉️</div>
+                      <div className="text-sm text-muted-foreground">Report Disputes</div>
                       <div className="text-2xl font-bold">{searchResults.stats.report_dispute}</div>
                     </div>
                   </div>
@@ -1851,20 +1851,20 @@ export default function Admin() {
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1">
-          <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">💰 Payments Due</TabsTrigger>
-          <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">✅ Paid</TabsTrigger>
-          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">⚙️ Settings</TabsTrigger>
-          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">👥 Users</TabsTrigger>
-          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">📧 Notifications</TabsTrigger>
-          <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">📋 All Submissions</TabsTrigger>
+          <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">Payments Due</TabsTrigger>
+          <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">Paid</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">Settings</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">Users</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">Notifications</TabsTrigger>
+          <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">All Submissions</TabsTrigger>
           <TabsTrigger value="identity_claims" className="text-xs sm:text-sm px-2 py-1.5">
-            🛡️ Identity Claims
+            Identity Claims
             {identityClaims.length > 0 && (
               <Badge variant="destructive" className="ml-1">{identityClaims.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="suggestions" className="text-xs sm:text-sm px-2 py-1.5">
-            💡 Suggestions
+            Suggestions
             {suggestions.length > 0 && (
               <Badge variant="secondary" className="ml-1">{suggestions.length}</Badge>
             )}

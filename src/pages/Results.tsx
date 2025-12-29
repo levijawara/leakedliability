@@ -103,9 +103,9 @@ export default function Results() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <div className="min-h-screen bg-background">
         <div className="container mx-auto px-4 py-20">
-          <h1 className="text-6xl font-black text-center mb-8">💰RESULTS💰</h1>
+          <h1 className="text-6xl font-black text-center mb-8">RESULTS</h1>
           
           {isAdmin && (
             <div className="flex justify-center mb-12">
@@ -121,7 +121,7 @@ export default function Results() {
           {/* FAFO Archive Section */}
           {loadingEntries ? (
             <div className="mt-16">
-              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE 💯</h2>
+              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE</h2>
               <p className="text-center text-muted-foreground text-xl mb-12">
                 Real receipts. Real payouts. Zero excuses.
               </p>
@@ -133,7 +133,7 @@ export default function Results() {
             </div>
           ) : entries.length > 0 ? (
             <div className="mt-16">
-              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE 💯</h2>
+              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE</h2>
               <p className="text-center text-muted-foreground text-xl mb-12">
                 Real receipts. Real payouts. Zero excuses.
               </p>
@@ -151,7 +151,7 @@ export default function Results() {
           ) : (
             <div className="mt-16 text-center py-20">
               <p className="text-2xl text-muted-foreground">
-                No results yet. Time to make some examples. 💀
+                No results yet. Time to make some examples.
               </p>
             </div>
           )}

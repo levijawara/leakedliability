@@ -389,23 +389,23 @@ const Profile = () => {
                   <div className="text-2xl font-bold">{submissionStats.crew_report}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Payment Documentations 🧾</div>
+                  <div className="text-sm text-muted-foreground">Payment Documentations</div>
                   <div className="text-2xl font-bold">{submissionStats.payment_documentation}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Payment Confirmations ✅</div>
+                  <div className="text-sm text-muted-foreground">Payment Confirmations</div>
                   <div className="text-2xl font-bold">{submissionStats.payment_confirmation}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Report Explanations ☮️</div>
+                  <div className="text-sm text-muted-foreground">Report Explanations</div>
                   <div className="text-2xl font-bold">{submissionStats.report_explanation}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Counter-Disputes ‼️</div>
+                  <div className="text-sm text-muted-foreground">Counter-Disputes</div>
                   <div className="text-2xl font-bold">{submissionStats.counter_dispute}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Report Disputes ⁉️</div>
+                  <div className="text-sm text-muted-foreground">Report Disputes</div>
                   <div className="text-2xl font-bold">{submissionStats.report_dispute}</div>
                 </div>
               </div>

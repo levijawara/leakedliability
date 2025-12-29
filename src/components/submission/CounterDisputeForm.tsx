@@ -236,7 +236,7 @@ export function CounterDisputeForm({ userInfo, onBack, onSuccess }: CounterDispu
 
   return (
     <Card className="p-8">
-      <h2 className="text-2xl font-bold mb-4">Counter-Dispute ‼️</h2>
+      <h2 className="text-2xl font-bold mb-4">Counter-Dispute</h2>
       <p className="text-sm text-muted-foreground mb-6">
         Challenge a producer's dispute of your original report with evidence.
       </p>

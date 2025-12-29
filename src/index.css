@@ -48,7 +48,7 @@ All colors MUST be HSL.
     --switch-on: 120 60% 45%;
     --switch-off: 0 84% 60%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5% 26%;
@@ -61,7 +61,7 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 0 0% 5%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
     --card: 0 0% 8%;
@@ -122,35 +122,4 @@ All colors MUST be HSL.
   }
 }
 
-/* Christmas Lights - Hard ON/OFF States (No Smooth Transitions) */
-.christmas-bulb-off {
-  fill: hsl(var(--muted-foreground));
-  opacity: 0.3;
-}
-
-.christmas-bulb-red-on {
-  fill: rgb(255, 35, 35);  /* 25% more saturated */
-}
-
-.christmas-bulb-green-on {
-  fill: rgb(35, 255, 35);  /* 25% more saturated */
-}
-
-.christmas-bulb-tungsten-on {
-  fill: rgb(255, 235, 150);  /* lighter & warmer */
-}
-
-.christmas-glow-red-on {
-  fill: rgba(255, 35, 35, 0.5);
-  filter: blur(8px);
-}
-
-.christmas-glow-green-on {
-  fill: rgba(35, 255, 35, 0.5);
-  filter: blur(8px);
-}
-
-.christmas-glow-tungsten-on {
-  fill: rgba(255, 235, 150, 0.5);
-  filter: blur(8px);
-}
+/* Removed: Christmas lights and glow effects */
