@@ -60,10 +60,15 @@ export function CrewContactCard({
             <div className="min-w-0">
               <h3 className="font-semibold text-foreground truncate">{contact.name}</h3>
               {contact.ig_handle && (
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  <Instagram className="h-3 w-3" />
+                <a 
+                  href={`https://instagram.com/${contact.ig_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                >
+                  <Instagram className="h-3.5 w-3.5" />
                   @{contact.ig_handle}
-                </p>
+                </a>
               )}
             </div>
           </div>

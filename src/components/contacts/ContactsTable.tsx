@@ -156,7 +156,14 @@ export function ContactsTable({
                   <div className="flex flex-col">
                     <span>{contact.name}</span>
                     {contact.ig_handle && (
-                      <span className="text-xs text-muted-foreground">@{contact.ig_handle}</span>
+                      <a 
+                        href={`https://instagram.com/${contact.ig_handle}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        @{contact.ig_handle}
+                      </a>
                     )}
                   </div>
                 </TableCell>
