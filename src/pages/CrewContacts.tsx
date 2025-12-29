@@ -72,7 +72,8 @@ export default function CrewContacts() {
         .from('crew_contacts')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100000);
 
       if (error) throw error;
       setContacts(data || []);
