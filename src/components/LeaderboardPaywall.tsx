@@ -70,7 +70,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
   const getPaywallContent = () => {
     if (!user) {
       return {
-        title: "🔒 Leaderboard Access",
+        title: "Leaderboard Access",
         description: "Sign in to subscribe.",
         message: "Subscribe for $5.99/month to access the full leaderboard.",
         showCrewOption: false,
@@ -79,7 +79,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
     }
 
     return {
-      title: "🔒 Paid Access Required",
+      title: "Paid Access Required",
       description: "Subscribe to view the full leaderboard.",
       message: "Subscribe for $5.99/month to unlock full access.",
       showCrewOption: false,
@@ -90,7 +90,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
   const content = getPaywallContent();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+    <div className="min-h-screen bg-background">
       {/* Desktop Navigation Header */}
       <div className="hidden md:block container mx-auto px-4 py-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">

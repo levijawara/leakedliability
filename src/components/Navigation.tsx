@@ -91,7 +91,7 @@ export function Navigation() {
               size="sm"
               className="bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold"
             >
-              💰RESULTS💰
+              RESULTS
             </Button>
             
             <DropdownMenu>
@@ -235,7 +235,7 @@ export function Navigation() {
                 size="sm"
                 className="bg-[#22c55e] hover:bg-[#16a34a] text-white font-bold text-xs px-3"
               >
-                💰RESULTS💰
+                RESULTS
               </Button>
             </div>
             

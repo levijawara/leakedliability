@@ -219,9 +219,9 @@ export default function ProducerDashboard() {
         <Card className="mt-6 p-6 bg-muted/50">
           <h3 className="font-semibold mb-3">Response Options</h3>
           <div className="space-y-2 text-sm">
-            <p>• <strong>Payment Documentation 🧾</strong> - Submit receipts, bank statements, or payment confirmations</p>
-            <p>• <strong>Report Explanation ☮️</strong> - Acknowledge the debt and explain the delay or reason for non-payment</p>
-            <p>• <strong>Report Dispute ⁉️</strong> - Challenge a crew member's report with counter-evidence</p>
+            <p>• <strong>Payment Documentation</strong> - Submit receipts, bank statements, or payment confirmations</p>
+            <p>• <strong>Report Explanation</strong> - Acknowledge the debt and explain the delay or reason for non-payment</p>
+            <p>• <strong>Report Dispute</strong> - Challenge a crew member's report with counter-evidence</p>
           </div>
           <Button
             onClick={() => navigate("/submit")}

@@ -35,9 +35,9 @@ export function ProducerSubmissionForm({ userInfo, submissionType, participantTy
   const { toast } = useToast();
 
   const titles = {
-    payment_documentation: "Payment Documentation 🧾",
-    report_explanation: "Report Explanation ☮️",
-    report_dispute: "Report Dispute ⁉️"
+    payment_documentation: "Payment Documentation",
+    report_explanation: "Report Explanation",
+    report_dispute: "Report Dispute"
   };
 
   const descriptions = {
