@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { extractText } from "https://esm.sh/unpdf@0.12.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -99,20 +100,21 @@ serve(async (req) => {
       );
     }
 
-    // Extract text from PDF
-    console.log("[parse-call-sheet] Extracting text from PDF...");
+    // Extract text from PDF using pdf-parse library
+    console.log("[parse-call-sheet] Extracting text from PDF with pdf-parse...");
     const pdfText = await extractTextFromPdf(fileData);
 
-    if (!pdfText || pdfText.trim().length < 50) {
-      console.error("[parse-call-sheet] No extractable text found in PDF");
-      await markAsError(supabase, call_sheet_id, "PDF contains no extractable text. It may be a scanned image - please upload a text-based PDF.");
+    console.log(`[parse-call-sheet] Extracted ${pdfText.length} characters of text`);
+    console.log(`[parse-call-sheet] Text preview: ${pdfText.slice(0, 500)}...`);
+
+    if (!pdfText || pdfText.trim().length < 100) {
+      console.error("[parse-call-sheet] Insufficient text extracted from PDF");
+      await markAsError(supabase, call_sheet_id, "PDF contains insufficient extractable text. It may be a scanned image - please upload a text-based PDF or try OCR.");
       return new Response(
-        JSON.stringify({ error: "No extractable text in PDF" }),
+        JSON.stringify({ error: "Insufficient extractable text in PDF" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    console.log(`[parse-call-sheet] Extracted ${pdfText.length} characters of text`);
 
     // Use AI to parse contacts
     console.log("[parse-call-sheet] Sending to AI for parsing...");
@@ -129,13 +131,19 @@ serve(async (req) => {
 
     console.log(`[parse-call-sheet] AI extracted ${parseResult.contacts.length} contacts`);
 
-    // Update global_call_sheets with parsed data (NO contact creation - happens at save-time)
+    // Add confidence scores to contacts
+    const contactsWithConfidence = parseResult.contacts.map(contact => ({
+      ...contact,
+      confidence: calculateConfidence(contact)
+    }));
+
+    // Update global_call_sheets with parsed data
     const { error: updateError } = await supabase
       .from("global_call_sheets")
       .update({
         status: "parsed",
-        parsed_contacts: parseResult.contacts,
-        contacts_extracted: parseResult.contacts.length,
+        parsed_contacts: contactsWithConfidence,
+        contacts_extracted: contactsWithConfidence.length,
         project_title: parseResult.project_title,
         parsed_date: parseResult.parsed_date,
         error_message: null,
@@ -152,12 +160,12 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${parseResult.contacts.length}`);
+    console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${contactsWithConfidence.length}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        contacts_count: parseResult.contacts.length,
+        contacts_count: contactsWithConfidence.length,
         project_title: parseResult.project_title,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -179,78 +187,106 @@ async function markAsError(supabase: any, callSheetId: string, errorMessage: str
     .eq("id", callSheetId);
 }
 
+// Calculate confidence score based on data completeness
+function calculateConfidence(contact: ParsedContact): number {
+  let score = 0;
+  let factors = 0;
+
+  // Name is essential
+  if (contact.name && contact.name.trim().length > 2) {
+    score += 1;
+    factors++;
+  }
+
+  // Roles add confidence
+  if (contact.roles && contact.roles.length > 0) {
+    score += 1;
+    factors++;
+  }
+
+  // Departments add confidence
+  if (contact.departments && contact.departments.length > 0) {
+    score += 0.5;
+    factors += 0.5;
+  }
+
+  // Emails strongly add confidence
+  if (contact.emails && contact.emails.length > 0) {
+    score += 1;
+    factors++;
+  }
+
+  // Phones add confidence
+  if (contact.phones && contact.phones.length > 0) {
+    score += 0.8;
+    factors += 0.8;
+  }
+
+  // IG handle is bonus
+  if (contact.ig_handle) {
+    score += 0.2;
+    factors += 0.2;
+  }
+
+  return factors > 0 ? Math.min(score / factors, 1) : 0.5;
+}
+
 async function extractTextFromPdf(pdfBlob: Blob): Promise<string> {
-  // Convert blob to array buffer
+  try {
+    // Convert blob to ArrayBuffer for unpdf
+    const arrayBuffer = await pdfBlob.arrayBuffer();
+    
+    // Use unpdf for proper text extraction (works in edge environments)
+    const { text, totalPages } = await extractText(arrayBuffer, { mergePages: true });
+    
+    console.log(`[parse-call-sheet] PDF pages: ${totalPages}`);
+    console.log(`[parse-call-sheet] Raw text length: ${text.length} chars`);
+    
+    // Clean and normalize the extracted text
+    const cleanedText = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]+/g, ' ')
+      .trim();
+    
+    return cleanedText;
+  } catch (error) {
+    console.error("[parse-call-sheet] unpdf extraction failed:", error);
+    
+    // Fallback: try basic text extraction
+    console.log("[parse-call-sheet] Attempting fallback text extraction...");
+    return await fallbackTextExtraction(pdfBlob);
+  }
+}
+
+async function fallbackTextExtraction(pdfBlob: Blob): Promise<string> {
+  // Basic fallback for when pdf-parse fails
   const arrayBuffer = await pdfBlob.arrayBuffer();
   const bytes = new Uint8Array(arrayBuffer);
-  
-  // Simple PDF text extraction - looks for text streams
-  // This is a basic implementation that works for text-based PDFs
   const decoder = new TextDecoder("utf-8", { fatal: false });
   const rawContent = decoder.decode(bytes);
   
-  // Extract text between stream markers
-  const textParts: string[] = [];
+  // Extract readable patterns
+  const patterns: string[] = [];
   
-  // Pattern 1: Look for BT...ET blocks (text objects)
-  const btEtRegex = /BT\s*([\s\S]*?)\s*ET/g;
-  let match;
-  while ((match = btEtRegex.exec(rawContent)) !== null) {
-    const textBlock = match[1];
-    // Extract text from Tj and TJ operators
-    const tjRegex = /\(([^)]*)\)\s*Tj/g;
-    let tjMatch;
-    while ((tjMatch = tjRegex.exec(textBlock)) !== null) {
-      textParts.push(cleanPdfText(tjMatch[1]));
-    }
-    // TJ arrays
-    const tjArrayRegex = /\[(.*?)\]\s*TJ/g;
-    let tjArrayMatch;
-    while ((tjArrayMatch = tjArrayRegex.exec(textBlock)) !== null) {
-      const arrayContent = tjArrayMatch[1];
-      const stringRegex = /\(([^)]*)\)/g;
-      let stringMatch;
-      while ((stringMatch = stringRegex.exec(arrayContent)) !== null) {
-        textParts.push(cleanPdfText(stringMatch[1]));
-      }
-    }
-  }
+  // Extract emails
+  const emails = rawContent.match(/[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}/g) || [];
+  patterns.push(...emails);
   
-  // Pattern 2: Also look for plain text that might be visible
-  // Extract any readable text patterns (emails, phone numbers, names)
-  const readablePatterns = rawContent.match(/[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}/g) || [];
-  const phonePatterns = rawContent.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
+  // Extract phone numbers
+  const phones = rawContent.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
+  patterns.push(...phones);
   
-  textParts.push(...readablePatterns, ...phonePatterns);
+  // Extract printable ASCII sequences (potential names and text)
+  const printableRegex = /[\x20-\x7E]{8,}/g;
+  const printableMatches = rawContent.match(printableRegex) || [];
+  const textMatches = printableMatches
+    .filter(s => /[a-zA-Z]{3,}/.test(s))
+    .filter(s => !/^[%\/\\<>{}]+/.test(s)); // Skip PDF internal commands
+  patterns.push(...textMatches);
   
-  // Join and clean
-  let result = textParts.join(" ").replace(/\s+/g, " ").trim();
-  
-  // If we got very little text, try a more aggressive approach
-  if (result.length < 100) {
-    // Look for any printable ASCII sequences
-    const printableRegex = /[\x20-\x7E]{4,}/g;
-    const printableMatches = rawContent.match(printableRegex) || [];
-    result = printableMatches
-      .filter(s => /[a-zA-Z]/.test(s)) // Must contain letters
-      .join(" ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-  
-  return result;
-}
-
-function cleanPdfText(text: string): string {
-  // Decode PDF escape sequences
-  return text
-    .replace(/\\n/g, "\n")
-    .replace(/\\r/g, "\r")
-    .replace(/\\t/g, "\t")
-    .replace(/\\\(/g, "(")
-    .replace(/\\\)/g, ")")
-    .replace(/\\\\/g, "\\")
-    .replace(/\\(\d{3})/g, (_, octal) => String.fromCharCode(parseInt(octal, 8)));
+  return [...new Set(patterns)].join(' ').replace(/\s+/g, ' ').trim();
 }
 
 async function parseWithAI(text: string, apiKey: string): Promise<ParseResult> {
@@ -274,12 +310,13 @@ Return a JSON object with this exact structure:
 
 Guidelines:
 - Extract ALL contacts you can find
-- Roles should be the job title (e.g., "Director", "1st AD", "Gaffer")
-- Departments should be standardized (e.g., "Production", "Camera", "Grip", "Electric", "Art", "Wardrobe", "Hair/Makeup", "Sound", "Locations")
+- Roles should be the job title (e.g., "Director", "1st AD", "Gaffer", "Key Grip", "Production Coordinator")
+- Departments should be standardized: Production, Camera, Grip, Electric, Art, Wardrobe, Hair/Makeup, Sound, Locations, Transportation, Catering, Casting, Accounting, Post-Production
 - Include ALL phone numbers and emails found for each person
-- If an Instagram handle is visible, include it
+- If an Instagram handle is visible, include it with @ prefix
 - If you can't determine a field, use empty array or null
-- Do NOT make up information - only extract what's actually in the text`;
+- Do NOT make up information - only extract what's actually in the text
+- Look for common call sheet layouts: crew lists, contact sheets, department groupings`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -288,10 +325,10 @@ Guidelines:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-5-mini",
+      model: "google/gemini-2.5-flash",
       messages: [
         { role: "system", content: systemPrompt },
-        { role: "user", content: `Parse this call sheet text and extract contacts:\n\n${text.slice(0, 15000)}` }
+        { role: "user", content: `Parse this call sheet text and extract contacts:\n\n${text.slice(0, 30000)}` }
       ],
       tools: [
         {
