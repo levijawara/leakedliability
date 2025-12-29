@@ -220,6 +220,7 @@ export function ParseSummaryPanel({
   const [contactsWithDuplicates, setContactsWithDuplicates] = useState<ContactWithDuplicate[]>([]);
   const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
   const [expandedDuplicates, setExpandedDuplicates] = useState<Set<number>>(new Set());
+  const [selectedNewContacts, setSelectedNewContacts] = useState<Set<number>>(new Set());
   const { toast } = useToast();
 
   // Calculate stats
@@ -227,11 +228,22 @@ export function ParseSummaryPanel({
   const lowConfidence = parsedContacts.filter(c => c.confidence >= 0.6 && c.confidence < 0.85).length;
   const missingPhone = parsedContacts.filter(c => !c.phones || c.phones.length === 0).length;
   const missingEmail = parsedContacts.filter(c => !c.emails || c.emails.length === 0).length;
-  const duplicatesDetected = contactsWithDuplicates.filter(c => c.potentialDuplicate).length;
+  
+  // Split contacts into duplicates and new contacts
+  const duplicateContacts = contactsWithDuplicates.filter(c => c.potentialDuplicate);
+  const newContacts = contactsWithDuplicates.filter(c => !c.potentialDuplicate);
+  const duplicatesDetected = duplicateContacts.length;
 
-  // Selected contacts (those not skipped)
-  const selectedContacts = contactsWithDuplicates.filter(c => c.decision !== 'skip');
-  const pendingDuplicates = contactsWithDuplicates.filter(c => c.potentialDuplicate && c.decision === 'pending');
+  // Pending duplicates need decisions
+  const pendingDuplicates = duplicateContacts.filter(c => c.decision === 'pending');
+  
+  // Calculate total contacts to save
+  const duplicatesToSave = duplicateContacts.filter(c => c.decision !== 'skip' && c.decision !== 'pending');
+  const newToSave = newContacts.filter((_, idx) => {
+    const globalIdx = contactsWithDuplicates.indexOf(newContacts[idx]);
+    return selectedNewContacts.has(globalIdx);
+  });
+  const totalToSave = duplicatesToSave.length + newToSave.length;
 
   useEffect(() => {
     async function initializePanel() {
@@ -296,6 +308,12 @@ export function ParseSummaryPanel({
           
           setContactsWithDuplicates(contactsWithDups);
           setDuplicateCheckComplete(true);
+          
+          // Initialize all new contacts as selected by default
+          const newContactIndices = contactsWithDups
+            .map((c, idx) => (!c.potentialDuplicate ? idx : -1))
+            .filter(idx => idx !== -1);
+          setSelectedNewContacts(new Set(newContactIndices));
         }
       } catch (err) {
         console.error('[ParseSummaryPanel] Initialization error:', err);
@@ -335,6 +353,47 @@ export function ParseSummaryPanel({
     });
   };
 
+  const addAllDuplicates = () => {
+    setContactsWithDuplicates(prev => prev.map(c => 
+      c.potentialDuplicate ? { ...c, decision: 'add_new' } : c
+    ));
+    toast({
+      title: "All duplicates set to add as new",
+      description: `${duplicatesDetected} contacts will be added as new records.`
+    });
+  };
+
+  const skipAllDuplicates = () => {
+    setContactsWithDuplicates(prev => prev.map(c => 
+      c.potentialDuplicate ? { ...c, decision: 'skip' } : c
+    ));
+    toast({
+      title: "All duplicates skipped",
+      description: `${duplicatesDetected} contacts will be skipped.`
+    });
+  };
+
+  const toggleNewContactSelection = (globalIndex: number) => {
+    setSelectedNewContacts(prev => {
+      const next = new Set(prev);
+      if (next.has(globalIndex)) {
+        next.delete(globalIndex);
+      } else {
+        next.add(globalIndex);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAllNew = (checked: boolean) => {
+    if (checked) {
+      const newIndices = newContacts.map(c => contactsWithDuplicates.indexOf(c));
+      setSelectedNewContacts(new Set(newIndices));
+    } else {
+      setSelectedNewContacts(new Set());
+    }
+  };
+
   const handleOverride = (index: number, field: keyof ParsedContact, value: string) => {
     setOverrides(prev => ({
       ...prev,
@@ -356,12 +415,21 @@ export function ParseSummaryPanel({
       return;
     }
 
-    const contactsToProcess = contactsWithDuplicates.filter(c => c.decision !== 'skip');
+    // Filter contacts based on decisions and checkbox selections
+    const contactsToProcess = contactsWithDuplicates.filter((c, idx) => {
+      if (c.potentialDuplicate) {
+        // Duplicates: respect decision (merge or add_new, not skip or pending)
+        return c.decision !== 'skip' && c.decision !== 'pending';
+      } else {
+        // New contacts: respect checkbox selection
+        return selectedNewContacts.has(idx);
+      }
+    });
     
     if (contactsToProcess.length === 0) {
       toast({
         title: "No contacts to save",
-        description: "All contacts have been skipped.",
+        description: "No contacts selected.",
         variant: "destructive"
       });
       return;
@@ -563,28 +631,20 @@ export function ParseSummaryPanel({
             <span className="font-medium">{parsedContacts.length}</span>
             <span className="text-muted-foreground">extracted</span>
           </div>
-          <div className="flex items-center gap-1">
-            <CheckCircle className="h-3.5 w-3.5 text-green-500" />
-            <span className="font-medium">{highConfidence}</span>
-            <span className="text-muted-foreground">high</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
-            <span className="font-medium">{lowConfidence}</span>
-            <span className="text-muted-foreground">low</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
-            <span className="font-medium">{missingPhone + missingEmail}</span>
-            <span className="text-muted-foreground">missing</span>
-          </div>
           {duplicatesDetected > 0 && (
             <div className="flex items-center gap-1">
               <Copy className="h-3.5 w-3.5 text-yellow-500" />
-              <span className="font-medium">{duplicatesDetected}</span>
-              <span className="text-muted-foreground">duplicates</span>
+              <span className="font-medium text-yellow-500">{duplicatesDetected}</span>
+              <span className="text-yellow-500">duplicates</span>
             </div>
           )}
+          <span className="text-muted-foreground">|</span>
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{selectedNewContacts.size}</span>
+            <span className="text-muted-foreground">of</span>
+            <span className="font-medium">{newContacts.length}</span>
+            <span className="text-muted-foreground">new selected</span>
+          </div>
         </div>
       </div>
 
@@ -614,246 +674,338 @@ export function ParseSummaryPanel({
         )}
       </div>
 
-      {/* Duplicate Action Bar (if duplicates detected) */}
-      {duplicatesDetected > 0 && (
-        <div className="px-4 py-2 border-b bg-yellow-500/10">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Copy className="h-4 w-4 text-yellow-500" />
-              <span className="text-sm font-medium">
-                {duplicatesDetected} potential duplicate{duplicatesDetected !== 1 ? 's' : ''} found
-              </span>
-              {pendingDuplicates.length > 0 && (
-                <Badge variant="outline" className="text-xs">
-                  {pendingDuplicates.length} pending
-                </Badge>
-              )}
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={mergeAllDuplicates}
-              className="text-xs"
-            >
-              <Merge className="h-3 w-3 mr-1" />
-              Merge All
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Contacts List */}
+      {/* Contacts List - Split into two sections */}
       <ScrollArea className="flex-1">
-        <div className="p-4 space-y-3">
-          {contactsWithDuplicates.map((contact, index) => {
-            const override = overrides[contact.originalIndex] || {};
-            const displayName = override.name !== undefined ? override.name : contact.name;
-            const displayRoles = override.roles !== undefined ? override.roles : contact.roles;
-            const displayDepartments = override.departments !== undefined ? override.departments : contact.departments;
-            const isExpanded = expandedDuplicates.has(index);
-            const isSkipped = contact.decision === 'skip';
+        {/* DUPLICATES SECTION */}
+        {duplicateContacts.length > 0 && (
+          <div className="border-b">
+            {/* Section Header */}
+            <div className="px-4 py-2 bg-yellow-500/10 flex items-center justify-between sticky top-0 z-10">
+              <div className="flex items-center gap-2">
+                <Copy className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm font-medium text-yellow-500">
+                  {duplicateContacts.length} POTENTIAL DUPLICATE{duplicateContacts.length !== 1 ? 'S' : ''} — CHOOSE ACTION FOR EACH
+                </span>
+                {pendingDuplicates.length > 0 && (
+                  <Badge variant="outline" className="text-xs border-yellow-500 text-yellow-500">
+                    {pendingDuplicates.length} pending
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            {/* Quick Actions Bar */}
+            <div className="px-4 py-2 flex items-center gap-2 border-b bg-muted/30">
+              <span className="text-xs text-muted-foreground">Quick Actions:</span>
+              <Button variant="outline" size="sm" onClick={mergeAllDuplicates} className="text-xs h-7">
+                <Merge className="h-3 w-3 mr-1" /> Merge All
+              </Button>
+              <Button variant="outline" size="sm" onClick={addAllDuplicates} className="text-xs h-7">
+                <Plus className="h-3 w-3 mr-1" /> Add All
+              </Button>
+              <Button variant="ghost" size="sm" onClick={skipAllDuplicates} className="text-xs h-7">
+                <X className="h-3 w-3 mr-1" /> Skip All
+              </Button>
+            </div>
+            
+            {/* Duplicate contact cards */}
+            <div className="p-4 space-y-3">
+              {duplicateContacts.map((contact) => {
+                const globalIndex = contactsWithDuplicates.indexOf(contact);
+                const override = overrides[contact.originalIndex] || {};
+                const displayName = override.name !== undefined ? override.name : contact.name;
+                const displayRoles = override.roles !== undefined ? override.roles : contact.roles;
+                const displayDepartments = override.departments !== undefined ? override.departments : contact.departments;
+                const isExpanded = expandedDuplicates.has(globalIndex);
+                const isSkipped = contact.decision === 'skip';
 
-            return (
-              <Card 
-                key={index} 
-                className={`${isSkipped ? 'opacity-50' : ''} ${contact.potentialDuplicate && contact.decision === 'pending' ? 'border-yellow-500/50' : ''}`}
-              >
-                <CardContent className="p-3">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0 space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <Input
-                          value={displayName}
-                          onChange={(e) => handleOverride(contact.originalIndex, 'name', e.target.value)}
-                          className="h-8 font-medium"
-                          placeholder="Name"
-                          disabled={isSkipped}
-                        />
-                        <div className="flex items-center gap-1">
-                          {getDecisionBadge(contact)}
-                          {getConfidenceBadge(contact.confidence)}
+                return (
+                  <Card 
+                    key={globalIndex} 
+                    className={`${isSkipped ? 'opacity-50' : ''} ${contact.decision === 'pending' ? 'border-yellow-500/50' : ''}`}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-start gap-3">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <Input
+                              value={displayName}
+                              onChange={(e) => handleOverride(contact.originalIndex, 'name', e.target.value)}
+                              className="h-8 font-medium"
+                              placeholder="Name"
+                              disabled={isSkipped}
+                            />
+                            <div className="flex items-center gap-1">
+                              {getDecisionBadge(contact)}
+                              {getConfidenceBadge(contact.confidence)}
+                            </div>
+                          </div>
+                          
+                          <Input
+                            value={Array.isArray(displayRoles) ? displayRoles.join(', ') : ''}
+                            onChange={(e) => handleOverride(contact.originalIndex, 'roles' as keyof ParsedContact, e.target.value)}
+                            className="h-7 text-xs"
+                            placeholder="Roles (comma-separated)"
+                            disabled={isSkipped}
+                          />
+                          
+                          <Input
+                            value={Array.isArray(displayDepartments) ? displayDepartments.join(', ') : ''}
+                            onChange={(e) => handleOverride(contact.originalIndex, 'departments' as keyof ParsedContact, e.target.value)}
+                            className="h-7 text-xs"
+                            placeholder="Departments (comma-separated)"
+                            disabled={isSkipped}
+                          />
+
+                          <div className="flex gap-4 text-xs text-muted-foreground">
+                            {contact.phones?.length > 0 && (
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {contact.phones[0]}
+                              </span>
+                            )}
+                            {contact.emails?.length > 0 && (
+                              <span className="flex items-center gap-1 truncate">
+                                <Mail className="h-3 w-3" />
+                                {contact.emails[0]}
+                              </span>
+                            )}
+                            {contact.ig_handle && (
+                              <span className="flex items-center gap-1 text-purple-400">
+                                <AtSign className="h-3 w-3" />
+                                {contact.ig_handle}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Duplicate Detection UI */}
+                          {contact.potentialDuplicate && (
+                            <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(globalIndex)}>
+                              <div className="mt-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
+                                <CollapsibleTrigger asChild>
+                                  <div className="flex items-center justify-between cursor-pointer">
+                                    <div className="flex items-center gap-2">
+                                      <Badge className="bg-yellow-500 text-yellow-50 text-xs">
+                                        Potential Duplicate
+                                      </Badge>
+                                      <span className="text-xs text-muted-foreground">
+                                        Matched: {formatMatchedFields(contact.potentialDuplicate.matchedFields)}
+                                      </span>
+                                    </div>
+                                    {isExpanded ? (
+                                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                                    ) : (
+                                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                </CollapsibleTrigger>
+                                
+                                <CollapsibleContent>
+                                  <Separator className="my-2" />
+                                  
+                                  {/* Side-by-side comparison */}
+                                  <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <div>
+                                      <p className="font-medium text-muted-foreground mb-1">Existing Contact</p>
+                                      <p className="font-medium">{contact.potentialDuplicate.existingName}</p>
+                                      {contact.potentialDuplicate.existingRoles.length > 0 && (
+                                        <p className="text-muted-foreground">{contact.potentialDuplicate.existingRoles.join(', ')}</p>
+                                      )}
+                                      {contact.potentialDuplicate.existingPhones.length > 0 && (
+                                        <p className="flex items-center gap-1">
+                                          <Phone className="h-3 w-3" />
+                                          {contact.potentialDuplicate.existingPhones[0]}
+                                        </p>
+                                      )}
+                                      {contact.potentialDuplicate.existingEmails.length > 0 && (
+                                        <p className="flex items-center gap-1 truncate">
+                                          <Mail className="h-3 w-3" />
+                                          {contact.potentialDuplicate.existingEmails[0]}
+                                        </p>
+                                      )}
+                                      {contact.potentialDuplicate.existingIgHandle && (
+                                        <p className="flex items-center gap-1 text-purple-400">
+                                          <AtSign className="h-3 w-3" />
+                                          {contact.potentialDuplicate.existingIgHandle}
+                                        </p>
+                                      )}
+                                    </div>
+                                    <div>
+                                      <p className="font-medium text-muted-foreground mb-1">Parsed Contact</p>
+                                      <p className="font-medium">{contact.name}</p>
+                                      {contact.roles.length > 0 && (
+                                        <p className="text-muted-foreground">{contact.roles.join(', ')}</p>
+                                      )}
+                                      {contact.phones?.length > 0 && (
+                                        <p className="flex items-center gap-1">
+                                          <Phone className="h-3 w-3" />
+                                          {contact.phones[0]}
+                                        </p>
+                                      )}
+                                      {contact.emails?.length > 0 && (
+                                        <p className="flex items-center gap-1 truncate">
+                                          <Mail className="h-3 w-3" />
+                                          {contact.emails[0]}
+                                        </p>
+                                      )}
+                                      {contact.ig_handle && (
+                                        <p className="flex items-center gap-1 text-purple-400">
+                                          <AtSign className="h-3 w-3" />
+                                          {contact.ig_handle}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Overlap indicator */}
+                                  <div className="mt-2 text-xs">
+                                    {contact.potentialDuplicate.hasOverlap ? (
+                                      <p className="text-green-500 flex items-center gap-1">
+                                        <CheckCircle className="h-3 w-3" />
+                                        Some data overlaps — likely the same person
+                                      </p>
+                                    ) : (
+                                      <p className="text-yellow-500 flex items-center gap-1">
+                                        <AlertTriangle className="h-3 w-3" />
+                                        No overlapping data — could be a different person
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  {/* Decision buttons */}
+                                  <div className="flex gap-2 mt-3">
+                                    <Button 
+                                      size="sm" 
+                                      variant={contact.decision === 'merge' ? 'default' : 'outline'}
+                                      onClick={() => setDecision(globalIndex, 'merge')}
+                                      className="text-xs"
+                                    >
+                                      <Merge className="h-3 w-3 mr-1" />
+                                      Merge
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant={contact.decision === 'add_new' ? 'default' : 'outline'}
+                                      onClick={() => setDecision(globalIndex, 'add_new')}
+                                      className="text-xs"
+                                    >
+                                      <Plus className="h-3 w-3 mr-1" />
+                                      Add New
+                                    </Button>
+                                    <Button 
+                                      size="sm" 
+                                      variant={contact.decision === 'skip' ? 'destructive' : 'ghost'}
+                                      onClick={() => setDecision(globalIndex, 'skip')}
+                                      className="text-xs"
+                                    >
+                                      <X className="h-3 w-3 mr-1" />
+                                      Skip
+                                    </Button>
+                                  </div>
+                                </CollapsibleContent>
+                              </div>
+                            </Collapsible>
+                          )}
                         </div>
                       </div>
-                      
-                      <Input
-                        value={Array.isArray(displayRoles) ? displayRoles.join(', ') : ''}
-                        onChange={(e) => handleOverride(contact.originalIndex, 'roles' as keyof ParsedContact, e.target.value)}
-                        className="h-7 text-xs"
-                        placeholder="Roles (comma-separated)"
-                        disabled={isSkipped}
-                      />
-                      
-                      <Input
-                        value={Array.isArray(displayDepartments) ? displayDepartments.join(', ') : ''}
-                        onChange={(e) => handleOverride(contact.originalIndex, 'departments' as keyof ParsedContact, e.target.value)}
-                        className="h-7 text-xs"
-                        placeholder="Departments (comma-separated)"
-                        disabled={isSkipped}
-                      />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-                      <div className="flex gap-4 text-xs text-muted-foreground">
-                        {contact.phones?.length > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
+        {/* NEW CONTACTS SECTION */}
+        {newContacts.length > 0 && (
+          <div>
+            {/* Section Header with Select All */}
+            <div className="px-4 py-2 bg-muted/30 flex items-center gap-3 border-b sticky top-0 z-10">
+              <Checkbox 
+                checked={selectedNewContacts.size === newContacts.length && newContacts.length > 0}
+                onCheckedChange={(checked) => toggleSelectAllNew(!!checked)}
+              />
+              <span className="text-sm font-medium text-muted-foreground">
+                {newContacts.length} NEW CONTACT{newContacts.length !== 1 ? 'S' : ''}
+              </span>
+              <span className="text-xs text-muted-foreground">
+                ({selectedNewContacts.size} selected)
+              </span>
+            </div>
+            
+            {/* New contact rows with checkboxes */}
+            <div className="divide-y">
+              {newContacts.map((contact) => {
+                const globalIndex = contactsWithDuplicates.indexOf(contact);
+                const isSelected = selectedNewContacts.has(globalIndex);
+
+                return (
+                  <div 
+                    key={globalIndex} 
+                    className={`flex items-center gap-3 px-4 py-3 hover:bg-muted/20 transition-colors ${!isSelected ? 'opacity-50' : ''}`}
+                  >
+                    <Checkbox 
+                      checked={isSelected}
+                      onCheckedChange={() => toggleNewContactSelection(globalIndex)}
+                    />
+                    
+                    {/* Contact info row */}
+                    <div className="flex-1 grid grid-cols-5 gap-2 items-center text-sm">
+                      <span className="font-medium truncate">{contact.name}</span>
+                      <span className="text-muted-foreground truncate">{contact.roles?.[0] || '—'}</span>
+                      <span className="text-muted-foreground truncate">{contact.departments?.[0] || '—'}</span>
+                      <span className="text-muted-foreground truncate flex items-center gap-1">
+                        {contact.phones?.[0] ? (
+                          <>
+                            <Phone className="h-3 w-3 flex-shrink-0" />
                             {contact.phones[0]}
-                          </span>
-                        )}
-                        {contact.emails?.length > 0 && (
-                          <span className="flex items-center gap-1 truncate">
-                            <Mail className="h-3 w-3" />
+                          </>
+                        ) : '—'}
+                      </span>
+                      <span className="text-muted-foreground truncate flex items-center gap-1">
+                        {contact.emails?.[0] ? (
+                          <>
+                            <Mail className="h-3 w-3 flex-shrink-0" />
                             {contact.emails[0]}
-                          </span>
-                        )}
-                        {contact.ig_handle && (
-                          <span className="flex items-center gap-1 text-purple-400">
-                            <AtSign className="h-3 w-3" />
-                            {contact.ig_handle}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Duplicate Detection UI */}
-                      {contact.potentialDuplicate && (
-                        <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(index)}>
-                          <div className="mt-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
-                            <CollapsibleTrigger asChild>
-                              <div className="flex items-center justify-between cursor-pointer">
-                                <div className="flex items-center gap-2">
-                                  <Badge className="bg-yellow-500 text-yellow-50 text-xs">
-                                    Potential Duplicate
-                                  </Badge>
-                                  <span className="text-xs text-muted-foreground">
-                                    Matched: {formatMatchedFields(contact.potentialDuplicate.matchedFields)}
-                                  </span>
-                                </div>
-                                {isExpanded ? (
-                                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                                ) : (
-                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                                )}
-                              </div>
-                            </CollapsibleTrigger>
-                            
-                            <CollapsibleContent>
-                              <Separator className="my-2" />
-                              
-                              {/* Side-by-side comparison */}
-                              <div className="grid grid-cols-2 gap-2 text-xs">
-                                <div>
-                                  <p className="font-medium text-muted-foreground mb-1">Existing Contact</p>
-                                  <p className="font-medium">{contact.potentialDuplicate.existingName}</p>
-                                  {contact.potentialDuplicate.existingRoles.length > 0 && (
-                                    <p className="text-muted-foreground">{contact.potentialDuplicate.existingRoles.join(', ')}</p>
-                                  )}
-                                  {contact.potentialDuplicate.existingPhones.length > 0 && (
-                                    <p className="flex items-center gap-1">
-                                      <Phone className="h-3 w-3" />
-                                      {contact.potentialDuplicate.existingPhones[0]}
-                                    </p>
-                                  )}
-                                  {contact.potentialDuplicate.existingEmails.length > 0 && (
-                                    <p className="flex items-center gap-1 truncate">
-                                      <Mail className="h-3 w-3" />
-                                      {contact.potentialDuplicate.existingEmails[0]}
-                                    </p>
-                                  )}
-                                  {contact.potentialDuplicate.existingIgHandle && (
-                                    <p className="flex items-center gap-1 text-purple-400">
-                                      <AtSign className="h-3 w-3" />
-                                      {contact.potentialDuplicate.existingIgHandle}
-                                    </p>
-                                  )}
-                                </div>
-                                <div>
-                                  <p className="font-medium text-muted-foreground mb-1">Parsed Contact</p>
-                                  <p className="font-medium">{contact.name}</p>
-                                  {contact.roles.length > 0 && (
-                                    <p className="text-muted-foreground">{contact.roles.join(', ')}</p>
-                                  )}
-                                  {contact.phones?.length > 0 && (
-                                    <p className="flex items-center gap-1">
-                                      <Phone className="h-3 w-3" />
-                                      {contact.phones[0]}
-                                    </p>
-                                  )}
-                                  {contact.emails?.length > 0 && (
-                                    <p className="flex items-center gap-1 truncate">
-                                      <Mail className="h-3 w-3" />
-                                      {contact.emails[0]}
-                                    </p>
-                                  )}
-                                  {contact.ig_handle && (
-                                    <p className="flex items-center gap-1 text-purple-400">
-                                      <AtSign className="h-3 w-3" />
-                                      {contact.ig_handle}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-
-                              {/* Overlap indicator */}
-                              <div className="mt-2 text-xs">
-                                {contact.potentialDuplicate.hasOverlap ? (
-                                  <p className="text-green-500 flex items-center gap-1">
-                                    <CheckCircle className="h-3 w-3" />
-                                    Some data overlaps — likely the same person
-                                  </p>
-                                ) : (
-                                  <p className="text-yellow-500 flex items-center gap-1">
-                                    <AlertTriangle className="h-3 w-3" />
-                                    No overlapping data — could be a different person
-                                  </p>
-                                )}
-                              </div>
-
-                              {/* Decision buttons */}
-                              <div className="flex gap-2 mt-3">
-                                <Button 
-                                  size="sm" 
-                                  variant={contact.decision === 'merge' ? 'default' : 'outline'}
-                                  onClick={() => setDecision(index, 'merge')}
-                                  className="text-xs"
-                                >
-                                  <Merge className="h-3 w-3 mr-1" />
-                                  Merge
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant={contact.decision === 'add_new' ? 'default' : 'outline'}
-                                  onClick={() => setDecision(index, 'add_new')}
-                                  className="text-xs"
-                                >
-                                  <Plus className="h-3 w-3 mr-1" />
-                                  Add New
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant={contact.decision === 'skip' ? 'destructive' : 'ghost'}
-                                  onClick={() => setDecision(index, 'skip')}
-                                  className="text-xs"
-                                >
-                                  <X className="h-3 w-3 mr-1" />
-                                  Skip
-                                </Button>
-                              </div>
-                            </CollapsibleContent>
-                          </div>
-                        </Collapsible>
-                      )}
+                          </>
+                        ) : contact.ig_handle ? (
+                          <>
+                            <AtSign className="h-3 w-3 flex-shrink-0 text-purple-400" />
+                            <span className="text-purple-400">{contact.ig_handle}</span>
+                          </>
+                        ) : '—'}
+                      </span>
+                    </div>
+                    
+                    {/* Confidence badge */}
+                    <div className="flex-shrink-0">
+                      {getConfidenceBadge(contact.confidence)}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </ScrollArea>
 
       {/* Footer */}
       <div className="p-4 border-t bg-background">
+        <div className="flex items-center justify-between mb-2">
+          {pendingDuplicates.length > 0 && (
+            <span className="text-yellow-500 text-sm">
+              {pendingDuplicates.length} duplicate{pendingDuplicates.length !== 1 ? 's' : ''} need{pendingDuplicates.length === 1 ? 's' : ''} a decision
+            </span>
+          )}
+          {pendingDuplicates.length === 0 && totalToSave === 0 && (
+            <span className="text-muted-foreground text-sm">
+              No contacts selected
+            </span>
+          )}
+        </div>
         <Button 
           onClick={saveContacts} 
-          disabled={saving || pendingDuplicates.length > 0}
+          disabled={saving || pendingDuplicates.length > 0 || totalToSave === 0}
           className="w-full"
         >
           {saving ? (
@@ -869,7 +1021,7 @@ export function ParseSummaryPanel({
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Add {selectedContacts.length} Contact{selectedContacts.length !== 1 ? 's' : ''}
+              Add {totalToSave} Contact{totalToSave !== 1 ? 's' : ''}
             </>
           )}
         </Button>
