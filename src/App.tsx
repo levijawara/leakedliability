@@ -48,6 +48,8 @@ import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
 import CallSheetManager from "./pages/CallSheetManager";
 import CrewContacts from "./pages/CrewContacts";
+import ParseReview from "./pages/ParseReview";
+import IGMatching from "./pages/IGMatching";
 
 const queryClient = new QueryClient();
 
@@ -168,6 +170,8 @@ const AppContent = () => {
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
         <Route path="/call-sheets" element={<CallSheetManager />} />
+        <Route path="/call-sheets/:id/review" element={<ParseReview />} />
+        <Route path="/call-sheets/:id/ig-matching" element={<IGMatching />} />
         <Route path="/crew-contacts" element={<CrewContacts />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />

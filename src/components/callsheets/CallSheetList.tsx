@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { 
   FileText, 
   Clock, 
@@ -33,7 +33,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ParsedContactsViewer } from "./ParsedContactsViewer";
 import { format } from "date-fns";
 
 interface GlobalCallSheet {
@@ -61,11 +60,11 @@ interface CallSheetListProps {
 
 export function CallSheetList({ userId }: CallSheetListProps) {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const contactIdFilter = searchParams.get('contact_id');
   
   const [userLinks, setUserLinks] = useState<UserCallSheetLink[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSheet, setSelectedSheet] = useState<GlobalCallSheet | null>(null);
   const [deleteLink, setDeleteLink] = useState<UserCallSheetLink | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
@@ -413,7 +412,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedSheet(sheet)}
+                          onClick={() => navigate(`/call-sheets/${sheet.id}/review`)}
                           title="View contacts"
                         >
                           <Eye className="h-4 w-4" />
@@ -447,18 +446,6 @@ export function CallSheetList({ userId }: CallSheetListProps) {
         </Table>
       </div>
 
-      {/* Parsed Contacts Viewer */}
-      {selectedSheet && (
-        <ParsedContactsViewer
-          callSheet={{
-            id: selectedSheet.id,
-            file_name: selectedSheet.original_file_name,
-            parsed_contacts: selectedSheet.parsed_contacts
-          }}
-          onClose={() => setSelectedSheet(null)}
-          userId={userId}
-        />
-      )}
 
       {/* Delete Confirmation - GLOBAL DELETE */}
       <AlertDialog open={!!deleteLink} onOpenChange={() => setDeleteLink(null)}>
