@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ContactsTable } from "@/components/contacts/ContactsTable";
 import { ContactFilters } from "@/components/contacts/ContactFilters";
+import { ContactsGrid } from "@/components/contacts/ContactsGrid";
 import { ExportButton } from "@/components/contacts/ExportButton";
 import { Users } from "lucide-react";
 
@@ -26,6 +27,8 @@ export interface CrewContact {
   created_at: string | null;
 }
 
+const VIEW_STORAGE_KEY = 'crew-contacts-view';
+
 export default function CrewContacts() {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -36,6 +39,16 @@ export default function CrewContacts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [view, setView] = useState<'list' | 'cards'>(() => {
+    const stored = localStorage.getItem(VIEW_STORAGE_KEY);
+    return (stored === 'cards' || stored === 'list') ? stored : 'list';
+  });
+  const [callSheetCounts, setCallSheetCounts] = useState<Record<string, number>>({});
+
+  // Persist view preference
+  useEffect(() => {
+    localStorage.setItem(VIEW_STORAGE_KEY, view);
+  }, [view]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -99,6 +112,9 @@ export default function CrewContacts() {
       console.log(`[CrewContacts] Total contacts loaded: ${allContacts.length}`);
       setContacts(allContacts);
       setFilteredContacts(allContacts);
+      
+      // Fetch call sheet counts for all contacts
+      fetchCallSheetCounts(allContacts.map(c => c.id));
     } catch (error: any) {
       console.error('[CrewContacts] Fetch error:', error);
       toast({
@@ -108,6 +124,32 @@ export default function CrewContacts() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCallSheetCounts = async (contactIds: string[]) => {
+    if (contactIds.length === 0) return;
+
+    try {
+      // Query the contact_call_sheets join table for counts
+      const { data, error } = await supabase
+        .from('contact_call_sheets')
+        .select('contact_id')
+        .in('contact_id', contactIds);
+
+      if (error) throw error;
+
+      // Count occurrences of each contact_id
+      const counts: Record<string, number> = {};
+      data?.forEach(row => {
+        counts[row.contact_id] = (counts[row.contact_id] || 0) + 1;
+      });
+
+      setCallSheetCounts(counts);
+      console.log(`[CrewContacts] Call sheet counts loaded for ${Object.keys(counts).length} contacts`);
+    } catch (error: any) {
+      console.error('[CrewContacts] Failed to fetch call sheet counts:', error);
+      // Non-critical, don't show toast
     }
   };
 
@@ -193,25 +235,44 @@ export default function CrewContacts() {
             departments={uniqueDepartments}
             favoritesOnly={favoritesOnly}
             onFavoritesChange={setFavoritesOnly}
+            view={view}
+            onViewChange={setView}
           />
 
-          {/* Contacts Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Your Contacts</CardTitle>
-              <CardDescription>
-                {filteredContacts.length} of {contacts.length} contacts
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ContactsTable
+          {/* Contacts Display */}
+          {view === 'list' ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Contacts</CardTitle>
+                <CardDescription>
+                  {filteredContacts.length} of {contacts.length} contacts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ContactsTable
+                  contacts={filteredContacts}
+                  userId={user?.id}
+                  onContactUpdate={handleContactUpdate}
+                  onContactDelete={handleContactDelete}
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">
+                  {filteredContacts.length} of {contacts.length} contacts
+                </p>
+              </div>
+              <ContactsGrid
                 contacts={filteredContacts}
+                callSheetCounts={callSheetCounts}
                 userId={user?.id}
                 onContactUpdate={handleContactUpdate}
                 onContactDelete={handleContactDelete}
               />
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
       </main>
 
