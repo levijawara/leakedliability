@@ -1,9 +1,11 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Upload, FileText, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface CallSheetUploaderProps {
   userId: string;
@@ -19,11 +21,23 @@ async function computeFileHash(file: File): Promise<string> {
 }
 
 export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploaderProps) {
+  const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [monitoringSheetId, setMonitoringSheetId] = useState<string | null>(null);
+  const [monitorChannel, setMonitorChannel] = useState<RealtimeChannel | null>(null);
   const { toast } = useToast();
+
+  // Cleanup realtime subscription on unmount
+  useEffect(() => {
+    return () => {
+      if (monitorChannel) {
+        supabase.removeChannel(monitorChannel);
+      }
+    };
+  }, [monitorChannel]);
 
   const handleUpload = async (file: File) => {
     if (!file.name.toLowerCase().endsWith('.pdf')) {
@@ -88,11 +102,39 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
         }
 
         setUploadProgress(100);
-        setUploadedFile(file.name);
 
+        // If already parsed, redirect immediately
+        if (existing.status === 'parsed') {
+          toast({
+            title: "Already parsed!",
+            description: "Redirecting to your contacts...",
+          });
+          
+          onUploadComplete?.();
+          navigate(`/call-sheets/${existing.id}/review`);
+          return;
+        }
+
+        // If still parsing, monitor for completion
+        if (existing.status === 'parsing' || existing.status === 'queued') {
+          setUploadedFile(file.name);
+          setMonitoringSheetId(existing.id);
+          startMonitoring(existing.id);
+          
+          toast({
+            title: "Already uploaded",
+            description: "This call sheet is being processed. You'll be redirected when ready.",
+          });
+          
+          onUploadComplete?.();
+          return;
+        }
+
+        // Status is error or unknown - show message
+        setUploadedFile(file.name);
         toast({
-          title: "Already parsed!",
-          description: "This call sheet was previously uploaded. Ready to review your contacts.",
+          title: "Already uploaded",
+          description: "This call sheet was previously uploaded. Check the status in 'My Call Sheets'.",
         });
 
         onUploadComplete?.();
@@ -175,21 +217,19 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
 
       setUploadProgress(100);
       setUploadedFile(file.name);
+      setMonitoringSheetId(newSheet.id);
 
-      console.log(`[CallSheetUploader] New artifact created: ${newSheet.id}, queued for parsing`);
+      console.log(`[CallSheetUploader] New artifact created: ${newSheet.id}, starting realtime monitoring`);
+
+      // Start monitoring for parse completion
+      startMonitoring(newSheet.id);
 
       toast({
         title: "Upload Successful",
-        description: "Your call sheet is being processed. Check the 'My Call Sheets' tab for status.",
+        description: "Parsing in progress. You'll be redirected when complete.",
       });
 
       onUploadComplete?.();
-
-      // Reset after delay
-      setTimeout(() => {
-        setUploadedFile(null);
-        setUploadProgress(0);
-      }, 3000);
 
     } catch (error: any) {
       console.error('[CallSheetUploader] Error:', error);
@@ -208,9 +248,104 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
           variant: "destructive"
         });
       }
-    } finally {
       setUploading(false);
     }
+  };
+
+  const startMonitoring = (sheetId: string) => {
+    console.log(`[CallSheetUploader] Starting realtime monitoring for sheet: ${sheetId}`);
+    
+    const channel = supabase
+      .channel(`call_sheet_monitor_${sheetId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'global_call_sheets',
+          filter: `id=eq.${sheetId}`
+        },
+        (payload) => {
+          const newStatus = payload.new?.status;
+          console.log(`[CallSheetUploader] Status update received: ${newStatus}`);
+          
+          if (newStatus === 'parsed') {
+            const contactsCount = payload.new?.contacts_extracted || 0;
+            toast({
+              title: "Parsing Complete!",
+              description: `Found ${contactsCount} contacts. Redirecting...`,
+            });
+            
+            // Cleanup and navigate
+            supabase.removeChannel(channel);
+            setMonitorChannel(null);
+            setMonitoringSheetId(null);
+            navigate(`/call-sheets/${sheetId}/review`);
+            
+          } else if (newStatus === 'error') {
+            const errorMsg = payload.new?.error_message || "An error occurred during parsing.";
+            toast({
+              title: "Parsing Failed",
+              description: errorMsg,
+              variant: "destructive"
+            });
+            
+            // Cleanup and reset
+            supabase.removeChannel(channel);
+            setMonitorChannel(null);
+            setMonitoringSheetId(null);
+            setUploadedFile(null);
+            setUploadProgress(0);
+            setUploading(false);
+          }
+        }
+      )
+      .subscribe((status) => {
+        console.log(`[CallSheetUploader] Realtime subscription status: ${status}`);
+      });
+
+    setMonitorChannel(channel);
+
+    // Also poll as a fallback (in case realtime misses the update)
+    const pollInterval = setInterval(async () => {
+      const { data } = await supabase
+        .from('global_call_sheets')
+        .select('status, contacts_extracted, error_message')
+        .eq('id', sheetId)
+        .single();
+      
+      if (data?.status === 'parsed') {
+        clearInterval(pollInterval);
+        supabase.removeChannel(channel);
+        setMonitorChannel(null);
+        setMonitoringSheetId(null);
+        
+        toast({
+          title: "Parsing Complete!",
+          description: `Found ${data.contacts_extracted || 0} contacts. Redirecting...`,
+        });
+        navigate(`/call-sheets/${sheetId}/review`);
+        
+      } else if (data?.status === 'error') {
+        clearInterval(pollInterval);
+        supabase.removeChannel(channel);
+        setMonitorChannel(null);
+        setMonitoringSheetId(null);
+        
+        toast({
+          title: "Parsing Failed",
+          description: data.error_message || "An error occurred.",
+          variant: "destructive"
+        });
+        
+        setUploadedFile(null);
+        setUploadProgress(0);
+        setUploading(false);
+      }
+    }, 3000);
+
+    // Clear poll after 2 minutes max
+    setTimeout(() => clearInterval(pollInterval), 120000);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -229,6 +364,22 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
     }
   };
 
+  // Show monitoring state when waiting for parse
+  if (uploadedFile && monitoringSheetId) {
+    return (
+      <div className="border-2 border-dashed border-primary rounded-lg p-8 text-center bg-primary/5">
+        <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
+        <p className="text-lg font-medium text-primary">
+          Parsing in Progress...
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">
+          {uploadedFile} is being analyzed. You'll be redirected automatically.
+        </p>
+      </div>
+    );
+  }
+
+  // Show success state briefly (only for non-monitored cases)
   if (uploadedFile) {
     return (
       <div className="border-2 border-dashed border-green-500 rounded-lg p-8 text-center bg-green-500/5">
