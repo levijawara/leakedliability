@@ -133,15 +133,15 @@ export default function ParseReview() {
           </div>
         </div>
 
-        {/* Main Content - 70/30 Split */}
+        {/* Main Content - 40/60 Split */}
         <div className="flex h-[calc(100vh-140px)]">
-          {/* PDF Viewer - 70% */}
-          <div className="w-[70%] border-r">
+          {/* PDF Viewer - 40% */}
+          <div className="w-[40%] border-r">
             <PdfViewer filePath={callSheet.master_file_path} />
           </div>
 
-          {/* Parse Summary Panel - 30% */}
-          <div className="w-[30%] bg-card">
+          {/* Parse Summary Panel - 60% */}
+          <div className="w-[60%] bg-card">
             <ParseSummaryPanel
               callSheetId={callSheet.id}
               fileName={callSheet.original_file_name}

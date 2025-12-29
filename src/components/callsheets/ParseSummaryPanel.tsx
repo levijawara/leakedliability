@@ -325,56 +325,48 @@ export function ParseSummaryPanel({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b">
-        <div className="flex items-center gap-2 mb-2">
-          <FileText className="h-5 w-5 text-muted-foreground" />
-          <h2 className="font-semibold text-lg">Parse Summary</h2>
+      {/* Header + Compact Stats */}
+      <div className="px-4 py-3 border-b">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-semibold">Parse Summary</h2>
+          </div>
+          {parsedDate && (
+            <span className="text-xs text-muted-foreground">
+              {format(new Date(parsedDate), "MMM d, yyyy")}
+            </span>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground truncate">{fileName}</p>
-        {parsedDate && (
-          <p className="text-xs text-muted-foreground mt-1">
-            Parsed {format(new Date(parsedDate), "MMM d, yyyy 'at' h:mm a")}
-          </p>
-        )}
-      </div>
-
-      {/* Stats Grid */}
-      <div className="p-4 border-b">
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-3">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">{parsedContacts.length}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Total Extracted</p>
-          </Card>
-          <Card className="p-3">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              <span className="text-2xl font-bold">{highConfidence}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">High Confidence</p>
-          </Card>
-          <Card className="p-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-500" />
-              <span className="text-2xl font-bold">{lowConfidence}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Low Confidence</p>
-          </Card>
-          <Card className="p-3">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">{missingPhone + missingEmail}</span>
-            </div>
-            <p className="text-xs text-muted-foreground">Missing Info</p>
-          </Card>
+        <p className="text-xs text-muted-foreground truncate mb-2">{fileName}</p>
+        
+        {/* Compact inline stats */}
+        <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-1">
+            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="font-medium">{parsedContacts.length}</span>
+            <span className="text-muted-foreground">extracted</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+            <span className="font-medium">{highConfidence}</span>
+            <span className="text-muted-foreground">high</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
+            <span className="font-medium">{lowConfidence}</span>
+            <span className="text-muted-foreground">low</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <AlertCircle className="h-3.5 w-3.5 text-muted-foreground" />
+            <span className="font-medium">{missingPhone + missingEmail}</span>
+            <span className="text-muted-foreground">missing</span>
+          </div>
         </div>
       </div>
 
       {/* Admin Export or Non-Admin Advisory */}
-      <div className="p-4 border-b">
+      <div className="px-4 py-2 border-b">
         {isAdmin ? (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => exportReport('json')}>
@@ -400,7 +392,7 @@ export function ParseSummaryPanel({
       </div>
 
       {/* Select All + Count */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div className="flex items-center justify-between px-4 py-2 border-b">
         <div className="flex items-center gap-2">
           <Checkbox
             checked={selectedIds.size === parsedContacts.length && parsedContacts.length > 0}
