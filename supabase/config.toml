@@ -77,3 +77,6 @@ verify_jwt = true
 
 [functions.queue-processor]
 verify_jwt = false
+
+[functions.watchdog-call-sheets]
+verify_jwt = false
