@@ -2,6 +2,7 @@ import { Star, Mail, Phone, Instagram, Pencil, Trash2, FileText } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import type { CrewContact } from "@/pages/CrewContacts";
@@ -14,6 +15,9 @@ interface CrewContactCardProps {
   onDelete: (contact: CrewContact) => void;
   isTogglingFavorite: boolean;
   showContactInfo: boolean;
+  selectMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelect?: () => void;
 }
 
 export function CrewContactCard({
@@ -23,7 +27,10 @@ export function CrewContactCard({
   onEdit,
   onDelete,
   isTogglingFavorite,
-  showContactInfo
+  showContactInfo,
+  selectMode = false,
+  isSelected = false,
+  onToggleSelect
 }: CrewContactCardProps) {
   const navigate = useNavigate();
   const maxRoles = 2;
@@ -36,17 +43,44 @@ export function CrewContactCard({
     }
   };
 
+  const handleCardClick = () => {
+    if (selectMode && onToggleSelect) {
+      onToggleSelect();
+    }
+  };
+
   return (
-    <Card className="group relative hover:shadow-md transition-shadow">
+    <Card 
+      className={cn(
+        "group relative hover:shadow-md transition-shadow",
+        selectMode && "cursor-pointer",
+        isSelected && "ring-2 ring-primary"
+      )}
+      onClick={handleCardClick}
+    >
       <CardContent className="p-4">
+        {/* Select checkbox */}
+        {selectMode && (
+          <div className="absolute top-3 left-3">
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={onToggleSelect}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        )}
+
         {/* Header with name, favorite, and actions */}
-        <div className="flex items-start justify-between gap-2 mb-2">
+        <div className={cn("flex items-start justify-between gap-2 mb-2", selectMode && "pl-8")}>
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <Button
               variant="ghost"
               size="sm"
               className="h-6 w-6 p-0 shrink-0"
-              onClick={() => onToggleFavorite(contact)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(contact);
+              }}
               disabled={isTogglingFavorite}
               aria-label={contact.is_favorite ? "Remove from favorites" : "Add to favorites"}
             >
@@ -67,6 +101,7 @@ export function CrewContactCard({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <Instagram className="h-3.5 w-3.5" />
                   @{contact.ig_handle}
@@ -76,26 +111,34 @@ export function CrewContactCard({
           </div>
           
           {/* Action buttons - visible on hover */}
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => onEdit(contact)}
-              aria-label="Edit contact"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 text-destructive hover:text-destructive"
-              onClick={() => onDelete(contact)}
-              aria-label="Delete contact"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+          {!selectMode && (
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(contact);
+                }}
+                aria-label="Edit contact"
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(contact);
+                }}
+                aria-label="Delete contact"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Roles */}
@@ -155,7 +198,10 @@ export function CrewContactCard({
             "w-full text-xs h-8",
             callSheetCount === 0 && "opacity-50 cursor-default"
           )}
-          onClick={handleCallSheetClick}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCallSheetClick();
+          }}
           disabled={callSheetCount === 0}
         >
           <FileText className="h-3.5 w-3.5 mr-1.5" />
