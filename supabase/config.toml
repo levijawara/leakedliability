@@ -71,3 +71,6 @@ verify_jwt = true
 
 [functions.admin-approve-claim]
 verify_jwt = true
+
+[functions.parse-call-sheet]
+verify_jwt = true
