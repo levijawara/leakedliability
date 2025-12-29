@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Upload, FileText, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,13 +28,17 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [monitoringSheetId, setMonitoringSheetId] = useState<string | null>(null);
   const [monitorChannel, setMonitorChannel] = useState<RealtimeChannel | null>(null);
+  const pollIntervalRef = useRef<number | null>(null);
   const { toast } = useToast();
 
-  // Cleanup realtime subscription on unmount
+  // Cleanup realtime subscription and polling on unmount
   useEffect(() => {
     return () => {
       if (monitorChannel) {
         supabase.removeChannel(monitorChannel);
+      }
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
       }
     };
   }, [monitorChannel]);
@@ -253,8 +257,53 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
   };
 
   const startMonitoring = (sheetId: string) => {
-    console.log(`[CallSheetUploader] Starting realtime monitoring for sheet: ${sheetId}`);
+    console.log(`[CallSheetUploader] Starting realtime + polling monitoring for sheet: ${sheetId}`);
     
+    // Helper to cleanup and navigate on success
+    const handleParseComplete = (contactsCount: number) => {
+      console.log(`[CallSheetUploader] Parse complete! Contacts: ${contactsCount}`);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      if (monitorChannel) {
+        supabase.removeChannel(monitorChannel);
+      }
+      setMonitorChannel(null);
+      setMonitoringSheetId(null);
+      
+      toast({
+        title: "Parsing Complete!",
+        description: `Found ${contactsCount} contacts. Redirecting...`,
+      });
+      navigate(`/call-sheets/${sheetId}/review`);
+    };
+
+    // Helper to cleanup and reset on error
+    const handleParseError = (errorMsg: string) => {
+      console.log(`[CallSheetUploader] Parse error: ${errorMsg}`);
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      if (monitorChannel) {
+        supabase.removeChannel(monitorChannel);
+      }
+      setMonitorChannel(null);
+      setMonitoringSheetId(null);
+      
+      toast({
+        title: "Parsing Failed",
+        description: errorMsg || "An error occurred during parsing.",
+        variant: "destructive"
+      });
+      
+      setUploadedFile(null);
+      setUploadProgress(0);
+      setUploading(false);
+    };
+
+    // Setup realtime subscription
     const channel = supabase
       .channel(`call_sheet_monitor_${sheetId}`)
       .on(
@@ -267,36 +316,12 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
         },
         (payload) => {
           const newStatus = payload.new?.status;
-          console.log(`[CallSheetUploader] Status update received: ${newStatus}`);
+          console.log(`[CallSheetUploader] Realtime status update: ${newStatus}`);
           
           if (newStatus === 'parsed') {
-            const contactsCount = payload.new?.contacts_extracted || 0;
-            toast({
-              title: "Parsing Complete!",
-              description: `Found ${contactsCount} contacts. Redirecting...`,
-            });
-            
-            // Cleanup and navigate
-            supabase.removeChannel(channel);
-            setMonitorChannel(null);
-            setMonitoringSheetId(null);
-            navigate(`/call-sheets/${sheetId}/review`);
-            
+            handleParseComplete(payload.new?.contacts_extracted || 0);
           } else if (newStatus === 'error') {
-            const errorMsg = payload.new?.error_message || "An error occurred during parsing.";
-            toast({
-              title: "Parsing Failed",
-              description: errorMsg,
-              variant: "destructive"
-            });
-            
-            // Cleanup and reset
-            supabase.removeChannel(channel);
-            setMonitorChannel(null);
-            setMonitoringSheetId(null);
-            setUploadedFile(null);
-            setUploadProgress(0);
-            setUploading(false);
+            handleParseError(payload.new?.error_message || "An error occurred.");
           }
         }
       )
@@ -306,46 +331,43 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
 
     setMonitorChannel(channel);
 
-    // Also poll as a fallback (in case realtime misses the update)
-    const pollInterval = setInterval(async () => {
-      const { data } = await supabase
+    // Aggressive polling fallback - first check at 500ms, then every 2 seconds
+    const pollStatus = async () => {
+      console.log(`[CallSheetUploader] Polling status for: ${sheetId}`);
+      const { data, error } = await supabase
         .from('global_call_sheets')
         .select('status, contacts_extracted, error_message')
         .eq('id', sheetId)
         .single();
       
-      if (data?.status === 'parsed') {
-        clearInterval(pollInterval);
-        supabase.removeChannel(channel);
-        setMonitorChannel(null);
-        setMonitoringSheetId(null);
-        
-        toast({
-          title: "Parsing Complete!",
-          description: `Found ${data.contacts_extracted || 0} contacts. Redirecting...`,
-        });
-        navigate(`/call-sheets/${sheetId}/review`);
-        
-      } else if (data?.status === 'error') {
-        clearInterval(pollInterval);
-        supabase.removeChannel(channel);
-        setMonitorChannel(null);
-        setMonitoringSheetId(null);
-        
-        toast({
-          title: "Parsing Failed",
-          description: data.error_message || "An error occurred.",
-          variant: "destructive"
-        });
-        
-        setUploadedFile(null);
-        setUploadProgress(0);
-        setUploading(false);
+      if (error) {
+        console.log(`[CallSheetUploader] Poll error:`, error.message);
+        return;
       }
-    }, 3000);
+      
+      console.log(`[CallSheetUploader] Poll result: status=${data?.status}`);
+      
+      if (data?.status === 'parsed') {
+        handleParseComplete(data.contacts_extracted || 0);
+      } else if (data?.status === 'error') {
+        handleParseError(data.error_message || "An error occurred.");
+      }
+    };
 
-    // Clear poll after 2 minutes max
-    setTimeout(() => clearInterval(pollInterval), 120000);
+    // First check quickly (500ms)
+    setTimeout(pollStatus, 500);
+    
+    // Then poll every 2 seconds
+    pollIntervalRef.current = window.setInterval(pollStatus, 2000);
+
+    // Auto-stop polling after 2 minutes
+    setTimeout(() => {
+      if (pollIntervalRef.current) {
+        console.log('[CallSheetUploader] Stopping polling after timeout');
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    }, 120000);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
