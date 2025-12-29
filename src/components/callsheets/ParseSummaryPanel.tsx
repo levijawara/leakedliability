@@ -10,7 +10,14 @@ import {
   Users,
   AlertCircle,
   Phone,
-  Mail
+  Mail,
+  Copy,
+  ChevronDown,
+  ChevronUp,
+  Merge,
+  Plus,
+  X,
+  AtSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -31,6 +39,35 @@ interface ParsedContact {
   emails: string[];
   ig_handle: string | null;
   confidence: number;
+}
+
+interface ExistingContact {
+  id: string;
+  name: string;
+  roles: string[];
+  departments: string[];
+  phones: string[];
+  emails: string[];
+  ig_handle: string | null;
+}
+
+interface DuplicateMatch {
+  existingId: string;
+  existingName: string;
+  existingRoles: string[];
+  existingDepartments: string[];
+  existingPhones: string[];
+  existingEmails: string[];
+  existingIgHandle: string | null;
+  matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[];
+  matchScore: number;
+  hasOverlap: boolean;
+}
+
+interface ContactWithDuplicate extends ParsedContact {
+  originalIndex: number;
+  potentialDuplicate: DuplicateMatch | null;
+  decision: 'pending' | 'merge' | 'add_new' | 'skip';
 }
 
 interface ParseSummaryPanelProps {
@@ -52,6 +89,121 @@ function normalizeEmail(email: string): string {
   return email.toLowerCase().trim();
 }
 
+// Fuzzy name matching (from Extra Credit)
+function fuzzyNameMatch(name1: string, name2: string): boolean {
+  const n1 = name1.toLowerCase().trim();
+  const n2 = name2.toLowerCase().trim();
+  
+  // Exact match (case-insensitive)
+  if (n1 === n2) return true;
+  
+  // Split into parts
+  const parts1 = n1.split(/\s+/);
+  const parts2 = n2.split(/\s+/);
+  
+  // Single word names: check if one is prefix of other
+  if (parts1.length < 2 || parts2.length < 2) {
+    return n1.startsWith(n2) || n2.startsWith(n1);
+  }
+  
+  // Compare last names (must match exactly)
+  const last1 = parts1[parts1.length - 1];
+  const last2 = parts2[parts2.length - 1];
+  if (last1 !== last2) return false;
+  
+  // Compare first names (allow prefix matching: Josh ↔ Joshua)
+  const first1 = parts1[0];
+  const first2 = parts2[0];
+  return first1.startsWith(first2) || first2.startsWith(first1);
+}
+
+// 2-of-5 matching algorithm (from Extra Credit)
+function findPotentialMatch(
+  parsed: { name: string; roles: string[]; phones: string[]; emails: string[]; igHandle: string | null },
+  existingContacts: ExistingContact[]
+): DuplicateMatch | null {
+  let bestMatch: DuplicateMatch | null = null;
+  
+  for (const existing of existingContacts) {
+    const matchedFields: DuplicateMatch['matchedFields'] = [];
+    let hasPhoneOrEmailMatch = false;
+    
+    // Field 1: Name (fuzzy)
+    if (fuzzyNameMatch(parsed.name, existing.name)) {
+      matchedFields.push('name');
+    }
+    
+    // Field 2: Role (any overlap)
+    const existingRolesLower = (existing.roles || []).map(r => r.toLowerCase());
+    if (parsed.roles.some(r => existingRolesLower.includes(r.toLowerCase()))) {
+      matchedFields.push('role');
+    }
+    
+    // Field 3: Phone (exact match, normalized)
+    const existingPhonesNorm = (existing.phones || []).map(normalizePhone);
+    if (parsed.phones.some(p => existingPhonesNorm.includes(normalizePhone(p)))) {
+      matchedFields.push('phone');
+      hasPhoneOrEmailMatch = true;
+    }
+    
+    // Field 4: Email (case-insensitive)
+    const existingEmailsNorm = (existing.emails || []).map(normalizeEmail);
+    if (parsed.emails.some(e => existingEmailsNorm.includes(normalizeEmail(e)))) {
+      matchedFields.push('email');
+      hasPhoneOrEmailMatch = true;
+    }
+    
+    // Field 5: IG Handle (exact match, case-insensitive)
+    const existingIg = existing.ig_handle?.toLowerCase().replace('@', '');
+    const parsedIg = parsed.igHandle?.toLowerCase().replace('@', '');
+    if (existingIg && parsedIg && existingIg === parsedIg) {
+      matchedFields.push('ig');
+      hasPhoneOrEmailMatch = true;
+    }
+    
+    // Require 2+ matched fields
+    if (matchedFields.length >= 2) {
+      // Single-word name protection (Refinement #24)
+      const isSingleWordName = parsed.name.trim().split(/\s+/).length === 1;
+      if (isSingleWordName && !hasPhoneOrEmailMatch) {
+        continue; // Skip - single-word name needs stronger evidence
+      }
+      
+      // Check for data overlap
+      const roleOverlap = parsed.roles.some(r => 
+        (existing.roles || []).map(er => er.toLowerCase()).includes(r.toLowerCase())
+      );
+      const phoneOverlap = parsed.phones.some(p => 
+        existingPhonesNorm.includes(normalizePhone(p))
+      );
+      const emailOverlap = parsed.emails.some(e => 
+        existingEmailsNorm.includes(normalizeEmail(e))
+      );
+      const hasOverlap = roleOverlap || phoneOverlap || emailOverlap;
+      
+      const result: DuplicateMatch = {
+        existingId: existing.id,
+        existingName: existing.name,
+        existingRoles: existing.roles || [],
+        existingDepartments: existing.departments || [],
+        existingPhones: existing.phones || [],
+        existingEmails: existing.emails || [],
+        existingIgHandle: existing.ig_handle,
+        matchedFields,
+        matchScore: matchedFields.length,
+        hasOverlap
+      };
+      
+      // Keep the best match (most fields matched)
+      if (!bestMatch || result.matchScore > bestMatch.matchScore) {
+        bestMatch = result;
+      }
+    }
+  }
+  
+  return bestMatch;
+}
+
 export function ParseSummaryPanel({
   callSheetId,
   fileName,
@@ -62,9 +214,12 @@ export function ParseSummaryPanel({
 }: ParseSummaryPanelProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set(parsedContacts.map((_, i) => i)));
   const [saving, setSaving] = useState(false);
   const [overrides, setOverrides] = useState<Record<number, Partial<ParsedContact>>>({});
+  const [existingContacts, setExistingContacts] = useState<ExistingContact[]>([]);
+  const [contactsWithDuplicates, setContactsWithDuplicates] = useState<ContactWithDuplicate[]>([]);
+  const [duplicateCheckComplete, setDuplicateCheckComplete] = useState(false);
+  const [expandedDuplicates, setExpandedDuplicates] = useState<Set<number>>(new Set());
   const { toast } = useToast();
 
   // Calculate stats
@@ -72,10 +227,16 @@ export function ParseSummaryPanel({
   const lowConfidence = parsedContacts.filter(c => c.confidence >= 0.6 && c.confidence < 0.85).length;
   const missingPhone = parsedContacts.filter(c => !c.phones || c.phones.length === 0).length;
   const missingEmail = parsedContacts.filter(c => !c.emails || c.emails.length === 0).length;
+  const duplicatesDetected = contactsWithDuplicates.filter(c => c.potentialDuplicate).length;
+
+  // Selected contacts (those not skipped)
+  const selectedContacts = contactsWithDuplicates.filter(c => c.decision !== 'skip');
+  const pendingDuplicates = contactsWithDuplicates.filter(c => c.potentialDuplicate && c.decision === 'pending');
 
   useEffect(() => {
-    async function checkAdminStatus() {
+    async function initializePanel() {
       try {
+        // Check admin status
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase.rpc('has_role', {
@@ -84,31 +245,94 @@ export function ParseSummaryPanel({
           });
           setIsAdmin(!!data);
         }
+
+        // Fetch existing contacts for duplicate detection (up to 10,000)
+        const { data: existingContactsRaw, error } = await supabase
+          .from('crew_contacts')
+          .select('id, name, phones, emails, roles, departments, ig_handle')
+          .eq('user_id', userId)
+          .limit(10000);
+        
+        if (error) {
+          console.error('[ParseSummaryPanel] Failed to fetch existing contacts:', error);
+        } else {
+          const existing = (existingContactsRaw || []).map(c => ({
+            id: c.id,
+            name: c.name,
+            roles: c.roles || [],
+            departments: c.departments || [],
+            phones: c.phones || [],
+            emails: c.emails || [],
+            ig_handle: c.ig_handle
+          })) as ExistingContact[];
+          
+          setExistingContacts(existing);
+          
+          // Warn if exactly 1000 rows (may be truncated)
+          if (existing.length === 1000) {
+            console.warn('[ParseSummaryPanel] Exactly 1000 contacts returned - may be truncated');
+          }
+
+          // Run duplicate detection for each parsed contact
+          const contactsWithDups: ContactWithDuplicate[] = parsedContacts.map((contact, index) => {
+            const match = findPotentialMatch(
+              {
+                name: contact.name,
+                roles: contact.roles || [],
+                phones: contact.phones || [],
+                emails: contact.emails || [],
+                igHandle: contact.ig_handle
+              },
+              existing
+            );
+            
+            return {
+              ...contact,
+              originalIndex: index,
+              potentialDuplicate: match,
+              decision: 'pending' as const
+            };
+          });
+          
+          setContactsWithDuplicates(contactsWithDups);
+          setDuplicateCheckComplete(true);
+        }
       } catch (err) {
-        console.error('[ParseSummaryPanel] Admin check error:', err);
+        console.error('[ParseSummaryPanel] Initialization error:', err);
       } finally {
         setLoading(false);
       }
     }
-    checkAdminStatus();
-  }, []);
+    
+    initializePanel();
+  }, [userId, parsedContacts]);
 
-  const toggleSelect = (index: number) => {
-    const newSelected = new Set(selectedIds);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
-    } else {
-      newSelected.add(index);
-    }
-    setSelectedIds(newSelected);
+  const setDecision = (index: number, decision: 'merge' | 'add_new' | 'skip') => {
+    setContactsWithDuplicates(prev => prev.map((c, i) => 
+      i === index ? { ...c, decision } : c
+    ));
   };
 
-  const selectAll = () => {
-    if (selectedIds.size === parsedContacts.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(parsedContacts.map((_, i) => i)));
-    }
+  const toggleExpanded = (index: number) => {
+    setExpandedDuplicates(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  const mergeAllDuplicates = () => {
+    setContactsWithDuplicates(prev => prev.map(c => 
+      c.potentialDuplicate ? { ...c, decision: 'merge' } : c
+    ));
+    toast({
+      title: "All duplicates set to merge",
+      description: `${duplicatesDetected} contacts will be merged with existing records.`
+    });
   };
 
   const handleOverride = (index: number, field: keyof ParsedContact, value: string) => {
@@ -122,84 +346,53 @@ export function ParseSummaryPanel({
   };
 
   const saveContacts = async () => {
-    if (selectedIds.size === 0) {
+    // Check for pending duplicates
+    if (pendingDuplicates.length > 0) {
       toast({
-        title: "No contacts selected",
-        description: "Please select at least one contact to save.",
+        title: "Resolve duplicates first",
+        description: `${pendingDuplicates.length} potential duplicates need a decision (Merge, Add New, or Skip).`,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const contactsToProcess = contactsWithDuplicates.filter(c => c.decision !== 'skip');
+    
+    if (contactsToProcess.length === 0) {
+      toast({
+        title: "No contacts to save",
+        description: "All contacts have been skipped.",
         variant: "destructive"
       });
       return;
     }
 
     setSaving(true);
-    let matched = 0;
+    let merged = 0;
     let created = 0;
     let attributed = 0;
 
     try {
-      const contactsToSave = parsedContacts.filter((_, i) => selectedIds.has(i));
-      
-      // Fetch existing contacts for matching
-      const { data: existingContactsRaw, error: fetchError } = await supabase
-        .from('crew_contacts')
-        .select('id, name, emails, phones, roles, departments, ig_handle')
-        .eq('user_id', userId);
-
-      if (fetchError) throw fetchError;
-
-      const existingContacts = (existingContactsRaw || []) as Array<{
-        id: string;
-        name: string;
-        emails: string[] | null;
-        phones: string[] | null;
-        roles: string[] | null;
-        departments: string[] | null;
-        ig_handle: string | null;
-      }>;
-
-      for (let i = 0; i < contactsToSave.length; i++) {
-        const originalIndex = parsedContacts.indexOf(contactsToSave[i]);
-        const contact = {
-          ...contactsToSave[i],
-          ...overrides[originalIndex]
+      for (const contact of contactsToProcess) {
+        const override = overrides[contact.originalIndex] || {};
+        const finalContact = {
+          ...contact,
+          ...override
         };
-
-        let existingContact = null;
-
-        // Priority 1: Exact email match
-        if (!existingContact && contact.emails?.length > 0) {
-          const normalizedEmails = contact.emails.map(normalizeEmail);
-          existingContact = existingContacts?.find(ec => 
-            ec.emails?.some((e: string) => normalizedEmails.includes(normalizeEmail(e)))
-          ) || null;
-        }
-
-        // Priority 2: Phone match
-        if (!existingContact && contact.phones?.length > 0) {
-          const normalizedPhones = contact.phones.map(normalizePhone);
-          existingContact = existingContacts?.find(ec => 
-            ec.phones?.some((p: string) => normalizedPhones.includes(normalizePhone(p)))
-          ) || null;
-        }
-
-        // Priority 3: Exact name match
-        if (!existingContact && contact.name) {
-          const normalizedName = contact.name.toLowerCase().trim();
-          existingContact = existingContacts?.find(ec => 
-            ec.name?.toLowerCase().trim() === normalizedName
-          ) || null;
-        }
 
         let contactId: string;
 
-        if (existingContact) {
-          contactId = existingContact.id;
-          matched++;
+        if (contact.decision === 'merge' && contact.potentialDuplicate) {
+          // Merge with existing contact
+          const existing = existingContacts.find(e => e.id === contact.potentialDuplicate!.existingId);
+          if (!existing) continue;
 
-          const mergedRoles = [...new Set([...(existingContact.roles ?? []), ...(contact.roles || [])])];
-          const mergedDepartments = [...new Set([...(existingContact.departments ?? []), ...(contact.departments || [])])];
-          const mergedEmails = [...new Set([...(existingContact.emails ?? []), ...(contact.emails || [])])];
-          const mergedPhones = [...new Set([...(existingContact.phones ?? []), ...(contact.phones || [])])];
+          contactId = existing.id;
+
+          const mergedRoles = [...new Set([...existing.roles, ...(finalContact.roles || [])])];
+          const mergedDepartments = [...new Set([...existing.departments, ...(finalContact.departments || [])])];
+          const mergedEmails = [...new Set([...existing.emails, ...(finalContact.emails || [])])];
+          const mergedPhones = [...new Set([...existing.phones, ...(finalContact.phones || [])])];
 
           await supabase
             .from('crew_contacts')
@@ -208,41 +401,37 @@ export function ParseSummaryPanel({
               departments: mergedDepartments,
               emails: mergedEmails,
               phones: mergedPhones,
-              ig_handle: contact.ig_handle || existingContact.ig_handle
+              ig_handle: finalContact.ig_handle || existing.ig_handle
             })
             .eq('id', contactId);
+
+          merged++;
         } else {
+          // Create new contact
           const { data: newContact, error: insertError } = await supabase
             .from('crew_contacts')
             .insert({
               user_id: userId,
-              name: contact.name,
-              roles: contact.roles,
-              departments: contact.departments,
-              phones: contact.phones,
-              emails: contact.emails,
-              ig_handle: contact.ig_handle,
-              confidence: contact.confidence,
+              name: finalContact.name,
+              roles: finalContact.roles,
+              departments: finalContact.departments,
+              phones: finalContact.phones,
+              emails: finalContact.emails,
+              ig_handle: finalContact.ig_handle,
+              confidence: finalContact.confidence,
               source_files: [fileName],
-              needs_review: contact.confidence < 0.8
+              needs_review: finalContact.confidence < 0.8
             })
             .select('id')
             .single();
 
-          if (insertError) continue;
+          if (insertError) {
+            console.error('[ParseSummaryPanel] Insert error:', insertError);
+            continue;
+          }
 
           contactId = newContact.id;
           created++;
-
-          existingContacts?.push({
-            id: contactId,
-            name: contact.name,
-            emails: contact.emails || [],
-            phones: contact.phones || [],
-            roles: contact.roles || [],
-            departments: contact.departments || [],
-            ig_handle: contact.ig_handle || null
-          });
         }
 
         // Create attribution link
@@ -258,7 +447,7 @@ export function ParseSummaryPanel({
 
       toast({
         title: "Contacts saved",
-        description: `Matched ${matched}, created ${created} contacts. ${attributed} attributions added.`
+        description: `Merged ${merged}, created ${created} contacts. ${attributed} attributions added.`
       });
 
       onComplete();
@@ -275,25 +464,26 @@ export function ParseSummaryPanel({
   };
 
   const exportReport = (format: 'json' | 'csv') => {
-    const selectedContacts = parsedContacts.filter((_, i) => selectedIds.has(i));
+    const contacts = contactsWithDuplicates.filter(c => c.decision !== 'skip');
     
     if (format === 'json') {
-      const blob = new Blob([JSON.stringify({ fileName, parsedDate, contacts: selectedContacts }, null, 2)], { type: 'application/json' });
+      const blob = new Blob([JSON.stringify({ fileName, parsedDate, contacts }, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `parse-report-${callSheetId}.json`;
       a.click();
     } else {
-      const headers = ['Name', 'Roles', 'Departments', 'Phones', 'Emails', 'IG Handle', 'Confidence'];
-      const rows = selectedContacts.map(c => [
+      const headers = ['Name', 'Roles', 'Departments', 'Phones', 'Emails', 'IG Handle', 'Confidence', 'Duplicate Match'];
+      const rows = contacts.map(c => [
         c.name,
         c.roles.join('; '),
         c.departments.join('; '),
         c.phones.join('; '),
         c.emails.join('; '),
         c.ig_handle || '',
-        c.confidence.toString()
+        c.confidence.toString(),
+        c.potentialDuplicate ? `${c.potentialDuplicate.existingName} (${c.potentialDuplicate.matchedFields.join('+')})` : ''
       ]);
       const csv = [headers, ...rows].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
       const blob = new Blob([csv], { type: 'text/csv' });
@@ -313,6 +503,32 @@ export function ParseSummaryPanel({
     } else {
       return <Badge variant="outline" className="text-xs">Low</Badge>;
     }
+  };
+
+  const getDecisionBadge = (contact: ContactWithDuplicate) => {
+    if (!contact.potentialDuplicate) return null;
+    
+    switch (contact.decision) {
+      case 'merge':
+        return <Badge className="bg-blue-500 text-xs">Will Merge</Badge>;
+      case 'add_new':
+        return <Badge className="bg-green-500 text-xs">Add New</Badge>;
+      case 'skip':
+        return <Badge variant="outline" className="text-xs">Skipped</Badge>;
+      default:
+        return <Badge className="bg-yellow-500 text-yellow-50 text-xs">Needs Decision</Badge>;
+    }
+  };
+
+  const formatMatchedFields = (fields: DuplicateMatch['matchedFields']) => {
+    const labels: Record<string, string> = {
+      name: 'Name',
+      role: 'Role',
+      phone: 'Phone',
+      email: 'Email',
+      ig: 'IG Handle'
+    };
+    return fields.map(f => labels[f]).join(' + ');
   };
 
   if (loading) {
@@ -341,7 +557,7 @@ export function ParseSummaryPanel({
         <p className="text-xs text-muted-foreground truncate mb-2">{fileName}</p>
         
         {/* Compact inline stats */}
-        <div className="flex items-center gap-4 text-xs">
+        <div className="flex items-center gap-4 text-xs flex-wrap">
           <div className="flex items-center gap-1">
             <Users className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="font-medium">{parsedContacts.length}</span>
@@ -362,6 +578,13 @@ export function ParseSummaryPanel({
             <span className="font-medium">{missingPhone + missingEmail}</span>
             <span className="text-muted-foreground">missing</span>
           </div>
+          {duplicatesDetected > 0 && (
+            <div className="flex items-center gap-1">
+              <Copy className="h-3.5 w-3.5 text-yellow-500" />
+              <span className="font-medium">{duplicatesDetected}</span>
+              <span className="text-muted-foreground">duplicates</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -391,60 +614,81 @@ export function ParseSummaryPanel({
         )}
       </div>
 
-      {/* Select All + Count */}
-      <div className="flex items-center justify-between px-4 py-2 border-b">
-        <div className="flex items-center gap-2">
-          <Checkbox
-            checked={selectedIds.size === parsedContacts.length && parsedContacts.length > 0}
-            onCheckedChange={selectAll}
-          />
-          <span className="text-sm text-muted-foreground">
-            {selectedIds.size > 0 ? `${selectedIds.size} selected` : "Select all"}
-          </span>
+      {/* Duplicate Action Bar (if duplicates detected) */}
+      {duplicatesDetected > 0 && (
+        <div className="px-4 py-2 border-b bg-yellow-500/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Copy className="h-4 w-4 text-yellow-500" />
+              <span className="text-sm font-medium">
+                {duplicatesDetected} potential duplicate{duplicatesDetected !== 1 ? 's' : ''} found
+              </span>
+              {pendingDuplicates.length > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  {pendingDuplicates.length} pending
+                </Badge>
+              )}
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={mergeAllDuplicates}
+              className="text-xs"
+            >
+              <Merge className="h-3 w-3 mr-1" />
+              Merge All
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Contacts List */}
       <ScrollArea className="flex-1">
         <div className="p-4 space-y-3">
-          {parsedContacts.map((contact, index) => {
-            const override = overrides[index] || {};
+          {contactsWithDuplicates.map((contact, index) => {
+            const override = overrides[contact.originalIndex] || {};
             const displayName = override.name !== undefined ? override.name : contact.name;
             const displayRoles = override.roles !== undefined ? override.roles : contact.roles;
             const displayDepartments = override.departments !== undefined ? override.departments : contact.departments;
+            const isExpanded = expandedDuplicates.has(index);
+            const isSkipped = contact.decision === 'skip';
 
             return (
-              <Card key={index} className={selectedIds.has(index) ? "border-primary" : ""}>
+              <Card 
+                key={index} 
+                className={`${isSkipped ? 'opacity-50' : ''} ${contact.potentialDuplicate && contact.decision === 'pending' ? 'border-yellow-500/50' : ''}`}
+              >
                 <CardContent className="p-3">
                   <div className="flex items-start gap-3">
-                    <Checkbox
-                      checked={selectedIds.has(index)}
-                      onCheckedChange={() => toggleSelect(index)}
-                      className="mt-1"
-                    />
                     <div className="flex-1 min-w-0 space-y-2">
                       <div className="flex items-center justify-between gap-2">
                         <Input
                           value={displayName}
-                          onChange={(e) => handleOverride(index, 'name', e.target.value)}
+                          onChange={(e) => handleOverride(contact.originalIndex, 'name', e.target.value)}
                           className="h-8 font-medium"
                           placeholder="Name"
+                          disabled={isSkipped}
                         />
-                        {getConfidenceBadge(contact.confidence)}
+                        <div className="flex items-center gap-1">
+                          {getDecisionBadge(contact)}
+                          {getConfidenceBadge(contact.confidence)}
+                        </div>
                       </div>
                       
                       <Input
                         value={Array.isArray(displayRoles) ? displayRoles.join(', ') : ''}
-                        onChange={(e) => handleOverride(index, 'roles' as keyof ParsedContact, e.target.value)}
+                        onChange={(e) => handleOverride(contact.originalIndex, 'roles' as keyof ParsedContact, e.target.value)}
                         className="h-7 text-xs"
                         placeholder="Roles (comma-separated)"
+                        disabled={isSkipped}
                       />
                       
                       <Input
                         value={Array.isArray(displayDepartments) ? displayDepartments.join(', ') : ''}
-                        onChange={(e) => handleOverride(index, 'departments' as keyof ParsedContact, e.target.value)}
+                        onChange={(e) => handleOverride(contact.originalIndex, 'departments' as keyof ParsedContact, e.target.value)}
                         className="h-7 text-xs"
                         placeholder="Departments (comma-separated)"
+                        disabled={isSkipped}
                       />
 
                       <div className="flex gap-4 text-xs text-muted-foreground">
@@ -460,7 +704,142 @@ export function ParseSummaryPanel({
                             {contact.emails[0]}
                           </span>
                         )}
+                        {contact.ig_handle && (
+                          <span className="flex items-center gap-1 text-purple-400">
+                            <AtSign className="h-3 w-3" />
+                            {contact.ig_handle}
+                          </span>
+                        )}
                       </div>
+
+                      {/* Duplicate Detection UI */}
+                      {contact.potentialDuplicate && (
+                        <Collapsible open={isExpanded} onOpenChange={() => toggleExpanded(index)}>
+                          <div className="mt-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/30">
+                            <CollapsibleTrigger asChild>
+                              <div className="flex items-center justify-between cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-yellow-500 text-yellow-50 text-xs">
+                                    Potential Duplicate
+                                  </Badge>
+                                  <span className="text-xs text-muted-foreground">
+                                    Matched: {formatMatchedFields(contact.potentialDuplicate.matchedFields)}
+                                  </span>
+                                </div>
+                                {isExpanded ? (
+                                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                                )}
+                              </div>
+                            </CollapsibleTrigger>
+                            
+                            <CollapsibleContent>
+                              <Separator className="my-2" />
+                              
+                              {/* Side-by-side comparison */}
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <p className="font-medium text-muted-foreground mb-1">Existing Contact</p>
+                                  <p className="font-medium">{contact.potentialDuplicate.existingName}</p>
+                                  {contact.potentialDuplicate.existingRoles.length > 0 && (
+                                    <p className="text-muted-foreground">{contact.potentialDuplicate.existingRoles.join(', ')}</p>
+                                  )}
+                                  {contact.potentialDuplicate.existingPhones.length > 0 && (
+                                    <p className="flex items-center gap-1">
+                                      <Phone className="h-3 w-3" />
+                                      {contact.potentialDuplicate.existingPhones[0]}
+                                    </p>
+                                  )}
+                                  {contact.potentialDuplicate.existingEmails.length > 0 && (
+                                    <p className="flex items-center gap-1 truncate">
+                                      <Mail className="h-3 w-3" />
+                                      {contact.potentialDuplicate.existingEmails[0]}
+                                    </p>
+                                  )}
+                                  {contact.potentialDuplicate.existingIgHandle && (
+                                    <p className="flex items-center gap-1 text-purple-400">
+                                      <AtSign className="h-3 w-3" />
+                                      {contact.potentialDuplicate.existingIgHandle}
+                                    </p>
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-muted-foreground mb-1">Parsed Contact</p>
+                                  <p className="font-medium">{contact.name}</p>
+                                  {contact.roles.length > 0 && (
+                                    <p className="text-muted-foreground">{contact.roles.join(', ')}</p>
+                                  )}
+                                  {contact.phones?.length > 0 && (
+                                    <p className="flex items-center gap-1">
+                                      <Phone className="h-3 w-3" />
+                                      {contact.phones[0]}
+                                    </p>
+                                  )}
+                                  {contact.emails?.length > 0 && (
+                                    <p className="flex items-center gap-1 truncate">
+                                      <Mail className="h-3 w-3" />
+                                      {contact.emails[0]}
+                                    </p>
+                                  )}
+                                  {contact.ig_handle && (
+                                    <p className="flex items-center gap-1 text-purple-400">
+                                      <AtSign className="h-3 w-3" />
+                                      {contact.ig_handle}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Overlap indicator */}
+                              <div className="mt-2 text-xs">
+                                {contact.potentialDuplicate.hasOverlap ? (
+                                  <p className="text-green-500 flex items-center gap-1">
+                                    <CheckCircle className="h-3 w-3" />
+                                    Some data overlaps — likely the same person
+                                  </p>
+                                ) : (
+                                  <p className="text-yellow-500 flex items-center gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    No overlapping data — could be a different person
+                                  </p>
+                                )}
+                              </div>
+
+                              {/* Decision buttons */}
+                              <div className="flex gap-2 mt-3">
+                                <Button 
+                                  size="sm" 
+                                  variant={contact.decision === 'merge' ? 'default' : 'outline'}
+                                  onClick={() => setDecision(index, 'merge')}
+                                  className="text-xs"
+                                >
+                                  <Merge className="h-3 w-3 mr-1" />
+                                  Merge
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant={contact.decision === 'add_new' ? 'default' : 'outline'}
+                                  onClick={() => setDecision(index, 'add_new')}
+                                  className="text-xs"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add New
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant={contact.decision === 'skip' ? 'destructive' : 'ghost'}
+                                  onClick={() => setDecision(index, 'skip')}
+                                  className="text-xs"
+                                >
+                                  <X className="h-3 w-3 mr-1" />
+                                  Skip
+                                </Button>
+                              </div>
+                            </CollapsibleContent>
+                          </div>
+                        </Collapsible>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -474,7 +853,7 @@ export function ParseSummaryPanel({
       <div className="p-4 border-t bg-background">
         <Button 
           onClick={saveContacts} 
-          disabled={selectedIds.size === 0 || saving}
+          disabled={saving || pendingDuplicates.length > 0}
           className="w-full"
         >
           {saving ? (
@@ -482,10 +861,15 @@ export function ParseSummaryPanel({
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               Saving...
             </>
+          ) : pendingDuplicates.length > 0 ? (
+            <>
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              Resolve {pendingDuplicates.length} Duplicate{pendingDuplicates.length !== 1 ? 's' : ''} First
+            </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Add {selectedIds.size} Contacts
+              Add {selectedContacts.length} Contact{selectedContacts.length !== 1 ? 's' : ''}
             </>
           )}
         </Button>
