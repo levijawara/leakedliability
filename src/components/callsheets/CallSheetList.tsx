@@ -162,23 +162,27 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     }
   };
 
-  // Retry parsing
+  // Retry parsing - resets all Phase 6 retry tracking fields
   const handleRetry = async (sheet: CallSheet) => {
     try {
-      // Reset status to queued
-      await supabase
+      // Reset status to queued and clear all retry tracking state
+      // This is a manual retry, so we reset retry_count to 0
+      const { error: updateError } = await supabase
         .from('call_sheets')
-        .update({ status: 'queued', error_message: null })
+        .update({ 
+          status: 'queued', 
+          error_message: null,
+          retry_count: 0,
+          parsing_started_at: null,
+          last_error_at: null
+        })
         .eq('id', sheet.id);
 
-      // Trigger parse
-      await supabase.functions.invoke('parse-call-sheet', {
-        body: { call_sheet_id: sheet.id }
-      });
+      if (updateError) throw updateError;
 
       toast({
         title: "Retry initiated",
-        description: "The call sheet is being re-processed."
+        description: "The call sheet has been queued for re-processing."
       });
     } catch (error: any) {
       console.error('[CallSheetList] Retry error:', error);
