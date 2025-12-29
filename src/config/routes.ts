@@ -35,6 +35,7 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/suggestions", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
   { path: "/confirm", component: "ConfirmReport", name: "Confirm Report", icon: "FileCheck", description: "Corroborate debts", category: "authenticated", requiresAuth: true },
   { path: "/call-sheets", component: "CallSheetManager", name: "Call Sheets", icon: "FileSpreadsheet", description: "Upload and manage call sheets", category: "authenticated", requiresAuth: true },
+  { path: "/crew-contacts", component: "CrewContacts", name: "Crew Contacts", icon: "Users", description: "View and manage extracted crew contacts", category: "authenticated", requiresAuth: true },
 
   // Leaderboard Routes
   { path: "/leaderboard", component: "Leaderboard", name: "Leaderboard", icon: "TrendingUp", description: "Producer ranking board", category: "leaderboard" },
