@@ -50,6 +50,7 @@ import CallSheetManager from "./pages/CallSheetManager";
 import CrewContacts from "./pages/CrewContacts";
 import ParseReview from "./pages/ParseReview";
 import IGMatching from "./pages/IGMatching";
+import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
 
 const queryClient = new QueryClient();
 
@@ -173,6 +174,7 @@ const AppContent = () => {
         <Route path="/call-sheets/:id/review" element={<ParseReview />} />
         <Route path="/call-sheets/:id/ig-matching" element={<IGMatching />} />
         <Route path="/crew-contacts" element={<CrewContacts />} />
+        <Route path="/admin/call-sheet-reservoir" element={<AdminCallSheetReservoir />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

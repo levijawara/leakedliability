@@ -185,7 +185,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     };
   }, [userId, contactIdFilter]);
 
-  // Delete handler - GLOBAL DELETE for seeding mode
+  // Delete handler - Only removes user's personal link (Library of Alexandria model)
   const handleDelete = async () => {
     if (!deleteLink) return;
     
@@ -193,58 +193,29 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     const sheet = deleteLink.global_call_sheets;
     
     try {
-      console.log('[CallSheetList] Global delete initiated for:', sheet.original_file_name);
+      console.log('[CallSheetList] Removing user link for:', sheet.original_file_name);
       
-      // 1. Delete the storage file first
-      if (sheet.master_file_path) {
-        const { error: storageError } = await supabase.storage
-          .from('call_sheets')
-          .remove([sheet.master_file_path]);
-        
-        if (storageError) {
-          console.warn('[CallSheetList] Storage delete warning:', storageError);
-          // Continue even if storage fails - file might not exist
-        } else {
-          console.log('[CallSheetList] Storage file deleted:', sheet.master_file_path);
-        }
-      }
-
-      // 2. Delete contact_call_sheets links
-      const { data: deletedContactLinks } = await supabase
-        .from('contact_call_sheets')
-        .delete()
-        .eq('call_sheet_id', sheet.id)
-        .select();
-      console.log('[CallSheetList] Deleted contact links:', deletedContactLinks?.length || 0);
-
-      // 3. Delete ALL user_call_sheets links (not just this user's)
-      const { data: deletedUserLinks } = await supabase
+      // Only delete THIS user's link - preserve global artifact forever
+      const { error: dbError } = await supabase
         .from('user_call_sheets')
         .delete()
-        .eq('global_call_sheet_id', sheet.id)
-        .select();
-      console.log('[CallSheetList] Deleted user links:', deletedUserLinks?.length || 0);
-
-      // 4. Delete the global_call_sheets record itself
-      const { error: dbError } = await supabase
-        .from('global_call_sheets')
-        .delete()
-        .eq('id', sheet.id);
+        .eq('id', deleteLink.id)
+        .eq('user_id', userId); // Extra safety
 
       if (dbError) throw dbError;
-      console.log('[CallSheetList] Global call sheet deleted:', sheet.id);
+      console.log('[CallSheetList] User link removed, global artifact preserved:', sheet.id);
 
       toast({
-        title: "Call sheet deleted",
-        description: `${sheet.original_file_name} has been permanently deleted.`
+        title: "Call sheet removed",
+        description: `${sheet.original_file_name} has been removed from your library.`
       });
 
       setUserLinks(prev => prev.filter(link => link.id !== deleteLink.id));
       setDeleteLink(null);
     } catch (error: any) {
-      console.error('[CallSheetList] Global delete error:', error);
+      console.error('[CallSheetList] Remove link error:', error);
       toast({
-        title: "Delete failed",
+        title: "Remove failed",
         description: error.message,
         variant: "destructive"
       });
@@ -432,8 +403,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => setDeleteLink(link)}
-                        title="Permanently delete call sheet"
-                        className="text-destructive hover:text-destructive"
+                        title="Remove from my library"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -447,20 +417,17 @@ export function CallSheetList({ userId }: CallSheetListProps) {
       </div>
 
 
-      {/* Delete Confirmation - GLOBAL DELETE */}
+      {/* Remove from Library Confirmation - preserves global artifact */}
       <AlertDialog open={!!deleteLink} onOpenChange={() => setDeleteLink(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Permanently Delete Call Sheet?</AlertDialogTitle>
+            <AlertDialogTitle>Remove Call Sheet from Your Library?</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div>
-                <p>This will <strong>permanently delete</strong> "{deleteLink?.global_call_sheets.original_file_name}" including:</p>
-                <ul className="mt-2 ml-4 list-disc text-sm">
-                  <li>The uploaded file from storage</li>
-                  <li>All parsed contact data</li>
-                  <li>Any contact-to-call-sheet links</li>
-                </ul>
-                <p className="mt-2 text-destructive font-medium">This action cannot be undone.</p>
+                <p>This will remove "{deleteLink?.global_call_sheets.original_file_name}" from your personal library.</p>
+                <p className="mt-2 text-muted-foreground text-sm">
+                  The original file and parsed data remain in the platform archive and may still be accessible to other users who uploaded the same document.
+                </p>
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -469,15 +436,14 @@ export function CallSheetList({ userId }: CallSheetListProps) {
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-destructive hover:bg-destructive/90"
             >
               {deleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  Removing...
                 </>
               ) : (
-                "Delete Permanently"
+                "Remove from My Library"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
