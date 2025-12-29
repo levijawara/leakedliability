@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { 
   FileText, 
   Clock, 
@@ -35,15 +36,23 @@ import { useToast } from "@/hooks/use-toast";
 import { ParsedContactsViewer } from "./ParsedContactsViewer";
 import { format } from "date-fns";
 
-interface CallSheet {
+interface GlobalCallSheet {
   id: string;
-  file_name: string;
-  file_path: string;
+  original_file_name: string;
+  master_file_path: string;
   status: string;
   contacts_extracted: number | null;
   error_message: string | null;
-  uploaded_at: string;
+  created_at: string;
   parsed_contacts: unknown;
+}
+
+interface UserCallSheetLink {
+  id: string;
+  user_label: string | null;
+  created_at: string;
+  global_call_sheet_id: string;
+  global_call_sheets: GlobalCallSheet;
 }
 
 interface CallSheetListProps {
@@ -51,24 +60,67 @@ interface CallSheetListProps {
 }
 
 export function CallSheetList({ userId }: CallSheetListProps) {
-  const [callSheets, setCallSheets] = useState<CallSheet[]>([]);
+  const [searchParams] = useSearchParams();
+  const contactIdFilter = searchParams.get('contact_id');
+  
+  const [userLinks, setUserLinks] = useState<UserCallSheetLink[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSheet, setSelectedSheet] = useState<CallSheet | null>(null);
-  const [deleteSheet, setDeleteSheet] = useState<CallSheet | null>(null);
+  const [selectedSheet, setSelectedSheet] = useState<GlobalCallSheet | null>(null);
+  const [deleteLink, setDeleteLink] = useState<UserCallSheetLink | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
 
-  // Fetch call sheets
-  const fetchCallSheets = async () => {
+  // Fetch user's call sheet links with global call sheet data
+  const fetchUserCallSheets = async () => {
     try {
-      const { data, error } = await supabase
-        .from('call_sheets')
-        .select('*')
+      let query = supabase
+        .from('user_call_sheets')
+        .select(`
+          id,
+          user_label,
+          created_at,
+          global_call_sheet_id,
+          global_call_sheets (
+            id,
+            original_file_name,
+            master_file_path,
+            status,
+            contacts_extracted,
+            error_message,
+            created_at,
+            parsed_contacts
+          )
+        `)
         .eq('user_id', userId)
-        .order('uploaded_at', { ascending: false });
+        .order('created_at', { ascending: false });
+
+      // If filtering by contact_id, get call sheets linked to that contact
+      if (contactIdFilter) {
+        const { data: contactLinks, error: contactError } = await supabase
+          .from('contact_call_sheets')
+          .select('call_sheet_id')
+          .eq('contact_id', contactIdFilter);
+
+        if (contactError) throw contactError;
+
+        if (contactLinks && contactLinks.length > 0) {
+          const callSheetIds = contactLinks.map(cl => cl.call_sheet_id);
+          query = query.in('global_call_sheet_id', callSheetIds);
+        } else {
+          // No call sheets for this contact
+          setUserLinks([]);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
-      setCallSheets(data || []);
+      
+      // Filter out any links where global_call_sheets is null
+      const validLinks = (data || []).filter(link => link.global_call_sheets) as UserCallSheetLink[];
+      setUserLinks(validLinks);
     } catch (error: any) {
       console.error('[CallSheetList] Fetch error:', error);
       toast({
@@ -83,73 +135,78 @@ export function CallSheetList({ userId }: CallSheetListProps) {
 
   // Initial fetch and realtime subscription
   useEffect(() => {
-    fetchCallSheets();
+    fetchUserCallSheets();
 
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('call_sheets_changes')
+    // Subscribe to realtime updates on user_call_sheets
+    const userChannel = supabase
+      .channel('user_call_sheets_changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'call_sheets',
+          table: 'user_call_sheets',
           filter: `user_id=eq.${userId}`
         },
         (payload) => {
-          console.log('[CallSheetList] Realtime update:', payload);
-          
-          if (payload.eventType === 'INSERT') {
-            setCallSheets(prev => [payload.new as CallSheet, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setCallSheets(prev => 
-              prev.map(sheet => 
-                sheet.id === payload.new.id ? payload.new as CallSheet : sheet
-              )
-            );
-          } else if (payload.eventType === 'DELETE') {
-            setCallSheets(prev => 
-              prev.filter(sheet => sheet.id !== payload.old.id)
-            );
-          }
+          console.log('[CallSheetList] User link update:', payload);
+          // Refetch to get full data with joins
+          fetchUserCallSheets();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to global_call_sheets updates (for status changes)
+    const globalChannel = supabase
+      .channel('global_call_sheets_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'global_call_sheets'
+        },
+        (payload) => {
+          console.log('[CallSheetList] Global sheet update:', payload);
+          // Update local state if we have this sheet
+          setUserLinks(prev => 
+            prev.map(link => 
+              link.global_call_sheet_id === payload.new.id 
+                ? { ...link, global_call_sheets: payload.new as GlobalCallSheet }
+                : link
+            )
+          );
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(userChannel);
+      supabase.removeChannel(globalChannel);
     };
-  }, [userId]);
+  }, [userId, contactIdFilter]);
 
-  // Delete handler
+  // Delete handler - removes user's link, not the global artifact
   const handleDelete = async () => {
-    if (!deleteSheet) return;
+    if (!deleteLink) return;
     
     setDeleting(true);
     try {
-      // Delete from storage first
-      const { error: storageError } = await supabase.storage
-        .from('call_sheets')
-        .remove([deleteSheet.file_path]);
-
-      if (storageError) {
-        console.warn('[CallSheetList] Storage delete warning:', storageError);
-      }
-
-      // Delete record
+      // Delete user's link only
       const { error: dbError } = await supabase
-        .from('call_sheets')
+        .from('user_call_sheets')
         .delete()
-        .eq('id', deleteSheet.id);
+        .eq('id', deleteLink.id);
 
       if (dbError) throw dbError;
 
       toast({
-        title: "Call sheet deleted",
-        description: `${deleteSheet.file_name} has been removed.`
+        title: "Call sheet removed",
+        description: `${deleteLink.user_label || deleteLink.global_call_sheets.original_file_name} has been removed from your list.`
       });
 
-      setDeleteSheet(null);
+      setUserLinks(prev => prev.filter(link => link.id !== deleteLink.id));
+      setDeleteLink(null);
     } catch (error: any) {
       console.error('[CallSheetList] Delete error:', error);
       toast({
@@ -162,23 +219,26 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     }
   };
 
-  // Retry parsing - resets all Phase 6 retry tracking fields
-  const handleRetry = async (sheet: CallSheet) => {
+  // Retry parsing - updates the global artifact
+  const handleRetry = async (sheet: GlobalCallSheet) => {
     try {
-      // Reset status to queued and clear all retry tracking state
-      // This is a manual retry, so we reset retry_count to 0
+      // Reset status to queued
       const { error: updateError } = await supabase
-        .from('call_sheets')
+        .from('global_call_sheets')
         .update({ 
           status: 'queued', 
           error_message: null,
           retry_count: 0,
-          parsing_started_at: null,
-          last_error_at: null
+          parsing_started_at: null
         })
         .eq('id', sheet.id);
 
       if (updateError) throw updateError;
+
+      // Trigger parsing
+      await supabase.functions.invoke('parse-call-sheet', {
+        body: { call_sheet_id: sheet.id }
+      });
 
       toast({
         title: "Retry initiated",
@@ -238,13 +298,18 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     );
   }
 
-  if (callSheets.length === 0) {
+  if (userLinks.length === 0) {
     return (
       <div className="text-center py-12">
         <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-lg font-medium">No call sheets yet</p>
+        <p className="text-lg font-medium">
+          {contactIdFilter ? "No call sheets for this contact" : "No call sheets yet"}
+        </p>
         <p className="text-sm text-muted-foreground">
-          Upload your first call sheet to get started
+          {contactIdFilter 
+            ? "This contact hasn't been linked to any call sheets"
+            : "Upload your first call sheet to get started"
+          }
         </p>
       </div>
     );
@@ -252,6 +317,14 @@ export function CallSheetList({ userId }: CallSheetListProps) {
 
   return (
     <>
+      {contactIdFilter && (
+        <div className="mb-4 p-3 bg-muted/50 rounded-lg">
+          <p className="text-sm text-muted-foreground">
+            Showing call sheets linked to selected contact
+          </p>
+        </div>
+      )}
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -259,77 +332,82 @@ export function CallSheetList({ userId }: CallSheetListProps) {
               <TableHead>File Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-center">Contacts</TableHead>
-              <TableHead>Uploaded</TableHead>
+              <TableHead>Added</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {callSheets.map((sheet) => (
-              <TableRow key={sheet.id}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                    <span className="truncate max-w-[200px]">{sheet.file_name}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="space-y-1">
-                    {getStatusBadge(sheet.status)}
-                    {sheet.status === 'error' && sheet.error_message && (
-                      <p className="text-xs text-destructive truncate max-w-[200px]" title={sheet.error_message}>
-                        {sheet.error_message}
-                      </p>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell className="text-center">
-                  {sheet.status === 'parsed' && sheet.contacts_extracted !== null ? (
-                    <div className="flex items-center justify-center gap-1">
-                      <Users className="h-3 w-3 text-muted-foreground" />
-                      <span>{sheet.contacts_extracted}</span>
+            {userLinks.map((link) => {
+              const sheet = link.global_call_sheets;
+              const displayName = link.user_label || sheet.original_file_name;
+              
+              return (
+                <TableRow key={link.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      <span className="truncate max-w-[200px]">{displayName}</span>
                     </div>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-muted-foreground text-sm">
-                  {sheet.uploaded_at ? format(new Date(sheet.uploaded_at), 'MMM d, yyyy') : '—'}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    {sheet.status === 'parsed' && (
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      {getStatusBadge(sheet.status)}
+                      {sheet.status === 'error' && sheet.error_message && (
+                        <p className="text-xs text-destructive truncate max-w-[200px]" title={sheet.error_message}>
+                          {sheet.error_message}
+                        </p>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {sheet.status === 'parsed' && sheet.contacts_extracted !== null ? (
+                      <div className="flex items-center justify-center gap-1">
+                        <Users className="h-3 w-3 text-muted-foreground" />
+                        <span>{sheet.contacts_extracted}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {link.created_at ? format(new Date(link.created_at), 'MMM d, yyyy') : '—'}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      {sheet.status === 'parsed' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedSheet(sheet)}
+                          title="View contacts"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
+                      {sheet.status === 'error' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRetry(sheet)}
+                          title="Retry parsing"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setSelectedSheet(sheet)}
-                        title="View contacts"
+                        onClick={() => setDeleteLink(link)}
+                        title="Remove from my list"
+                        className="text-destructive hover:text-destructive"
                       >
-                        <Eye className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4" />
                       </Button>
-                    )}
-                    {sheet.status === 'error' && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRetry(sheet)}
-                        title="Retry parsing"
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setDeleteSheet(sheet)}
-                      title="Delete"
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
@@ -337,20 +415,24 @@ export function CallSheetList({ userId }: CallSheetListProps) {
       {/* Parsed Contacts Viewer */}
       {selectedSheet && (
         <ParsedContactsViewer
-          callSheet={selectedSheet}
+          callSheet={{
+            id: selectedSheet.id,
+            file_name: selectedSheet.original_file_name,
+            parsed_contacts: selectedSheet.parsed_contacts
+          }}
           onClose={() => setSelectedSheet(null)}
           userId={userId}
         />
       )}
 
       {/* Delete Confirmation */}
-      <AlertDialog open={!!deleteSheet} onOpenChange={() => setDeleteSheet(null)}>
+      <AlertDialog open={!!deleteLink} onOpenChange={() => setDeleteLink(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Call Sheet?</AlertDialogTitle>
+            <AlertDialogTitle>Remove Call Sheet?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete "{deleteSheet?.file_name}" and all extracted contacts.
-              This action cannot be undone.
+              This will remove "{deleteLink?.user_label || deleteLink?.global_call_sheets.original_file_name}" from your list.
+              The call sheet data will remain in the system for other users who have it.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -363,10 +445,10 @@ export function CallSheetList({ userId }: CallSheetListProps) {
               {deleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  Removing...
                 </>
               ) : (
-                "Delete"
+                "Remove"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

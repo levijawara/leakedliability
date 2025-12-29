@@ -7,9 +7,18 @@ import { useToast } from "@/hooks/use-toast";
 
 interface CallSheetUploaderProps {
   userId: string;
+  onUploadComplete?: () => void;
 }
 
-export function CallSheetUploader({ userId }: CallSheetUploaderProps) {
+// Compute SHA-256 hash of file bytes
+async function computeFileHash(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -39,17 +48,74 @@ export function CallSheetUploader({ userId }: CallSheetUploaderProps) {
     setUploadProgress(10);
 
     try {
-      // Generate unique file path
-      const timestamp = Date.now();
-      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const filePath = `${userId}/${timestamp}_${sanitizedName}`;
+      // Step 1: Compute hash client-side
+      console.log('[CallSheetUploader] Computing file hash...');
+      const clientHash = await computeFileHash(file);
+      console.log(`[CallSheetUploader] Client hash computed: ${clientHash.slice(0, 12)}...`);
+
+      setUploadProgress(20);
+
+      // Step 2: Check if artifact exists globally
+      const { data: existing, error: checkError } = await supabase
+        .from('global_call_sheets')
+        .select('id, status')
+        .eq('content_hash', clientHash)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('[CallSheetUploader] Hash check error:', checkError);
+        throw new Error(`Hash check failed: ${checkError.message}`);
+      }
 
       setUploadProgress(30);
 
-      // Upload to storage
+      if (existing) {
+        // Duplicate detected - artifact already exists
+        console.log(`[CallSheetUploader] Duplicate detected, artifact exists: ${existing.id}`);
+
+        // Create user link (upsert to handle re-uploads)
+        const { error: linkError } = await supabase
+          .from('user_call_sheets')
+          .upsert({
+            user_id: userId,
+            global_call_sheet_id: existing.id,
+            user_label: file.name
+          }, { onConflict: 'user_id,global_call_sheet_id' });
+
+        if (linkError) {
+          console.error('[CallSheetUploader] Link creation error:', linkError);
+          throw new Error(`Failed to link call sheet: ${linkError.message}`);
+        }
+
+        setUploadProgress(100);
+        setUploadedFile(file.name);
+
+        toast({
+          title: "Already parsed!",
+          description: "This call sheet was previously uploaded. Ready to review your contacts.",
+        });
+
+        onUploadComplete?.();
+
+        // Reset after delay
+        setTimeout(() => {
+          setUploadedFile(null);
+          setUploadProgress(0);
+        }, 3000);
+
+        return;
+      }
+
+      // Step 3: New artifact - upload to master bucket path
+      console.log('[CallSheetUploader] New artifact - uploading to master path...');
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const masterPath = `master/${clientHash}/${sanitizedName}`;
+
+      setUploadProgress(40);
+
       const { error: uploadError } = await supabase.storage
         .from('call_sheets')
-        .upload(filePath, file, {
+        .upload(masterPath, file, {
           cacheControl: '3600',
           upsert: false
         });
@@ -60,13 +126,15 @@ export function CallSheetUploader({ userId }: CallSheetUploaderProps) {
 
       setUploadProgress(60);
 
-      // Create call_sheets record
-      const { data: callSheet, error: insertError } = await supabase
-        .from('call_sheets')
+      // Step 4: Create global artifact record
+      console.log('[CallSheetUploader] Creating global artifact record...');
+      const { data: newSheet, error: insertError } = await supabase
+        .from('global_call_sheets')
         .insert({
-          user_id: userId,
-          file_name: file.name,
-          file_path: filePath,
+          content_hash: clientHash,
+          master_file_path: masterPath,
+          original_file_name: file.name,
+          first_uploaded_by: userId,
           status: 'queued'
         })
         .select()
@@ -76,24 +144,46 @@ export function CallSheetUploader({ userId }: CallSheetUploaderProps) {
         throw new Error(`Failed to create record: ${insertError.message}`);
       }
 
-      setUploadProgress(80);
+      setUploadProgress(75);
 
-      // Trigger immediate parsing
+      // Step 5: Create user link
+      console.log('[CallSheetUploader] Creating user link...');
+      const { error: linkError } = await supabase
+        .from('user_call_sheets')
+        .insert({
+          user_id: userId,
+          global_call_sheet_id: newSheet.id,
+          user_label: file.name
+        });
+
+      if (linkError) {
+        console.error('[CallSheetUploader] Link creation error:', linkError);
+        // Don't throw - the artifact was created successfully
+      }
+
+      setUploadProgress(85);
+
+      // Step 6: Trigger parsing
+      console.log('[CallSheetUploader] Triggering parse...');
       const { error: parseError } = await supabase.functions.invoke('parse-call-sheet', {
-        body: { call_sheet_id: callSheet.id }
+        body: { call_sheet_id: newSheet.id }
       });
 
       if (parseError) {
-        console.warn('Parse trigger failed, will be picked up by queue:', parseError);
+        console.warn('[CallSheetUploader] Parse trigger failed, will be picked up by queue:', parseError);
       }
 
       setUploadProgress(100);
       setUploadedFile(file.name);
 
+      console.log(`[CallSheetUploader] New artifact created: ${newSheet.id}, queued for parsing`);
+
       toast({
         title: "Upload Successful",
         description: "Your call sheet is being processed. Check the 'My Call Sheets' tab for status.",
       });
+
+      onUploadComplete?.();
 
       // Reset after delay
       setTimeout(() => {
@@ -209,10 +299,12 @@ export function CallSheetUploader({ userId }: CallSheetUploaderProps) {
         <div className="space-y-2">
           <Progress value={uploadProgress} className="h-2" />
           <p className="text-xs text-center text-muted-foreground">
-            {uploadProgress < 30 && "Uploading file..."}
-            {uploadProgress >= 30 && uploadProgress < 60 && "Saving to storage..."}
-            {uploadProgress >= 60 && uploadProgress < 80 && "Creating record..."}
-            {uploadProgress >= 80 && "Starting parse..."}
+            {uploadProgress < 20 && "Computing file hash..."}
+            {uploadProgress >= 20 && uploadProgress < 30 && "Checking for duplicates..."}
+            {uploadProgress >= 30 && uploadProgress < 60 && "Uploading to storage..."}
+            {uploadProgress >= 60 && uploadProgress < 75 && "Creating record..."}
+            {uploadProgress >= 75 && uploadProgress < 85 && "Linking to your account..."}
+            {uploadProgress >= 85 && "Starting parse..."}
           </p>
         </div>
       )}
