@@ -117,8 +117,18 @@ export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedConta
 
       console.log(`[SaveContacts] Processing ${contactsToSave.length} contacts, ${existingContacts?.length || 0} existing`);
 
+      type ExistingContact = {
+        id: string;
+        name: string;
+        emails: string[] | null;
+        phones: string[] | null;
+        roles: string[] | null;
+        departments: string[] | null;
+        ig_handle: string | null;
+      };
+
       for (const contact of contactsToSave) {
-        let existingContact: { id: string } | null = null;
+        let existingContact: ExistingContact | null = null;
 
         // Priority 1: Exact email match
         if (!existingContact && contact.emails?.length > 0) {
