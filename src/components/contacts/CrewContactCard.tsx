@@ -2,7 +2,7 @@ import { Star, Mail, Phone, Instagram, Pencil, Trash2, FileText } from "lucide-r
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, censorEmail, censorPhone } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import type { CrewContact } from "@/pages/CrewContacts";
 
@@ -13,6 +13,7 @@ interface CrewContactCardProps {
   onEdit: (contact: CrewContact) => void;
   onDelete: (contact: CrewContact) => void;
   isTogglingFavorite: boolean;
+  showContactInfo: boolean;
 }
 
 export function CrewContactCard({
@@ -21,7 +22,8 @@ export function CrewContactCard({
   onToggleFavorite,
   onEdit,
   onDelete,
-  isTogglingFavorite
+  isTogglingFavorite,
+  showContactInfo
 }: CrewContactCardProps) {
   const navigate = useNavigate();
   const maxRoles = 2;
@@ -124,7 +126,9 @@ export function CrewContactCard({
           {contact.emails && contact.emails.length > 0 && (
             <p className="text-sm flex items-center gap-2 text-muted-foreground">
               <Mail className="h-3.5 w-3.5 shrink-0" />
-              <span className="truncate">{contact.emails[0]}</span>
+              <span className="truncate">
+                {showContactInfo ? contact.emails[0] : censorEmail(contact.emails[0])}
+              </span>
               {contact.emails.length > 1 && (
                 <span className="text-xs">+{contact.emails.length - 1}</span>
               )}
@@ -133,7 +137,9 @@ export function CrewContactCard({
           {contact.phones && contact.phones.length > 0 && (
             <p className="text-sm flex items-center gap-2 text-muted-foreground">
               <Phone className="h-3.5 w-3.5 shrink-0" />
-              <span>{contact.phones[0]}</span>
+              <span>
+                {showContactInfo ? contact.phones[0] : censorPhone(contact.phones[0])}
+              </span>
               {contact.phones.length > 1 && (
                 <span className="text-xs">+{contact.phones.length - 1}</span>
               )}

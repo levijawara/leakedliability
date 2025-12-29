@@ -31,6 +31,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ContactEditDialog } from "./ContactEditDialog";
+import { censorEmail, censorPhone } from "@/lib/utils";
 import type { CrewContact } from "@/pages/CrewContacts";
 
 interface ContactsTableProps {
@@ -38,13 +39,15 @@ interface ContactsTableProps {
   userId: string;
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
+  showContactInfo: boolean;
 }
 
 export function ContactsTable({ 
   contacts, 
   userId, 
   onContactUpdate, 
-  onContactDelete 
+  onContactDelete,
+  showContactInfo 
 }: ContactsTableProps) {
   const [editContact, setEditContact] = useState<CrewContact | null>(null);
   const [deleteContact, setDeleteContact] = useState<CrewContact | null>(null);
@@ -172,7 +175,9 @@ export function ContactsTable({
                     {contact.emails?.[0] && (
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Mail className="h-3 w-3" />
-                        <span className="truncate max-w-[150px]">{contact.emails[0]}</span>
+                        <span className="truncate max-w-[150px]">
+                          {showContactInfo ? contact.emails[0] : censorEmail(contact.emails[0])}
+                        </span>
                         {contact.emails.length > 1 && (
                           <Badge variant="outline" className="text-xs">+{contact.emails.length - 1}</Badge>
                         )}
@@ -181,7 +186,9 @@ export function ContactsTable({
                     {contact.phones?.[0] && (
                       <div className="flex items-center gap-1 text-muted-foreground">
                         <Phone className="h-3 w-3" />
-                        <span>{contact.phones[0]}</span>
+                        <span>
+                          {showContactInfo ? contact.phones[0] : censorPhone(contact.phones[0])}
+                        </span>
                         {contact.phones.length > 1 && (
                           <Badge variant="outline" className="text-xs">+{contact.phones.length - 1}</Badge>
                         )}

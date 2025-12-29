@@ -2,7 +2,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, Star, Eye, EyeOff } from "lucide-react";
 import { ViewToggle } from "./ViewToggle";
 
 interface ContactFiltersProps {
@@ -15,6 +16,8 @@ interface ContactFiltersProps {
   onFavoritesChange: (value: boolean) => void;
   view: 'list' | 'cards';
   onViewChange: (view: 'list' | 'cards') => void;
+  showContactInfo: boolean;
+  onShowContactInfoChange: (value: boolean) => void;
 }
 
 export function ContactFilters({
@@ -27,6 +30,8 @@ export function ContactFilters({
   onFavoritesChange,
   view,
   onViewChange,
+  showContactInfo,
+  onShowContactInfoChange,
 }: ContactFiltersProps) {
   return (
     <div className="flex flex-col sm:flex-row gap-4 p-4 border rounded-lg bg-muted/50">
@@ -79,6 +84,19 @@ export function ContactFilters({
             Favorites only
           </Label>
         </div>
+      </div>
+
+      {/* Privacy Toggle */}
+      <div className="flex items-end pb-1">
+        <Button
+          variant={showContactInfo ? "default" : "outline"}
+          size="sm"
+          onClick={() => onShowContactInfoChange(!showContactInfo)}
+          className="flex items-center gap-2"
+        >
+          {showContactInfo ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+          {showContactInfo ? "Hide Info" : "Show Info"}
+        </Button>
       </div>
 
       {/* View Toggle */}
