@@ -103,11 +103,21 @@ export function CallSheetUploader({ userId }: CallSheetUploaderProps) {
 
     } catch (error: any) {
       console.error('[CallSheetUploader] Error:', error);
-      toast({
-        title: "Upload Failed",
-        description: error.message || "An unexpected error occurred.",
-        variant: "destructive"
-      });
+      
+      // Handle rate limit error specifically
+      if (error.message?.includes('RATE_LIMIT_EXCEEDED')) {
+        toast({
+          title: "Upload Limit Reached",
+          description: "You can upload up to 20 call sheets per hour. Please try again later.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Upload Failed",
+          description: error.message || "An unexpected error occurred.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setUploading(false);
     }
