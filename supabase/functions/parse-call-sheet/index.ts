@@ -277,7 +277,7 @@ Guidelines:
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
+      model: "openai/gpt-5-mini",
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: `Parse this call sheet text and extract contacts:\n\n${text.slice(0, 15000)}` }
