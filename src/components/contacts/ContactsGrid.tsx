@@ -14,6 +14,9 @@ interface ContactsGridProps {
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
   showContactInfo: boolean;
+  selectMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }
 
 export function ContactsGrid({
@@ -22,7 +25,10 @@ export function ContactsGrid({
   userId,
   onContactUpdate,
   onContactDelete,
-  showContactInfo
+  showContactInfo,
+  selectMode = false,
+  selectedIds = new Set(),
+  onToggleSelect
 }: ContactsGridProps) {
   const { toast } = useToast();
   const [editContact, setEditContact] = useState<CrewContact | null>(null);
@@ -87,7 +93,7 @@ export function ContactsGrid({
 
   if (contacts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border rounded-lg">
         <Users className="h-12 w-12 mb-4" />
         <p>No contacts found</p>
       </div>
@@ -107,6 +113,9 @@ export function ContactsGrid({
             onDelete={setDeleteContact}
             isTogglingFavorite={togglingFavoriteId === contact.id}
             showContactInfo={showContactInfo}
+            selectMode={selectMode}
+            isSelected={selectedIds.has(contact.id)}
+            onToggleSelect={() => onToggleSelect?.(contact.id)}
           />
         ))}
       </div>

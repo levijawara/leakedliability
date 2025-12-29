@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -40,6 +41,9 @@ interface ContactsTableProps {
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
   showContactInfo: boolean;
+  selectMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }
 
 export function ContactsTable({ 
@@ -47,7 +51,10 @@ export function ContactsTable({
   userId, 
   onContactUpdate, 
   onContactDelete,
-  showContactInfo 
+  showContactInfo,
+  selectMode = false,
+  selectedIds = new Set(),
+  onToggleSelect
 }: ContactsTableProps) {
   const [editContact, setEditContact] = useState<CrewContact | null>(null);
   const [deleteContact, setDeleteContact] = useState<CrewContact | null>(null);
@@ -111,7 +118,7 @@ export function ContactsTable({
 
   if (contacts.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 border rounded-lg">
         <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
         <p className="text-lg font-medium">No contacts found</p>
         <p className="text-sm text-muted-foreground">
@@ -127,6 +134,7 @@ export function ContactsTable({
         <Table>
           <TableHeader>
             <TableRow>
+              {selectMode && <TableHead className="w-[40px]"></TableHead>}
               <TableHead className="w-[40px]"></TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Contact Info</TableHead>
@@ -138,6 +146,14 @@ export function ContactsTable({
           <TableBody>
             {contacts.map((contact) => (
               <TableRow key={contact.id}>
+                {selectMode && (
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(contact.id)}
+                      onCheckedChange={() => onToggleSelect?.(contact.id)}
+                    />
+                  </TableCell>
+                )}
                 <TableCell>
                   <Button
                     variant="ghost"
