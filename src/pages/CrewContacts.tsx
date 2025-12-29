@@ -67,17 +67,38 @@ export default function CrewContacts() {
   }, [navigate, toast]);
 
   const fetchContacts = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('crew_contacts')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(100000);
+    const PAGE_SIZE = 1000;
+    const MAX_CONTACTS = 100000;
+    let allContacts: CrewContact[] = [];
+    let from = 0;
 
-      if (error) throw error;
-      setContacts(data || []);
-      setFilteredContacts(data || []);
+    try {
+      while (from < MAX_CONTACTS) {
+        const to = from + PAGE_SIZE - 1;
+
+        const { data, error } = await supabase
+          .from('crew_contacts')
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+          .range(from, to);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) break;
+
+        allContacts = [...allContacts, ...data];
+        console.log(`[CrewContacts] Fetched page: ${data.length} rows (total so far: ${allContacts.length})`);
+
+        // Stop if we got less than a full page (we've reached the end)
+        if (data.length < PAGE_SIZE) break;
+
+        from += PAGE_SIZE;
+      }
+
+      console.log(`[CrewContacts] Total contacts loaded: ${allContacts.length}`);
+      setContacts(allContacts);
+      setFilteredContacts(allContacts);
     } catch (error: any) {
       console.error('[CrewContacts] Fetch error:', error);
       toast({
