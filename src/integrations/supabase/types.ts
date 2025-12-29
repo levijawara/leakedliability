@@ -2522,6 +2522,10 @@ export type Database = {
         Args: { report_id: string }
         Returns: undefined
       }
+      lookup_global_call_sheet_by_hash: {
+        Args: { _content_hash: string }
+        Returns: Json
+      }
       refresh_all_producer_stats: { Args: never; Returns: undefined }
       revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }
       upsert_ig_handles: { Args: { handles_data: Json }; Returns: Json }

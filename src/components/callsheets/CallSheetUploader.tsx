@@ -73,17 +73,17 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
 
       setUploadProgress(20);
 
-      // Step 2: Check if artifact exists globally
-      const { data: existing, error: checkError } = await supabase
-        .from('global_call_sheets')
-        .select('id, status')
-        .eq('content_hash', clientHash)
-        .maybeSingle();
+      // Step 2: Check if artifact exists globally using secure RPC (bypasses RLS for hash lookup)
+      const { data: existingData, error: checkError } = await supabase
+        .rpc('lookup_global_call_sheet_by_hash', { _content_hash: clientHash });
 
       if (checkError) {
         console.error('[CallSheetUploader] Hash check error:', checkError);
         throw new Error(`Hash check failed: ${checkError.message}`);
       }
+
+      // Parse the result - function returns jsonb or null
+      const existing = existingData as { id: string; status: string } | null;
 
       setUploadProgress(30);
 
