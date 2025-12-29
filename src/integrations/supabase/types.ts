@@ -134,6 +134,30 @@ export type Database = {
         }
         Relationships: []
       }
+      call_sheet_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          rate_limit_enabled: boolean | null
+          rate_limit_per_hour: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rate_limit_enabled?: boolean | null
+          rate_limit_per_hour?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rate_limit_enabled?: boolean | null
+          rate_limit_per_hour?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       call_sheets: {
         Row: {
           contacts_extracted: number | null
