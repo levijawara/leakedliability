@@ -13,6 +13,7 @@ interface ContactsGridProps {
   userId: string;
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
+  showContactInfo: boolean;
 }
 
 export function ContactsGrid({
@@ -20,7 +21,8 @@ export function ContactsGrid({
   callSheetCounts,
   userId,
   onContactUpdate,
-  onContactDelete
+  onContactDelete,
+  showContactInfo
 }: ContactsGridProps) {
   const { toast } = useToast();
   const [editContact, setEditContact] = useState<CrewContact | null>(null);
@@ -104,6 +106,7 @@ export function ContactsGrid({
             onEdit={setEditContact}
             onDelete={setDeleteContact}
             isTogglingFavorite={togglingFavoriteId === contact.id}
+            showContactInfo={showContactInfo}
           />
         ))}
       </div>

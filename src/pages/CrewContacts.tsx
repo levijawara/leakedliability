@@ -28,6 +28,7 @@ export interface CrewContact {
 }
 
 const VIEW_STORAGE_KEY = 'crew-contacts-view';
+const PRIVACY_STORAGE_KEY = 'crew-contacts-show-info';
 
 export default function CrewContacts() {
   const navigate = useNavigate();
@@ -43,12 +44,21 @@ export default function CrewContacts() {
     const stored = localStorage.getItem(VIEW_STORAGE_KEY);
     return (stored === 'cards' || stored === 'list') ? stored : 'list';
   });
+  const [showContactInfo, setShowContactInfo] = useState<boolean>(() => {
+    const stored = localStorage.getItem(PRIVACY_STORAGE_KEY);
+    return stored === 'true'; // Default: false (censored)
+  });
   const [callSheetCounts, setCallSheetCounts] = useState<Record<string, number>>({});
 
   // Persist view preference
   useEffect(() => {
     localStorage.setItem(VIEW_STORAGE_KEY, view);
   }, [view]);
+
+  // Persist privacy preference
+  useEffect(() => {
+    localStorage.setItem(PRIVACY_STORAGE_KEY, String(showContactInfo));
+  }, [showContactInfo]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -237,6 +247,8 @@ export default function CrewContacts() {
             onFavoritesChange={setFavoritesOnly}
             view={view}
             onViewChange={setView}
+            showContactInfo={showContactInfo}
+            onShowContactInfoChange={setShowContactInfo}
           />
 
           {/* Contacts Display */}
@@ -254,6 +266,7 @@ export default function CrewContacts() {
                   userId={user?.id}
                   onContactUpdate={handleContactUpdate}
                   onContactDelete={handleContactDelete}
+                  showContactInfo={showContactInfo}
                 />
               </CardContent>
             </Card>
@@ -270,6 +283,7 @@ export default function CrewContacts() {
                 userId={user?.id}
                 onContactUpdate={handleContactUpdate}
                 onContactDelete={handleContactDelete}
+                showContactInfo={showContactInfo}
               />
             </div>
           )}
