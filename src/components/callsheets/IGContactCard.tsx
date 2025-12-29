@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Instagram, X, Check, Loader2, Users } from "lucide-react";
+import { Instagram, X, Check, Loader2, Users, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,9 +12,16 @@ interface Coworker {
   ig_handle: string | null;
 }
 
+interface SeedSuggestion {
+  handle: string;
+  confidence: 'high' | 'medium';
+}
+
 interface IGContactCardProps {
   contactId: string;
   contactName: string;
+  contactPhones?: string[];
+  contactEmails?: string[];
   role: string;
   callSheetId: string;
   onMatch: (igHandle: string | null) => void;
@@ -24,6 +31,8 @@ interface IGContactCardProps {
 export function IGContactCard({
   contactId,
   contactName,
+  contactPhones,
+  contactEmails,
   role,
   callSheetId,
   onMatch,
@@ -34,6 +43,46 @@ export function IGContactCard({
   const [coworkers, setCoworkers] = useState<Coworker[]>([]);
   const [loadingCoworkers, setLoadingCoworkers] = useState(true);
   const [searching, setSearching] = useState(false);
+  
+  // Seed suggestion state
+  const [seedSuggestion, setSeedSuggestion] = useState<SeedSuggestion | null>(null);
+  const [loadingSeed, setLoadingSeed] = useState(true);
+  const [seedDismissed, setSeedDismissed] = useState(false);
+
+  // Fetch seed suggestion from admin contacts
+  useEffect(() => {
+    async function fetchSeedSuggestion() {
+      try {
+        setLoadingSeed(true);
+        
+        const { data, error } = await supabase.functions.invoke('get-seed-ig-suggestion', {
+          body: {
+            name: contactName,
+            phones: contactPhones || [],
+            emails: contactEmails || []
+          }
+        });
+
+        if (error) {
+          console.error('[IGContactCard] Seed suggestion error:', error);
+          return;
+        }
+
+        if (data?.seedSuggestion) {
+          setSeedSuggestion({
+            handle: data.seedSuggestion,
+            confidence: data.confidence || 'medium'
+          });
+        }
+      } catch (error) {
+        console.error('[IGContactCard] Seed suggestion fetch error:', error);
+      } finally {
+        setLoadingSeed(false);
+      }
+    }
+
+    fetchSeedSuggestion();
+  }, [contactId, contactName, contactPhones, contactEmails]);
 
   // Fetch coworkers from the same call sheets
   useEffect(() => {
@@ -164,6 +213,16 @@ export function IGContactCard({
     onMatch(handle);
   };
 
+  const handleUseSeedSuggestion = () => {
+    if (seedSuggestion) {
+      handleSelectSuggestion(seedSuggestion.handle);
+    }
+  };
+
+  const handleDismissSeedSuggestion = () => {
+    setSeedDismissed(true);
+  };
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -172,6 +231,48 @@ export function IGContactCard({
           <h3 className="font-semibold text-lg">{contactName}</h3>
           <p className="text-sm text-muted-foreground">{role || "No role specified"}</p>
         </div>
+
+        {/* Seed Suggestion Section */}
+        {!loadingSeed && seedSuggestion && !seedDismissed && (
+          <div className="mb-4 p-3 rounded-lg border border-primary/30 bg-primary/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="h-4 w-4 text-primary" />
+              <span className="text-sm font-medium">Platform Verified</span>
+              {seedSuggestion.confidence === 'high' && (
+                <Badge variant="secondary" className="text-xs">High Match</Badge>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Instagram className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">@{seedSuggestion.handle}</span>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="default"
+                  onClick={handleUseSeedSuggestion}
+                >
+                  Use This
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="ghost"
+                  onClick={handleDismissSeedSuggestion}
+                >
+                  Ignore
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {loadingSeed && (
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Checking for verified matches...
+          </div>
+        )}
 
         {/* Coworkers Section */}
         {!loadingCoworkers && coworkers.length > 0 && (

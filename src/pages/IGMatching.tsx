@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Instagram, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { IGContactCard } from "@/components/callsheets/IGContactCard";
@@ -13,6 +12,8 @@ interface ContactToMatch {
   id: string;
   name: string;
   roles: string[];
+  phones: string[];
+  emails: string[];
   ig_handle: string | null;
 }
 
@@ -45,6 +46,8 @@ export default function IGMatching() {
               id,
               name,
               roles,
+              phones,
+              emails,
               ig_handle
             )
           `)
@@ -64,6 +67,8 @@ export default function IGMatching() {
               id: contact.id,
               name: contact.name,
               roles: contact.roles || [],
+              phones: contact.phones || [],
+              emails: contact.emails || [],
               ig_handle: null
             });
           }
@@ -221,6 +226,8 @@ export default function IGMatching() {
                 key={contact.id}
                 contactId={contact.id}
                 contactName={contact.name}
+                contactPhones={contact.phones}
+                contactEmails={contact.emails}
                 role={contact.roles[0] || ""}
                 callSheetId={id!}
                 onMatch={(igHandle) => handleMatch(contact.id, igHandle)}
