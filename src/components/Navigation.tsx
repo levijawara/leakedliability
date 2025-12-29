@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Home, TrendingUp, FileText, Info, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare, DollarSign } from "lucide-react";
+import { Home, TrendingUp, FileText, Info, Instagram, Menu, User, LogOut, Shield, HelpCircle, MessageSquare, DollarSign, FileSpreadsheet } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -178,6 +178,10 @@ export function Navigation() {
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
+                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    Call Sheets
+                  </DropdownMenuItem>
                   {isAdmin && (
                     <>
                       <DropdownMenuItem onClick={() => navigate("/admin")}>
@@ -249,6 +253,10 @@ export function Navigation() {
                     <DropdownMenuItem onClick={() => handleNavigate("/profile")}>
                       <User className="h-4 w-4 mr-2" />
                       Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleNavigate("/call-sheets")}>
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Call Sheets
                     </DropdownMenuItem>
                     {isAdmin && (
                       <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
