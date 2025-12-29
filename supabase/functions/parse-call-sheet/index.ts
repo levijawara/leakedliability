@@ -53,9 +53,9 @@ serve(async (req) => {
 
     console.log(`[parse-call-sheet] Processing call sheet: ${call_sheet_id}`);
 
-    // Fetch the call sheet record
+    // Fetch from global_call_sheets table
     const { data: callSheet, error: fetchError } = await supabase
-      .from("call_sheets")
+      .from("global_call_sheets")
       .select("*")
       .eq("id", call_sheet_id)
       .single();
@@ -68,18 +68,27 @@ serve(async (req) => {
       );
     }
 
+    // Skip if already parsed
+    if (callSheet.status === "parsed") {
+      console.log("[parse-call-sheet] Already parsed, skipping");
+      return new Response(
+        JSON.stringify({ success: true, message: "Already parsed" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Update status to parsing
     await supabase
-      .from("call_sheets")
-      .update({ status: "parsing", error_message: null })
+      .from("global_call_sheets")
+      .update({ status: "parsing", error_message: null, parsing_started_at: new Date().toISOString() })
       .eq("id", call_sheet_id);
 
-    console.log(`[parse-call-sheet] Downloading file: ${callSheet.file_path}`);
+    console.log(`[parse-call-sheet] Downloading file: ${callSheet.master_file_path}`);
 
-    // Download the PDF from storage
+    // Download the PDF from storage using master_file_path
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("call_sheets")
-      .download(callSheet.file_path);
+      .download(callSheet.master_file_path);
 
     if (downloadError || !fileData) {
       console.error("[parse-call-sheet] Failed to download file:", downloadError);
@@ -120,15 +129,17 @@ serve(async (req) => {
 
     console.log(`[parse-call-sheet] AI extracted ${parseResult.contacts.length} contacts`);
 
-    // Update call sheet with parsed data
+    // Update global_call_sheets with parsed data (NO contact creation - happens at save-time)
     const { error: updateError } = await supabase
-      .from("call_sheets")
+      .from("global_call_sheets")
       .update({
         status: "parsed",
         parsed_contacts: parseResult.contacts,
         contacts_extracted: parseResult.contacts.length,
+        project_title: parseResult.project_title,
         parsed_date: parseResult.parsed_date,
         error_message: null,
+        updated_at: new Date().toISOString()
       })
       .eq("id", call_sheet_id);
 
@@ -141,7 +152,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}`);
+    console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${parseResult.contacts.length}`);
 
     return new Response(
       JSON.stringify({
@@ -163,8 +174,8 @@ serve(async (req) => {
 
 async function markAsError(supabase: any, callSheetId: string, errorMessage: string) {
   await supabase
-    .from("call_sheets")
-    .update({ status: "error", error_message: errorMessage })
+    .from("global_call_sheets")
+    .update({ status: "error", error_message: errorMessage, updated_at: new Date().toISOString() })
     .eq("id", callSheetId);
 }
 

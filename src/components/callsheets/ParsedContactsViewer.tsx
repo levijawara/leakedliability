@@ -37,6 +37,16 @@ interface ParsedContactsViewerProps {
   userId: string;
 }
 
+// Normalize phone number for matching (digits only)
+function normalizePhone(phone: string): string {
+  return phone.replace(/\D/g, '');
+}
+
+// Normalize email for matching (lowercase, trimmed)
+function normalizeEmail(email: string): string {
+  return email.toLowerCase().trim();
+}
+
 export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedContactsViewerProps) {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
@@ -76,39 +86,164 @@ export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedConta
     }
 
     setSaving(true);
-    let successCount = 0;
+    let matched = 0;
+    let created = 0;
+    let attributed = 0;
 
     try {
       const contactsToSave = contacts.filter((_, i) => selectedIds.has(i));
       
-      for (const contact of contactsToSave) {
-        const { error } = await supabase
-          .from('crew_contacts')
-          .insert({
-            user_id: userId,
-            name: contact.name,
-            roles: contact.roles,
-            departments: contact.departments,
-            phones: contact.phones,
-            emails: contact.emails,
-            ig_handle: contact.ig_handle,
-            confidence: contact.confidence,
-            source_files: [callSheet.file_name],
-            needs_review: contact.confidence < 0.8
-          });
+      // Fetch existing contacts for matching
+      const { data: existingContactsRaw, error: fetchError } = await supabase
+        .from('crew_contacts')
+        .select('id, name, emails, phones, roles, departments, ig_handle')
+        .eq('user_id', userId);
 
-        if (!error) {
-          successCount++;
+      if (fetchError) {
+        console.error('[ParsedContactsViewer] Fetch existing contacts error:', fetchError);
+        throw fetchError;
+      }
+
+      // Type the existing contacts properly
+      const existingContacts = (existingContactsRaw || []) as Array<{
+        id: string;
+        name: string;
+        emails: string[] | null;
+        phones: string[] | null;
+        roles: string[] | null;
+        departments: string[] | null;
+        ig_handle: string | null;
+      }>;
+
+      console.log(`[SaveContacts] Processing ${contactsToSave.length} contacts, ${existingContacts?.length || 0} existing`);
+
+      for (const contact of contactsToSave) {
+        let existingContact: { id: string } | null = null;
+
+        // Priority 1: Exact email match
+        if (!existingContact && contact.emails?.length > 0) {
+          const normalizedEmails = contact.emails.map(normalizeEmail);
+          existingContact = existingContacts?.find(ec => 
+            ec.emails?.some((e: string) => normalizedEmails.includes(normalizeEmail(e)))
+          ) || null;
+        }
+
+        // Priority 2: Phone match
+        if (!existingContact && contact.phones?.length > 0) {
+          const normalizedPhones = contact.phones.map(normalizePhone);
+          existingContact = existingContacts?.find(ec => 
+            ec.phones?.some((p: string) => normalizedPhones.includes(normalizePhone(p)))
+          ) || null;
+        }
+
+        // Priority 3: Exact name match (case-insensitive)
+        if (!existingContact && contact.name) {
+          const normalizedName = contact.name.toLowerCase().trim();
+          existingContact = existingContacts?.find(ec => 
+            ec.name?.toLowerCase().trim() === normalizedName
+          ) || null;
+        }
+
+        let contactId: string;
+
+        if (existingContact) {
+          // Matched - update existing (merge arrays)
+          contactId = existingContact.id;
+          matched++;
+
+          // Merge roles and departments
+          const mergedRoles = [...new Set([
+            ...(existingContact.roles ?? []),
+            ...(contact.roles || [])
+          ])];
+          const mergedDepartments = [...new Set([
+            ...(existingContact.departments ?? []),
+            ...(contact.departments || [])
+          ])];
+          const mergedEmails = [...new Set([
+            ...(existingContact.emails ?? []),
+            ...(contact.emails || [])
+          ])];
+          const mergedPhones = [...new Set([
+            ...(existingContact.phones ?? []),
+            ...(contact.phones || [])
+          ])];
+
+          const { error: updateError } = await supabase
+            .from('crew_contacts')
+            .update({
+              roles: mergedRoles,
+              departments: mergedDepartments,
+              emails: mergedEmails,
+              phones: mergedPhones,
+              ig_handle: contact.ig_handle || existingContact.ig_handle
+            })
+            .eq('id', contactId);
+
+          if (updateError) {
+            console.warn('[SaveContacts] Update error:', updateError);
+          }
         } else {
-          console.warn('[ParsedContactsViewer] Insert error:', error);
+          // Create new contact
+          const { data: newContact, error: insertError } = await supabase
+            .from('crew_contacts')
+            .insert({
+              user_id: userId,
+              name: contact.name,
+              roles: contact.roles,
+              departments: contact.departments,
+              phones: contact.phones,
+              emails: contact.emails,
+              ig_handle: contact.ig_handle,
+              confidence: contact.confidence,
+              source_files: [callSheet.file_name],
+              needs_review: contact.confidence < 0.8
+            })
+            .select('id')
+            .single();
+
+          if (insertError) {
+            console.warn('[SaveContacts] Insert error:', insertError);
+            continue;
+          }
+
+          contactId = newContact.id;
+          created++;
+
+          // Add to local list for future matching in this batch
+          existingContacts?.push({
+            id: contactId,
+            name: contact.name,
+            emails: contact.emails || [],
+            phones: contact.phones || [],
+            roles: contact.roles || [],
+            departments: contact.departments || [],
+            ig_handle: contact.ig_handle || null
+          });
+        }
+
+        // Create attribution link in contact_call_sheets
+        const { error: linkError } = await supabase
+          .from('contact_call_sheets')
+          .upsert({
+            contact_id: contactId,
+            call_sheet_id: callSheet.id
+          }, { onConflict: 'contact_id,call_sheet_id' });
+
+        if (linkError) {
+          console.warn('[SaveContacts] Attribution link error:', linkError);
+        } else {
+          attributed++;
         }
       }
 
-      setSavedCount(successCount);
+      console.log(`[SaveContacts] matched: ${matched}, created: ${created}, attributed: ${attributed}`);
+
+      setSavedCount(matched + created);
       
       toast({
         title: "Contacts saved",
-        description: `Successfully saved ${successCount} of ${selectedIds.size} contacts.`
+        description: `Matched ${matched}, created ${created} contacts. ${attributed} attributions added.`
       });
 
       // Clear selection for saved contacts

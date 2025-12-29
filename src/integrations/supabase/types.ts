@@ -287,6 +287,42 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_call_sheets: {
+        Row: {
+          call_sheet_id: string
+          contact_id: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          call_sheet_id: string
+          contact_id: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          call_sheet_id?: string
+          contact_id?: string
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_call_sheets_call_sheet_id_fkey"
+            columns: ["call_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_call_sheets_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crew_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_contacts: {
         Row: {
           confidence: number | null
@@ -690,6 +726,60 @@ export type Database = {
           id?: string
           metadata?: Json | null
           proof_image_path?: string
+        }
+        Relationships: []
+      }
+      global_call_sheets: {
+        Row: {
+          contacts_extracted: number | null
+          content_hash: string
+          created_at: string | null
+          error_message: string | null
+          first_uploaded_by: string | null
+          id: string
+          master_file_path: string
+          original_file_name: string
+          parsed_contacts: Json | null
+          parsed_date: string | null
+          parsing_started_at: string | null
+          project_title: string | null
+          retry_count: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contacts_extracted?: number | null
+          content_hash: string
+          created_at?: string | null
+          error_message?: string | null
+          first_uploaded_by?: string | null
+          id?: string
+          master_file_path: string
+          original_file_name: string
+          parsed_contacts?: Json | null
+          parsed_date?: string | null
+          parsing_started_at?: string | null
+          project_title?: string | null
+          retry_count?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contacts_extracted?: number | null
+          content_hash?: string
+          created_at?: string | null
+          error_message?: string | null
+          first_uploaded_by?: string | null
+          id?: string
+          master_file_path?: string
+          original_file_name?: string
+          parsed_contacts?: Json | null
+          parsed_date?: string | null
+          parsing_started_at?: string | null
+          project_title?: string | null
+          retry_count?: number | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2063,6 +2153,38 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      user_call_sheets: {
+        Row: {
+          created_at: string | null
+          global_call_sheet_id: string
+          id: string
+          user_id: string
+          user_label: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          global_call_sheet_id: string
+          id?: string
+          user_id: string
+          user_label?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          global_call_sheet_id?: string
+          id?: string
+          user_id?: string
+          user_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_call_sheets_global_call_sheet_id_fkey"
+            columns: ["global_call_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_entitlements: {
         Row: {
