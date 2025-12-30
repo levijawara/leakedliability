@@ -739,6 +739,8 @@ export type Database = {
           id: string
           master_file_path: string
           original_file_name: string
+          parse_action_log: Json | null
+          parse_timing: Json | null
           parsed_contacts: Json | null
           parsed_date: string | null
           parsing_started_at: string | null
@@ -756,6 +758,8 @@ export type Database = {
           id?: string
           master_file_path: string
           original_file_name: string
+          parse_action_log?: Json | null
+          parse_timing?: Json | null
           parsed_contacts?: Json | null
           parsed_date?: string | null
           parsing_started_at?: string | null
@@ -773,6 +777,8 @@ export type Database = {
           id?: string
           master_file_path?: string
           original_file_name?: string
+          parse_action_log?: Json | null
+          parse_timing?: Json | null
           parsed_contacts?: Json | null
           parsed_date?: string | null
           parsing_started_at?: string | null

@@ -77,13 +77,13 @@ export async function createRealtimeChannel(
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        'postgres_changes' as const,
         {
           event: config.event || '*',
           schema: config.schema || 'public',
           table: config.table!,
           filter: config.filter
-        },
+        } as any,
         config.callback as (payload: unknown) => void
       )
       .subscribe((status, err) => {
