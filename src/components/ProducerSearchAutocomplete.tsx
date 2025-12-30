@@ -53,6 +53,8 @@ export function ProducerSearchAutocomplete({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   // Search for producers as user types
   useEffect(() => {
     if (searchTimeoutRef.current) {
@@ -62,12 +64,20 @@ export function ProducerSearchAutocomplete({
     if (searchTerm.trim().length < 2) {
       setResults([]);
       setIsOpen(false);
+      setSearchError(null);
       return;
     }
 
     searchTimeoutRef.current = setTimeout(async () => {
       setLoading(true);
+      setSearchError(null);
       try {
+        if (!supabase) {
+          setSearchError("Search is currently unavailable");
+          setResults([]);
+          return;
+        }
+
         const { data, error } = await supabase
           .from("public_producer_search")
           .select("*")
@@ -75,13 +85,27 @@ export function ProducerSearchAutocomplete({
           .order("producer_name")
           .limit(10);
 
-        if (error) throw error;
+        if (error) {
+          const errorMsg = error.message?.toLowerCase() || '';
+          if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+            setSearchError("Search requires authentication to access producer data");
+          } else {
+            setSearchError("Unable to search. Please try again.");
+          }
+          console.error("Search error:", error);
+          setResults([]);
+          setIsOpen(false);
+          return;
+        }
+        
         setResults(data || []);
         setIsOpen(true);
         setSelectedIndex(-1);
       } catch (error) {
         console.error("Search error:", error);
+        setSearchError("An error occurred while searching");
         setResults([]);
+        setIsOpen(false);
       } finally {
         setLoading(false);
       }
@@ -296,8 +320,36 @@ export function ProducerSearchAutocomplete({
         </div>
       )}
 
+      {/* Error message */}
+      {searchError && searchTerm.length >= 2 && !loading && (
+        <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-status-warning/50 rounded-xl shadow-lg z-50 p-4">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 text-status-warning flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-foreground mb-1">
+                {searchError}
+              </p>
+              {searchError.includes("authentication") && (
+                <p className="text-xs text-muted-foreground">
+                  <button
+                    onClick={() => {
+                      const currentPath = window.location.pathname;
+                      window.location.href = `/auth?redirect=${encodeURIComponent(currentPath)}`;
+                    }}
+                    className="text-primary hover:underline font-medium"
+                  >
+                    Sign in
+                  </button>
+                  {" to access producer search"}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* No results message */}
-      {isOpen && searchTerm.length >= 2 && results.length === 0 && !loading && (
+      {!searchError && isOpen && searchTerm.length >= 2 && results.length === 0 && !loading && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg z-50 p-4 text-center text-muted-foreground text-sm">
           No producers found matching "{searchTerm}"
         </div>

@@ -143,16 +143,37 @@ export default function Leaderboard() {
   // Only check subscription if NOT admin
   const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess(!checkingAdmin && !isAdmin);
 
-  const { data: producers, isLoading, refetch: refetchProducers } = useQuery({
+  const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
+  const [isAccessBlocked, setIsAccessBlocked] = useState(false);
+
+  const { data: producers, isLoading, refetch: refetchProducers, error: queryError } = useQuery({
     queryKey: ["public_leaderboard"],
     queryFn: async () => {
+      if (!supabase) {
+        throw new Error("Database connection unavailable");
+      }
+
       const { data, error } = await supabase
         .from("public_leaderboard")
         .select("*");
       
-      if (error) throw error;
+      if (error) {
+        const errorMsg = error.message?.toLowerCase() || '';
+        if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+          setIsAccessBlocked(true);
+          setLeaderboardError("Access to leaderboard data is restricted. A subscription may be required to view producer information.");
+        } else {
+          setIsAccessBlocked(false);
+          setLeaderboardError("Unable to load leaderboard. Please try again later.");
+        }
+        throw error;
+      }
+      
+      setLeaderboardError(null);
+      setIsAccessBlocked(false);
       return data;
     },
+    retry: false, // Don't retry on error - show message immediately
   });
 
   const updateProducer = async (
@@ -616,8 +637,40 @@ export default function Leaderboard() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                    <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                       Loading producers...
+                    </TableCell>
+                  </TableRow>
+                ) : leaderboardError || queryError ? (
+                  <TableRow>
+                    <TableCell colSpan={9} className="text-center py-12">
+                      <div className="max-w-md mx-auto">
+                        <div className="bg-card border border-status-warning/50 rounded-lg p-6">
+                          <AlertTriangle className="h-8 w-8 text-status-warning mx-auto mb-3" />
+                          <h3 className="font-bold text-lg mb-2">Unable to Load Leaderboard</h3>
+                          <p className="text-muted-foreground text-sm mb-4">
+                            {leaderboardError || "An error occurred while loading producer data"}
+                          </p>
+                          {isAccessBlocked && (
+                            <p className="text-sm text-muted-foreground mb-4">
+                              Access to the leaderboard may require a subscription.{" "}
+                              <a 
+                                href="/subscribe" 
+                                className="text-primary hover:underline font-medium"
+                              >
+                                View subscription options
+                              </a>
+                            </p>
+                          )}
+                          <Button
+                            onClick={() => refetchProducers()}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Try Again
+                          </Button>
+                        </div>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : (() => {
@@ -764,10 +817,19 @@ export default function Leaderboard() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
-                        {searchTerm 
-                          ? `No exact match found for "${searchTerm}". Try the full name as shown on the leaderboard.`
-                          : "No producers on the leaderboard yet."}
+                      <TableCell colSpan={9} className="text-center py-12">
+                        <div className="space-y-2">
+                          <p className="text-muted-foreground">
+                            {searchTerm 
+                              ? `No exact match found for "${searchTerm}". Try the full name as shown on the leaderboard.`
+                              : "No producers on the leaderboard yet."}
+                          </p>
+                          {!searchTerm && (
+                            <p className="text-sm text-muted-foreground">
+                              Producer information will appear here once verified payment reports are submitted.
+                            </p>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

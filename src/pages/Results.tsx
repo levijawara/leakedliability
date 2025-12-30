@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { FAFOEntryCard } from "@/components/FAFOEntryCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AlertTriangle } from "lucide-react";
 
 interface FAFOEntry {
   id: string;
@@ -38,17 +39,40 @@ export default function Results() {
     };
   }, []);
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const [isAccessBlocked, setIsAccessBlocked] = useState(false);
+
   useEffect(() => {
     const fetchEntries = async () => {
       setLoadingEntries(true);
+      setFetchError(null);
+      setIsAccessBlocked(false);
+      
       try {
+        if (!supabase) {
+          setFetchError("Results are currently unavailable");
+          setLoadingEntries(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('fafo_entries')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(50);
 
-        if (error) throw error;
+        if (error) {
+          const errorMsg = error.message?.toLowerCase() || '';
+          if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+            setIsAccessBlocked(true);
+            setFetchError("Access to results is restricted. Some content may require authentication.");
+          } else {
+            setFetchError("Unable to load results. Please try again later.");
+          }
+          console.error('Error fetching FAFO entries:', error);
+          setLoadingEntries(false);
+          return;
+        }
 
         if (data) {
           // Get public URLs for images
@@ -66,6 +90,7 @@ export default function Results() {
         }
       } catch (error) {
         console.error('Error fetching FAFO entries:', error);
+        setFetchError("An unexpected error occurred while loading results");
       } finally {
         setLoadingEntries(false);
       }
@@ -131,6 +156,38 @@ export default function Results() {
                 ))}
               </div>
             </div>
+          ) : fetchError ? (
+            <div className="mt-16">
+              <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE</h2>
+              <div className="max-w-2xl mx-auto mt-12">
+                <div className="bg-card border border-status-warning/50 rounded-lg p-8 text-center">
+                  <AlertTriangle className="h-12 w-12 text-status-warning mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Unable to Load Results</h3>
+                  <p className="text-muted-foreground mb-4">
+                    {fetchError}
+                  </p>
+                  {isAccessBlocked && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You may need to{" "}
+                      <a 
+                        href="/auth" 
+                        className="text-primary hover:underline font-medium"
+                      >
+                        sign in
+                      </a>
+                      {" to view results, or this content may not be publicly available yet."}
+                    </p>
+                  )}
+                  <Button
+                    onClick={() => window.location.reload()}
+                    variant="outline"
+                    className="mt-4"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            </div>
           ) : entries.length > 0 ? (
             <div className="mt-16">
               <h2 className="text-4xl font-black text-center mb-4">FA&FO ARCHIVE</h2>
@@ -150,8 +207,11 @@ export default function Results() {
             </div>
           ) : (
             <div className="mt-16 text-center py-20">
-              <p className="text-2xl text-muted-foreground">
+              <p className="text-2xl text-muted-foreground mb-4">
                 No results yet. Time to make some examples.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Verified payment receipts and outcomes will appear here once published.
               </p>
             </div>
           )}

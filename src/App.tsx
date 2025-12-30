@@ -9,6 +9,8 @@ import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client"; // Force rebuild
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
 import { trackVisit } from "@/lib/analytics";
+import { validateEnv, testSupabaseConnection } from "@/config/env";
+import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Leaderboard from "./pages/Leaderboard";
 import SubmitReport from "./pages/SubmitReport";
@@ -59,6 +61,7 @@ const AppContent = () => {
   const [maintenanceMessage, setMaintenanceMessage] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [connectionValidated, setConnectionValidated] = useState(false);
   const location = useLocation();
 
   // Dev-mode route config validator
@@ -66,7 +69,52 @@ const AppContent = () => {
     console.log("[Router] Loaded route config:", ROUTES.map(r => r.path));
   }
 
+  // Test Supabase connection on mount (runs before other effects)
   useEffect(() => {
+    const testConnection = async () => {
+      if (!supabase) {
+        // Already handled by App-level validation
+        setConnectionValidated(true);
+        return;
+      }
+
+      const result = await testSupabaseConnection(supabase);
+      
+      if (!result.connected) {
+        console.error(
+          "[FATAL SUPABASE CONFIG ERROR] Cannot connect to Supabase:",
+          result.error
+        );
+        console.error("[FATAL SUPABASE CONFIG ERROR] Details:", result.details);
+        console.error(
+          "[FATAL SUPABASE CONFIG ERROR]",
+          "Please verify:\n",
+          `  - VITE_SUPABASE_URL is correct: ${import.meta.env.VITE_SUPABASE_URL}\n`,
+          "  - VITE_SUPABASE_PUBLISHABLE_KEY is the correct 'anon' key\n",
+          "  - Supabase project is active and accessible"
+        );
+      } else {
+        console.log("[SUPABASE] Connection validated successfully");
+      }
+      
+      setConnectionValidated(true);
+    };
+
+    testConnection();
+  }, []);
+
+  useEffect(() => {
+    // Wait for connection validation before starting app logic
+    if (!connectionValidated) return;
+    
+    // Guard: supabase should never be null here because App-level validation
+    // prevents AppContent from rendering when env vars are missing
+    if (!supabase) {
+      console.error("[AppContent] Supabase client is null - this should not happen");
+      setLoading(false);
+      return;
+    }
+
     checkMaintenanceMode();
     checkAdminStatus();
     trackVisit();
@@ -91,9 +139,11 @@ const AppContent = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [connectionValidated]);
 
   const checkMaintenanceMode = async () => {
+    if (!supabase) return;
+    
     const { data } = await supabase
       .from("site_settings")
       .select("maintenance_mode, maintenance_message")
@@ -107,6 +157,8 @@ const AppContent = () => {
   };
 
   const checkAdminStatus = async () => {
+    if (!supabase) return;
+    
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       const { data } = await supabase.rpc('has_role', { 
@@ -117,7 +169,8 @@ const AppContent = () => {
     }
   };
 
-  if (loading) {
+  // Show loading until connection is validated and initial setup complete
+  if (loading || !connectionValidated) {
     return null;
   }
 
@@ -182,20 +235,60 @@ const AppContent = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AdminProxyProvider>
-            <AppContent />
-          </AdminProxyProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Validate environment variables before rendering app
+  const envStatus = validateEnv();
+
+  if (!envStatus.ok) {
+    console.error(
+      "[FATAL CONFIG ERROR] Missing environment variables:",
+      envStatus.missing
+    );
+
+    return (
+      <div style={{ 
+        padding: 32, 
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        maxWidth: 600,
+        margin: '0 auto',
+        marginTop: '10vh'
+      }}>
+        <h1 style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
+          Configuration Error
+        </h1>
+        <p style={{ marginBottom: 16, lineHeight: 1.6 }}>
+          This site is temporarily unavailable due to a server configuration issue.
+        </p>
+        <p style={{ marginBottom: 8, fontWeight: 'bold' }}>
+          Missing environment variables:
+        </p>
+        <ul style={{ marginLeft: 20, marginBottom: 16 }}>
+          {envStatus.missing.map((key) => (
+            <li key={key} style={{ marginBottom: 4 }}>{key}</li>
+          ))}
+        </ul>
+        <p style={{ fontSize: 14, color: '#666', marginTop: 24 }}>
+          Please contact the site administrator if this issue persists.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AdminProxyProvider>
+              <AppContent />
+            </AdminProxyProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;

@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { loadStripe } from "@stripe/stripe-js";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield, CheckCircle, Clock, AlertTriangle, User, Building2 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+import { getStripeInstance, isStripeAvailable, validateStripeConfig } from "@/lib/stripeHelpers";
 
 interface Producer {
   id: string;
@@ -33,6 +31,21 @@ export default function ClaimProducer() {
   const [user, setUser] = useState<any>(null);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [checkingSubscription, setCheckingSubscription] = useState(true);
+  const [stripeAvailable, setStripeAvailable] = useState(true);
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
+  // Check Stripe availability on mount
+  useEffect(() => {
+    const available = isStripeAvailable();
+    setStripeAvailable(available);
+    
+    if (!available) {
+      const config = validateStripeConfig();
+      const issues = config.issues?.join(", ") || "Configuration error";
+      setStripeError(`Payment system error: ${issues}`);
+      console.error("[ClaimProducer] Stripe not available:", issues);
+    }
+  }, []);
 
   useEffect(() => {
     checkAuthAndLoadProducer();
@@ -98,6 +111,17 @@ export default function ClaimProducer() {
   const handleStartVerification = async () => {
     if (!producer || !user) return;
 
+    // Check Stripe availability before proceeding
+    if (!isStripeAvailable()) {
+      toast({
+        title: "Payment System Unavailable",
+        description: "Stripe is not configured. Payment and verification features are currently unavailable.",
+        variant: "destructive",
+      });
+      console.error("[ClaimProducer] Stripe not available - cannot start verification");
+      return;
+    }
+
     setVerifying(true);
     try {
       const { data, error } = await supabase.functions.invoke("create-identity-verification-session", {
@@ -120,9 +144,16 @@ export default function ClaimProducer() {
       }
 
       // Load Stripe and start identity verification
-      const stripe = await stripePromise;
-      if (!stripe) {
-        throw new Error("Failed to load Stripe");
+      const { stripe, error: stripeError } = await getStripeInstance();
+      
+      if (!stripe || stripeError) {
+        toast({
+          title: "Payment System Error",
+          description: stripeError || "Failed to initialize payment system. Please try again later.",
+          variant: "destructive",
+        });
+        console.error("[ClaimProducer] Stripe initialization failed:", stripeError);
+        return;
       }
 
       const { error: verifyError } = await stripe.verifyIdentity(data.client_secret);
@@ -264,19 +295,26 @@ export default function ClaimProducer() {
             </Button>
           </div>
         ) : (
-          <Button 
-            onClick={handleStartVerification} 
-            disabled={verifying}
-            size="lg"
-            className="gap-2"
-          >
-            {verifying ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Shield className="h-4 w-4" />
+          <div className="space-y-3">
+            <Button 
+              onClick={handleStartVerification} 
+              disabled={verifying || !stripeAvailable}
+              size="lg"
+              className="gap-2"
+            >
+              {verifying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Shield className="h-4 w-4" />
+              )}
+              {!stripeAvailable ? "Verification Unavailable" : "Start Identity Verification"}
+            </Button>
+            {!stripeAvailable && (
+              <p className="text-sm text-muted-foreground text-center">
+                Payment system configuration required for identity verification.
+              </p>
             )}
-            Start Identity Verification
-          </Button>
+          </div>
         )}
       </div>
     );
@@ -302,6 +340,25 @@ export default function ClaimProducer() {
       <Navigation />
       <div className="container mx-auto py-8 px-4 max-w-2xl">
         <Card className="p-8">
+          {/* Stripe Configuration Warning */}
+          {!stripeAvailable && (
+            <Card className="mb-6 border-status-warning/50 bg-status-warning/10">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-status-warning flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-2">
+                      Payment System Unavailable
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {stripeError || "Stripe payment processing is not configured. Identity verification is currently unavailable."}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Producer Info Header */}
           <div className="flex items-center gap-4 mb-8 pb-6 border-b">
             <div className="h-14 w-14 rounded-full bg-muted flex items-center justify-center">

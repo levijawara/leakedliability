@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { Check, Zap, DollarSign } from "lucide-react";
+import { Check, Zap, DollarSign, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { isStripeAvailable, validateStripeConfig } from "@/lib/stripeHelpers";
 
 type UserRole = "crew" | "producer";
 type BillingFrequency = "monthly" | "annual";
@@ -17,8 +18,29 @@ const Subscribe = () => {
   const [selectedRole, setSelectedRole] = useState<UserRole>("crew");
   const [billingFrequency, setBillingFrequency] = useState<BillingFrequency>("monthly");
   const [loading, setLoading] = useState<string | null>(null);
+  const [stripeAvailable, setStripeAvailable] = useState(true);
+  const [stripeError, setStripeError] = useState<string | null>(null);
+
+  // Check Stripe availability on mount
+  useEffect(() => {
+    const available = isStripeAvailable();
+    setStripeAvailable(available);
+    
+    if (!available) {
+      const config = validateStripeConfig();
+      const issues = config.issues?.join(", ") || "Configuration error";
+      setStripeError(`Stripe is not configured: ${issues}`);
+      console.error("[Subscribe] Stripe not available:", issues);
+    }
+  }, []);
 
   const handleSubscribe = async (tier: string) => {
+    // Check Stripe before proceeding
+    if (!stripeAvailable) {
+      toast.error("Payment system is currently unavailable. Please contact support.");
+      return;
+    }
+
     try {
       setLoading(tier);
       const { data: { session } } = await supabase.auth.getSession();
@@ -85,6 +107,28 @@ const Subscribe = () => {
       
       <div className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
+          {/* Stripe Configuration Warning */}
+          {!stripeAvailable && (
+            <Card className="mb-8 border-status-warning/50 bg-status-warning/10">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-status-warning flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-2 text-foreground">
+                      Payment System Unavailable
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {stripeError || "Stripe payment processing is not configured."}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Subscription purchases are currently unavailable. Please contact support or try again later.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Choose Your Plan
@@ -177,9 +221,9 @@ const Subscribe = () => {
                   <Button
                     className="w-full"
                     onClick={() => handleSubscribe("crew_t1")}
-                    disabled={loading === "crew_t1"}
+                    disabled={loading === "crew_t1" || !stripeAvailable}
                   >
-                    {loading === "crew_t1" ? "Loading..." : "Subscribe Now"}
+                    {loading === "crew_t1" ? "Loading..." : !stripeAvailable ? "Unavailable" : "Subscribe Now"}
                   </Button>
                 </CardFooter>
               </Card>
@@ -230,9 +274,9 @@ const Subscribe = () => {
                   <Button
                     className="w-full"
                     onClick={() => handleSubscribe("producer_t1")}
-                    disabled={loading === "producer_t1"}
+                    disabled={loading === "producer_t1" || !stripeAvailable}
                   >
-                    {loading === "producer_t1" ? "Loading..." : "Subscribe Now"}
+                    {loading === "producer_t1" ? "Loading..." : !stripeAvailable ? "Unavailable" : "Subscribe Now"}
                   </Button>
                 </CardFooter>
               </Card>
@@ -286,9 +330,9 @@ const Subscribe = () => {
                   <Button
                     className="w-full bg-green-600 hover:bg-green-700"
                     onClick={() => handleSubscribe("producer_t2")}
-                    disabled={loading === "producer_t2"}
+                    disabled={loading === "producer_t2" || !stripeAvailable}
                   >
-                    {loading === "producer_t2" ? "Loading..." : "Subscribe Now"}
+                    {loading === "producer_t2" ? "Loading..." : !stripeAvailable ? "Unavailable" : "Subscribe Now"}
                   </Button>
                 </CardFooter>
               </Card>
