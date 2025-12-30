@@ -9,6 +9,8 @@ import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client"; // Force rebuild
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
 import { trackVisit } from "@/lib/analytics";
+import { trackRealtimeFailure, trackRoleCheckFailure } from "@/lib/failureTracking";
+import { validateRLSAssumptions, logRLSValidationResults, getRLSViolationsSummary } from "@/lib/rlsValidation";
 import { validateEnv, testSupabaseConnection } from "@/config/env";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
@@ -53,6 +55,7 @@ import CrewContacts from "./pages/CrewContacts";
 import ParseReview from "./pages/ParseReview";
 import IGMatching from "./pages/IGMatching";
 import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
+import { FailureIndicator } from "./components/FailureIndicator";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +65,7 @@ const AppContent = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [connectionValidated, setConnectionValidated] = useState(false);
+  const [rlsValidated, setRlsValidated] = useState(false);
   const location = useLocation();
 
   // Dev-mode route config validator
@@ -98,14 +102,45 @@ const AppContent = () => {
       }
       
       setConnectionValidated(true);
+      
+      // After connection is validated, validate RLS assumptions
+      if (result.connected && supabase) {
+        validateRLSAssumptions().then(results => {
+          logRLSValidationResults(results);
+          const summary = getRLSViolationsSummary(results);
+          
+          if (summary.hasViolations) {
+            console.warn(
+              `[RLS Validation] Found ${summary.criticalCount} critical and ${summary.warningCount} warning violations.`,
+              'These may cause pages to appear empty or features to fail.'
+            );
+          }
+          
+          setRlsValidated(true);
+        }).catch(err => {
+          console.error('[RLS Validation] Failed to validate RLS assumptions:', err);
+          setRlsValidated(true); // Continue anyway
+        });
+      } else {
+        setRlsValidated(true); // Skip RLS validation if connection failed
+      }
     };
 
     testConnection();
   }, []);
 
   useEffect(() => {
-    // Wait for connection validation before starting app logic
-    if (!connectionValidated) return;
+    // For static pages, we can render even if connection isn't validated yet
+    // Only block if we're trying to do backend-dependent operations
+    
+    // Wait for connection and RLS validation before starting app logic
+    // BUT don't block rendering - let pages render and show loading states instead
+    if (!connectionValidated || !rlsValidated) {
+      // Still set loading to false so static pages can render
+      // Backend-dependent features will show their own loading/error states
+      setLoading(false);
+      return;
+    }
     
     // Guard: supabase should never be null here because App-level validation
     // prevents AppContent from rendering when env vars are missing
@@ -119,7 +154,7 @@ const AppContent = () => {
     checkAdminStatus();
     trackVisit();
     
-    // Subscribe to realtime changes
+    // Subscribe to realtime changes with error handling
     const channel = supabase
       .channel('site_settings_changes')
       .on(
@@ -134,7 +169,18 @@ const AppContent = () => {
           setMaintenanceMessage(payload.new.maintenance_message || "");
         }
       )
-      .subscribe();
+      .subscribe((status, err) => {
+        if (status === 'SUBSCRIBED') {
+          console.log("[App] Realtime subscription active for site_settings");
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+          const errorMsg = err?.message || `Subscription ${status.toLowerCase()}`;
+          trackRealtimeFailure('site_settings_changes', errorMsg, {
+            status,
+            error: err
+          });
+          console.error("[App] Realtime subscription failed for site_settings:", status, err);
+        }
+      });
 
     return () => {
       supabase.removeChannel(channel);
@@ -142,35 +188,121 @@ const AppContent = () => {
   }, [connectionValidated]);
 
   const checkMaintenanceMode = async () => {
-    if (!supabase) return;
-    
-    const { data } = await supabase
-      .from("site_settings")
-      .select("maintenance_mode, maintenance_message")
-      .single();
-    
-    if (data) {
-      setMaintenanceMode(data.maintenance_mode);
-      setMaintenanceMessage(data.maintenance_message || "");
+    if (!supabase) {
+      // If Supabase is unavailable, don't block rendering
+      // Static pages can still work without maintenance mode check
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+    
+    try {
+      const { data, error } = await supabase
+        .from("site_settings")
+        .select("maintenance_mode, maintenance_message")
+        .single();
+      
+      if (error) {
+        // Don't block rendering if maintenance mode check fails
+        // Static pages should still work
+        console.debug('[App] Maintenance mode check failed (non-critical):', error);
+        setLoading(false);
+        return;
+      }
+      
+      if (data) {
+        setMaintenanceMode(data.maintenance_mode);
+        setMaintenanceMessage(data.maintenance_message || "");
+      }
+    } catch (err) {
+      // Don't block rendering on maintenance check errors
+      console.debug('[App] Maintenance mode check exception (non-critical):', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const checkAdminStatus = async () => {
     if (!supabase) return;
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data } = await supabase.rpc('has_role', { 
-        _user_id: user.id, 
-        _role: 'admin' 
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        // Only log if it's a real error, not just "no user" (which is expected for anonymous users)
+        const isExpectedNoUser = userError.message?.toLowerCase().includes('session') || 
+                                 userError.code === 'PGRST116'; // No rows returned
+        if (!isExpectedNoUser) {
+          trackRoleCheckFailure('checkAdminStatus', userError.message, {
+            errorCode: userError.code
+          });
+          console.error("[App] Failed to get user for admin check:", userError);
+        }
+        return;
+      }
+      
+      if (user) {
+        const { shouldLogAdminCheckError, isNormalUserResponse } = await import("@/lib/adminCheckHelpers");
+        const { data, error: roleError } = await supabase.rpc('has_role', { 
+          _user_id: user.id, 
+          _role: 'admin' 
+        });
+        
+        // Check if this is just a normal user (not an admin) vs an actual error
+        if (isNormalUserResponse(data, roleError)) {
+          // User is simply not an admin - this is expected, not an error
+          setIsAdmin(false);
+          return;
+        }
+
+        // If there's an error, check if it's worth logging
+        if (roleError) {
+          const shouldLog = shouldLogAdminCheckError(roleError, data, { userId: user.id });
+          
+          if (shouldLog) {
+            // Real error - track and log it
+            trackRoleCheckFailure('checkAdminStatus', roleError.message, {
+              userId: user.id,
+              errorCode: roleError.code
+            });
+            console.error("[App] Failed to check admin role:", roleError);
+          } else {
+            // Expected "not admin" response - log at debug level only
+            if (import.meta.env.DEV) {
+              console.debug("[App] User is not admin (expected)");
+            }
+          }
+          setIsAdmin(false);
+          return;
+        }
+        
+        // Success - user is admin
+        setIsAdmin(!!data);
+      }
+    } catch (error: any) {
+      // Exceptions are always real errors
+      trackRoleCheckFailure('checkAdminStatus', error?.message || 'Unknown error', {
+        errorType: error?.constructor?.name
       });
-      setIsAdmin(!!data);
+      console.error("[App] Exception in checkAdminStatus:", error);
     }
   };
 
-  // Show loading until connection is validated and initial setup complete
-  if (loading || !connectionValidated) {
+  // Determine if current page is static and can render without backend
+  const isStatic = location.pathname === '/how-it-works' || 
+                   location.pathname === '/why-it-works' || 
+                   location.pathname === '/disclaimer' || 
+                   location.pathname === '/privacy-policy' || 
+                   location.pathname === '/faq';
+
+  // For static pages, allow rendering even if backend isn't ready
+  // For other pages, wait for connection validation
+  if (!isStatic && (loading || !connectionValidated || !rlsValidated)) {
+    return null;
+  }
+  
+  // For static pages, show loading only briefly, then allow render
+  if (isStatic && loading && !connectionValidated) {
+    // Still show loading while connection is being validated
     return null;
   }
 
@@ -183,8 +315,10 @@ const AppContent = () => {
   }
 
   return (
-    <div className="pt-0 md:pt-[72px]">
-      <Routes>
+    <>
+      <FailureIndicator />
+      <div className="pt-0 md:pt-[72px]">
+        <Routes>
         <Route path="/" element={<Index />} />
         <Route path="/results" element={<Results />} />
         <Route path="/results/fafo-generator" element={<FAFOGenerator />} />
@@ -230,8 +364,9 @@ const AppContent = () => {
         <Route path="/admin/call-sheet-reservoir" element={<AdminCallSheetReservoir />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
-      </Routes>
-    </div>
+        </Routes>
+      </div>
+    </>
   );
 };
 

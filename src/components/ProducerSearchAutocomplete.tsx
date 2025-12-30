@@ -73,8 +73,11 @@ export function ProducerSearchAutocomplete({
       setSearchError(null);
       try {
         if (!supabase) {
-          setSearchError("Search is currently unavailable");
+          setSearchError("Search is currently unavailable. Please try again later.");
           setResults([]);
+          setIsOpen(true); // Keep dropdown open to show message
+          setRlsBlocked(false);
+          setLoading(false);
           return;
         }
 
@@ -87,25 +90,43 @@ export function ProducerSearchAutocomplete({
 
         if (error) {
           const errorMsg = error.message?.toLowerCase() || '';
-          if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+          
+          // Check for network/connection errors
+          if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('failed to fetch')) {
+            setSearchError("Search is temporarily unavailable. Please check your connection.");
+            setRlsBlocked(false);
+          } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
             setSearchError("Search requires authentication to access producer data");
+            setRlsBlocked(true);
           } else {
-            setSearchError("Unable to search. Please try again.");
+            setSearchError("Unable to search. Please try again later.");
+            setRlsBlocked(false);
           }
-          console.error("Search error:", error);
+          
+          // Only log unexpected errors (not network/RLS issues which are handled gracefully)
+          if (!errorMsg.includes('network') && !errorMsg.includes('row-level security')) {
+            console.error("Search error:", error);
+          }
+          
           setResults([]);
-          setIsOpen(false);
-          return;
+          setIsOpen(true); // Keep dropdown open to show message
         }
         
         setResults(data || []);
         setIsOpen(true);
         setSelectedIndex(-1);
-      } catch (error) {
-        console.error("Search error:", error);
-        setSearchError("An error occurred while searching");
+      } catch (error: any) {
+        // Handle network errors gracefully
+        const errorMsg = error?.message?.toLowerCase() || '';
+        if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+          setSearchError("Search is temporarily unavailable. Please check your connection.");
+        } else {
+          setSearchError("Unable to search. Please try again later.");
+          console.error("Search error:", error);
+        }
         setResults([]);
-        setIsOpen(false);
+        setIsOpen(true); // Keep dropdown open to show message
+        setRlsBlocked(false);
       } finally {
         setLoading(false);
       }

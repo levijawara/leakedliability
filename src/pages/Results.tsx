@@ -101,20 +101,41 @@ export default function Results() {
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      const { shouldLogAdminCheckError, isNormalUserResponse } = await import("@/lib/adminCheckHelpers");
+      
       const { data, error } = await supabase.rpc('has_role', {
         _user_id: userId,
         _role: 'admin'
       });
 
-      if (error) {
-        console.error('has_role error', error);
+      // Check if this is just a normal user (not an admin) vs an actual error
+      if (isNormalUserResponse(data, error)) {
+        // User is simply not an admin - this is expected, not an error
         setIsAdmin(false);
         return;
       }
 
+      // If there's an error, check if it's worth logging
+      if (error) {
+        const shouldLog = shouldLogAdminCheckError(error, data, { userId });
+        if (shouldLog) {
+          // Real error - log it
+          console.error('[Results] has_role error', error);
+        } else {
+          // Expected "not admin" response - log at debug level only
+          if (import.meta.env.DEV) {
+            console.debug('[Results] User is not admin (expected)');
+          }
+        }
+        setIsAdmin(false);
+        return;
+      }
+
+      // Success - user is admin
       setIsAdmin(Boolean(data));
     } catch (e) {
-      console.error('checkAdminStatus exception', e);
+      // Exceptions are always real errors
+      console.error('[Results] checkAdminStatus exception', e);
       setIsAdmin(false);
     } finally {
       setIsLoading(false);

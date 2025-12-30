@@ -45,15 +45,48 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      const { trackRoleCheckFailure } = await import("@/lib/failureTracking");
+      const { shouldLogAdminCheckError, isNormalUserResponse } = await import("@/lib/adminCheckHelpers");
+      
       const { data, error } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
-      if (error) {
-        console.error('has_role error', error);
+      
+      // Check if this is just a normal user (not an admin) vs an actual error
+      if (isNormalUserResponse(data, error)) {
+        // User is simply not an admin - this is expected, not an error
         setIsAdmin(false);
         return;
       }
+
+      // If there's an error, check if it's worth logging
+      if (error) {
+        const shouldLog = shouldLogAdminCheckError(error, data, { userId });
+        
+        if (shouldLog) {
+          // Real error - track and log it
+          trackRoleCheckFailure('LeaderboardPaywall.checkAdminStatus', error.message, {
+            userId,
+            errorCode: error.code
+          });
+          console.error('[LeaderboardPaywall] has_role error', error);
+        } else {
+          // Expected "not admin" response - log at debug level only
+          if (import.meta.env.DEV) {
+            console.debug('[LeaderboardPaywall] User is not admin (expected)');
+          }
+        }
+        setIsAdmin(false);
+        return;
+      }
+
+      // Success - user is admin
       setIsAdmin(Boolean(data));
-    } catch (e) {
-      console.error('checkAdminStatus exception', e);
+    } catch (e: any) {
+      // Exceptions are always real errors
+      const { trackRoleCheckFailure } = await import("@/lib/failureTracking");
+      trackRoleCheckFailure('LeaderboardPaywall.checkAdminStatus', e?.message || 'Unknown exception', {
+        errorType: e?.constructor?.name
+      });
+      console.error('[LeaderboardPaywall] checkAdminStatus exception', e);
       setIsAdmin(false);
     }
   };

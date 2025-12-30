@@ -15,36 +15,93 @@ export function Navigation() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    // Gracefully handle if Supabase is unavailable
+    if (!supabase) {
+      // Navigation can still render without Supabase - just won't show user menu
+      setUser(null);
+      setIsAdmin(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
       }
+    }).catch((err) => {
+      // Gracefully handle auth errors - navigation still works
+      console.debug('[Navigation] Auth session check failed (expected if backend unavailable):', err);
+      setUser(null);
+      setIsAdmin(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkAdminStatus(session.user.id);
-      } else {
-        setIsAdmin(false);
+    let subscription: any;
+    try {
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange((_event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          checkAdminStatus(session.user.id);
+        } else {
+          setIsAdmin(false);
+        }
+      });
+      subscription = sub;
+    } catch (err) {
+      console.debug('[Navigation] Failed to set up auth state listener (expected if backend unavailable):', err);
+    }
+
+    return () => {
+      if (subscription) {
+        subscription.unsubscribe();
       }
-    });
-
-    return () => subscription.unsubscribe();
+    };
   }, []);
 
   const checkAdminStatus = async (userId: string) => {
     try {
+      // Dynamic import to avoid circular dependency
+      const { trackRoleCheckFailure } = await import("@/lib/failureTracking");
+      const { shouldLogAdminCheckError, isNormalUserResponse } = await import("@/lib/adminCheckHelpers");
+      
       const { data, error } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
-      if (error) {
-        console.error('has_role error', error);
+      
+      // Check if this is just a normal user (not an admin) vs an actual error
+      if (isNormalUserResponse(data, error)) {
+        // User is simply not an admin - this is expected, not an error
         setIsAdmin(false);
         return;
       }
+
+      // If there's an error, check if it's worth logging
+      if (error) {
+        const shouldLog = shouldLogAdminCheckError(error, data, { userId });
+        
+        if (shouldLog) {
+          // Real error - track and log it
+          trackRoleCheckFailure('Navigation.checkAdminStatus', error.message, {
+            userId,
+            errorCode: error.code
+          });
+          console.error('[Navigation] has_role error', error);
+        } else {
+          // Expected "not admin" response - log at debug level only
+          if (import.meta.env.DEV) {
+            console.debug('[Navigation] User is not admin (expected)');
+          }
+        }
+        setIsAdmin(false);
+        return;
+      }
+
+      // Success - user is admin
       setIsAdmin(Boolean(data));
-    } catch (e) {
-      console.error('checkAdminStatus exception', e);
+    } catch (e: any) {
+      // Exceptions are always real errors
+      const { trackRoleCheckFailure } = await import("@/lib/failureTracking");
+      trackRoleCheckFailure('Navigation.checkAdminStatus', e?.message || 'Unknown exception', {
+        errorType: e?.constructor?.name
+      });
+      console.error('[Navigation] checkAdminStatus exception', e);
       setIsAdmin(false);
     }
   };
