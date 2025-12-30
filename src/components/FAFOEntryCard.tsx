@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Trash2 } from "lucide-react";
+import { SafeImage } from "./SafeImage";
 import { toast } from "@/hooks/use-toast";
 
 interface FAFOEntryCardProps {
@@ -95,10 +96,14 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
         >
           {/* #HoldThatL Image */}
           <div className="w-full md:w-1/2 aspect-[4/5] overflow-hidden rounded-md bg-black">
-            <img
+            <SafeImage
               src={entry.holdThatLUrl}
               alt="Hold That L Generator Image"
               className="w-full h-full object-cover"
+              fallbackText="Hold That L image unavailable"
+              timeoutMs={8000}
+              retryCount={2}
+              showLoader={true}
             />
           </div>
 
@@ -107,10 +112,14 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
 
           {/* Proof Image */}
           <div className="w-full md:w-1/2 aspect-[4/5] overflow-hidden rounded-md bg-black">
-            <img
+            <SafeImage
               src={entry.proofUrl}
               alt="Payment Proof Screenshot"
               className="w-full h-full object-cover"
+              fallbackText="Proof image unavailable"
+              timeoutMs={8000}
+              retryCount={2}
+              showLoader={true}
             />
           </div>
         </div>
@@ -121,11 +130,15 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <div className="flex flex-col gap-8">
             {/* #HoldThatL Full Size */}
-            <div className="w-full">
-              <img
+            <div className="w-full min-h-[200px]">
+              <SafeImage
                 src={entry.holdThatLUrl}
                 alt="Hold That L Generator Image - Full Size"
                 className="w-full h-auto rounded-md"
+                fallbackText="Hold That L image unavailable"
+                timeoutMs={10000}
+                retryCount={2}
+                showLoader={true}
               />
             </div>
             
@@ -133,11 +146,15 @@ export function FAFOEntryCard({ entry, isAdmin, onDelete }: FAFOEntryCardProps) 
             <div className="w-full h-px bg-border" />
             
             {/* Proof Full Size */}
-            <div className="w-full">
-              <img
+            <div className="w-full min-h-[200px]">
+              <SafeImage
                 src={entry.proofUrl}
                 alt="Payment Proof Screenshot - Full Size"
                 className="w-full h-auto rounded-md"
+                fallbackText="Proof image unavailable"
+                timeoutMs={10000}
+                retryCount={2}
+                showLoader={true}
               />
             </div>
           </div>

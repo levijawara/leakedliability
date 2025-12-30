@@ -13,6 +13,8 @@ import { useFailureTracking } from "@/lib/failureTracking";
 import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { getRLSViolationsSummary, validateRLSAssumptions, type RLSValidationResult } from "@/lib/rlsValidation";
+import { validateTableExistence, getTableValidationSummary, type TableValidationResult } from "@/lib/tableValidation";
+import { validateStorageBuckets, getStorageBucketValidationSummary, type BucketValidationResult } from "@/lib/storageValidation";
 
 export function FailureIndicator() {
   const { failures, failuresByType, hasRecentFailures, clear } = useFailureTracking();
@@ -56,22 +58,43 @@ export function FailureIndicator() {
     return () => window.removeEventListener('system-failure', handleFailure);
   }, [showDetails]);
 
-  // Check for RLS violations on mount and periodically
+  // Check for RLS violations, table issues, and storage issues on mount and periodically
   useEffect(() => {
-    const checkRLS = async () => {
-      const results = await validateRLSAssumptions();
-      const summary = getRLSViolationsSummary(results);
-      if (summary.hasViolations) {
-        setRlsViolations(summary.violations);
+    const checkIssues = async () => {
+      const [rlsResults, tableResults, storageResults] = await Promise.all([
+        validateRLSAssumptions(),
+        validateTableExistence(),
+        validateStorageBuckets()
+      ]);
+      
+      const rlsSummary = getRLSViolationsSummary(rlsResults);
+      const tableSummary = getTableValidationSummary(tableResults);
+      const storageSummary = getStorageBucketValidationSummary(storageResults);
+      
+      if (rlsSummary.hasViolations) {
+        setRlsViolations(rlsSummary.violations);
+      }
+      
+      const missingTables = tableResults.filter(r => !r.exists);
+      if (missingTables.length > 0) {
+        setTableIssues(missingTables);
+      }
+
+      const missingBuckets = storageResults.filter(r => !r.exists || !r.accessible);
+      if (missingBuckets.length > 0) {
+        setStorageIssues(missingBuckets);
+      }
+      
+      if (rlsSummary.hasViolations || missingTables.length > 0 || missingBuckets.length > 0) {
         if (!showDetails) {
           setShowDetails(true);
         }
       }
     };
 
-    checkRLS();
+    checkIssues();
     // Re-check every 5 minutes
-    const interval = setInterval(checkRLS, 5 * 60 * 1000);
+    const interval = setInterval(checkIssues, 5 * 60 * 1000);
     return () => clearInterval(interval);
   }, [showDetails]);
 
@@ -86,8 +109,10 @@ export function FailureIndicator() {
 
   const hasAnyRecentFailures = recentAnalyticsFailures || recentRealtimeFailures || recentRoleFailures;
   const hasRlsViolations = rlsViolations.length > 0;
+  const hasTableIssues = tableIssues.length > 0;
+  const hasStorageIssues = storageIssues.length > 0;
 
-  if (!hasAnyRecentFailures && failures.length === 0 && !hasRlsViolations) {
+  if (!hasAnyRecentFailures && failures.length === 0 && !hasRlsViolations && !hasTableIssues && !hasStorageIssues) {
     return null;
   }
 
@@ -109,11 +134,23 @@ export function FailureIndicator() {
                 {failures.length}
               </Badge>
             )}
-            {hasRlsViolations && (
-              <Badge variant="outline" className="border-status-warning text-status-warning">
-                RLS: {rlsViolations.length}
-              </Badge>
-            )}
+            <div className="flex gap-1">
+              {hasRlsViolations && (
+                <Badge variant="outline" className="border-status-warning text-status-warning">
+                  RLS: {rlsViolations.length}
+                </Badge>
+              )}
+              {hasTableIssues && (
+                <Badge variant="outline" className="border-status-critical text-status-critical">
+                  Tables: {tableIssues.length}
+                </Badge>
+              )}
+              {hasStorageIssues && (
+                <Badge variant="outline" className="border-status-critical text-status-critical">
+                  Storage: {storageIssues.length}
+                </Badge>
+              )}
+            </div>
           </div>
         </Button>
       ) : (
@@ -153,6 +190,72 @@ export function FailureIndicator() {
             ) : (
               <>
                 <div className="space-y-2">
+                  {hasStorageIssues && (
+                    <div className="border border-status-critical/50 rounded p-2 bg-status-critical/10">
+                      <Badge variant="outline" className="mb-2 border-status-critical text-status-critical">
+                        Storage Issues ({storageIssues.length})
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Storage buckets missing or inaccessible. Images/files may not load.
+                      </p>
+                      <div className="space-y-1">
+                        {storageIssues.map((issue, idx) => (
+                          <div key={idx} className="text-xs">
+                            <span className="font-medium">{issue.definition.name}</span>
+                            {issue.definition.critical && (
+                              <span className="ml-1 text-status-critical font-semibold">[CRITICAL]</span>
+                            )}
+                            <div className="text-muted-foreground mt-1">
+                              {issue.definition.description}
+                              {!issue.exists && (
+                                <span className="block mt-1 text-[10px] text-status-critical">
+                                  ❌ Bucket does not exist
+                                </span>
+                              )}
+                              {issue.exists && !issue.accessible && (
+                                <span className="block mt-1 text-[10px] text-status-warning">
+                                  ⚠️ Bucket exists but is not accessible
+                                </span>
+                              )}
+                              {issue.definition.fallbackMessage && (
+                                <span className="block mt-1 text-[10px]">
+                                  Fallback: {issue.definition.fallbackMessage}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {hasTableIssues && (
+                    <div className="border border-status-critical/50 rounded p-2 bg-status-critical/10">
+                      <Badge variant="outline" className="mb-2 border-status-critical text-status-critical">
+                        Missing Tables ({tableIssues.length})
+                      </Badge>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Required database tables/views are missing. Run migrations to fix.
+                      </p>
+                      <div className="space-y-1">
+                        {tableIssues.map((issue, idx) => (
+                          <div key={idx} className="text-xs">
+                            <span className="font-medium">{issue.definition.name}</span>
+                            {issue.definition.critical && (
+                              <span className="ml-1 text-status-critical font-semibold">[CRITICAL]</span>
+                            )}
+                            <div className="text-muted-foreground mt-1">
+                              {issue.definition.description}
+                              {issue.definition.fallbackMessage && (
+                                <span className="block mt-1 text-[10px]">
+                                  Fallback: {issue.definition.fallbackMessage}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                   {hasRlsViolations && (
                     <div className="border border-status-warning/50 rounded p-2 bg-status-warning/10">
                       <Badge variant="outline" className="mb-2 border-status-warning text-status-warning">

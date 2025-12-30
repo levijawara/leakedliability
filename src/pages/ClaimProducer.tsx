@@ -58,8 +58,9 @@ export default function ClaimProducer() {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       if (!currentUser) {
-        // Redirect to auth with return URL
-        navigate(`/auth?redirect=/claim/${producerId}`);
+        // Redirect to auth with return URL and context
+        const { createRedirectUrl } = await import("@/lib/authRedirectHelpers");
+        navigate(createRedirectUrl(`/claim/${producerId}`, { producerId }));
         return;
       }
       

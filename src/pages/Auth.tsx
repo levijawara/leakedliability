@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Info, ArrowRight } from "lucide-react";
 import ProducerAssociationModal from "@/components/ProducerAssociationModal";
 import { Footer } from "@/components/Footer";
+import { getRedirectInfo } from "@/lib/authRedirectHelpers";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type AccountType = 'crew' | 'vendor' | 'producer' | 'production_company' | 'admin';
 
@@ -47,6 +49,13 @@ export default function Auth() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showProducerModal, setShowProducerModal] = useState(false);
   const [newUserId, setNewUserId] = useState<string>("");
+  const [redirectInfo, setRedirectInfo] = useState<ReturnType<typeof getRedirectInfo>>(null);
+
+  // Get redirect info on mount
+  useEffect(() => {
+    const info = getRedirectInfo();
+    setRedirectInfo(info);
+  }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,15 +174,21 @@ export default function Auth() {
 
       if (error) throw error;
 
+      // Handle redirect param from protected routes
+      const info = getRedirectInfo();
+      const redirectTo = info?.redirectTo || "/";
+      
       toast({
         title: "Welcome back!",
-        description: "Successfully signed in.",
+        description: info 
+          ? `Redirecting you to ${info.routeName}...`
+          : "Successfully signed in.",
       });
       
-      // Handle redirect param from protected routes (e.g., ClaimProducer)
-      const searchParams = new URLSearchParams(window.location.search);
-      const redirectTo = searchParams.get('redirect');
-      navigate(redirectTo || "/");
+      // Small delay to show toast message before redirect
+      setTimeout(() => {
+        navigate(redirectTo);
+      }, 300);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -227,6 +242,25 @@ export default function Auth() {
           <h1 className="text-3xl font-black mb-2">Leaked Liability™</h1>
           <p className="text-muted-foreground">Filmmaking's financial accountability platform.</p>
         </div>
+
+        {/* Redirect Context Banner */}
+        {redirectInfo && (
+          <Alert className="mb-6 border-primary/50 bg-primary/5">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertDescription className="space-y-2">
+              <div className="font-medium text-sm">
+                Sign in to continue to {redirectInfo.routeName}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {redirectInfo.reason}
+              </div>
+              <div className="text-xs text-muted-foreground flex items-center gap-1 mt-2 pt-2 border-t border-border/50">
+                <ArrowRight className="h-3 w-3" />
+                <span>After signing in, you'll be redirected automatically</span>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">

@@ -12,6 +12,8 @@ import { trackVisit } from "@/lib/analytics";
 import { trackRealtimeFailure, trackRoleCheckFailure } from "@/lib/failureTracking";
 import { validateRLSAssumptions, logRLSValidationResults, getRLSViolationsSummary } from "@/lib/rlsValidation";
 import { validateEnv, testSupabaseConnection } from "@/config/env";
+import { validateTableExistence, logTableValidationResults, getTableValidationSummary } from "@/lib/tableValidation";
+import { validateStorageBuckets, logStorageBucketValidationResults } from "@/lib/storageValidation";
 import Index from "./pages/Index";
 import Leaderboard from "./pages/Leaderboard";
 import SubmitReport from "./pages/SubmitReport";
@@ -102,8 +104,9 @@ const AppContent = () => {
       
       setConnectionValidated(true);
       
-      // After connection is validated, validate RLS assumptions
+      // After connection is validated, validate RLS assumptions and table existence
       if (result.connected && supabase) {
+        // Validate RLS assumptions
         validateRLSAssumptions().then(results => {
           logRLSValidationResults(results);
           const summary = getRLSViolationsSummary(results);
@@ -120,8 +123,38 @@ const AppContent = () => {
           console.error('[RLS Validation] Failed to validate RLS assumptions:', err);
           setRlsValidated(true); // Continue anyway
         });
+
+        // Validate table existence and storage buckets (run in parallel)
+        Promise.all([
+          validateTableExistence(),
+          validateStorageBuckets()
+        ]).then(([tableResults, storageResults]) => {
+          logTableValidationResults(tableResults);
+          logStorageBucketValidationResults(storageResults);
+          
+          const tableSummary = getTableValidationSummary(tableResults);
+          
+          if (!tableSummary.allValid) {
+            if (tableSummary.criticalIssues > 0) {
+              console.error(
+                `[Table Validation] ${tableSummary.criticalIssues} critical table(s) missing!`,
+                'Some features will not work. Ensure migrations have been run.'
+              );
+            } else if (tableSummary.warnings > 0) {
+              console.warn(
+                `[Table Validation] ${tableSummary.warnings} table(s)/view(s) missing or inaccessible.`,
+                'Some features may have reduced functionality.'
+              );
+            }
+          }
+
+          // Storage validation warnings are logged in logStorageBucketValidationResults
+        }).catch(err => {
+          console.error('[Validation] Failed to validate database/storage:', err);
+          // Don't block - continue anyway
+        });
       } else {
-        setRlsValidated(true); // Skip RLS validation if connection failed
+        setRlsValidated(true); // Skip validation if connection failed
       }
     };
 
@@ -153,36 +186,48 @@ const AppContent = () => {
     checkAdminStatus();
     trackVisit();
     
-    // Subscribe to realtime changes with error handling
-    const channel = supabase
-      .channel('site_settings_changes')
-      .on(
-        'postgres_changes',
+    // Subscribe to maintenance mode changes (useful for all users, including anonymous)
+    // Failures for anonymous users are non-critical - they can still use the site
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    
+    const setupRealtime = async () => {
+      const { createRealtimeChannel, isAnonymousUser } = await import("@/lib/realtimeHelpers");
+      const isAnonymous = await isAnonymousUser();
+      
+      channel = await createRealtimeChannel(
+        'site_settings_changes',
         {
+          table: 'site_settings',
           event: 'UPDATE',
-          schema: 'public',
-          table: 'site_settings'
+          callback: (payload) => {
+            setMaintenanceMode(payload.new.maintenance_mode);
+            setMaintenanceMessage(payload.new.maintenance_message || "");
+          }
         },
-        (payload) => {
-          setMaintenanceMode(payload.new.maintenance_mode);
-          setMaintenanceMessage(payload.new.maintenance_message || "");
+        {
+          feature: 'maintenance',
+          silentForAnonymous: false, // Maintenance updates matter even for anonymous users
+          onError: (error) => {
+            // Only track failures for authenticated users
+            // Anonymous users don't need realtime, so failures don't matter
+            if (!isAnonymous) {
+              trackRealtimeFailure('site_settings_changes', error.message || 'Unknown error', {
+                status: error.status,
+                error: error.error
+              });
+            }
+            console.warn("[App] Realtime subscription issue for site_settings (non-critical for anonymous):", error);
+          }
         }
-      )
-      .subscribe((status, err) => {
-        if (status === 'SUBSCRIBED') {
-          console.log("[App] Realtime subscription active for site_settings");
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-          const errorMsg = err?.message || `Subscription ${status.toLowerCase()}`;
-          trackRealtimeFailure('site_settings_changes', errorMsg, {
-            status,
-            error: err
-          });
-          console.error("[App] Realtime subscription failed for site_settings:", status, err);
-        }
-      });
+      );
+    };
+    
+    setupRealtime();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [connectionValidated]);
 

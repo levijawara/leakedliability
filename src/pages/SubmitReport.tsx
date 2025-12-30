@@ -127,8 +127,10 @@ export default function SubmitReport() {
         variant: "destructive",
       });
       // Redirect to auth with return path
+      // Use helper to create redirect URL with context
+      const { createRedirectUrl } = await import("@/lib/authRedirectHelpers");
       const currentPath = window.location.pathname + window.location.search;
-      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+      navigate(createRedirectUrl(currentPath));
       return;
     }
     handleNext();

@@ -63,30 +63,84 @@ export default function Results() {
 
         if (error) {
           const errorMsg = error.message?.toLowerCase() || '';
-          if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+          const errorCode = error.code || '';
+          
+          // Check if table doesn't exist
+          const isTableMissing = 
+            errorCode === '42P01' || // PostgreSQL: relation does not exist
+            errorCode === 'PGRST204' || // PostgREST: relation not found
+            errorMsg.includes('does not exist') ||
+            (errorMsg.includes('relation') && errorMsg.includes('not found'));
+          
+          if (isTableMissing) {
+            setIsAccessBlocked(false);
+            setFetchError(null); // Don't show error - just show empty state
+            console.warn('[Results] fafo_entries table does not exist - migrations may not have been run');
+          } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
             setIsAccessBlocked(true);
             setFetchError("Access to results is restricted. Some content may require authentication.");
           } else {
             setFetchError("Unable to load results. Please try again later.");
           }
-          console.error('Error fetching FAFO entries:', error);
+          
+          // Only log non-table-missing errors
+          if (!isTableMissing) {
+            console.error('Error fetching FAFO entries:', error);
+          }
           setLoadingEntries(false);
           return;
         }
 
         if (data) {
-          // Get public URLs for images
-          const entriesWithUrls = data.map(entry => ({
-            ...entry,
-            holdThatLUrl: supabase.storage
-              .from('fafo-results')
-              .getPublicUrl(entry.hold_that_l_image_path).data.publicUrl,
-            proofUrl: supabase.storage
-              .from('fafo-results')
-              .getPublicUrl(entry.proof_image_path).data.publicUrl
-          }));
+          // Get public URLs for images with error handling
+          const entriesWithUrls = await Promise.all(
+            data.map(async (entry) => {
+              try {
+                // Validate storage access and get URLs
+                const { getStorageUrl } = await import("@/lib/storageValidation");
+                
+                const [holdThatLResult, proofResult] = await Promise.all([
+                  getStorageUrl('fafo-results', entry.hold_that_l_image_path),
+                  getStorageUrl('fafo-results', entry.proof_image_path)
+                ]);
+
+                return {
+                  ...entry,
+                  holdThatLUrl: holdThatLResult.url || supabase.storage
+                    .from('fafo-results')
+                    .getPublicUrl(entry.hold_that_l_image_path).data.publicUrl,
+                  proofUrl: proofResult.url || supabase.storage
+                    .from('fafo-results')
+                    .getPublicUrl(entry.proof_image_path).data.publicUrl
+                };
+              } catch (urlError) {
+                // Fallback to direct URL generation if validation fails
+                console.warn(`[Results] Error getting storage URL for entry ${entry.id}:`, urlError);
+                return {
+                  ...entry,
+                  holdThatLUrl: supabase.storage
+                    .from('fafo-results')
+                    .getPublicUrl(entry.hold_that_l_image_path).data.publicUrl,
+                  proofUrl: supabase.storage
+                    .from('fafo-results')
+                    .getPublicUrl(entry.proof_image_path).data.publicUrl
+                };
+              }
+            })
+          );
 
           setEntries(entriesWithUrls);
+          
+          // Preload images for better demo experience
+          if (entriesWithUrls.length > 0) {
+            entriesWithUrls.forEach((entry) => {
+              // Preload images in background
+              const img1 = new Image();
+              img1.src = entry.holdThatLUrl;
+              const img2 = new Image();
+              img2.src = entry.proofUrl;
+            });
+          }
         }
       } catch (error) {
         console.error('Error fetching FAFO entries:', error);

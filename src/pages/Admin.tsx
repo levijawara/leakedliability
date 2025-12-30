@@ -120,58 +120,73 @@ export default function Admin() {
   useEffect(() => {
     if (!isAdmin) return;
 
-    // Import failure tracking
-    import("@/lib/failureTracking").then(({ trackRealtimeFailure }) => {
-      // Set up real-time subscriptions with error handling
-      const moderationChannel = supabase
-        .channel('moderation_logs_changes')
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'moderation_logs'
-        }, (payload) => {
-          setModerationLogs(prev => [payload.new as any, ...prev]);
-        })
-        .subscribe((status, err) => {
-          if (status === 'SUBSCRIBED') {
-            console.log("[Admin] Realtime subscription active for moderation_logs");
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-            const errorMsg = err?.message || `Subscription ${status.toLowerCase()}`;
-            trackRealtimeFailure('moderation_logs_changes', errorMsg, {
-              status,
-              error: err
-            });
-            console.error("[Admin] Realtime subscription failed for moderation_logs:", status, err);
-          }
-        });
+    // Set up real-time subscriptions with proper admin checks
+    const setupRealtime = async () => {
+      const { createRealtimeChannel } = await import("@/lib/realtimeHelpers");
+      const { trackRealtimeFailure } = await import("@/lib/failureTracking");
 
-      const auditChannel = supabase
-        .channel('audit_logs_changes')
-        .on('postgres_changes', {
+      // Moderation logs channel (admin only)
+      const moderationChannel = await createRealtimeChannel(
+        'moderation_logs_changes',
+        {
+          table: 'moderation_logs',
           event: 'INSERT',
-          schema: 'public',
-          table: 'audit_logs'
-        }, (payload) => {
-          setAuditLogs(prev => [payload.new as any, ...prev]);
-        })
-        .subscribe((status, err) => {
-          if (status === 'SUBSCRIBED') {
-            console.log("[Admin] Realtime subscription active for audit_logs");
-          } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
-            const errorMsg = err?.message || `Subscription ${status.toLowerCase()}`;
-            trackRealtimeFailure('audit_logs_changes', errorMsg, {
-              status,
-              error: err
-            });
-            console.error("[Admin] Realtime subscription failed for audit_logs:", status, err);
+          callback: (payload) => {
+            setModerationLogs(prev => [payload.new as any, ...prev]);
           }
-        });
+        },
+        {
+          feature: 'admin',
+          onError: (error) => {
+            trackRealtimeFailure('moderation_logs_changes', error.message || 'Unknown error', {
+              status: error.status,
+              error: error.error
+            });
+          }
+        }
+      );
+
+      // Audit logs channel (admin only)
+      const auditChannel = await createRealtimeChannel(
+        'audit_logs_changes',
+        {
+          table: 'audit_logs',
+          event: 'INSERT',
+          callback: (payload) => {
+            setAuditLogs(prev => [payload.new as any, ...prev]);
+          }
+        },
+        {
+          feature: 'admin',
+          onError: (error) => {
+            trackRealtimeFailure('audit_logs_changes', error.message || 'Unknown error', {
+              status: error.status,
+              error: error.error
+            });
+          }
+        }
+      );
 
       return () => {
-        supabase.removeChannel(moderationChannel);
-        supabase.removeChannel(auditChannel);
+        if (moderationChannel) {
+          supabase.removeChannel(moderationChannel);
+        }
+        if (auditChannel) {
+          supabase.removeChannel(auditChannel);
+        }
       };
+    };
+
+    let cleanup: (() => void) | undefined;
+    setupRealtime().then((cleanupFn) => {
+      cleanup = cleanupFn;
     });
+
+    return () => {
+      if (cleanup) {
+        cleanup();
+      }
+    };
   }, [isAdmin]);
 
   const checkAdminAccess = async () => {

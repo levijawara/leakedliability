@@ -159,7 +159,20 @@ export default function Leaderboard() {
       
       if (error) {
         const errorMsg = error.message?.toLowerCase() || '';
-        if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+        const errorCode = error.code || '';
+        
+        // Check if table/view doesn't exist
+        const isTableMissing = 
+          errorCode === '42P01' || // PostgreSQL: relation does not exist
+          errorCode === 'PGRST204' || // PostgREST: relation not found
+          errorMsg.includes('does not exist') ||
+          (errorMsg.includes('relation') && errorMsg.includes('not found'));
+        
+        if (isTableMissing) {
+          setIsAccessBlocked(false);
+          setLeaderboardError("Leaderboard data is currently unavailable. Please check back later.");
+          throw new Error("Leaderboard view does not exist - migrations may not have been run");
+        } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
           setIsAccessBlocked(true);
           setLeaderboardError("Access to leaderboard data is restricted. A subscription may be required to view producer information.");
         } else {
