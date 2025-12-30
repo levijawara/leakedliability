@@ -6,7 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import type { RealtimeChannel, RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 /**
  * Checks if realtime features should be enabled for the current user
@@ -53,11 +53,11 @@ export async function createRealtimeChannel(
     schema?: string;
     event?: 'INSERT' | 'UPDATE' | 'DELETE' | '*';
     filter?: string;
-    callback: (payload: any) => void;
+    callback: (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => void;
   },
   options?: {
     feature: 'maintenance' | 'admin' | 'user';
-    onError?: (error: any) => void;
+    onError?: (error: unknown) => void;
     silentForAnonymous?: boolean; // Don't log errors for anonymous users
   }
 ): Promise<RealtimeChannel | null> {
@@ -84,7 +84,7 @@ export async function createRealtimeChannel(
           table: config.table!,
           filter: config.filter
         },
-        config.callback
+        config.callback as (payload: unknown) => void
       )
       .subscribe((status, err) => {
         if (status === 'SUBSCRIBED') {
@@ -129,4 +129,3 @@ export async function isAnonymousUser(): Promise<boolean> {
   const { data: { user } } = await supabase.auth.getUser();
   return !user;
 }
-

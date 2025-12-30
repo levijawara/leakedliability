@@ -55,7 +55,7 @@ export interface RLSValidationResult {
   assumption: RLSAssumption;
   actualAccess: boolean;
   matches: boolean;
-  error?: any;
+  error?: unknown;
   warning?: string;
 }
 
@@ -65,7 +65,7 @@ export interface RLSValidationResult {
 async function testAnonymousAccess(
   tableOrView: string,
   operation: 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE'
-): Promise<{ accessible: boolean; error?: any }> {
+): Promise<{ accessible: boolean; error?: unknown }> {
   if (!supabase) {
     return { accessible: false, error: 'Supabase client not available' };
   }
@@ -73,10 +73,11 @@ async function testAnonymousAccess(
   try {
     // For SELECT operations, try a simple query
     if (operation === 'SELECT') {
-      const { data, error } = await supabase
-        .from(tableOrView)
+      // Use type assertion to bypass strict type checking for dynamic table names
+      const { data, error } = await (supabase
+        .from(tableOrView as 'public_leaderboard')
         .select('*')
-        .limit(1);
+        .limit(1) as unknown as Promise<{ data: unknown; error: { message?: string; code?: string } | null }>);
 
       // If we get data OR an empty array, the query worked (accessible)
       // If we get an RLS error, it's not accessible
@@ -217,4 +218,3 @@ export function getRLSViolationsSummary(results: RLSValidationResult[]): {
     violations
   };
 }
-
