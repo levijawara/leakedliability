@@ -8,7 +8,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Shield, CheckCircle, Clock, AlertTriangle, User, Building2 } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { getStripeInstance, isStripeAvailable, validateStripeConfig } from "@/lib/stripeHelpers";
+import { getStripeInstance, isStripeAvailable } from "@/lib/stripeHelpers";
+import { validateStripeConfig } from "@/config/env";
 
 interface Producer {
   id: string;
