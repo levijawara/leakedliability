@@ -119,7 +119,7 @@ export default function SubmitReport() {
   };
 
   // Handle navigation with auth check
-  const handleNextWithAuthCheck = () => {
+  const handleNextWithAuthCheck = async () => {
     if (requiresAuthForStep(step + 1) && !isAuthenticated) {
       toast({
         title: "Sign In Required",

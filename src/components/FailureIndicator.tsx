@@ -21,6 +21,11 @@ export function FailureIndicator() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  
+  // State for validation results
+  const [rlsViolations, setRlsViolations] = useState<RLSValidationResult[]>([]);
+  const [tableIssues, setTableIssues] = useState<TableValidationResult[]>([]);
+  const [storageIssues, setStorageIssues] = useState<BucketValidationResult[]>([]);
 
   // Check if user is admin (only show to admins or in dev)
   useEffect(() => {
@@ -334,4 +339,3 @@ export function FailureIndicator() {
     </div>
   );
 }
-

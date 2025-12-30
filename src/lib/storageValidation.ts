@@ -40,7 +40,7 @@ export interface BucketValidationResult {
   definition: BucketDefinition;
   exists: boolean;
   accessible: boolean; // Can we access it?
-  error?: any;
+  error?: unknown;
 }
 
 /**
@@ -68,15 +68,16 @@ async function testBucketAccess(bucket: BucketDefinition): Promise<BucketValidat
 
     if (error) {
       const errorMsg = error.message?.toLowerCase() || '';
-      const errorCode = error.code || '';
+      // StorageError doesn't have a 'code' property, use name or message instead
+      const errorName = error.name || '';
 
       // Check if it's a "bucket doesn't exist" error
       const isBucketMissing = 
-        errorCode === '404' ||
-        errorCode === 'StorageApiError' ||
+        errorName === 'StorageApiError' ||
         errorMsg.includes('not found') ||
         errorMsg.includes('does not exist') ||
-        errorMsg.includes('no such bucket');
+        errorMsg.includes('no such bucket') ||
+        errorMsg.includes('bucket not found');
 
       if (isBucketMissing) {
         return {
@@ -89,9 +90,9 @@ async function testBucketAccess(bucket: BucketDefinition): Promise<BucketValidat
 
       // Permission errors mean bucket exists but we can't access it
       const isPermissionError =
-        errorCode === '403' ||
         errorMsg.includes('permission denied') ||
-        errorMsg.includes('access denied');
+        errorMsg.includes('access denied') ||
+        errorMsg.includes('not authorized');
 
       return {
         definition: bucket,
@@ -151,8 +152,8 @@ export function logStorageBucketValidationResults(results: BucketValidationResul
     console.error(`[CRITICAL] ${criticalMissing.length} critical bucket(s) missing:`);
     criticalMissing.forEach(result => {
       console.error(`  - ${result.definition.name}: ${result.definition.description}`);
-      if (result.error) {
-        console.error(`    Error: ${result.error.message}`);
+      if (result.error && typeof result.error === 'object' && 'message' in result.error) {
+        console.error(`    Error: ${(result.error as { message: string }).message}`);
       }
       trackFailure('other', 'StorageValidation', `Critical bucket missing: ${result.definition.name}`, {
         bucket: result.definition.name,
@@ -222,15 +223,15 @@ export async function checkBucketExists(bucketName: string): Promise<boolean> {
     if (!error) return true;
 
     const errorMsg = error.message?.toLowerCase() || '';
-    const errorCode = error.code || '';
+    const errorName = error.name || '';
 
     // Check if it's a "bucket doesn't exist" error
     const isBucketMissing = 
-      errorCode === '404' ||
-      errorCode === 'StorageApiError' ||
+      errorName === 'StorageApiError' ||
       errorMsg.includes('not found') ||
       errorMsg.includes('does not exist') ||
-      errorMsg.includes('no such bucket');
+      errorMsg.includes('no such bucket') ||
+      errorMsg.includes('bucket not found');
 
     return !isBucketMissing;
   } catch {
@@ -248,7 +249,7 @@ export async function getStorageUrl(
     timeout?: number;
     retry?: boolean;
   }
-): Promise<{ url: string | null; error?: any }> {
+): Promise<{ url: string | null; error?: unknown }> {
   if (!supabase) {
     return { url: null, error: { message: 'Supabase client not available' } };
   }
@@ -263,18 +264,13 @@ export async function getStorageUrl(
       };
     }
 
-    // Get public URL
-    const { data, error } = supabase.storage
+    // Get public URL - getPublicUrl doesn't return an error, only data
+    const { data } = supabase.storage
       .from(bucket)
       .getPublicUrl(path);
-
-    if (error) {
-      return { url: null, error };
-    }
 
     return { url: data.publicUrl, error: undefined };
   } catch (err) {
     return { url: null, error: err };
   }
 }
-
