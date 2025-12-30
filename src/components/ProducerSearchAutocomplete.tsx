@@ -54,6 +54,7 @@ export function ProducerSearchAutocomplete({
   }, []);
 
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [rlsBlocked, setRlsBlocked] = useState(false);
 
   // Search for producers as user types
   useEffect(() => {
@@ -350,7 +351,7 @@ export function ProducerSearchAutocomplete({
               <p className="text-sm font-medium text-foreground mb-1">
                 {searchError}
               </p>
-              {searchError.includes("authentication") && (
+              {rlsBlocked && (
                 <p className="text-xs text-muted-foreground">
                   <button
                     onClick={() => {

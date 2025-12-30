@@ -200,20 +200,22 @@ const AppContent = () => {
           table: 'site_settings',
           event: 'UPDATE',
           callback: (payload) => {
-            setMaintenanceMode(payload.new.maintenance_mode);
-            setMaintenanceMessage(payload.new.maintenance_message || "");
+            const newData = payload.new as { maintenance_mode?: boolean; maintenance_message?: string };
+            setMaintenanceMode(newData.maintenance_mode ?? false);
+            setMaintenanceMessage(newData.maintenance_message || "");
           }
         },
         {
           feature: 'maintenance',
           silentForAnonymous: false, // Maintenance updates matter even for anonymous users
-          onError: (error) => {
+          onError: (error: unknown) => {
             // Only track failures for authenticated users
             // Anonymous users don't need realtime, so failures don't matter
+            const err = error as { message?: string; status?: string; error?: unknown };
             if (!isAnonymous) {
-              trackRealtimeFailure('site_settings_changes', error.message || 'Unknown error', {
-                status: error.status,
-                error: error.error
+              trackRealtimeFailure('site_settings_changes', err.message || 'Unknown error', {
+                status: err.status,
+                error: err.error
               });
             }
             console.warn("[App] Realtime subscription issue for site_settings (non-critical for anonymous):", error);

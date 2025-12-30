@@ -80,7 +80,7 @@ export const REQUIRED_TABLES: TableDefinition[] = [
 export interface TableValidationResult {
   definition: TableDefinition;
   exists: boolean;
-  error?: any;
+  error?: unknown;
   accessible: boolean; // Can we query it?
 }
 
@@ -100,10 +100,11 @@ async function testTableExistence(table: TableDefinition): Promise<TableValidati
   try {
     // Try a simple query to see if the table/view exists and is accessible
     // We use LIMIT 0 to avoid loading data, just check existence
-    const { data, error } = await supabase
-      .from(table.name)
+    // Use type assertion to bypass strict type checking for dynamic table names
+    const { data, error } = await (supabase
+      .from(table.name as 'public_leaderboard')
       .select('*')
-      .limit(0);
+      .limit(0) as unknown as Promise<{ data: unknown; error: { message?: string; code?: string } | null }>);
 
     if (error) {
       const errorMsg = error.message?.toLowerCase() || '';
@@ -190,8 +191,8 @@ export function logTableValidationResults(results: TableValidationResult[]) {
     console.error(`[CRITICAL] ${criticalMissing.length} critical table(s)/view(s) missing:`);
     criticalMissing.forEach(result => {
       console.error(`  - ${result.definition.name} (${result.definition.type}): ${result.definition.description}`);
-      if (result.error) {
-        console.error(`    Error: ${result.error.message}`);
+      if (result.error && typeof result.error === 'object' && 'message' in result.error) {
+        console.error(`    Error: ${(result.error as { message: string }).message}`);
       }
       trackFailure('other', 'TableValidation', `Critical table missing: ${result.definition.name}`, {
         table: result.definition.name,
@@ -254,10 +255,11 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
   if (!supabase) return false;
 
   try {
-    const { error } = await supabase
-      .from(tableName)
+    // Use type assertion to bypass strict type checking for dynamic table names
+    const { error } = await (supabase
+      .from(tableName as 'public_leaderboard')
       .select('*')
-      .limit(0);
+      .limit(0) as unknown as Promise<{ data: unknown; error: { message?: string; code?: string } | null }>);
 
     if (!error) return true;
 
@@ -276,4 +278,3 @@ export async function checkTableExists(tableName: string): Promise<boolean> {
     return false;
   }
 }
-

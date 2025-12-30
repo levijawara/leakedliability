@@ -137,10 +137,11 @@ export default function Admin() {
         },
         {
           feature: 'admin',
-          onError: (error) => {
-            trackRealtimeFailure('moderation_logs_changes', error.message || 'Unknown error', {
-              status: error.status,
-              error: error.error
+          onError: (error: unknown) => {
+            const err = error as { message?: string; status?: string; error?: unknown };
+            trackRealtimeFailure('moderation_logs_changes', err.message || 'Unknown error', {
+              status: err.status,
+              error: err.error
             });
           }
         }
@@ -158,10 +159,11 @@ export default function Admin() {
         },
         {
           feature: 'admin',
-          onError: (error) => {
-            trackRealtimeFailure('audit_logs_changes', error.message || 'Unknown error', {
-              status: error.status,
-              error: error.error
+          onError: (error: unknown) => {
+            const err = error as { message?: string; status?: string; error?: unknown };
+            trackRealtimeFailure('audit_logs_changes', err.message || 'Unknown error', {
+              status: err.status,
+              error: err.error
             });
           }
         }
