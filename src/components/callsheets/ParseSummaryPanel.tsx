@@ -281,16 +281,8 @@ export function ParseSummaryPanel({
           .from('crew_contacts')
           .select('id, name, phones, emails, roles, departments, ig_handle');
 
-        // Admin-expanded dedup scope: include seed contacts for admins
-        // This allows admins to merge with canonical seed data when uploading call sheets
-        if (userIsAdmin) {
-          // Admins can dedup against their own contacts OR seed contacts (canonical database)
-          dedupQuery = dedupQuery.or(`user_id.eq.${userId},is_seed.eq.true`);
-          console.log('[ParseSummaryPanel] Admin dedup scope: including seed contacts');
-        } else {
-          // Regular users only see their own contacts (user-scoped dedup)
-          dedupQuery = dedupQuery.eq('user_id', userId);
-        }
+        // User-scoped dedup: each user only sees their own contacts
+        dedupQuery = dedupQuery.eq('user_id', userId);
 
         // Fetch existing contacts for duplicate detection (up to 10,000)
         const { data: existingContactsRaw, error } = await dedupQuery.limit(10000);
