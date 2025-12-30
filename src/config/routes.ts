@@ -34,6 +34,8 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/producer-dashboard", component: "ProducerDashboard", name: "Producer Dashboard", icon: "LayoutDashboard", description: "Producer portal", category: "authenticated", requiresAuth: true },
   { path: "/suggestions", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
   { path: "/confirm", component: "ConfirmReport", name: "Confirm Report", icon: "FileCheck", description: "Corroborate debts", category: "authenticated", requiresAuth: true },
+  { path: "/call-sheets", component: "CallSheetManager", name: "Call Sheets", icon: "FileSpreadsheet", description: "Upload and manage call sheets", category: "authenticated", requiresAuth: true },
+  { path: "/crew-contacts", component: "CrewContacts", name: "Crew Contacts", icon: "Users", description: "View and manage extracted crew contacts", category: "authenticated", requiresAuth: true },
 
   // Leaderboard Routes
   { path: "/leaderboard", component: "Leaderboard", name: "Leaderboard", icon: "TrendingUp", description: "Producer ranking board", category: "leaderboard" },
@@ -53,6 +55,7 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/admin-submit-existing", component: "AdminSubmitExisting", name: "Submit for Existing User", icon: "UserPlus", description: "Admin proxy submission (existing user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin-submit-new", component: "AdminSubmitNew", name: "Submit for New User", icon: "UserPlus", description: "Admin proxy submission (new user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/leaderboard-analytics", component: "LeaderboardAnalytics", name: "Leaderboard Analytics", icon: "BarChart3", description: "Leaderboard performance metrics", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin/call-sheet-reservoir", component: "AdminCallSheetReservoir", name: "Call Sheet Reservoir", icon: "Archive", description: "Complete call sheet archive", category: "admin", requiresAuth: true, requiresAdmin: true },
 
   // System Routes
   { path: "/sitemap", component: "Sitemap", name: "Platform Sitemap", icon: "Map", description: "Complete navigation map", category: "system", requiresAuth: true, requiresAdmin: true },

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, User as UserIcon, Shield, CheckCircle, Clock, Search, Users, FileText } from "lucide-react";
+import { Loader2, LogOut, User as UserIcon, Shield, CheckCircle, Clock, Search } from "lucide-react";
 import { LeaderboardAccessStatus } from "@/components/LeaderboardAccessStatus";
 import { Footer } from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
@@ -367,41 +367,6 @@ const Profile = () => {
             </Card>
           )}
 
-          {/* Call Sheets Tools Card */}
-          <Card className="mt-6 border-primary/20">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <CardTitle>Call Sheet Tools</CardTitle>
-                  <CardDescription>
-                    Upload call sheets and manage your crew contacts
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/my-contacts")}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                My Contacts Database
-              </Button>
-              <Button 
-                variant="outline" 
-                className="w-full justify-start"
-                onClick={() => navigate("/call-sheets")}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Upload Call Sheets
-              </Button>
-            </CardContent>
-          </Card>
-
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Leaderboard Access</CardTitle>
@@ -424,23 +389,23 @@ const Profile = () => {
                   <div className="text-2xl font-bold">{submissionStats.crew_report}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Payment Documentations 🧾</div>
+                  <div className="text-sm text-muted-foreground">Payment Documentations</div>
                   <div className="text-2xl font-bold">{submissionStats.payment_documentation}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Payment Confirmations ✅</div>
+                  <div className="text-sm text-muted-foreground">Payment Confirmations</div>
                   <div className="text-2xl font-bold">{submissionStats.payment_confirmation}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Report Explanations ☮️</div>
+                  <div className="text-sm text-muted-foreground">Report Explanations</div>
                   <div className="text-2xl font-bold">{submissionStats.report_explanation}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Counter-Disputes ‼️</div>
+                  <div className="text-sm text-muted-foreground">Counter-Disputes</div>
                   <div className="text-2xl font-bold">{submissionStats.counter_dispute}</div>
                 </div>
                 <div className="space-y-2">
-                  <div className="text-sm text-muted-foreground">Report Disputes ⁉️</div>
+                  <div className="text-sm text-muted-foreground">Report Disputes</div>
                   <div className="text-2xl font-bold">{submissionStats.report_dispute}</div>
                 </div>
               </div>

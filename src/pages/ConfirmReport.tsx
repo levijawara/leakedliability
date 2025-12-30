@@ -194,7 +194,7 @@ export default function ConfirmReport() {
                       size="lg"
                     >
                       {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      ✅ Confirm Payment Occurred
+                      Confirm Payment Occurred
                     </Button>
                   </div>
                 ) : (

@@ -11,14 +11,14 @@ const Index = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/10 to-background">
+    <div className="min-h-screen bg-background">
       <Navigation />
       
       {/* Hero Section */}
       <div className="container mx-auto px-4 pt-20 pb-0">
         <div className="max-w-[1600px] mx-auto text-center space-y-6">
           <div className="inline-block mb-4">
-            <div className="inline-flex items-center gap-2 bg-status-critical/10 border border-status-critical/20 rounded-full px-4 py-2">
+            <div className="inline-flex items-center gap-2 bg-status-critical/10 border border-status-critical/20 rounded-sm px-4 py-2">
               <AlertTriangle className="h-4 w-4 text-status-critical" />
               <span className="text-sm font-semibold text-status-critical">Public Accountability Platform</span>
             </div>
@@ -80,7 +80,7 @@ const Index = () => {
       {/* Search/Inquiry Box */}
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border">
+          <div className="bg-card rounded-sm p-6 border border-border">
             <div className="text-center mb-4 space-y-2">
               <h3 className="text-lg font-semibold text-foreground">
                 Looking to see if someone's already been reported?
@@ -98,7 +98,7 @@ const Index = () => {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-6">
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <Card className="p-6 text-center space-y-4 border-foreground animate-glow-red transition-shadow duration-700">
+          <Card className="p-6 text-center space-y-4 border-foreground">
             <div className="w-12 h-12 rounded-full bg-status-critical/10 flex items-center justify-center mx-auto">
               <Users className="h-6 w-6 text-status-critical" />
             </div>
@@ -108,7 +108,7 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 text-center space-y-4 border-foreground animate-glow-yellow transition-shadow duration-700">
+          <Card className="p-6 text-center space-y-4 border-foreground">
             <div className="w-12 h-12 rounded-full bg-status-warning/10 flex items-center justify-center mx-auto">
               <AlertTriangle className="h-6 w-6 text-status-warning" />
             </div>
@@ -118,7 +118,7 @@ const Index = () => {
             </p>
           </Card>
 
-          <Card className="p-6 text-center space-y-4 border-foreground animate-glow-green transition-shadow duration-700">
+          <Card className="p-6 text-center space-y-4 border-foreground">
             <div className="w-12 h-12 rounded-full bg-status-excellent/10 flex items-center justify-center mx-auto">
               <TrendingUp className="h-6 w-6 text-status-excellent" />
             </div>
@@ -132,7 +132,7 @@ const Index = () => {
 
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-6">
-        <Card className="max-w-4xl mx-auto p-12 text-center bg-gradient-to-br from-card to-muted/20 border-foreground">
+        <Card className="max-w-4xl mx-auto p-12 text-center bg-card border-foreground">
           <h2 className="text-4xl font-black mb-4">Ready to Change the Industry?</h2>
           <p className="text-lg text-muted-foreground mb-8">
             Follow @LeakedLiability on Instagram to join the movement. Let's start holding producers accountable, so that we can get crews paid faster.

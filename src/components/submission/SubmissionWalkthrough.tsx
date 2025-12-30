@@ -30,27 +30,27 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
           <section>
             <h3 className="font-bold text-base mb-2">What Crew Members & Vendors / Service Providers Can Submit:</h3>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Crew Member Reports ⚠️</strong> - sworn statements of unpaid invoices</li>
-              <li><strong>Vendor Reports ⚠️</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
-              <li><strong>Payment Confirmations ✅</strong> - verify a producer actually paid you</li>
+              <li><strong>Crew Member Reports</strong> - sworn statements of unpaid invoices</li>
+              <li><strong>Vendor Reports</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
+              <li><strong>Payment Confirmations</strong> - verify a producer actually paid you</li>
               <p className="text-xs italic text-muted-foreground ml-6">
                 *Verified confirmations earn Confirmation Cash — in-platform credit redeemable for site perks and merch.*
               </p>
-              <li><strong>Crew/Vendor Corroboration 🔗</strong> - confirm a producer's <em>self-reported</em> unpaid debt through their shared link (no login required)</li>
-              <li><strong>Counter-Disputes ‼️</strong> - challenge a producer's dispute of your report</li>
+              <li><strong>Crew/Vendor Corroboration</strong> - confirm a producer's <em>self-reported</em> unpaid debt through their shared link (no login required)</li>
+              <li><strong>Counter-Disputes</strong> - challenge a producer's dispute of your report</li>
             </ul>
           </section>
 
           <section>
             <h3 className="font-bold text-base mb-2">What Producers/Production Companies Can Submit:</h3>
             <ul className="list-disc pl-5 space-y-1">
-              <li><strong>Producer Self-Report 🎉</strong> - voluntarily disclose outstanding debts to earn Transparency Credit and boost PSCS score once corroborated by at least 3 crew/vendor confirmations</li>
-              <li><strong>Payment Documentation 🧾</strong> - receipts, confirmations, bank proof</li>
-              <li><strong>Report Explanations ☮️</strong> - acknowledge & explain why payment is delayed</li>
-              <li><strong>Report Disputes ⁉️</strong> - challenge a crew member's or vendor's report</li>
+              <li><strong>Producer Self-Report</strong> - voluntarily disclose outstanding debts to earn Transparency Credit and boost PSCS score once corroborated by at least 3 crew/vendor confirmations</li>
+              <li><strong>Payment Documentation</strong> - receipts, confirmations, bank proof</li>
+              <li><strong>Report Explanations</strong> - acknowledge & explain why payment is delayed</li>
+              <li><strong>Report Disputes</strong> - challenge a crew member's or vendor's report</li>
             </ul>
             <p className="text-sm text-muted-foreground mt-3">
-              Verified reports, self-reports, and confirmations all contribute to a producer's PSCS and may trigger short-term <span className="text-orange-500 font-semibold">Good Standing Momentum 🔥</span> periods.
+              Verified reports, self-reports, and confirmations all contribute to a producer's PSCS and may trigger short-term <span className="text-orange-500 font-semibold">Good Standing Momentum</span> periods.
             </p>
           </section>
 

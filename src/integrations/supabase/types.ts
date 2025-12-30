@@ -134,43 +134,82 @@ export type Database = {
         }
         Relationships: []
       }
+      call_sheet_config: {
+        Row: {
+          created_at: string | null
+          id: string
+          rate_limit_enabled: boolean | null
+          rate_limit_per_hour: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rate_limit_enabled?: boolean | null
+          rate_limit_per_hour?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rate_limit_enabled?: boolean | null
+          rate_limit_per_hour?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       call_sheets: {
         Row: {
           contacts_extracted: number | null
           content_hash: string | null
+          error_message: string | null
           file_name: string
           file_path: string
           id: string
+          last_error_at: string | null
           parsed_contacts: Json | null
           parsed_date: string | null
+          parsing_started_at: string | null
+          retry_count: number | null
           review_completed_at: string | null
           status: string | null
+          updated_at: string | null
           uploaded_at: string | null
           user_id: string
         }
         Insert: {
           contacts_extracted?: number | null
           content_hash?: string | null
+          error_message?: string | null
           file_name: string
           file_path: string
           id?: string
+          last_error_at?: string | null
           parsed_contacts?: Json | null
           parsed_date?: string | null
+          parsing_started_at?: string | null
+          retry_count?: number | null
           review_completed_at?: string | null
           status?: string | null
+          updated_at?: string | null
           uploaded_at?: string | null
           user_id: string
         }
         Update: {
           contacts_extracted?: number | null
           content_hash?: string | null
+          error_message?: string | null
           file_name?: string
           file_path?: string
           id?: string
+          last_error_at?: string | null
           parsed_contacts?: Json | null
           parsed_date?: string | null
+          parsing_started_at?: string | null
+          retry_count?: number | null
           review_completed_at?: string | null
           status?: string | null
+          updated_at?: string | null
           uploaded_at?: string | null
           user_id?: string
         }
@@ -247,6 +286,42 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      contact_call_sheets: {
+        Row: {
+          call_sheet_id: string
+          contact_id: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          call_sheet_id: string
+          contact_id: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          call_sheet_id?: string
+          contact_id?: string
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_call_sheets_call_sheet_id_fkey"
+            columns: ["call_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_call_sheets_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crew_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crew_contacts: {
         Row: {
@@ -651,6 +726,60 @@ export type Database = {
           id?: string
           metadata?: Json | null
           proof_image_path?: string
+        }
+        Relationships: []
+      }
+      global_call_sheets: {
+        Row: {
+          contacts_extracted: number | null
+          content_hash: string
+          created_at: string | null
+          error_message: string | null
+          first_uploaded_by: string | null
+          id: string
+          master_file_path: string
+          original_file_name: string
+          parsed_contacts: Json | null
+          parsed_date: string | null
+          parsing_started_at: string | null
+          project_title: string | null
+          retry_count: number | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          contacts_extracted?: number | null
+          content_hash: string
+          created_at?: string | null
+          error_message?: string | null
+          first_uploaded_by?: string | null
+          id?: string
+          master_file_path: string
+          original_file_name: string
+          parsed_contacts?: Json | null
+          parsed_date?: string | null
+          parsing_started_at?: string | null
+          project_title?: string | null
+          retry_count?: number | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          contacts_extracted?: number | null
+          content_hash?: string
+          created_at?: string | null
+          error_message?: string | null
+          first_uploaded_by?: string | null
+          id?: string
+          master_file_path?: string
+          original_file_name?: string
+          parsed_contacts?: Json | null
+          parsed_date?: string | null
+          parsing_started_at?: string | null
+          project_title?: string | null
+          retry_count?: number | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -2025,6 +2154,38 @@ export type Database = {
         }
         Relationships: []
       }
+      user_call_sheets: {
+        Row: {
+          created_at: string | null
+          global_call_sheet_id: string
+          id: string
+          user_id: string
+          user_label: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          global_call_sheet_id: string
+          id?: string
+          user_id: string
+          user_label?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          global_call_sheet_id?: string
+          id?: string
+          user_id?: string
+          user_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_call_sheets_global_call_sheet_id_fkey"
+            columns: ["global_call_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_entitlements: {
         Row: {
           billing_frequency: string | null
@@ -2360,6 +2521,10 @@ export type Database = {
       increment_corroboration: {
         Args: { report_id: string }
         Returns: undefined
+      }
+      lookup_global_call_sheet_by_hash: {
+        Args: { _content_hash: string }
+        Returns: Json
       }
       refresh_all_producer_stats: { Args: never; Returns: undefined }
       revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }

@@ -46,8 +46,11 @@ import DailyVisitors from "./pages/DailyVisitors";
 import Results from "./pages/Results";
 import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
-import AdminImportContacts from "./pages/AdminImportContacts";
-import { ContactsDashboard, CallSheets, CallSheetReview } from "./pages/callsheets";
+import CallSheetManager from "./pages/CallSheetManager";
+import CrewContacts from "./pages/CrewContacts";
+import ParseReview from "./pages/ParseReview";
+import IGMatching from "./pages/IGMatching";
+import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
 
 const queryClient = new QueryClient();
 
@@ -167,10 +170,11 @@ const AppContent = () => {
         <Route path="/escrow/initiate" element={<EscrowInitiate />} />
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
-        <Route path="/my-contacts" element={<ContactsDashboard />} />
-        <Route path="/call-sheets" element={<CallSheets />} />
-        <Route path="/call-sheets/review/:id" element={<CallSheetReview />} />
-        <Route path="/admin/import-contacts" element={<AdminImportContacts />} />
+        <Route path="/call-sheets" element={<CallSheetManager />} />
+        <Route path="/call-sheets/:id/review" element={<ParseReview />} />
+        <Route path="/call-sheets/:id/ig-matching" element={<IGMatching />} />
+        <Route path="/crew-contacts" element={<CrewContacts />} />
+        <Route path="/admin/call-sheet-reservoir" element={<AdminCallSheetReservoir />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -109,6 +109,9 @@ export default function Admin() {
   const [producers, setProducers] = useState<any[]>([]);
   const [identityClaims, setIdentityClaims] = useState<any[]>([]);
   const [processingClaimId, setProcessingClaimId] = useState<string | null>(null);
+  const [callSheetRateLimitEnabled, setCallSheetRateLimitEnabled] = useState(false);
+  const [callSheetRateLimitPerHour, setCallSheetRateLimitPerHour] = useState(20);
+  const [callSheetConfigId, setCallSheetConfigId] = useState<string | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -204,6 +207,18 @@ export default function Admin() {
       if (leaderboardConfig) {
         setFreeAccessEnabled(leaderboardConfig.free_access_enabled ?? true);
         setLeaderboardConfigId(leaderboardConfig.id);
+      }
+
+      // Load call sheet config for rate limiting
+      const { data: callSheetConfig } = await supabase
+        .from("call_sheet_config")
+        .select("*")
+        .single();
+      
+      if (callSheetConfig) {
+        setCallSheetRateLimitEnabled(callSheetConfig.rate_limit_enabled ?? false);
+        setCallSheetRateLimitPerHour(callSheetConfig.rate_limit_per_hour ?? 20);
+        setCallSheetConfigId(callSheetConfig.id);
       }
 
       // Load queued notifications count
@@ -1151,6 +1166,65 @@ export default function Admin() {
     });
   };
 
+  const toggleCallSheetRateLimit = async () => {
+    if (!callSheetConfigId) return;
+
+    const newEnabled = !callSheetRateLimitEnabled;
+    const { error } = await supabase
+      .from("call_sheet_config")
+      .update({ rate_limit_enabled: newEnabled })
+      .eq("id", callSheetConfigId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: mapDatabaseError(error),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCallSheetRateLimitEnabled(newEnabled);
+
+    await supabase.functions.invoke('log-event', {
+      body: {
+        event_type: 'call_sheet_rate_limit_toggled',
+        payload: { enabled: newEnabled, limit: callSheetRateLimitPerHour }
+      }
+    });
+
+    toast({
+      title: newEnabled ? "Rate Limiting Enabled" : "Rate Limiting Disabled",
+      description: newEnabled 
+        ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
+        : "No upload limits (seeding mode)",
+    });
+  };
+
+  const updateCallSheetRateLimit = async (newLimit: number) => {
+    if (!callSheetConfigId || newLimit < 1) return;
+
+    const { error } = await supabase
+      .from("call_sheet_config")
+      .update({ rate_limit_per_hour: newLimit })
+      .eq("id", callSheetConfigId);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: mapDatabaseError(error),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setCallSheetRateLimitPerHour(newLimit);
+    toast({
+      title: "Rate Limit Updated",
+      description: `Users now limited to ${newLimit} uploads/hour`,
+    });
+  };
+
   const handleGenerateEscrowLink = async (reportId: string) => {
     setGeneratingEscrowLink(reportId);
     try {
@@ -1611,6 +1685,42 @@ export default function Admin() {
               variant="status"
             />
           </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="space-y-1">
+              <Label htmlFor="rate-limit" className="text-lg font-semibold flex items-center gap-2">
+                <Shield className="h-5 w-5 text-muted-foreground" />
+                Call Sheet Upload Rate Limiting
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {callSheetRateLimitEnabled 
+                  ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
+                  : "No upload limits — seeding mode active"}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {callSheetRateLimitEnabled && (
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={callSheetRateLimitPerHour}
+                    onChange={(e) => setCallSheetRateLimitPerHour(parseInt(e.target.value) || 20)}
+                    onBlur={(e) => updateCallSheetRateLimit(parseInt(e.target.value) || 20)}
+                    className="w-20 h-8 text-center"
+                  />
+                  <span className="text-sm text-muted-foreground">/hr</span>
+                </div>
+              )}
+              <Switch
+                id="rate-limit"
+                checked={callSheetRateLimitEnabled}
+                onCheckedChange={toggleCallSheetRateLimit}
+                variant="status"
+              />
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -1712,23 +1822,23 @@ export default function Admin() {
                       <div className="text-2xl font-bold">{searchResults.stats.crew_report}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Payment Documentations 🧾</div>
+                      <div className="text-sm text-muted-foreground">Payment Documentations</div>
                       <div className="text-2xl font-bold">{searchResults.stats.payment_documentation}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Payment Confirmations ✅</div>
+                      <div className="text-sm text-muted-foreground">Payment Confirmations</div>
                       <div className="text-2xl font-bold">{searchResults.stats.payment_confirmation}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Report Explanations ☮️</div>
+                      <div className="text-sm text-muted-foreground">Report Explanations</div>
                       <div className="text-2xl font-bold">{searchResults.stats.report_explanation}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Counter-Disputes ‼️</div>
+                      <div className="text-sm text-muted-foreground">Counter-Disputes</div>
                       <div className="text-2xl font-bold">{searchResults.stats.counter_dispute}</div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Report Disputes ⁉️</div>
+                      <div className="text-sm text-muted-foreground">Report Disputes</div>
                       <div className="text-2xl font-bold">{searchResults.stats.report_dispute}</div>
                     </div>
                   </div>
@@ -1741,20 +1851,20 @@ export default function Admin() {
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1">
-          <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">💰 Payments Due</TabsTrigger>
-          <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">✅ Paid</TabsTrigger>
-          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">⚙️ Settings</TabsTrigger>
-          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">👥 Users</TabsTrigger>
-          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">📧 Notifications</TabsTrigger>
-          <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">📋 All Submissions</TabsTrigger>
+          <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">Payments Due</TabsTrigger>
+          <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">Paid</TabsTrigger>
+          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">Settings</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">Users</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">Notifications</TabsTrigger>
+          <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">All Submissions</TabsTrigger>
           <TabsTrigger value="identity_claims" className="text-xs sm:text-sm px-2 py-1.5">
-            🛡️ Identity Claims
+            Identity Claims
             {identityClaims.length > 0 && (
               <Badge variant="destructive" className="ml-1">{identityClaims.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="suggestions" className="text-xs sm:text-sm px-2 py-1.5">
-            💡 Suggestions
+            Suggestions
             {suggestions.length > 0 && (
               <Badge variant="secondary" className="ml-1">{suggestions.length}</Badge>
             )}

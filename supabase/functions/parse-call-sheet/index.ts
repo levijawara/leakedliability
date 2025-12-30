@@ -1,27 +1,18 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { PDFDocument } from "https://esm.sh/pdf-lib@1.17.1";
-import * as pdfjs from "https://esm.sh/pdfjs-dist@3.11.174/build/pdf.mjs";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { extractText } from "https://esm.sh/unpdf@0.12.1";
 
-// CORS headers
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Lovable AI Gateway configuration
-const LOVABLE_API_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const PRIMARY_MODEL = "openai/gpt-5-mini";
-const CLEANUP_MODEL = "openai/gpt-5-nano";
-
-// Types
 interface ParsedContact {
   name: string;
-  role: string;
-  department: string;
-  phone: string | null;
-  email: string | null;
+  roles: string[];
+  departments: string[];
+  emails: string[];
+  phones: string[];
   ig_handle: string | null;
   confidence: number;
   needs_review: boolean;
@@ -29,636 +20,814 @@ interface ParsedContact {
 
 interface ParseResult {
   contacts: ParsedContact[];
-  raw_text?: string;
-  parsing_method: string;
-  pages_processed: number;
-  errors: string[];
+  project_title: string | null;
+  parsed_date: string | null;
+  unassigned_emails: string[];
+  unassigned_phones: string[];
 }
 
-// Helper functions
-const getSupabase = () => {
+// ============================================================================
+// COMPLETE EXTRA CREDIT PARSER SYSTEM PROMPT
+// All 23 refinements, 4-pass extraction, 12 canonical departments, role normalization
+// ============================================================================
+
+const SYSTEM_PROMPT = `You are an expert call sheet parser for film/TV production documents. Your job is to extract EVERY person and EVERY piece of contact information from production call sheets.
+
+# CORE PARSING METHOD: FOUR-PASS EXTRACTION
+
+## PASS 1 - Pattern Extraction
+- Extract ALL email addresses (anything with @ and a domain)
+- Extract ALL phone numbers (10 digits, with or without formatting)
+- Count them all; do NOT skip any
+
+## PASS 2 - Visual Layout Analysis
+- Identify table columns by visual alignment (not just OCR text order)
+- Note department section headers and their visual boundaries
+- Identify call time columns (e.g., "CALL", "TIME", "6A", "7:00 AM")
+- Map which visual column contains: NAME, ROLE, PHONE, EMAIL, CALL TIME
+
+## PASS 3 - Semantic Mapping with Layout Priority
+- Use visual row position (anchored by call times if present) to stitch data together
+- Find nearest email and phone by visual proximity (same row, same section)
+- Department/Role comes from section headers or adjacent columns
+- Trust visual table layout over OCR text order when they conflict
+
+## PASS 4 - Smart Assignment + In-Document Duplicate Merge
+- Attempt to assign every remaining unassigned email and phone using name-matching rules
+- Scan for duplicates within the parsed document and merge them
+
+# CRITICAL PHONE NUMBER RULES (MANDATORY)
+
+1. Extract ONLY ONE phone number per contact — never multiple
+2. NEVER repeat the same phone number across contacts
+3. If duplicates appear in source, list only one instance
+4. If unsure, leave empty (null)
+5. Each phone must be EXACTLY 10 digits (US format)
+6. NEVER include call times, grid coordinates, or timestamps as phones
+7. If document has graphic elements or unusual layouts, be extra conservative
+
+## Phone Validation (Refinement #15)
+- Must contain exactly 10 digits (US standard)
+- If more than 10 digits extracted:
+  - STOP and re-examine
+  - Likely reading across cell boundaries
+  - Take only the first 10 consecutive digits
+  - Do NOT concatenate digits from adjacent columns
+
+## Common Phone Errors to Avoid
+- Reading "310.938.7530 clcarter1847@gmail.com" as phone "3109387530184..." → WRONG! Phone is 3109387530, email is separate
+- Reading "818.915.3321 PO" as phone "8189153321123" → WRONG! Phone is 8189153321, "PO" is location code
+
+# 12 CANONICAL DEPARTMENTS (USE ONLY THESE)
+
+1. Agency/Production
+2. Direction
+3. Camera
+4. Sound
+5. Grip & Electric
+6. Art
+7. Hair/Makeup/Grooming
+8. Styling/Wardrobe
+9. Casting
+10. Miscellaneous
+11. Post-Production
+12. Vendors/Services
+
+## Department Mapping Guide
+- Hair/makeup/grooming → "Hair/Makeup/Grooming"
+- Styling/wardrobe/costume → "Styling/Wardrobe"
+- Grip and/or electric → "Grip & Electric"
+- Locations/transport/craft services/medic/misc → "Miscellaneous"
+- Casting/talent/actors/models/performers/musicians → "Casting"
+- Directors/ADs/Script supervisor → "Direction"
+- Producers/coordinators/PAs → "Agency/Production"
+- Post/edit/color/vfx → "Post-Production"
+- Equipment rentals/catering companies/vendors → "Vendors/Services"
+
+IMPORTANT: Do NOT use old department names like "HMUA", "Wardrobe", "Electric", "Grip", "Locations", "Talent", "Agency", "Post", "Other"
+
+# ALL 23 REFINEMENTS
+
+## Refinement #1: Visual Layout Priority Over OCR Text
+When visual PDF table shows role next to name (e.g., table column header "DP" with "Peter Mosiman" below), that visual assignment takes precedence.
+
+Priority order for role assignment:
+1. Table column headers + row position (highest)
+2. Department section headers + explicit role text
+3. Adjacent text labels in same visual row
+4. Parsed text matching (lowest)
+
+## Refinement #2: Call Time Row Anchoring
+Use call time columns as row anchors to stitch fragmented data.
+Call time formats: "6A", "6:00A", "6:00 AM", "0600", "TBD", "ASAP", "W/N" (will notify), "ON CALL"
+
+## Refinement #3: Department Headers as Hard Boundaries
+When encountering department header, reset parsing context completely.
+Roles NEVER bleed across section boundaries.
+
+## Refinement #4: In-Parser Fuzzy Duplicate Merge
+Before returning contacts, scan for duplicates within parsed document.
+Duplicate detection rules (check in order):
+1. Same phone number → definitely same person (merge immediately)
+2. Same email address → definitely same person (merge immediately)
+3. Very similar name (fuzzy match) with overlapping phone/email → likely same person
+
+## Refinements #5-7: BTS/Stills, Conflict Resolution
+- BTS, Photographer, Unit Stills roles → Camera department (NOT Agency)
+- When OCR text conflicts with visual layout → layout wins, set needs_review=true
+
+## Refinement #8: Row-Aware Email Mapping (CRITICAL)
+Each email must be assigned to contact in SAME ROW as email text.
+Use visual row position, NOT name matching, for email assignment.
+NEVER leave emails in unassigned_emails if they appear in structured row with name.
+Only use unassigned_emails for floating emails with no row context.
+
+## Refinement #9: "Per [Name]" is a Note, Not a Person
+Roles like "Swing – per Mike" or "PA – per Garibaldi":
+- Correct interpretation: role exists, but individual is unnamed
+- "Per Mike" is a note, NOT a person's name
+- Create contact with: name: "[Role] - TBD", role: extracted correctly, needs_review: true, confidence: 0.60
+
+## Refinement #10: Performance Roles → Casting (Not Misc)
+- Violinist, Musician, Instrumentalist → Casting
+- Artist, Performing Artist → Casting
+- Dancer, Singer, Vocalist → Casting
+- Any on-camera performer → Casting
+- Use "Miscellaneous" ONLY for operational/support roles
+
+## Refinement #11: Vendor/Equipment Rows
+Rows containing company names or services (not individual crew members):
+- Should be classified under "Vendors/Services" department
+- Do NOT assign phone numbers or call times unless printed
+- Do NOT create crew-type contact objects for vendor entries
+
+## Refinement #12: Anonymous Crew Positions
+When call sheet contains role with no name given:
+- Do NOT attempt name extraction via inference
+- Create contact with: name: "[Role] - TBD", role: the given role, confidence: 0.60, needs_review: true
+
+## Refinement #13: Nike-Style Multi-Line Contact Blocks
+Corporate/branded call sheets use stacked blocks instead of tables.
+Parsing rules:
+- New contact begins only when new Title Case name pattern appears
+- Following lines (role, phone, email, call time) belong to previous name
+- Do NOT split multi-line blocks into separate contacts
+- Use proximity: emails/phones appearing under/beside name → assign to that name
+
+## Refinement #14: Needs_Review Threshold Calibration
+- 0.95+ confidence = needs_review: false (explicit row data, high certainty)
+- 0.85-0.94 confidence = needs_review: false (visual layout trusted)
+- 0.80-0.84 confidence = needs_review: false (section header inference)
+- 0.70-0.79 confidence = needs_review: true (proximity-based, verify)
+- Below 0.70 confidence = needs_review: true (uncertain, definitely review)
+
+## Refinement #15: Phone Number Validation
+(See CRITICAL PHONE NUMBER RULES above)
+
+## Refinement #16: Tabular Cell Boundary Detection
+For tables with clearly separated columns (Name | Phone | Email | Location):
+- Each column is discrete data — NEVER concatenate across columns
+- Phone column contains ONLY phone digits (10 digits max)
+- Email column contains ONLY email addresses (starts with letters, contains @)
+- Location/code columns contain short strings like "PO", "Loc 1", "Loc 2"
+
+## Refinement #17: Email Extraction from Tabular Sheets (CRITICAL)
+For sheets with visible table structure:
+- ALWAYS extract email from Email column
+- Match each email to contact in same table row
+- Do NOT leave emails in unassigned_emails when table structure is clear
+- Finding ZERO emails from tabular call sheet is a CRITICAL FAILURE
+
+## Refinement #18: Never Create Contacts with Email as Name (CRITICAL)
+String containing "@" is ALWAYS an email address, NEVER a person's name.
+Hard rules:
+- If potential "name" contains "@" → it is an email, NOT a name
+- Emails must be assigned to contact in same table row
+- If cannot determine which contact owns email → put in unassigned_emails
+- NEVER create contact object where name = "something@domain.com"
+
+## Refinement #19: Strict Row Integrity — No External Role Inference (CRITICAL)
+When parsing tables with headers like TITLE | NAME | PHONE | EMAIL:
+- Each row is ONE contact
+- Read left to right across each row
+- NEVER shift data between rows
+- NEVER infer roles from:
+  - Database history or known profiles
+  - Name familiarity
+  - Past extractions from other documents
+  - Industry conventions or guessing
+
+## Refinement #20: Talent vs Model Classification
+When section header says "TALENT", "ARTIST", "CLIENT TEAM", or "ARTIST CALL":
+- If name appears to be artist/musician → role: "Artist" or "Talent", department: "Casting"
+- Only use "Model" when call sheet explicitly says "MODEL" or clearly modeling/fashion shoot
+
+Single-word names (e.g., "BB", "Dev", "Sean", "Blu"):
+- Accept as valid names
+- Mark needs_review: true
+- Confidence: no higher than 0.80
+- Do NOT attempt to expand to multi-word names
+
+## Refinement #21: Vendor Row Email Extraction (CRITICAL)
+Vendor tables often have format: Company | Phone | Email | Contact Name
+When row has company name AND email AND contact name:
+- Create contact with person's name (last name-like column)
+- Attach email from same row to that contact
+- Company name can be stored as context in role
+- Do NOT leave vendor emails in unassigned_emails when row clearly shows which person they belong to
+
+## Refinement #22: Section-Based Role Anchoring (CRITICAL)
+Sections like "MGK'S TEAM", "ARTIST TEAM" have explicit position columns.
+- Position column value IS the role, NOT the section header
+- Section header provides department context only
+- Read position column value exactly for each row
+- Do NOT assign everyone in "MGK'S TEAM" the role "Manager" just because it's a talent management section
+
+## Refinement #23: Stand-In / Photo Double Classification
+Roles explicitly stated as "Stand-In", "Photo Double", or "Stunt Double":
+- ALWAYS use explicit role, do NOT infer different role
+- Department: "Casting" (they are cast support)
+- Confidence: 0.85+ if explicitly stated
+- Stand-In roles take priority over section header inference
+
+# ROLE NORMALIZATION
+
+Use these canonical role names (not variations):
+- "1st AC" not "First AC" or "1st Assistant Camera"
+- "2nd AC" not "Second AC"
+- "Gaffer" not "Chief Lighting Technician"
+- "Best Boy Electric" not "BBE"
+- "Sound Mixer" not "Production Sound Mixer"
+- "1st AD" not "First Assistant Director"
+- "Key HMU" for key hair/makeup
+- "Makeup Artist" or "Hair Stylist" for individual roles
+- "BTS Photographer" for behind-the-scenes stills
+- "Stylist" for wardrobe stylists
+- "Crafty" for craft services
+
+For new roles not in this list:
+- Keep role name exactly as written (normalized formatting only)
+- Assign to most appropriate of 12 canonical departments
+- Set needs_review=true
+
+# CONFIDENCE CALIBRATION
+
+- 0.95+ = All data clearly in same row, role explicitly stated, normalized correctly
+- 0.85-0.94 = Role from visual layout (trusted but not explicit text)
+- 0.80-0.89 = Role inferred from section header
+- 0.70-0.79 = Email matched by proximity, role unknown
+- 0.60-0.69 = Uncertain, needs human review
+- Below 0.60 = Very uncertain, definitely needs_review=true
+
+High confidence pairs (role+department combinations that get +0.1 confidence boost):
+- "Director of Photography" + "Camera"
+- "Gaffer" + "Grip & Electric"
+- "Key Grip" + "Grip & Electric"
+- "1st AD" + "Direction"
+- "Production Coordinator" + "Agency/Production"
+- "Sound Mixer" + "Sound"
+
+Set needs_review=true if:
+- Confidence below 0.7
+- Role/department could not be confidently normalized
+- Any data seems uncertain
+
+# METADATA EXTRACTION
+
+## Shoot Date Extraction
+Look for shoot date in document header or prominently displayed.
+Common formats: "SHOOT DATE: August 16, 2021", "DATE: 8/16/21", "Monday, August 16th, 2021", "Day 1 - Aug 16"
+Return in YYYY-MM-DD format (e.g., "2021-08-16")
+If no date found, return empty string ""
+
+## Project Title Extraction
+Extract project_title if visible (e.g., "TAB TIME", "NIKE CAMPAIGN", etc.)
+Return empty string if not found
+
+# OUTPUT FORMAT
+
+Return a JSON object with this EXACT structure:
+{
+  "contacts": [
+    {
+      "name": "Full Name",
+      "roles": ["Role 1"],
+      "departments": ["One of 12 canonical departments"],
+      "emails": ["email@example.com"],
+      "phones": ["1234567890"],
+      "ig_handle": "@handle or null",
+      "confidence": 0.95,
+      "needs_review": false
+    }
+  ],
+  "project_title": "Name of the production or null",
+  "parsed_date": "YYYY-MM-DD or null",
+  "unassigned_emails": ["emails that could not be matched to a contact"],
+  "unassigned_phones": ["phones that could not be matched to a contact"]
+}
+
+# FINAL INSTRUCTION
+
+> "Extract EVERY person and EVERY piece of contact information. Missing data is worse than uncertain data."`;
+
+serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  return createClient(supabaseUrl, supabaseKey, { 
-    auth: { persistSession: false } 
-  });
-};
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
 
-const requireAuth = async (req: Request) => {
-  const authHeader = req.headers.get("authorization");
-  if (!authHeader) {
-    throw new Error("Unauthorized - No auth token provided");
+  if (!lovableApiKey) {
+    console.error("[parse-call-sheet] LOVABLE_API_KEY not configured");
+    return new Response(
+      JSON.stringify({ error: "AI service not configured" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
 
-  const token = authHeader.replace("Bearer ", "");
-  const supabase = getSupabase();
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const { data: { user }, error } = await supabase.auth.getUser(token);
-
-  if (error || !user) {
-    console.error('[AUTH] Error:', error?.message || 'No user found');
-    throw new Error("Unauthorized - Invalid token");
-  }
-
-  console.log('[PARSE_CALL_SHEET] User authenticated:', user.id);
-  return { user, token };
-};
-
-const errorResponse = (message: string, status = 400) => {
-  console.error(`[PARSE_CALL_SHEET] Error: ${message}`);
-  return new Response(
-    JSON.stringify({ error: message }),
-    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-};
-
-const successResponse = (data: unknown, status = 200) => {
-  return new Response(
-    JSON.stringify(data),
-    { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-};
-
-// Standard film departments for classification
-const STANDARD_DEPARTMENTS = [
-  'Production', 'Camera', 'Electric', 'Grip', 'Sound', 'Art', 'Set Dec',
-  'Props', 'Wardrobe', 'Hair', 'Makeup', 'Locations', 'Transportation',
-  'Catering', 'Craft Service', 'Accounting', 'Post Production', 'VFX',
-  'Stunts', 'SFX', 'Script', 'AD', 'Talent', 'Background', 'Extras',
-  'Medical', 'Security', 'Publicity', 'Legal', 'Insurance', 'Other'
-];
-
-// Common role patterns for identification
-const ROLE_PATTERNS = [
-  // Production
-  { pattern: /\b(producer|ep|executive\s*producer|line\s*producer|upm|unit\s*production\s*manager)\b/i, department: 'Production' },
-  { pattern: /\b(director|1st\s*ad|2nd\s*ad|ad\s*pa|key\s*pa|production\s*assistant|pa)\b/i, department: 'AD' },
-  
-  // Camera
-  { pattern: /\b(dp|dop|director\s*of\s*photography|cinematographer|camera\s*operator|1st\s*ac|2nd\s*ac|loader|dit|steadicam|camera\s*pa)\b/i, department: 'Camera' },
-  
-  // G&E
-  { pattern: /\b(gaffer|best\s*boy\s*electric|electrician|rigging\s*electric|dimmer\s*board|genny\s*op)\b/i, department: 'Electric' },
-  { pattern: /\b(key\s*grip|best\s*boy\s*grip|dolly\s*grip|grip|rigging\s*grip)\b/i, department: 'Grip' },
-  
-  // Sound
-  { pattern: /\b(sound\s*mixer|boom\s*operator|utility\s*sound|playback|sound)\b/i, department: 'Sound' },
-  
-  // Art Department
-  { pattern: /\b(production\s*designer|art\s*director|art\s*coordinator|set\s*designer|art\s*pa)\b/i, department: 'Art' },
-  { pattern: /\b(set\s*decorator|leadman|set\s*dresser|on\s*set\s*dresser|buyer)\b/i, department: 'Set Dec' },
-  { pattern: /\b(prop\s*master|props|assistant\s*props|props\s*buyer)\b/i, department: 'Props' },
-  
-  // HMU
-  { pattern: /\b(hair|key\s*hair|assistant\s*hair|hair\s*stylist)\b/i, department: 'Hair' },
-  { pattern: /\b(makeup|key\s*makeup|assistant\s*makeup|mua|sfx\s*makeup)\b/i, department: 'Makeup' },
-  { pattern: /\b(wardrobe|costume|key\s*costumer|set\s*costumer|tailor)\b/i, department: 'Wardrobe' },
-  
-  // Other departments
-  { pattern: /\b(location\s*manager|alm|key\s*assistant\s*location|locations)\b/i, department: 'Locations' },
-  { pattern: /\b(transpo|transportation|driver|picture\s*car)\b/i, department: 'Transportation' },
-  { pattern: /\b(craft\s*service|crafty|craft)\b/i, department: 'Craft Service' },
-  { pattern: /\b(catering|chef)\b/i, department: 'Catering' },
-  { pattern: /\b(stunt|stunt\s*coordinator|stunt\s*performer)\b/i, department: 'Stunts' },
-  { pattern: /\b(vfx|visual\s*effects|cgi)\b/i, department: 'VFX' },
-  { pattern: /\b(sfx|special\s*effects|effects)\b/i, department: 'SFX' },
-  { pattern: /\b(script\s*supervisor|script\s*coordinator|continuity)\b/i, department: 'Script' },
-  { pattern: /\b(medic|set\s*medic|nurse|emt)\b/i, department: 'Medical' },
-  { pattern: /\b(security|fire\s*safety)\b/i, department: 'Security' },
-  { pattern: /\b(accountant|payroll|accounting)\b/i, department: 'Accounting' },
-];
-
-// Phone regex patterns
-const PHONE_PATTERNS = [
-  /(?:\+?1[-.\s]?)?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})/g,
-  /\b\d{3}[-.]?\d{3}[-.]?\d{4}\b/g,
-];
-
-// Email regex
-const EMAIL_PATTERN = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
-
-// IG handle pattern
-const IG_PATTERN = /@([a-zA-Z0-9._]{1,30})/g;
-
-/**
- * Extract text from PDF using pdfjs
- */
-async function extractTextFromPdf(pdfBytes: Uint8Array): Promise<{ text: string; pageCount: number }> {
-  console.log('[PARSE_CALL_SHEET] Extracting text from PDF...');
-  
   try {
-    // Load the PDF document
-    const loadingTask = pdfjs.getDocument({ data: pdfBytes });
-    const pdf = await loadingTask.promise;
-    
-    const pageCount = pdf.numPages;
-    console.log(`[PARSE_CALL_SHEET] PDF has ${pageCount} pages`);
-    
-    let fullText = '';
-    
-    for (let i = 1; i <= pageCount; i++) {
-      const page = await pdf.getPage(i);
-      const textContent = await page.getTextContent();
-      
-      const pageText = textContent.items
-        .map((item: unknown) => {
-          const textItem = item as { str?: string };
-          return textItem.str || '';
-        })
-        .join(' ');
-      
-      fullText += `\n--- PAGE ${i} ---\n${pageText}`;
+    const { call_sheet_id } = await req.json();
+
+    if (!call_sheet_id) {
+      return new Response(
+        JSON.stringify({ error: "call_sheet_id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-    
-    console.log(`[PARSE_CALL_SHEET] Extracted ${fullText.length} characters`);
-    return { text: fullText, pageCount };
-  } catch (error: unknown) {
-    console.error('[PARSE_CALL_SHEET] PDF extraction error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    throw new Error(`Failed to extract PDF text: ${message}`);
-  }
-}
 
-/**
- * Compute content hash for deduplication
- */
-async function computeContentHash(content: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-256', content.buffer as ArrayBuffer);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-}
+    console.log(`[parse-call-sheet] Processing call sheet: ${call_sheet_id}`);
 
-/**
- * Detect department from role text
- */
-function detectDepartment(role: string): string {
-  for (const { pattern, department } of ROLE_PATTERNS) {
-    if (pattern.test(role)) {
-      return department;
+    // Fetch from global_call_sheets table
+    const { data: callSheet, error: fetchError } = await supabase
+      .from("global_call_sheets")
+      .select("*")
+      .eq("id", call_sheet_id)
+      .single();
+
+    if (fetchError || !callSheet) {
+      console.error("[parse-call-sheet] Call sheet not found:", fetchError);
+      return new Response(
+        JSON.stringify({ error: "Call sheet not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
-  }
-  return 'Other';
-}
 
-/**
- * Extract phone numbers from text
- */
-function extractPhones(text: string): string[] {
-  const phones: string[] = [];
-  for (const pattern of PHONE_PATTERNS) {
-    const matches = text.match(pattern);
-    if (matches) {
-      phones.push(...matches);
+    // Skip if already parsed
+    if (callSheet.status === "parsed") {
+      console.log("[parse-call-sheet] Already parsed, skipping");
+      return new Response(
+        JSON.stringify({ success: true, message: "Already parsed" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Update status to parsing
+    await supabase
+      .from("global_call_sheets")
+      .update({ status: "parsing", error_message: null, parsing_started_at: new Date().toISOString() })
+      .eq("id", call_sheet_id);
+
+    console.log(`[parse-call-sheet] Downloading file: ${callSheet.master_file_path}`);
+
+    // Download the PDF from storage using master_file_path
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from("call_sheets")
+      .download(callSheet.master_file_path);
+
+    if (downloadError || !fileData) {
+      console.error("[parse-call-sheet] Failed to download file:", downloadError);
+      await markAsError(supabase, call_sheet_id, "Failed to download file from storage");
+      return new Response(
+        JSON.stringify({ error: "Failed to download file" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Extract text from PDF
+    console.log("[parse-call-sheet] Extracting text from PDF with unpdf...");
+    const pdfText = await extractTextFromPdf(fileData);
+
+    console.log(`[parse-call-sheet] Extracted ${pdfText.length} characters of text`);
+    console.log(`[parse-call-sheet] Text preview: ${pdfText.slice(0, 500)}...`);
+
+    if (!pdfText || pdfText.trim().length < 100) {
+      console.error("[parse-call-sheet] Insufficient text extracted from PDF");
+      await markAsError(supabase, call_sheet_id, "PDF contains insufficient extractable text. It may be a scanned image - please upload a text-based PDF or try OCR.");
+      return new Response(
+        JSON.stringify({ error: "Insufficient extractable text in PDF" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Use AI to parse contacts with openai/gpt-5-mini
+    console.log("[parse-call-sheet] Sending to AI for parsing (openai/gpt-5-mini)...");
+    const parseResult = await parseWithAI(pdfText, lovableApiKey);
+
+    if (!parseResult || !parseResult.contacts) {
+      console.error("[parse-call-sheet] AI parsing failed");
+      await markAsError(supabase, call_sheet_id, "AI failed to parse contacts from the document");
+      return new Response(
+        JSON.stringify({ error: "AI parsing failed" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[parse-call-sheet] AI extracted ${parseResult.contacts.length} contacts`);
+
+    // Post-processing: Sanitize phones and validate contacts
+    const sanitizedContacts = sanitizePhones(parseResult.contacts);
+    const validatedContacts = validateAndNormalizeContacts(sanitizedContacts);
+
+    console.log(`[parse-call-sheet] After sanitization: ${validatedContacts.length} contacts`);
+
+    // Update global_call_sheets with parsed data
+    const { error: updateError } = await supabase
+      .from("global_call_sheets")
+      .update({
+        status: "parsed",
+        parsed_contacts: validatedContacts,
+        contacts_extracted: validatedContacts.length,
+        project_title: parseResult.project_title,
+        parsed_date: parseResult.parsed_date,
+        error_message: null,
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", call_sheet_id);
+
+    if (updateError) {
+      console.error("[parse-call-sheet] Failed to update call sheet:", updateError);
+      await markAsError(supabase, call_sheet_id, "Failed to save parsed contacts");
+      return new Response(
+        JSON.stringify({ error: "Failed to save results" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${validatedContacts.length}`);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        contacts_count: validatedContacts.length,
+        project_title: parseResult.project_title,
+        unassigned_emails: parseResult.unassigned_emails?.length || 0,
+        unassigned_phones: parseResult.unassigned_phones?.length || 0,
+      }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+
+  } catch (error) {
+    console.error("[parse-call-sheet] Unexpected error:", error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   }
-  return [...new Set(phones)];
+});
+
+async function markAsError(supabase: any, callSheetId: string, errorMessage: string) {
+  await supabase
+    .from("global_call_sheets")
+    .update({ status: "error", error_message: errorMessage, updated_at: new Date().toISOString() })
+    .eq("id", callSheetId);
 }
 
-/**
- * Extract emails from text
- */
-function extractEmails(text: string): string[] {
-  const matches = text.match(EMAIL_PATTERN);
-  return matches ? [...new Set(matches)] : [];
-}
+// ============================================================================
+// POST-PROCESSING: Phone Sanitization (Extra Credit Rules)
+// ============================================================================
 
-/**
- * Extract IG handles from text
- */
-function extractIgHandles(text: string): string[] {
-  const matches: string[] = [];
-  let match;
-  const regex = new RegExp(IG_PATTERN.source, 'gi');
-  while ((match = regex.exec(text)) !== null) {
-    matches.push(match[1]);
-  }
-  return [...new Set(matches)];
-}
-
-/**
- * Call Lovable AI Gateway for parsing
- */
-async function callLovableAI(
-  prompt: string,
-  model: string = PRIMARY_MODEL,
-  systemPrompt: string
-): Promise<string> {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+function sanitizePhones(contacts: ParsedContact[]): ParsedContact[] {
+  const seenPhones = new Set<string>();
   
-  if (!LOVABLE_API_KEY) {
-    throw new Error("LOVABLE_API_KEY not configured");
+  return contacts.map(contact => {
+    const cleanedPhones = (contact.phones || [])
+      .filter(phone => {
+        if (!phone) return false;
+        
+        // Rule 1: If phone > 100 chars → hallucination, reject
+        if (phone.length > 100) {
+          console.log(`[sanitizePhones] Rejecting hallucinated phone (>100 chars): ${phone.slice(0, 50)}...`);
+          return false;
+        }
+        
+        // Rule 2: If contains JSON garbage → reject entirely
+        if (/[{}\[\]:"]/.test(phone)) {
+          console.log(`[sanitizePhones] Rejecting JSON garbage phone: ${phone}`);
+          return false;
+        }
+        
+        return true;
+      })
+      .map(phone => {
+        // Extract only digits
+        const digits = phone.replace(/\D/g, '');
+        
+        // Must be exactly 10 digits, take first 10 if more
+        if (digits.length >= 10) {
+          return digits.slice(0, 10);
+        }
+        
+        return null;
+      })
+      .filter((phone): phone is string => {
+        if (!phone) return false;
+        
+        // Check for duplicates across all contacts
+        if (seenPhones.has(phone)) {
+          console.log(`[sanitizePhones] Removing duplicate phone: ${phone}`);
+          return false;
+        }
+        
+        seenPhones.add(phone);
+        return true;
+      });
+
+    // Rule 3: Max 3 phones per contact (more = hallucination)
+    // Rule 4: If >5 candidates before filtering → wipe all
+    if ((contact.phones || []).length > 5) {
+      console.log(`[sanitizePhones] Wiping all phones for ${contact.name} (>5 candidates = hallucination)`);
+      return { ...contact, phones: [], needs_review: true };
+    }
+
+    return { ...contact, phones: cleanedPhones.slice(0, 3) };
+  });
+}
+
+// ============================================================================
+// POST-PROCESSING: Validate and Normalize Contacts
+// ============================================================================
+
+const CANONICAL_DEPARTMENTS = [
+  "Agency/Production",
+  "Direction",
+  "Camera",
+  "Sound",
+  "Grip & Electric",
+  "Art",
+  "Hair/Makeup/Grooming",
+  "Styling/Wardrobe",
+  "Casting",
+  "Miscellaneous",
+  "Post-Production",
+  "Vendors/Services"
+];
+
+function validateAndNormalizeContacts(contacts: ParsedContact[]): ParsedContact[] {
+  return contacts
+    .filter(contact => {
+      // Remove contacts where name is an email
+      if (contact.name && contact.name.includes('@')) {
+        console.log(`[validateContacts] Removing contact with email as name: ${contact.name}`);
+        return false;
+      }
+      
+      // Remove contacts with empty/null names
+      if (!contact.name || contact.name.trim().length < 2) {
+        return false;
+      }
+      
+      return true;
+    })
+    .map(contact => {
+      // Normalize departments to canonical list
+      const normalizedDepartments = (contact.departments || []).map(dept => {
+        const lowerDept = dept.toLowerCase();
+        
+        if (lowerDept.includes('hair') || lowerDept.includes('makeup') || lowerDept.includes('hmua') || lowerDept.includes('grooming')) {
+          return "Hair/Makeup/Grooming";
+        }
+        if (lowerDept.includes('wardrobe') || lowerDept.includes('styling') || lowerDept.includes('costume')) {
+          return "Styling/Wardrobe";
+        }
+        if (lowerDept.includes('grip') || lowerDept.includes('electric') || lowerDept.includes('g&e')) {
+          return "Grip & Electric";
+        }
+        if (lowerDept.includes('camera') || lowerDept.includes('dp') || lowerDept.includes('bts') || lowerDept.includes('photo')) {
+          return "Camera";
+        }
+        if (lowerDept.includes('sound') || lowerDept.includes('audio')) {
+          return "Sound";
+        }
+        if (lowerDept.includes('art') || lowerDept.includes('set dec') || lowerDept.includes('props')) {
+          return "Art";
+        }
+        if (lowerDept.includes('cast') || lowerDept.includes('talent') || lowerDept.includes('performer') || lowerDept.includes('actor') || lowerDept.includes('model')) {
+          return "Casting";
+        }
+        if (lowerDept.includes('direct') || lowerDept.includes('ad ') || lowerDept === 'ad' || lowerDept.includes('script')) {
+          return "Direction";
+        }
+        if (lowerDept.includes('produc') || lowerDept.includes('agency') || lowerDept.includes('coordinator') || lowerDept.includes('pa')) {
+          return "Agency/Production";
+        }
+        if (lowerDept.includes('post') || lowerDept.includes('edit') || lowerDept.includes('vfx') || lowerDept.includes('color')) {
+          return "Post-Production";
+        }
+        if (lowerDept.includes('vendor') || lowerDept.includes('rental') || lowerDept.includes('catering') || lowerDept.includes('service')) {
+          return "Vendors/Services";
+        }
+        if (lowerDept.includes('location') || lowerDept.includes('transport') || lowerDept.includes('craft') || lowerDept.includes('medic')) {
+          return "Miscellaneous";
+        }
+        
+        // If already canonical, return as-is
+        if (CANONICAL_DEPARTMENTS.includes(dept)) {
+          return dept;
+        }
+        
+        return "Miscellaneous";
+      });
+
+      // Validate emails
+      const validEmails = (contact.emails || []).filter(email => {
+        if (!email) return false;
+        return email.includes('@') && email.includes('.') && !email.startsWith('@');
+      });
+
+      // Calculate needs_review based on confidence
+      const confidence = contact.confidence || 0.75;
+      const needsReview = confidence < 0.80 || contact.needs_review === true;
+
+      return {
+        ...contact,
+        departments: [...new Set(normalizedDepartments)],
+        emails: validEmails,
+        confidence: confidence,
+        needs_review: needsReview
+      };
+    });
+}
+
+async function extractTextFromPdf(pdfBlob: Blob): Promise<string> {
+  try {
+    // Convert blob to ArrayBuffer for unpdf
+    const arrayBuffer = await pdfBlob.arrayBuffer();
+    
+    // Use unpdf for proper text extraction (works in edge environments)
+    const { text, totalPages } = await extractText(arrayBuffer, { mergePages: true });
+    
+    console.log(`[parse-call-sheet] PDF pages: ${totalPages}`);
+    console.log(`[parse-call-sheet] Raw text length: ${text.length} chars`);
+    
+    // Clean and normalize the extracted text
+    const cleanedText = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]+/g, ' ')
+      .trim();
+    
+    return cleanedText;
+  } catch (error) {
+    console.error("[parse-call-sheet] unpdf extraction failed:", error);
+    
+    // Fallback: try basic text extraction
+    console.log("[parse-call-sheet] Attempting fallback text extraction...");
+    return await fallbackTextExtraction(pdfBlob);
   }
+}
 
-  console.log(`[PARSE_CALL_SHEET] Calling Lovable AI (${model})...`);
+async function fallbackTextExtraction(pdfBlob: Blob): Promise<string> {
+  // Basic fallback for when pdf-parse fails
+  const arrayBuffer = await pdfBlob.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  const decoder = new TextDecoder("utf-8", { fatal: false });
+  const rawContent = decoder.decode(bytes);
+  
+  // Extract readable patterns
+  const patterns: string[] = [];
+  
+  // Extract emails
+  const emails = rawContent.match(/[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}/g) || [];
+  patterns.push(...emails);
+  
+  // Extract phone numbers
+  const phones = rawContent.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
+  patterns.push(...phones);
+  
+  // Extract printable ASCII sequences (potential names and text)
+  const printableRegex = /[\x20-\x7E]{8,}/g;
+  const printableMatches = rawContent.match(printableRegex) || [];
+  const textMatches = printableMatches
+    .filter(s => /[a-zA-Z]{3,}/.test(s))
+    .filter(s => !/^[%\/\\<>{}]+/.test(s)); // Skip PDF internal commands
+  patterns.push(...textMatches);
+  
+  return [...new Set(patterns)].join(' ').replace(/\s+/g, ' ').trim();
+}
 
-  const response = await fetch(LOVABLE_API_URL, {
+async function parseWithAI(text: string, apiKey: string): Promise<ParseResult> {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+      "Authorization": `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model,
+      model: "openai/gpt-5-mini",
       messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: prompt }
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: `Parse this call sheet text and extract contacts using ALL 23 refinements and the 4-pass extraction methodology:\n\n${text.slice(0, 50000)}` }
       ],
-      max_completion_tokens: 4000,
+      max_completion_tokens: 16000,
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "extract_contacts",
+            description: "Extract structured contact information from a call sheet using the Extra Credit parser rules",
+            parameters: {
+              type: "object",
+              properties: {
+                contacts: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string", description: "Full name of the person (NEVER an email address)" },
+                      roles: { type: "array", items: { type: "string" }, description: "Job titles/roles using canonical names" },
+                      departments: { type: "array", items: { type: "string" }, description: "One of 12 canonical departments" },
+                      emails: { type: "array", items: { type: "string" }, description: "Email addresses" },
+                      phones: { type: "array", items: { type: "string" }, description: "Phone numbers (exactly 10 digits each, max 1 per contact)" },
+                      ig_handle: { type: "string", nullable: true, description: "Instagram handle" },
+                      confidence: { type: "number", description: "Confidence score 0.0-1.0 based on calibration rules" },
+                      needs_review: { type: "boolean", description: "True if confidence < 0.80 or data uncertain" }
+                    },
+                    required: ["name", "roles", "departments", "emails", "phones", "confidence", "needs_review"]
+                  }
+                },
+                project_title: { type: "string", nullable: true, description: "Name of the production" },
+                parsed_date: { type: "string", nullable: true, description: "Date from call sheet (YYYY-MM-DD)" },
+                unassigned_emails: { type: "array", items: { type: "string" }, description: "Emails that could not be matched to a contact" },
+                unassigned_phones: { type: "array", items: { type: "string" }, description: "Phones that could not be matched to a contact" }
+              },
+              required: ["contacts"]
+            }
+          }
+        }
+      ],
+      tool_choice: { type: "function", function: { name: "extract_contacts" } }
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('[PARSE_CALL_SHEET] AI error:', response.status, errorText);
+    console.error("[parse-call-sheet] AI API error:", response.status, errorText);
     
     if (response.status === 429) {
-      throw new Error("Rate limit exceeded - Please try again later");
+      throw new Error("AI rate limit exceeded. Please try again later.");
     }
     if (response.status === 402) {
-      throw new Error("AI credits exhausted - Please add credits");
+      throw new Error("AI credits exhausted. Please add funds.");
     }
-    throw new Error(`AI request failed: ${response.status}`);
+    throw new Error(`AI API error: ${response.status}`);
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || '';
-}
-
-/**
- * Parse raw text using AI
- */
-async function parseTextWithAI(rawText: string): Promise<ParsedContact[]> {
-  const systemPrompt = `You are a film industry call sheet parser. Extract crew contact information from the provided call sheet text.
-
-For each person found, extract:
-- name: Full name
-- role: Their job title/position
-- department: Film department (Production, Camera, Electric, Grip, Sound, Art, Set Dec, Props, Wardrobe, Hair, Makeup, Locations, Transportation, Catering, Craft Service, Accounting, Post Production, VFX, Stunts, SFX, Script, AD, Talent, Background, Medical, Security, Other)
-- phone: Phone number if present
-- email: Email if present  
-- ig_handle: Instagram handle if present (without @)
-
-Return ONLY a valid JSON array. No explanations.
-Example: [{\\"name\\":\\"John Smith\\",\\"role\\":\\"Gaffer\\",\\"department\\":\\"Electric\\",\\"phone\\":\\"555-123-4567\\",\\"email\\":\\"john@example.com\\",\\"ig_handle\\":null}]`;
-
-  const userPrompt = `Parse this call sheet and extract all crew contacts:\n\n${rawText.substring(0, 15000)}`;
-
-  try {
-    const aiResponse = await callLovableAI(userPrompt, PRIMARY_MODEL, systemPrompt);
-    
-    // Extract JSON from response
-    const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      console.warn('[PARSE_CALL_SHEET] No JSON array found in AI response');
-      return [];
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]);
-    
-    // Validate and normalize contacts
-    return parsed.map((contact: Partial<ParsedContact>) => ({
-      name: String(contact.name || '').trim(),
-      role: String(contact.role || '').trim(),
-      department: STANDARD_DEPARTMENTS.includes(contact.department || '') 
-        ? contact.department 
-        : detectDepartment(contact.role || ''),
-      phone: contact.phone || null,
-      email: contact.email || null,
-      ig_handle: contact.ig_handle ? String(contact.ig_handle).replace('@', '') : null,
-      confidence: 0.85,
-      needs_review: false,
-    })).filter((c: ParsedContact) => c.name && c.name.length > 1);
-
-  } catch (error) {
-    console.error('[PARSE_CALL_SHEET] AI parsing error:', error);
-    return [];
-  }
-}
-
-/**
- * Cleanup pass using cheaper model
- */
-async function cleanupContacts(contacts: ParsedContact[]): Promise<ParsedContact[]> {
-  if (contacts.length === 0) return contacts;
-
-  const systemPrompt = `You are a data cleaning assistant. Review these contacts extracted from a film call sheet.
-Fix any obvious errors:
-- Normalize names (proper capitalization)
-- Fix truncated roles
-- Correct department assignments
-- Flag low confidence entries
-
-Return the cleaned JSON array only.`;
-
-  const userPrompt = `Clean these contacts:\n${JSON.stringify(contacts, null, 2)}`;
-
-  try {
-    const aiResponse = await callLovableAI(userPrompt, CLEANUP_MODEL, systemPrompt);
-    
-    const jsonMatch = aiResponse.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return contacts; // Return original if cleanup fails
-    }
-
-    return JSON.parse(jsonMatch[0]);
-  } catch (error) {
-    console.warn('[PARSE_CALL_SHEET] Cleanup pass failed, using original:', error);
-    return contacts;
-  }
-}
-
-/**
- * Fallback regex-based parsing
- */
-function parseWithRegex(rawText: string): ParsedContact[] {
-  console.log('[PARSE_CALL_SHEET] Using regex fallback parser...');
   
-  const contacts: ParsedContact[] = [];
-  const lines = rawText.split('\n').filter(l => l.trim());
-  
-  // Look for patterns like "Name - Role" or "Role: Name"
-  const nameRolePatterns = [
-    /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)\s*[-–—]\s*(.+)$/,
-    /^(.+?):\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)$/,
-  ];
-
-  for (const line of lines) {
-    for (const pattern of nameRolePatterns) {
-      const match = line.match(pattern);
-      if (match) {
-        const [, name, role] = match;
-        const phones = extractPhones(line);
-        const emails = extractEmails(line);
-        const igs = extractIgHandles(line);
-
-        contacts.push({
-          name: name.trim(),
-          role: role.trim(),
-          department: detectDepartment(role),
-          phone: phones[0] || null,
-          email: emails[0] || null,
-          ig_handle: igs[0] || null,
-          confidence: 0.6,
-          needs_review: true,
-        });
-        break;
-      }
-    }
-  }
-
-  return contacts;
-}
-
-/**
- * Main parse function
- */
-async function parseCallSheet(
-  pdfBytes: Uint8Array,
-  options: { useAI?: boolean; includeCleanup?: boolean } = {}
-): Promise<ParseResult> {
-  const { useAI = true, includeCleanup = true } = options;
-  const errors: string[] = [];
-
-  // Extract text from PDF
-  const { text: rawText, pageCount } = await extractTextFromPdf(pdfBytes);
-
-  if (!rawText || rawText.length < 50) {
-    errors.push('Insufficient text extracted from PDF');
-    return {
-      contacts: [],
-      raw_text: rawText,
-      parsing_method: 'failed',
-      pages_processed: pageCount,
-      errors,
-    };
-  }
-
-  let contacts: ParsedContact[] = [];
-  let parsingMethod = 'unknown';
-
-  // Try AI parsing first
-  if (useAI) {
+  // Extract from tool call response
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+  if (toolCall?.function?.arguments) {
     try {
-      contacts = await parseTextWithAI(rawText);
-      parsingMethod = 'ai_primary';
-
-      if (contacts.length > 0 && includeCleanup) {
-        contacts = await cleanupContacts(contacts);
-        parsingMethod = 'ai_with_cleanup';
-      }
-    } catch (error: unknown) {
-      console.warn('[PARSE_CALL_SHEET] AI parsing failed, falling back to regex:', error);
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      errors.push(`AI parsing failed: ${message}`);
+      const parsed = JSON.parse(toolCall.function.arguments);
+      console.log(`[parse-call-sheet] AI returned ${parsed.contacts?.length || 0} contacts, ${parsed.unassigned_emails?.length || 0} unassigned emails`);
+      return {
+        contacts: parsed.contacts || [],
+        project_title: parsed.project_title || null,
+        parsed_date: parsed.parsed_date || null,
+        unassigned_emails: parsed.unassigned_emails || [],
+        unassigned_phones: parsed.unassigned_phones || [],
+      };
+    } catch (e) {
+      console.error("[parse-call-sheet] Failed to parse AI response:", e);
+      throw new Error("Failed to parse AI response");
     }
   }
 
-  // Fallback to regex if AI fails or is disabled
-  if (contacts.length === 0) {
-    contacts = parseWithRegex(rawText);
-    parsingMethod = 'regex_fallback';
+  // Fallback: try to parse from content
+  const content = data.choices?.[0]?.message?.content;
+  if (content) {
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          contacts: parsed.contacts || [],
+          project_title: parsed.project_title || null,
+          parsed_date: parsed.parsed_date || null,
+          unassigned_emails: parsed.unassigned_emails || [],
+          unassigned_phones: parsed.unassigned_phones || [],
+        };
+      }
+    } catch (e) {
+      console.error("[parse-call-sheet] Failed to parse content as JSON:", e);
+    }
   }
 
-  // Mark low-confidence contacts for review
-  contacts = contacts.map(c => ({
-    ...c,
-    needs_review: c.confidence < 0.7 || !c.role || c.department === 'Other',
-  }));
-
-  console.log(`[PARSE_CALL_SHEET] Parsed ${contacts.length} contacts using ${parsingMethod}`);
-
-  return {
-    contacts,
-    raw_text: rawText,
-    parsing_method: parsingMethod,
-    pages_processed: pageCount,
-    errors,
-  };
+  throw new Error("AI returned unexpected response format");
 }
-
-// Main handler
-serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  try {
-    // Require authentication
-    const { user } = await requireAuth(req);
-    const userId = user.id;
-
-    const supabase = getSupabase();
-
-    // Get request body
-    const body = await req.json();
-    const { 
-      file_path, 
-      file_name, 
-      call_sheet_id,
-      auto_insert = false,
-      use_ai = true,
-      include_cleanup = true 
-    } = body;
-
-    if (!file_path) {
-      return errorResponse('file_path is required');
-    }
-
-    console.log(`[PARSE_CALL_SHEET] Processing: ${file_name || file_path}`);
-
-    // Download PDF from storage - use user-scoped path
-    const storagePath = file_path.startsWith(`${userId}/`) 
-      ? file_path 
-      : `${userId}/${file_path}`;
-
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('call_sheets')
-      .download(storagePath);
-
-    if (downloadError || !fileData) {
-      console.error('[PARSE_CALL_SHEET] Download error:', downloadError);
-      return errorResponse(`Failed to download file: ${downloadError?.message || 'File not found'}`);
-    }
-
-    // Convert to Uint8Array
-    const pdfBytes = new Uint8Array(await fileData.arrayBuffer());
-    
-    // Compute content hash for deduplication
-    const contentHash = await computeContentHash(pdfBytes);
-    console.log(`[PARSE_CALL_SHEET] Content hash: ${contentHash.substring(0, 16)}...`);
-
-    // Check for duplicate
-    const { data: existingSheet } = await supabase
-      .from('call_sheets')
-      .select('id, file_name')
-      .eq('content_hash', contentHash)
-      .eq('user_id', userId)
-      .neq('id', call_sheet_id || '')
-      .single();
-
-    if (existingSheet) {
-      console.warn(`[PARSE_CALL_SHEET] Duplicate detected: ${existingSheet.file_name}`);
-      return successResponse({
-        success: false,
-        duplicate: true,
-        existing_id: existingSheet.id,
-        existing_name: existingSheet.file_name,
-        message: 'This file has already been uploaded',
-      });
-    }
-
-    // Parse the PDF
-    const parseResult = await parseCallSheet(pdfBytes, {
-      useAI: use_ai,
-      includeCleanup: include_cleanup,
-    });
-
-    // Update or create call_sheets record
-    const callSheetData = {
-      user_id: userId,
-      file_name: file_name || file_path.split('/').pop(),
-      file_path: storagePath,
-      content_hash: contentHash,
-      parsed_contacts: parseResult.contacts,
-      contacts_extracted: parseResult.contacts.length,
-      parsed_date: new Date().toISOString(),
-      status: parseResult.contacts.length > 0 ? 'parsed' : 'parse_failed',
-    };
-
-    let callSheetRecord;
-    
-    if (call_sheet_id) {
-      // Verify ownership before updating
-      const { data: existing } = await supabase
-        .from('call_sheets')
-        .select('user_id')
-        .eq('id', call_sheet_id)
-        .single();
-
-      if (!existing || existing.user_id !== userId) {
-        return errorResponse('Call sheet not found or access denied', 403);
-      }
-
-      const { data, error } = await supabase
-        .from('call_sheets')
-        .update(callSheetData)
-        .eq('id', call_sheet_id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[PARSE_CALL_SHEET] Update error:', error);
-        return errorResponse(`Failed to update record: ${error.message}`);
-      }
-      callSheetRecord = data;
-    } else {
-      const { data, error } = await supabase
-        .from('call_sheets')
-        .insert(callSheetData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('[PARSE_CALL_SHEET] Insert error:', error);
-        return errorResponse(`Failed to create record: ${error.message}`);
-      }
-      callSheetRecord = data;
-    }
-
-    // Auto-insert contacts if requested
-    if (auto_insert && parseResult.contacts.length > 0) {
-      const contactsToInsert = parseResult.contacts
-        .filter(c => !c.needs_review && c.confidence >= 0.8)
-        .map(c => ({
-          user_id: userId,
-          name: c.name,
-          roles: [c.role],
-          departments: [c.department],
-          phones: c.phone ? [c.phone] : null,
-          emails: c.email ? [c.email] : null,
-          ig_handle: c.ig_handle,
-          confidence: c.confidence,
-          needs_review: c.needs_review,
-          source_files: [callSheetRecord.id],
-        }));
-
-      if (contactsToInsert.length > 0) {
-        const { error: insertError } = await supabase
-          .from('crew_contacts')
-          .insert(contactsToInsert);
-
-        if (insertError) {
-          console.warn('[PARSE_CALL_SHEET] Auto-insert failed:', insertError);
-          parseResult.errors.push(`Auto-insert failed: ${insertError.message}`);
-        } else {
-          console.log(`[PARSE_CALL_SHEET] Auto-inserted ${contactsToInsert.length} contacts`);
-        }
-      }
-    }
-
-    return successResponse({
-      success: true,
-      call_sheet_id: callSheetRecord.id,
-      contacts: parseResult.contacts,
-      contacts_count: parseResult.contacts.length,
-      needs_review_count: parseResult.contacts.filter(c => c.needs_review).length,
-      parsing_method: parseResult.parsing_method,
-      pages_processed: parseResult.pages_processed,
-      errors: parseResult.errors,
-    });
-
-  } catch (error: unknown) {
-    console.error('[PARSE_CALL_SHEET] Error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    
-    if (message.includes('Unauthorized')) {
-      return errorResponse(message, 401);
-    }
-    if (message.includes('Rate limit')) {
-      return errorResponse(message, 429);
-    }
-    
-    return errorResponse(message, 500);
-  }
-});

@@ -12,15 +12,15 @@ interface SubmissionTypeSelectorProps {
 
 export function SubmissionTypeSelector({ participantType, value, onChange, onBack }: SubmissionTypeSelectorProps) {
   const crewOptions = [
-    { value: "crew_report", label: "Crew Member Report ⚠️", description: "Sworn statement of unpaid invoice" },
-    { value: "payment_confirmation", label: "Payment Confirmation ✅", description: "Verify a producer paid you" },
-    { value: "counter_dispute", label: "Counter-Dispute ‼️", description: "Challenge a producer's dispute" }
+    { value: "crew_report", label: "Crew Member Report", description: "Sworn statement of unpaid invoice" },
+    { value: "payment_confirmation", label: "Payment Confirmation", description: "Verify a producer paid you" },
+    { value: "counter_dispute", label: "Counter-Dispute", description: "Challenge a producer's dispute" }
   ];
 
   const producerOptions = [
-    { value: "payment_documentation", label: "Payment Documentation 🧾", description: "Submit payment receipts/proof" },
-    { value: "report_explanation", label: "Report Explanation ☮️", description: "Explain payment delay" },
-    { value: "report_dispute", label: "Report Dispute ⁉️", description: "Challenge a crew member's report" }
+    { value: "payment_documentation", label: "Payment Documentation", description: "Submit payment receipts/proof" },
+    { value: "report_explanation", label: "Report Explanation", description: "Explain payment delay" },
+    { value: "report_dispute", label: "Report Dispute", description: "Challenge a crew member's report" }
   ];
 
   const options = participantType === "crew" ? crewOptions : producerOptions;
