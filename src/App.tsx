@@ -6,11 +6,10 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { supabase } from "@/integrations/supabase/client"; // Force rebuild
+import { supabase } from "@/integrations/supabase/client";
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
 import { trackVisit } from "@/lib/analytics";
 import { validateEnv, testSupabaseConnection } from "@/config/env";
-import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import Leaderboard from "./pages/Leaderboard";
 import SubmitReport from "./pages/SubmitReport";
@@ -240,9 +239,10 @@ const App = () => {
   const envStatus = validateEnv();
 
   if (!envStatus.ok) {
+    const missingVars = (envStatus as { ok: false; missing: string[] }).missing;
     console.error(
       "[FATAL CONFIG ERROR] Missing environment variables:",
-      envStatus.missing
+      missingVars
     );
 
     return (
@@ -263,7 +263,7 @@ const App = () => {
           Missing environment variables:
         </p>
         <ul style={{ marginLeft: 20, marginBottom: 16 }}>
-          {envStatus.missing.map((key) => (
+          {missingVars.map((key) => (
             <li key={key} style={{ marginBottom: 4 }}>{key}</li>
           ))}
         </ul>

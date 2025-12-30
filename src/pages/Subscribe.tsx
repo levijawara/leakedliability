@@ -8,7 +8,8 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Check, Zap, DollarSign, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { isStripeAvailable, validateStripeConfig } from "@/lib/stripeHelpers";
+import { isStripeAvailable } from "@/lib/stripeHelpers";
+import { validateStripeConfig } from "@/config/env";
 
 type UserRole = "crew" | "producer";
 type BillingFrequency = "monthly" | "annual";
