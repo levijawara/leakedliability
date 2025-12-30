@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Save, CheckCircle, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,11 +51,31 @@ export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedConta
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [saving, setSaving] = useState(false);
   const [savedCount, setSavedCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   const contacts: ParsedContact[] = Array.isArray(callSheet.parsed_contacts) 
     ? callSheet.parsed_contacts 
     : [];
+
+  // Check admin status on mount
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.rpc('has_role', {
+            _user_id: user.id,
+            _role: 'admin'
+          });
+          setIsAdmin(!!data);
+        }
+      } catch (error) {
+        console.warn('[ParsedContactsViewer] Failed to check admin status:', error);
+      }
+    };
+    checkAdmin();
+  }, []);
 
   const toggleSelect = (index: number) => {
     const newSelected = new Set(selectedIds);
@@ -93,11 +113,40 @@ export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedConta
     try {
       const contactsToSave = contacts.filter((_, i) => selectedIds.has(i));
       
-      // Fetch existing contacts for matching
-      const { data: existingContactsRaw, error: fetchError } = await supabase
+      // Check admin status if not already checked
+      let userIsAdmin = isAdmin;
+      if (!userIsAdmin) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            const { data } = await supabase.rpc('has_role', {
+              _user_id: user.id,
+              _role: 'admin'
+            });
+            userIsAdmin = !!data;
+          }
+        } catch (error) {
+          console.warn('[ParsedContactsViewer] Failed to check admin status:', error);
+        }
+      }
+      
+      // Build dedup query: admin can see seed contacts, regular users only see their own
+      let dedupQuery = supabase
         .from('crew_contacts')
-        .select('id, name, emails, phones, roles, departments, ig_handle')
-        .eq('user_id', userId);
+        .select('id, name, emails, phones, roles, departments, ig_handle');
+
+      // Admin-expanded dedup scope: include seed contacts for admins
+      // This allows admins to merge with canonical seed data when uploading call sheets
+      if (userIsAdmin) {
+        // Admins can dedup against their own contacts OR seed contacts (canonical database)
+        dedupQuery = dedupQuery.or(`user_id.eq.${userId},is_seed.eq.true`);
+        console.log('[ParsedContactsViewer] Admin dedup scope: including seed contacts');
+      } else {
+        // Regular users only see their own contacts (user-scoped dedup)
+        dedupQuery = dedupQuery.eq('user_id', userId);
+      }
+
+      const { data: existingContactsRaw, error: fetchError } = await dedupQuery;
 
       if (fetchError) {
         console.error('[ParsedContactsViewer] Fetch existing contacts error:', fetchError);

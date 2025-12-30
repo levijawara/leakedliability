@@ -248,22 +248,36 @@ export function ParseSummaryPanel({
   useEffect(() => {
     async function initializePanel() {
       try {
-        // Check admin status
+        // Check admin status first (needed for dedup query scope)
+        let userIsAdmin = false;
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data } = await supabase.rpc('has_role', {
             _user_id: user.id,
             _role: 'admin'
           });
-          setIsAdmin(!!data);
+          userIsAdmin = !!data;
+          setIsAdmin(userIsAdmin);
+        }
+
+        // Build dedup query: admin can see seed contacts, regular users only see their own
+        let dedupQuery = supabase
+          .from('crew_contacts')
+          .select('id, name, phones, emails, roles, departments, ig_handle');
+
+        // Admin-expanded dedup scope: include seed contacts for admins
+        // This allows admins to merge with canonical seed data when uploading call sheets
+        if (userIsAdmin) {
+          // Admins can dedup against their own contacts OR seed contacts (canonical database)
+          dedupQuery = dedupQuery.or(`user_id.eq.${userId},is_seed.eq.true`);
+          console.log('[ParseSummaryPanel] Admin dedup scope: including seed contacts');
+        } else {
+          // Regular users only see their own contacts (user-scoped dedup)
+          dedupQuery = dedupQuery.eq('user_id', userId);
         }
 
         // Fetch existing contacts for duplicate detection (up to 10,000)
-        const { data: existingContactsRaw, error } = await supabase
-          .from('crew_contacts')
-          .select('id, name, phones, emails, roles, departments, ig_handle')
-          .eq('user_id', userId)
-          .limit(10000);
+        const { data: existingContactsRaw, error } = await dedupQuery.limit(10000);
         
         if (error) {
           console.error('[ParseSummaryPanel] Failed to fetch existing contacts:', error);
