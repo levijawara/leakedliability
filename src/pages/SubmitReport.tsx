@@ -37,24 +37,19 @@ export default function SubmitReport() {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to submit a report",
-          variant: "destructive",
+      if (session) {
+        // Check admin status
+        const { data: adminData } = await supabase.rpc('has_role', { 
+          _user_id: session.user.id, 
+          _role: 'admin' 
         });
-        navigate("/auth");
-        return;
+        setIsAdmin(Boolean(adminData));
+        setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
       }
       
-      // Check admin status
-      const { data: adminData } = await supabase.rpc('has_role', { 
-        _user_id: session.user.id, 
-        _role: 'admin' 
-      });
-      setIsAdmin(Boolean(adminData));
-      
-      setIsAuthenticated(true);
       setLoading(false);
     };
 
@@ -68,8 +63,11 @@ export default function SubmitReport() {
     }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!session) {
-        navigate("/auth");
+      if (session) {
+        checkAuth();
+      } else {
+        setIsAuthenticated(false);
+        setIsAdmin(false);
       }
     });
 
@@ -113,6 +111,29 @@ export default function SubmitReport() {
     };
   };
 
+  // Check if user needs to be authenticated for current step
+  const requiresAuthForStep = (currentStep: number): boolean => {
+    // Steps 1-2 (walkthrough and participant type) don't require auth
+    // Step 3+ (identification and submission) require auth
+    return currentStep >= 3;
+  };
+
+  // Handle navigation with auth check
+  const handleNextWithAuthCheck = () => {
+    if (requiresAuthForStep(step + 1) && !isAuthenticated) {
+      toast({
+        title: "Sign In Required",
+        description: "Please sign in to continue with your submission",
+        variant: "destructive",
+      });
+      // Redirect to auth with return path
+      const currentPath = window.location.pathname + window.location.search;
+      navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+      return;
+    }
+    handleNext();
+  };
+
   if (loading) {
     return (
       <>
@@ -122,10 +143,6 @@ export default function SubmitReport() {
         </div>
       </>
     );
-  }
-
-  if (!isAuthenticated) {
-    return null;
   }
 
   return (
@@ -231,7 +248,7 @@ export default function SubmitReport() {
 
           {/* Step 1: Walkthrough */}
           {step === 1 && (
-            <SubmissionWalkthrough onContinue={handleNext} />
+            <SubmissionWalkthrough onContinue={handleNextWithAuthCheck} />
           )}
 
           {/* Step 2: Participant Type */}
@@ -240,15 +257,35 @@ export default function SubmitReport() {
               value={participantType}
               onChange={(type) => {
                 setParticipantType(type);
-                handleNext();
+                handleNextWithAuthCheck();
               }}
               onBack={handleBack}
               isAdmin={isAdmin}
             />
           )}
 
-          {/* Step 3: Identification */}
-          {step === 3 && participantType === "crew" && (
+          {/* Step 3: Identification - Block if not authenticated */}
+          {step === 3 && !isAuthenticated && (
+            <Card className="p-6">
+              <div className="text-center space-y-4">
+                <h2 className="text-2xl font-bold">Sign In Required</h2>
+                <p className="text-muted-foreground">
+                  You need to be signed in to continue with your submission.
+                </p>
+                <Button
+                  onClick={() => {
+                    const currentPath = window.location.pathname + window.location.search;
+                    navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+                  }}
+                  size="lg"
+                >
+                  Sign In to Continue
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {step === 3 && isAuthenticated && participantType === "crew" && (
             <CrewIdentification
               value={userInfo}
               onChange={setUserInfo}
@@ -257,7 +294,7 @@ export default function SubmitReport() {
             />
           )}
 
-          {step === 3 && (participantType === "producer" || participantType === "production_company") && (
+          {step === 3 && isAuthenticated && (participantType === "producer" || participantType === "production_company") && (
             <ProducerIdentification
               type={participantType}
               value={userInfo}
@@ -267,7 +304,7 @@ export default function SubmitReport() {
             />
           )}
 
-          {step === 3 && participantType === "vendor" && (
+          {step === 3 && isAuthenticated && participantType === "vendor" && (
             <VendorIdentification
               value={userInfo}
               onChange={setUserInfo}
@@ -277,7 +314,27 @@ export default function SubmitReport() {
           )}
 
           {/* Step 4: Submission Type Selection (skip for vendors) */}
-          {step === 4 && participantType === "vendor" && (() => {
+          {step === 4 && !isAuthenticated && (
+            <Card className="p-6">
+              <div className="text-center space-y-4">
+                <h2 className="text-2xl font-bold">Sign In Required</h2>
+                <p className="text-muted-foreground">
+                  You need to be signed in to continue with your submission.
+                </p>
+                <Button
+                  onClick={() => {
+                    const currentPath = window.location.pathname + window.location.search;
+                    navigate(`/auth?redirect=${encodeURIComponent(currentPath)}`);
+                  }}
+                  size="lg"
+                >
+                  Sign In to Continue
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          {step === 4 && isAuthenticated && participantType === "vendor" && (() => {
             if (!submissionType) {
               setSubmissionType("vendor_report");
               handleNext();
@@ -285,7 +342,7 @@ export default function SubmitReport() {
             return null;
           })()}
 
-          {step === 4 && participantType !== "vendor" && (
+          {step === 4 && isAuthenticated && participantType !== "vendor" && (
             <SubmissionTypeSelector
               participantType={participantType!}
               value={submissionType}

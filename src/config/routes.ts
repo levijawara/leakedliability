@@ -30,7 +30,7 @@ export const ROUTES: RouteMetadata[] = [
 
   // Authenticated Routes
   { path: "/profile", component: "Profile", name: "Profile", icon: "User", description: "Profile & settings", category: "authenticated", requiresAuth: true },
-  { path: "/submit", component: "SubmitReport", name: "Submit Report", icon: "FileText", description: "Report submission walkthrough", category: "authenticated", requiresAuth: true },
+  { path: "/submit", component: "SubmitReport", name: "Submit Report", icon: "FileText", description: "Report submission walkthrough", category: "public" },
   { path: "/producer-dashboard", component: "ProducerDashboard", name: "Producer Dashboard", icon: "LayoutDashboard", description: "Producer portal", category: "authenticated", requiresAuth: true },
   { path: "/suggestions", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
   { path: "/confirm", component: "ConfirmReport", name: "Confirm Report", icon: "FileCheck", description: "Corroborate debts", category: "authenticated", requiresAuth: true },
