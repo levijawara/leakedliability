@@ -24,7 +24,7 @@ const Index = () => {
             </div>
           </div>
 
-          <h1 className="text-[4.4rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[7rem] xl:text-[8rem] font-black tracking-tighter leading-tight sm:leading-none sm:whitespace-nowrap">
+          <h1 className="text-[2.5rem] sm:text-[3.5rem] md:text-[5rem] lg:text-[7rem] xl:text-[8rem] font-black tracking-tighter leading-tight sm:leading-none sm:whitespace-nowrap">
             Leaked Liability<span className="text-[70%] align-super">™</span>
           </h1>
 
@@ -38,11 +38,11 @@ const Index = () => {
             <Instagram className="h-5 w-5" />
           </a>
 
-          <p className="text-2xl md:text-xl font-bold text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl font-bold text-muted-foreground max-w-2xl mx-auto">
             A platform designed to enable and empower freelance crew members and vendors, by intrinsically motivating producers to be good people. We reward integrity, and expose the exploiters.
           </p>
 
-          <p className="text-lg md:text-base text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto">
             NET30+ was created as a means to assist businesses with monthly cash-flow BEFORE bank transactions became automated, but humanity has come a VERY long way—so has our technology. There's no need to pretend anymore. Humanity's undisciplined greed is the only reason why NET30+ still lingers, so we've decided to do something about it.
           </p>
 
