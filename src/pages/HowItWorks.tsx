@@ -73,52 +73,12 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 3️⃣ CONFIRMATION CASH */}
-          <AccordionItem value="confirmation-cash">
-            <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
-              <CardHeader>
-                <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>Confirmation Cash 💰</CardTitle>
-                </AccordionTrigger>
-              </CardHeader>
-              <AccordionContent>
-                <CardContent className="space-y-4">
-                  <p className="text-lg font-semibold italic">
-                    "Think of it as karma points with receipts."
-                  </p>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Purpose</h3>
-                    <p className="text-muted-foreground">
-                      In-platform credit system that rewards accountability and verified actions.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">How to Earn It</h3>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li>Verified payment confirmations</li>
-                      <li>Corroborating other users' self-reports</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Rules</h3>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li>Never expires</li>
-                      <li>Cannot be redeemed for real money</li>
-                      <li>Can be used only for in-platform perks (merch, leaderboard access upgrades, etc.)</li>
-                      <li>Visible only in your dashboard (hidden from public)</li>
-                    </ul>
-                  </div>
-                </CardContent>
-              </AccordionContent>
-            </Card>
-          </AccordionItem>
-
-          {/* 4️⃣ PRODUCER SELF-REPORTS */}
+          {/* 3️⃣ PRODUCER SELF-REPORTS */}
           <AccordionItem value="self-reports">
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>Producer Self-Reports 🎉</CardTitle>
+                  <CardTitle>Producer Self-Reports</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -160,12 +120,12 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 5️⃣ THE WILDFIRE SYSTEM */}
+          {/* 4️⃣ THE WILDFIRE SYSTEM */}
           <AccordionItem value="wildfire">
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>The Wildfire System (Corroboration Links) 🔗</CardTitle>
+                  <CardTitle>The Wildfire System (Corroboration Links)</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -201,7 +161,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 6️⃣ MOMENTUM STATUS */}
+          {/* 5️⃣ MOMENTUM STATUS */}
           <AccordionItem value="momentum">
             <Card className="border-green-600/30 bg-green-600/10 dark:border-green-500/30 dark:bg-green-500/10">
               <CardHeader>
@@ -250,7 +210,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 7️⃣ PSCS */}
+          {/* 6️⃣ PSCS */}
           <AccordionItem value="pscs">
             <Card>
               <CardHeader>
@@ -356,7 +316,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 8️⃣ LEADERBOARD ACCESS */}
+          {/* 7️⃣ LEADERBOARD ACCESS */}
           <AccordionItem value="leaderboard">
             <Card>
               <CardHeader>
@@ -370,7 +330,6 @@ export default function HowItWorks() {
                     <h3 className="text-xl font-bold mb-3">For Crew/Vendors</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                       <li>Free access after <strong>one verified report</strong> OR <strong>3 corroborations on self-reports</strong></li>
-                      <li>Earn Confirmation Cash for verified activity</li>
                     </ul>
                   </div>
 
@@ -382,7 +341,6 @@ export default function HowItWorks() {
                 (...DO YOU SEE HOW FUCKING STUPID THAT SOUNDS???)
               </p>
               <li><strong>Tier 2 (<span className="font-bold text-green-600 dark:text-green-400">$9.99</span>/mo):</strong> Real-time updates, advanced analytics, export reports</li>
-                      <li><strong>OR:</strong> Pay with Confirmation Cash (future feature)</li>
                     </ul>
                   </div>
 
@@ -397,7 +355,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 9️⃣ SUBMISSION FORMS GUIDE */}
+          {/* 8️⃣ SUBMISSION FORMS GUIDE */}
           <AccordionItem value="forms">
             <Card>
               <CardHeader>
@@ -410,20 +368,20 @@ export default function HowItWorks() {
                   <div>
                     <h3 className="text-xl font-bold mb-3">Crew Member & Vendor Forms</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li><strong>Crew Member Report ⚠️</strong> — Sworn statements of unpaid invoices (one per invoice)</li>
-                      <li><strong>Vendor Report 📋</strong> — Unpaid invoices for equipment, services, facilities (one per invoice)</li>
-                      <li><strong>Payment Confirmation ✅</strong> — Confirm when paid (for both crew and vendors)</li>
-                      <li><strong>Counter-Dispute ‼️</strong> — Challenge producer's false dispute (may require identity sharing, always user's choice)</li>
+                      <li><strong>Crew Member Report</strong> — Sworn statements of unpaid invoices (one per invoice)</li>
+                      <li><strong>Vendor Report</strong> — Unpaid invoices for equipment, services, facilities (one per invoice)</li>
+                      <li><strong>Payment Confirmation</strong> — Confirm when paid (for both crew and vendors)</li>
+                      <li><strong>Counter-Dispute</strong> — Challenge producer's false dispute (may require identity sharing, always user's choice)</li>
                     </ul>
                   </div>
 
                   <div>
                     <h3 className="text-xl font-bold mb-3">Producer/Production Company Forms</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li><strong>Self-Report 🤝 (NEW)</strong> — Voluntarily disclose debt, earn Transparency Credit</li>
-                      <li><strong>Payment Documentation 🧾</strong> — Receipts, confirmations, bank proof (must reference Report ID)</li>
-                      <li><strong>Report Explanation ☮️</strong> — Admit debt, explain delay, apologize (doesn't erase debt)</li>
-                      <li><strong>Report Dispute ⁉️</strong> — Challenge crew/vendor claim with counter-evidence (must reference Report ID)</li>
+                      <li><strong>Self-Report (NEW)</strong> — Voluntarily disclose debt, earn Transparency Credit</li>
+                      <li><strong>Payment Documentation</strong> — Receipts, confirmations, bank proof (must reference Report ID)</li>
+                      <li><strong>Report Explanation</strong> — Admit debt, explain delay, apologize (doesn't erase debt)</li>
+                      <li><strong>Report Dispute</strong> — Challenge crew/vendor claim with counter-evidence (must reference Report ID)</li>
                     </ul>
                   </div>
                 </CardContent>
@@ -465,7 +423,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣1️⃣ IDENTIFICATION RULES */}
+          {/* 9️⃣ IDENTIFICATION RULES */}
           <AccordionItem value="identification">
             <Card>
               <CardHeader>
@@ -506,7 +464,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣2️⃣ VERIFICATION & LIABILITY */}
+          {/* 🔟 VERIFICATION & LIABILITY */}
           <AccordionItem value="verification">
             <Card>
               <CardHeader>
@@ -529,7 +487,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣3️⃣ REPORT LIFECYCLE */}
+          {/* 1️⃣1️⃣ REPORT LIFECYCLE */}
           <AccordionItem value="lifecycle">
             <Card>
               <CardHeader>
@@ -552,12 +510,12 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣5️⃣ BAN POLICY */}
+          {/* 1️⃣2️⃣ BAN POLICY */}
           <AccordionItem value="ban-policy">
             <Card className="border-destructive/20 bg-destructive/5">
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>Ban Policy 🚫</CardTitle>
+                  <CardTitle>Ban Policy</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -593,7 +551,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣6️⃣ SECURITY & PRIVACY */}
+          {/* 1️⃣3️⃣ SECURITY & PRIVACY */}
           <AccordionItem value="security">
             <Card>
               <CardHeader>
@@ -616,7 +574,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣7️⃣ DISCLAIMERS & LEGAL */}
+          {/* 1️⃣4️⃣ DISCLAIMERS & LEGAL */}
           <AccordionItem value="legal">
             <Card>
               <CardHeader>
@@ -628,7 +586,7 @@ export default function HowItWorks() {
                 <CardContent>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li>LL™ ≠ a bank, mediator, or lawyer</li>
-                    <li>All monetary figures are symbolic (Confirmation Cash is not real money)</li>
+                    <li>All monetary figures are symbolic</li>
                     <li>Participation = agreement to all platform terms</li>
                     <li>We provide verified documentation, <strong>not legal representation</strong></li>
                     <li>Users are responsible for their own legal recourse</li>
@@ -638,7 +596,7 @@ export default function HowItWorks() {
             </Card>
           </AccordionItem>
 
-          {/* 1️⃣8️⃣ FUTURE AMENDMENTS */}
+          {/* 1️⃣5️⃣ FUTURE AMENDMENTS */}
           <AccordionItem value="amendments">
             <Card>
               <CardHeader>

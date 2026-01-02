@@ -33,9 +33,6 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
               <li><strong>Crew Member Reports</strong> - sworn statements of unpaid invoices</li>
               <li><strong>Vendor Reports</strong> - sworn statements of unpaid invoices for equipment, services, or facilities</li>
               <li><strong>Payment Confirmations</strong> - verify a producer actually paid you</li>
-              <p className="text-xs italic text-muted-foreground ml-6">
-                *Verified confirmations earn Confirmation Cash — in-platform credit redeemable for site perks and merch.*
-              </p>
               <li><strong>Crew/Vendor Corroboration</strong> - confirm a producer's <em>self-reported</em> unpaid debt through their shared link (no login required)</li>
               <li><strong>Counter-Disputes</strong> - challenge a producer's dispute of your report</li>
             </ul>

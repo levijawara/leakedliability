@@ -6,7 +6,6 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ConfirmationCashBadge } from "@/components/ConfirmationCashBadge";
 
 export function Navigation() {
   const navigate = useNavigate();
@@ -228,7 +227,6 @@ export function Navigation() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel className="flex items-center gap-2">
                     {user.email}
-                    <ConfirmationCashBadge />
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
@@ -308,7 +306,6 @@ export function Navigation() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel className="flex items-center gap-2">
                       {user.email}
-                      <ConfirmationCashBadge />
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleNavigate("/profile")}>
