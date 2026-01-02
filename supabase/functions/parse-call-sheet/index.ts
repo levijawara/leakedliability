@@ -360,6 +360,23 @@ serve(async (req) => {
       );
     }
 
+    // Initialize timing tracking
+    const parseStartTime = Date.now();
+    const actionLog: { action: string; timestamp: string; duration_ms?: number }[] = [];
+    
+    const logAction = (action: string, startTime?: number) => {
+      const entry: { action: string; timestamp: string; duration_ms?: number } = {
+        action,
+        timestamp: new Date().toISOString()
+      };
+      if (startTime) {
+        entry.duration_ms = Date.now() - startTime;
+      }
+      actionLog.push(entry);
+      console.log(`[parse-call-sheet] ${action}${entry.duration_ms ? ` (${entry.duration_ms}ms)` : ''}`);
+    };
+
+    logAction("Started processing");
     console.log(`[parse-call-sheet] Processing call sheet: ${call_sheet_id}`);
 
     // Fetch from global_call_sheets table
@@ -395,6 +412,7 @@ serve(async (req) => {
     console.log(`[parse-call-sheet] Downloading file: ${callSheet.master_file_path}`);
 
     // Download the PDF from storage using master_file_path
+    const downloadStart = Date.now();
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("call_sheets")
       .download(callSheet.master_file_path);
@@ -407,12 +425,16 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    
+    const fileSize = fileData.size;
+    logAction(`PDF downloaded (${(fileSize / 1024).toFixed(1)} KB)`, downloadStart);
 
     // Extract text from PDF
     console.log("[parse-call-sheet] Extracting text from PDF with unpdf...");
+    const extractStart = Date.now();
     const pdfText = await extractTextFromPdf(fileData);
 
-    console.log(`[parse-call-sheet] Extracted ${pdfText.length} characters of text`);
+    logAction(`Text extracted (${pdfText.length} chars)`, extractStart);
     console.log(`[parse-call-sheet] Text preview: ${pdfText.slice(0, 500)}...`);
 
     if (!pdfText || pdfText.trim().length < 100) {
@@ -424,8 +446,9 @@ serve(async (req) => {
       );
     }
 
-    // Use AI to parse contacts with openai/gpt-5-mini
-    console.log("[parse-call-sheet] Sending to AI for parsing (openai/gpt-5-mini)...");
+    // Use AI to parse contacts with google/gemini-2.5-flash
+    console.log("[parse-call-sheet] Sending to AI for parsing (google/gemini-2.5-flash)...");
+    const aiStart = Date.now();
     const parseResult = await parseWithAI(pdfText, lovableApiKey);
 
     if (!parseResult || !parseResult.contacts) {
@@ -437,15 +460,28 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[parse-call-sheet] AI extracted ${parseResult.contacts.length} contacts`);
+    logAction(`AI parsed ${parseResult.contacts.length} contacts`, aiStart);
 
     // Post-processing: Sanitize phones and validate contacts
+    const sanitizeStart = Date.now();
     const sanitizedContacts = sanitizePhones(parseResult.contacts);
     const validatedContacts = validateAndNormalizeContacts(sanitizedContacts);
+    logAction(`Contacts sanitized (${validatedContacts.length} final)`, sanitizeStart);
 
-    console.log(`[parse-call-sheet] After sanitization: ${validatedContacts.length} contacts`);
+    // Calculate total elapsed time
+    const totalElapsedMs = Date.now() - parseStartTime;
+    const totalElapsedFormatted = `${(totalElapsedMs / 1000).toFixed(2)}s`;
+    logAction(`Processing complete`);
 
-    // Update global_call_sheets with parsed data
+    const parseTiming = {
+      total_elapsed_ms: totalElapsedMs,
+      total_elapsed_formatted: totalElapsedFormatted,
+      model_used: "google/gemini-2.5-flash"
+    };
+
+    console.log(`[parse-call-sheet] Total processing time: ${totalElapsedFormatted}`);
+
+    // Update global_call_sheets with parsed data including timing
     const { error: updateError } = await supabase
       .from("global_call_sheets")
       .update({
@@ -454,6 +490,8 @@ serve(async (req) => {
         contacts_extracted: validatedContacts.length,
         project_title: parseResult.project_title,
         parsed_date: parseResult.parsed_date,
+        parse_timing: parseTiming,
+        parse_action_log: actionLog,
         error_message: null,
         updated_at: new Date().toISOString()
       })
@@ -729,7 +767,7 @@ async function parseWithAI(text: string, apiKey: string): Promise<ParseResult> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "openai/gpt-5-mini",
+      model: "google/gemini-2.5-flash",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: `Parse this call sheet text and extract contacts using ALL 23 refinements and the 4-pass extraction methodology:\n\n${text.slice(0, 50000)}` }

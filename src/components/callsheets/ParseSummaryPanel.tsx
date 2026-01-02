@@ -70,6 +70,18 @@ interface ContactWithDuplicate extends ParsedContact {
   decision: 'pending' | 'merge' | 'add_new' | 'skip';
 }
 
+interface ParseTiming {
+  total_elapsed_ms: number;
+  total_elapsed_formatted: string;
+  model_used: string;
+}
+
+interface ActionLogEntry {
+  action: string;
+  timestamp: string;
+  duration_ms?: number;
+}
+
 interface ParseSummaryPanelProps {
   callSheetId: string;
   fileName: string;
@@ -77,6 +89,8 @@ interface ParseSummaryPanelProps {
   parsedDate: string | null;
   onComplete: () => void;
   userId: string;
+  parseTiming?: ParseTiming | null;
+  parseActionLog?: ActionLogEntry[] | null;
 }
 
 // Normalize phone number for matching (digits only)
@@ -210,7 +224,9 @@ export function ParseSummaryPanel({
   parsedContacts,
   parsedDate,
   onComplete,
-  userId
+  userId,
+  parseTiming,
+  parseActionLog
 }: ParseSummaryPanelProps) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -265,16 +281,8 @@ export function ParseSummaryPanel({
           .from('crew_contacts')
           .select('id, name, phones, emails, roles, departments, ig_handle');
 
-        // Admin-expanded dedup scope: include seed contacts for admins
-        // This allows admins to merge with canonical seed data when uploading call sheets
-        if (userIsAdmin) {
-          // Admins can dedup against their own contacts OR seed contacts (canonical database)
-          dedupQuery = dedupQuery.or(`user_id.eq.${userId},is_seed.eq.true`);
-          console.log('[ParseSummaryPanel] Admin dedup scope: including seed contacts');
-        } else {
-          // Regular users only see their own contacts (user-scoped dedup)
-          dedupQuery = dedupQuery.eq('user_id', userId);
-        }
+        // User-scoped dedup: each user only sees their own contacts
+        dedupQuery = dedupQuery.eq('user_id', userId);
 
         // Fetch existing contacts for duplicate detection (up to 10,000)
         const { data: existingContactsRaw, error } = await dedupQuery.limit(10000);
@@ -549,12 +557,54 @@ export function ParseSummaryPanel({
     const contacts = contactsWithDuplicates.filter(c => c.decision !== 'skip');
     
     if (format === 'json') {
-      const blob = new Blob([JSON.stringify({ fileName, parsedDate, contacts }, null, 2)], { type: 'application/json' });
+      // Build enhanced report matching user's sample format
+      const report = {
+        source_file: fileName,
+        parsed_at: parsedDate || new Date().toISOString(),
+        timing: parseTiming || {
+          total_elapsed_ms: 0,
+          total_elapsed_formatted: "N/A",
+          model_used: "google/gemini-2.5-flash"
+        },
+        action_log: parseActionLog || [],
+        summary: {
+          total: parsedContacts.length,
+          high_confidence: highConfidence,
+          low_confidence: lowConfidence,
+          needs_review: parsedContacts.filter(c => c.confidence < 0.8).length,
+          missing_phone: missingPhone,
+          missing_email: missingEmail
+        },
+        warnings: [] as string[],
+        unmapped_data: {
+          emails: [] as string[],
+          phones: [] as string[]
+        },
+        contacts: contacts.map(c => ({
+          name: c.name,
+          roles: c.roles,
+          departments: c.departments,
+          phones: c.phones,
+          emails: c.emails,
+          ig_handle: c.ig_handle,
+          confidence: c.confidence,
+          needs_review: c.confidence < 0.8,
+          is_duplicate: !!c.potentialDuplicate
+        }))
+      };
+      
+      // Use readable filename with timestamp
+      const safeName = fileName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const downloadName = `${safeName}_parse_report_${timestamp}.json`;
+      
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `parse-report-${callSheetId}.json`;
+      a.download = downloadName;
       a.click();
+      URL.revokeObjectURL(url);
     } else {
       const headers = ['Name', 'Roles', 'Departments', 'Phones', 'Emails', 'IG Handle', 'Confidence', 'Duplicate Match'];
       const rows = contacts.map(c => [
@@ -574,6 +624,7 @@ export function ParseSummaryPanel({
       a.href = url;
       a.download = `parse-report-${callSheetId}.csv`;
       a.click();
+      URL.revokeObjectURL(url);
     }
   };
 

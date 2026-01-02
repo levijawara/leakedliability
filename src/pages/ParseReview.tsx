@@ -18,6 +18,18 @@ interface ParsedContact {
   confidence: number;
 }
 
+interface ParseTiming {
+  total_elapsed_ms: number;
+  total_elapsed_formatted: string;
+  model_used: string;
+}
+
+interface ActionLogEntry {
+  action: string;
+  timestamp: string;
+  duration_ms?: number;
+}
+
 interface CallSheetData {
   id: string;
   original_file_name: string;
@@ -25,6 +37,8 @@ interface CallSheetData {
   status: string;
   parsed_contacts: ParsedContact[] | null;
   parsed_date: string | null;
+  parse_timing: ParseTiming | null;
+  parse_action_log: ActionLogEntry[] | null;
 }
 
 export default function ParseReview() {
@@ -47,10 +61,10 @@ export default function ParseReview() {
         }
         setUserId(user.id);
 
-        // Fetch call sheet data
+        // Fetch call sheet data including timing
         const { data, error } = await supabase
           .from('global_call_sheets')
-          .select('id, original_file_name, master_file_path, status, parsed_contacts, parsed_date')
+          .select('id, original_file_name, master_file_path, status, parsed_contacts, parsed_date, parse_timing, parse_action_log')
           .eq('id', id)
           .single();
 
@@ -62,9 +76,15 @@ export default function ParseReview() {
           ? (data.parsed_contacts as unknown as ParsedContact[])
           : null;
 
+        // Parse timing data
+        const parseTiming = data.parse_timing as unknown as ParseTiming | null;
+        const parseActionLog = data.parse_action_log as unknown as ActionLogEntry[] | null;
+
         setCallSheet({
           ...data,
-          parsed_contacts: parsedContacts
+          parsed_contacts: parsedContacts,
+          parse_timing: parseTiming,
+          parse_action_log: parseActionLog
         });
       } catch (error: any) {
         console.error('[ParseReview] Fetch error:', error);
@@ -149,6 +169,8 @@ export default function ParseReview() {
               parsedDate={callSheet.parsed_date}
               onComplete={handleComplete}
               userId={userId}
+              parseTiming={callSheet.parse_timing}
+              parseActionLog={callSheet.parse_action_log}
             />
           </div>
         </div>
