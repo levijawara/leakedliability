@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { MessageSquare, ArrowLeft } from "lucide-react";
+import { MessageSquare, ArrowLeft, Copy } from "lucide-react";
 import { suggestionSchema } from "@/lib/validation";
 import { sanitizeText } from "@/lib/sanitize";
 import { Footer } from "@/components/Footer";
@@ -80,9 +80,21 @@ export default function SuggestionBox() {
         <div className="space-y-4 mb-8">
           <div>
             <h2 className="text-2xl font-bold mb-2">EMAIL</h2>
-            <a href="mailto:leakedliability@gmail.com" className="text-primary hover:underline font-semibold">
-              leakedliability@gmail.com
-            </a>
+            <div className="flex items-center gap-2">
+              <a href="mailto:leakedliability@gmail.com" className="text-primary hover:underline font-semibold">
+                leakedliability@gmail.com
+              </a>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText("leakedliability@gmail.com");
+                  toast.success("Email copied!");
+                }}
+                className="p-1 rounded hover:bg-muted transition-colors"
+                title="Copy email"
+              >
+                <Copy className="h-4 w-4 text-muted-foreground hover:text-primary" />
+              </button>
+            </div>
           </div>
           
           <div>
