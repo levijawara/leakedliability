@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -294,7 +295,7 @@ export default function FAQ() {
               <AccordionItem value="contact-support">
                 <AccordionTrigger>How do I contact support?</AccordionTrigger>
                 <AccordionContent>
-                  Use the "Suggestion Box" link in the footer to submit questions or issues. Our team typically responds within 24-48 hours.
+                  Email us at <a href="mailto:leakedliability@gmail.com" className="font-bold text-primary hover:underline"><strong>leakedliability@gmail.com</strong></a>, send us a DM on Instagram at <a href="https://www.instagram.com/leakedliability/" target="_blank" rel="noopener noreferrer" className="font-bold text-primary hover:underline"><strong>@LeakedLiability</strong></a>, or use our <Link to="/suggestions" className="font-bold text-primary hover:underline"><strong>Suggestion Box</strong></Link>. Our team typically responds within 24-48 hours.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
