@@ -184,7 +184,7 @@ export function Navigation() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate("/suggestions")}>
                   <MessageSquare className="h-4 w-4 mr-2" />
-                  Suggestion Box
+                  CONTACT US
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -391,7 +391,7 @@ export function Navigation() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => handleNavigate("/suggestions")}>
                     <MessageSquare className="h-4 w-4 mr-2" />
-                    Suggestion Box
+                    CONTACT US
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

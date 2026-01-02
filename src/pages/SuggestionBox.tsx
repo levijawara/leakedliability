@@ -76,6 +76,28 @@ export default function SuggestionBox() {
           Back to Home
         </Button>
 
+        {/* Contact Methods */}
+        <div className="space-y-4 mb-8">
+          <div>
+            <h2 className="text-2xl font-bold mb-2">EMAIL</h2>
+            <a href="mailto:leakedliability@gmail.com" className="text-primary hover:underline font-semibold">
+              leakedliability@gmail.com
+            </a>
+          </div>
+          
+          <div>
+            <h2 className="text-2xl font-bold mb-2">INSTAGRAM PROFILE</h2>
+            <a 
+              href="https://www.instagram.com/leakedliability/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary hover:underline font-semibold"
+            >
+              @LeakedLiability
+            </a>
+          </div>
+        </div>
+
         <div className="flex items-center gap-3 mb-4">
           <MessageSquare className="h-8 w-8 text-primary" />
           <h1 className="text-3xl font-bold">Suggestion Box</h1>
@@ -83,7 +105,7 @@ export default function SuggestionBox() {
 
         <p className="text-muted-foreground mb-8">
           Share ideas to make Leaked Liability better. You can submit without signing in.
-          If you're logged in, your account will be attached so we can follow up and weigh context.
+          If you're logged in, your account will be attached so we can follow up and weigh context. Be honest. It could help everyone.
         </p>
 
         <Card className="p-6">
@@ -102,10 +124,6 @@ export default function SuggestionBox() {
                   {charCount}/4000 characters {charCount < 5 && "(minimum 5)"}
                 </span>
               </div>
-            </div>
-
-            <div className="bg-muted/50 rounded-lg p-4 text-sm text-muted-foreground">
-              You can be honest. We don't bite. If we like and approve of your idea, you *COULD* get *PAID* for it after implementation. 👀
             </div>
 
             <Button
