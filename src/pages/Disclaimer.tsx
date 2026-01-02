@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
 
 export default function Disclaimer() {
   return (
@@ -13,6 +14,7 @@ export default function Disclaimer() {
             <CardTitle className="text-3xl font-black text-center">
               Disclaimer of Liability
             </CardTitle>
+            <p className="text-center text-muted-foreground">Last Updated: {format(new Date(), "MMMM d, yyyy")}</p>
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none space-y-4 text-muted-foreground">
             <p>
@@ -109,10 +111,6 @@ export default function Disclaimer() {
 
             <p>
               Users involved in disputes or legal matters are strongly encouraged to seek independent legal counsel. Leaked Liability™ cannot provide legal advice and does not intervene in individual conflicts.
-            </p>
-
-            <p className="text-sm text-muted-foreground text-center mt-8 pt-6 border-t">
-              Last Updated: November 16, 2025
             </p>
           </CardContent>
         </Card>

@@ -351,14 +351,20 @@ export default function HowItWorks() {
               </CardHeader>
               <AccordionContent>
                 <CardContent className="space-y-6">
+                  <p className="text-muted-foreground mb-6">
+                    Access to the Producing Social Credit Score (PSCS) Leaderboard is available through a subscription:
+                  </p>
+
                   <div>
-                    <h3 className="text-xl font-bold mb-3">Includes:</h3>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li>Full leaderboard access</li>
-                      <li>PSCS score visibility</li>
-                      <li>Payment timelines & histories</li>
-                      <li>Producer profiles and analytics</li>
-                    </ul>
+                    <h3 className="text-xl font-bold mb-3">For Crew & Vendors</h3>
+                    <div className="mb-4">
+                      <p className="text-muted-foreground">
+                        <strong>Monthly:</strong> <span className="font-bold text-green-600">$5.99/mo</span>
+                      </p>
+                      <p className="text-muted-foreground">
+                        <strong>Annual:</strong> <span className="font-bold text-green-600">$50.00/yr</span> (save <span className="font-bold text-green-600">$21.88</span>)
+                      </p>
+                    </div>
                   </div>
 
                   <div>
@@ -369,10 +375,10 @@ export default function HowItWorks() {
                         <h4 className="text-lg font-bold mb-2">Tier 1 — NET30 Updates</h4>
                         <div className="mb-3">
                           <p className="text-muted-foreground">
-                            <strong>Monthly:</strong> $5.99/mo
+                            <strong>Monthly:</strong> <span className="font-bold text-green-600">$5.99/mo</span>
                           </p>
                           <p className="text-muted-foreground">
-                            <strong>Annual:</strong> $50.00/yr (save $21.88)
+                            <strong>Annual:</strong> <span className="font-bold text-green-600">$50.00/yr</span> (save <span className="font-bold text-green-600">$21.88</span>)
                           </p>
                         </div>
                         <p className="font-semibold mb-2">Features:</p>
@@ -391,10 +397,10 @@ export default function HowItWorks() {
                         </div>
                         <div className="mb-3">
                           <p className="text-muted-foreground">
-                            <strong>Monthly:</strong> $9.99/mo
+                            <strong>Monthly:</strong> <span className="font-bold text-green-600">$9.99/mo</span>
                           </p>
                           <p className="text-muted-foreground">
-                            <strong>Annual:</strong> $80.00/yr (save $39.88)
+                            <strong>Annual:</strong> <span className="font-bold text-green-600">$80.00/yr</span> (save <span className="font-bold text-green-600">$39.88</span>)
                           </p>
                         </div>
                         <p className="font-semibold mb-2">Features:</p>
@@ -435,11 +441,13 @@ export default function HowItWorks() {
                   <div>
                     <h3 className="text-xl font-bold mb-3">Producer/Production Company Forms</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li><strong>Self-Report (NEW)</strong> — Voluntarily disclose debt, earn Transparency Credit</li>
                       <li><strong>Payment Documentation</strong> — Receipts, confirmations, bank proof (must reference Report ID)</li>
                       <li><strong>Report Explanation</strong> — Admit debt, explain delay, apologize (doesn't erase debt)</li>
                       <li><strong>Report Dispute</strong> — Challenge crew/vendor claim with counter-evidence (must reference Report ID)</li>
                     </ul>
+                    <p className="text-sm text-muted-foreground mt-3">
+                      <strong>Note:</strong> Self-Reports (voluntarily disclose debt, earn Transparency Credit) are submitted through the Producer Dashboard, not the main submission forms page.
+                    </p>
                   </div>
                 </CardContent>
               </AccordionContent>
@@ -463,17 +471,31 @@ export default function HowItWorks() {
                       <li>Track payment status, amounts owed, days outstanding</li>
                       <li>Submit responses directly (Documentation, Disputes, Explanations)</li>
                       <li className="font-semibold">NEW: Submit self-reports with auto-generated share links</li>
-                      <li className="font-semibold">NEW: Monitor Momentum status (🔥 indicator)</li>
                       <li>Monitor PSCS score</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold mb-3">Account Linking Options</h3>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li><strong>Permanent:</strong> Indefinite link to producer/company name (best for established producers)</li>
-                      <li><strong>Temporary:</strong> Limited-time association (useful for freelance aliases or changing company names)</li>
-                    </ul>
+                    <h3 className="text-xl font-bold mb-3">Account Linking</h3>
+                    <div className="space-y-3">
+                      <p className="text-muted-foreground">
+                        Producers can permanently link their user account to their producer profile on the leaderboard. 
+                        This allows them to manage their dashboard, respond to reports, and monitor their PSCS score.
+                      </p>
+                      <div className="p-4 border-2 border-destructive/30 rounded-lg bg-destructive/5">
+                        <p className="text-sm font-semibold text-destructive mb-2">⚠️ Permanent and Irreversible</p>
+                        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                          <li>Once linked, the connection cannot be changed or removed</li>
+                          <li>The only way to break the link is by deleting your entire user account</li>
+                          <li>Producer data remains on the leaderboard even if the user account is deleted</li>
+                          <li>Historical reports and scores are permanently tied to the producer name</li>
+                        </ul>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        <strong>Note:</strong> For third-party payments (e.g., assistants paying on behalf of producers), 
+                        use the escrow payment system instead. No account linking is required for escrow payments.
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </AccordionContent>
@@ -533,10 +555,11 @@ export default function HowItWorks() {
                 <CardContent className="space-y-4">
                   <ul className="list-disc list-inside space-y-3 text-muted-foreground">
                     <li>All reports undergo strict verification: human review + AI parsing</li>
-                    <li>Every report is a signed, sworn statement</li>
+                    <li><strong>Every report is a signed, sworn statement</strong></li>
+                    <li><strong>Liability redirects are also sworn statements</strong> — when producers redirect liability to another party, that action carries the same legal weight and accountability as an original report</li>
                     <li>Legal accountability for accuracy applies to all participants</li>
                     <li><strong>Crew/Vendors:</strong> Falsified or spiteful reports without proof → BANNED + turned over to law enforcement</li>
-                    <li><strong>Producers:</strong> Falsifying payment documentation or false accusations → BANNED + turned over to law enforcement</li>
+                    <li><strong>Producers:</strong> Falsifying payment documentation, false accusations, or false redirects → BANNED + turned over to law enforcement</li>
                     <li>Retaliatory false claims = defamation lawsuits waiting to happen</li>
                   </ul>
                 </CardContent>
@@ -620,11 +643,12 @@ export default function HowItWorks() {
                 <CardContent>
                   <ul className="list-disc list-inside space-y-2 text-muted-foreground">
                     <li>All user data secured via backend Edge Functions + RLS (Row-Level Security)</li>
-                    <li>No client-side role logic (prevents tampering)</li>
-                    <li>Files: UUID-named, 15-minute signed URLs</li>
+                    <li>No client-side role logic that grants permissions (prevents tampering — all access control enforced server-side)</li>
+                    <li>Files: UUID-named with time-limited signed URLs (15 minutes for standard access, extended for admin viewing)</li>
                     <li>Producer data visible only after admin verification</li>
-                    <li>Audit logs for every admin action</li>
+                    <li>Comprehensive audit logs for all critical admin actions (moderation, verification, access changes)</li>
                     <li>Corroboration links use public RPC (intentionally — no auth required for anonymous confirmation)</li>
+                    <li>All liability redirects are logged and tracked with timestamps and IP addresses</li>
                   </ul>
                 </CardContent>
               </AccordionContent>

@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
@@ -35,8 +34,6 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
   const [loadingProducers, setLoadingProducers] = useState(true);
   const [producers, setProducers] = useState<Producer[]>([]);
   const [selectedProducerId, setSelectedProducerId] = useState<string>("");
-  const [isPermanent, setIsPermanent] = useState(true);
-  const [isTemporary, setIsTemporary] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -66,30 +63,11 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
     }
   };
 
-  const handleTogglePermanent = (checked: boolean) => {
-    setIsPermanent(checked);
-    if (checked) setIsTemporary(false);
-  };
-
-  const handleToggleTemporary = (checked: boolean) => {
-    setIsTemporary(checked);
-    if (checked) setIsPermanent(false);
-  };
-
   const handleConfirm = async () => {
     if (!selectedProducerId) {
       toast({
         title: "No Selection",
         description: "Please select a producer from the list",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!isPermanent && !isTemporary) {
-      toast({
-        title: "Association Type Required",
-        description: "Please select an association type",
         variant: "destructive",
       });
       return;
@@ -102,16 +80,14 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
         .insert({
           user_id: userId,
           producer_id: selectedProducerId,
-          association_type: isPermanent ? "permanent" : "temporary",
+          association_type: "permanent", // Only permanent links are allowed
         });
 
       if (error) throw error;
 
       toast({
-        title: "Association Created",
-        description: isPermanent 
-          ? "Your account is now permanently linked to this producer"
-          : "Temporary association created for submissions",
+        title: "Permanent Link Created",
+        description: "Your account is now permanently and irreversibly linked to this producer. This link cannot be changed or removed.",
       });
 
       onClose();
@@ -136,9 +112,9 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Associate with Existing Producer?</DialogTitle>
+          <DialogTitle>Permanently Link Your Account to a Producer</DialogTitle>
           <DialogDescription>
-            If your name appears on the leaderboard under a different name or company, you can link your account now.
+            If your name appears on the leaderboard under a different name or company, you can permanently link your account to that producer profile.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,62 +124,44 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
           </div>
         ) : (
           <div className="space-y-6 py-4">
-            {/* Toggle Options */}
-            <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
-              <div className="flex items-start space-x-3">
-                <Switch
-                  id="permanent"
-                  checked={isPermanent}
-                  onCheckedChange={handleTogglePermanent}
-                  variant="status"
-                />
-                <div className="space-y-1 flex-1">
-                  <Label htmlFor="permanent" className="text-sm font-medium cursor-pointer">
-                    My legal name isn't listed, but I associate with one of the names on the leaderboard
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    This will permanently link your account to the selected producer
+            {/* Important Warning */}
+            <div className="p-4 border-2 border-destructive/50 rounded-lg bg-destructive/5">
+              <div className="flex items-start gap-2">
+                <div className="text-destructive font-bold text-lg leading-none">⚠️</div>
+                <div className="flex-1 space-y-2">
+                  <p className="text-sm font-semibold text-destructive">
+                    This Link Is Permanent and Irreversible
                   </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-3">
-                <Switch
-                  id="temporary"
-                  checked={isTemporary}
-                  onCheckedChange={handleToggleTemporary}
-                  variant="status"
-                />
-                <div className="space-y-1 flex-1">
-                  <Label htmlFor="temporary" className="text-sm font-medium cursor-pointer">
-                    I'm submitting forms on SOMEONE ELSE'S behalf
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    This allows temporary submissions without permanent linking
-                  </p>
+                  <ul className="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+                    <li>Once created, this link cannot be changed or removed</li>
+                    <li>The only way to break the link is by deleting your entire user account</li>
+                    <li>All historical data tied to this producer will remain on the leaderboard</li>
+                    <li>This action is final - make sure you're linking to the correct producer</li>
+                  </ul>
                 </div>
               </div>
             </div>
 
             {/* Producer Selection */}
-            {(isPermanent || isTemporary) && (
-              <div className="space-y-2">
-                <Label htmlFor="producer">Select Producer</Label>
-                <Select value={selectedProducerId} onValueChange={setSelectedProducerId}>
-                  <SelectTrigger id="producer">
-                    <SelectValue placeholder="Choose from leaderboard..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {producers.map((producer) => (
-                      <SelectItem key={producer.id} value={producer.id}>
-                        {producer.name}
-                        {producer.company && ` (${producer.company})`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="producer">Select Producer to Link</Label>
+              <Select value={selectedProducerId} onValueChange={setSelectedProducerId}>
+                <SelectTrigger id="producer">
+                  <SelectValue placeholder="Choose from leaderboard..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {producers.map((producer) => (
+                    <SelectItem key={producer.id} value={producer.id}>
+                      {producer.name}
+                      {producer.company && ` (${producer.company})`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                My legal name isn't listed, but I associate with one of the names on the leaderboard
+              </p>
+            </div>
           </div>
         )}
 
@@ -217,7 +175,8 @@ export default function ProducerAssociationModal({ isOpen, onClose, userId }: Pr
           </Button>
           <Button
             onClick={handleConfirm}
-            disabled={loading || loadingProducers || !selectedProducerId || (!isPermanent && !isTemporary)}
+            disabled={loading || loadingProducers || !selectedProducerId}
+            variant="destructive"
           >
             {loading ? (
               <>

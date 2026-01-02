@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, CheckCircle2, XCircle, ArrowRight, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TokenData {
@@ -392,14 +392,18 @@ export default function LiabilityClaim() {
                   onCheckedChange={(checked) => setRedirectAffirmation(checked as boolean)}
                 />
                 <Label htmlFor="redirect-affirmation" className="text-sm leading-relaxed cursor-pointer">
-                  I affirm under penalty of perjury that the information provided is true and accurate 
-                  to the best of my knowledge
+                  <strong>I affirm under penalty of perjury</strong> that the information provided is true and accurate 
+                  to the best of my knowledge. This redirect is a <strong>signed, sworn statement</strong> with the same 
+                  legal weight as an original report.
                 </Label>
               </div>
-              <Alert>
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  The person you name will receive a notification email with a link to respond. 
-                  If they redirect back to someone already in the chain, liability will revert to the original party.
+                  <strong>Warning:</strong> This redirect is a sworn statement. Falsely redirecting liability to another 
+                  party will result in account termination and potential legal action. The person you name will receive 
+                  a notification email with a link to respond. If they redirect back to someone already in the chain, 
+                  liability will revert to the original party.
                 </AlertDescription>
               </Alert>
               <div className="flex gap-4">

@@ -122,8 +122,10 @@ export const LiabilityNotification = ({
           
           <Text style={optionText}>
             <strong>2. Redirect Liability:</strong> If this debt is not your responsibility, 
-            you can name the actual responsible party. You must affirm under penalty of 
-            perjury that your claim is accurate.
+            you can name the actual responsible party. <strong>Redirects are sworn statements</strong> 
+            with the same legal weight as an original report. You must affirm under penalty of 
+            perjury that your claim is accurate. False redirects will result in account termination 
+            and potential legal action.
           </Text>
           
           <Text style={optionText}>

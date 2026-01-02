@@ -100,6 +100,8 @@ Deno.serve(async (req) => {
       }
 
       // 2. Handle producer_account_links (merge, avoiding duplicates)
+      // Note: This admin function can update permanent links during producer merges.
+      // Permanent links are preserved but moved to the primary producer.
       const { data: existingLinks, error: linksQueryError } = await supabase
         .from('producer_account_links')
         .select('user_id, association_type, id')
@@ -124,7 +126,7 @@ Deno.serve(async (req) => {
           }
 
           if (!existing) {
-            // No conflict, update to primary
+            // No conflict, update to primary (preserves permanent link status)
             const { error: updateError } = await supabase
               .from('producer_account_links')
               .update({ producer_id: primary_producer_id })
@@ -134,7 +136,8 @@ Deno.serve(async (req) => {
               results.producer_account_links++;
             }
           } else {
-            // Conflict exists, delete duplicate link
+            // Conflict exists, delete duplicate link (keeps primary's link)
+            // Note: If both are permanent, the primary's link is preserved
             await supabase
               .from('producer_account_links')
               .delete()

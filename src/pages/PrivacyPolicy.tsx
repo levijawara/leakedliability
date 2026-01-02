@@ -1,6 +1,7 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
 
 const PrivacyPolicy = () => {
   return (
@@ -12,7 +13,7 @@ const PrivacyPolicy = () => {
             <CardTitle className="text-3xl font-bold text-center">
               Leaked Liability™ Privacy Policy
             </CardTitle>
-            <p className="text-center text-muted-foreground">Last Updated: December 2025</p>
+            <p className="text-center text-muted-foreground">Last Updated: {format(new Date(), "MMMM d, yyyy")}</p>
           </CardHeader>
           <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-8">
             <p>

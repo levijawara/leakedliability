@@ -85,9 +85,10 @@ export const LiabilityLoopDetected = ({
         <Section style={warningBox}>
           <Text style={warningHeading}>⚠️ Important Notice</Text>
           <Text style={warningText}>
-            Leaked Liability™ maintains a complete audit trail of all liability redirects, 
-            including timestamps, affirmations, and IP addresses. Making false claims may 
-            expose you to legal action and account suspension.
+            <strong>All liability redirects are sworn statements</strong> with the same legal 
+            weight as original reports. Leaked Liability™ maintains a complete audit trail of all 
+            liability redirects, including timestamps, affirmations, and IP addresses. Making false 
+            claims may expose you to legal action and account suspension.
           </Text>
         </Section>
         

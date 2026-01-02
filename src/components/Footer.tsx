@@ -18,7 +18,7 @@ export const Footer = () => {
         </Link>
       </div>
       <p className="text-xs text-muted-foreground opacity-70">
-        © 2025 Leaked Liability™ · from SetOS
+        © 2026 Leaked Liability™
       </p>
     </footer>
   );

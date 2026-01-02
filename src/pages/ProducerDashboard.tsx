@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,6 +33,8 @@ export default function ProducerDashboard() {
   const [loading, setLoading] = useState(true);
   const [reports, setReports] = useState<PaymentReport[]>([]);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [pscsScore, setPscsScore] = useState<number | null>(null);
+  const [producerId, setProducerId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -73,6 +75,7 @@ export default function ProducerDashboard() {
       .eq("user_id", user.id)
       .single();
 
+    let currentProducerId: string | null = null;
     let query = supabase
       .from("payment_reports")
       .select("*")
@@ -80,7 +83,9 @@ export default function ProducerDashboard() {
 
     // If user has a linked producer account, use producer_id, otherwise fall back to email
     if (linkData?.producer_id) {
+      currentProducerId = linkData.producer_id;
       query = query.eq("producer_id", linkData.producer_id);
+      setProducerId(linkData.producer_id);
     } else {
       query = query.eq("producer_email", email);
     }
@@ -97,8 +102,55 @@ export default function ProducerDashboard() {
     } else {
       setReports(data || []);
     }
+
+    // Load PSCS score if we have a producer_id
+    if (currentProducerId) {
+      await loadPscsScore(currentProducerId);
+    } else {
+      // Try to find producer by email as fallback
+      const { data: producerByEmail } = await supabase
+        .from("producers")
+        .select("id, pscs_score")
+        .ilike("email", email)
+        .single();
+      
+      if (producerByEmail) {
+        setPscsScore(producerByEmail.pscs_score);
+        setProducerId(producerByEmail.id);
+      }
+    }
     
     setLoading(false);
+  };
+
+  const loadPscsScore = async (producerId: string) => {
+    try {
+      // Try to get from public_leaderboard view first (has calculated score)
+      const { data: leaderboardData } = await supabase
+        .from("public_leaderboard")
+        .select("pscs_score")
+        .eq("producer_id", producerId)
+        .single();
+
+      if (leaderboardData?.pscs_score !== undefined) {
+        setPscsScore(leaderboardData.pscs_score);
+        return;
+      }
+
+      // Fallback to producers table
+      const { data: producerData } = await supabase
+        .from("producers")
+        .select("pscs_score")
+        .eq("id", producerId)
+        .single();
+
+      if (producerData?.pscs_score !== undefined) {
+        setPscsScore(producerData.pscs_score);
+      }
+    } catch (error) {
+      console.error("Error loading PSCS score:", error);
+      // Don't show error toast - PSCS is not critical for dashboard to function
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -145,9 +197,31 @@ export default function ProducerDashboard() {
 
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Producer Dashboard</h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-4">
             Reports associated with: <span className="font-medium">{userEmail}</span>
           </p>
+          
+          {/* PSCS Score Display */}
+          {pscsScore !== null && (
+            <Card className="bg-gradient-to-br from-primary/5 to-accent/5 border-2 mb-6">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">
+                      Your Producing Social Credit Score (PSCS)
+                    </h3>
+                    <p className="text-4xl font-black">
+                      {Number(pscsScore).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground mb-1">Score Range</p>
+                    <p className="text-sm font-semibold">0 - 1,000</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {reports.length === 0 ? (

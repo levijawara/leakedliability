@@ -62,7 +62,7 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
             <h3 className="font-bold text-base mb-2">⚠️ CRITICAL WARNING:</h3>
             <div className="bg-destructive/10 border border-destructive p-4 rounded-md">
               <p className="font-bold mb-2">WE CANNOT AND WILL NOT TOLERATE LYING, EXAGGERATING, FABRICATING, OR DEFAMING OF ANY KIND.</p>
-              <p>Every report is a signed, sworn statement. You are legally accountable for accuracy. False reports will result in account termination and potential legal action.</p>
+              <p><strong>Every report is a signed, sworn statement.</strong> <strong>Liability redirects are also sworn statements</strong> — when producers redirect liability to another party, that action carries the same legal weight and accountability as an original report. You are legally accountable for accuracy. False reports or false redirects will result in account termination and potential legal action.</p>
             </div>
           </section>
         </div>
