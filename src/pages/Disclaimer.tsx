@@ -51,7 +51,7 @@ export default function Disclaimer() {
             </ul>
 
             <p>
-              The Producer Social Credit Score (PSCS) and related metrics are proprietary opinion based indicators. They are not credit scores, financial ratings, or legally recognized evaluations, and should not be used as the sole basis for hiring, contracting, or financial decision making.
+              The Producing Social Credit Score (PSCS) and related metrics are proprietary opinion based indicators. They are not credit scores, financial ratings, or legally recognized evaluations, and should not be used as the sole basis for hiring, contracting, or financial decision making.
             </p>
 
             <p>

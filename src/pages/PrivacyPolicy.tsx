@@ -55,7 +55,7 @@ const PrivacyPolicy = () => {
                 <li>Total amount owed</li>
                 <li>Age of oldest debt</li>
                 <li>Number of reports</li>
-                <li>Producer Social Credit Score (PSCS)</li>
+                <li>Producing Social Credit Score (PSCS)</li>
                 <li>Resolution timestamps</li>
                 <li>Change logs related to report corrections and disputes</li>
               </ul>

@@ -215,7 +215,7 @@ export default function HowItWorks() {
             <Card>
               <CardHeader>
                 <AccordionTrigger className="hover:no-underline">
-                  <CardTitle>PSCS (Producer Social Credit Score)</CardTitle>
+                  <CardTitle>PSCS (Producing Social Credit Score)</CardTitle>
                 </AccordionTrigger>
               </CardHeader>
               <AccordionContent>
@@ -299,14 +299,39 @@ export default function HowItWorks() {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold mb-3">Credit Recovery System</h3>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li>25% of max penalty remains as "negative history" after payment</li>
-                      <li>6 months clean: ~50% forgiven (≈875)</li>
-                      <li>1 year clean: ~75% forgiven (≈938)</li>
-                      <li>2 years clean: ~94% forgiven (≈985)</li>
-                      <li>3+ years clean: Full recovery to 1000</li>
-                    </ul>
+                    <h3 className="text-xl font-bold mb-3">Credit Recovery System (When All Debts Paid)</h3>
+                    <p className="text-muted-foreground mb-3">
+                      Recovery follows a linear forgiveness curve based on days clean:
+                    </p>
+                    <div className="bg-muted/50 p-4 rounded-lg mb-3">
+                      <div className="font-mono text-center text-sm mb-2">
+                        recovery = 1000 × forgiveness_factor
+                      </div>
+                      <div className="font-mono text-center text-sm">
+                        forgiveness_factor = MIN(days_clean / 30, 1)
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-3 mb-3">
+                      <div className="bg-muted/50 p-3 rounded text-center">
+                        <div className="font-bold">0 days</div>
+                        <div className="text-sm text-muted-foreground">0% recovery</div>
+                      </div>
+                      <div className="bg-muted/50 p-3 rounded text-center">
+                        <div className="font-bold">15 days</div>
+                        <div className="text-sm text-muted-foreground">50% recovery</div>
+                      </div>
+                      <div className="bg-muted/50 p-3 rounded text-center">
+                        <div className="font-bold">30 days</div>
+                        <div className="text-sm text-muted-foreground">100% recovery</div>
+                      </div>
+                      <div className="bg-muted/50 p-3 rounded text-center">
+                        <div className="font-bold">30+ days</div>
+                        <div className="text-sm text-muted-foreground">100% recovery</div>
+                      </div>
+                    </div>
+                    <p className="text-sm italic text-muted-foreground text-center">
+                      After 30 clean days, all history penalties reset to zero (full recovery to 1000)
+                    </p>
                     <p className="mt-3 font-semibold text-destructive">
                       Important: Any new debt resets the clock.
                     </p>
@@ -327,28 +352,60 @@ export default function HowItWorks() {
               <AccordionContent>
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="text-xl font-bold mb-3">For Crew/Vendors</h3>
+                    <h3 className="text-xl font-bold mb-3">Includes:</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-                      <li>Free access after <strong>one verified report</strong> OR <strong>3 corroborations on self-reports</strong></li>
+                      <li>Full leaderboard access</li>
+                      <li>PSCS score visibility</li>
+                      <li>Payment timelines & histories</li>
+                      <li>Producer profiles and analytics</li>
                     </ul>
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold mb-3">For Producers</h3>
-                    <ul className="list-disc list-inside space-y-2 text-muted-foreground">
-              <li><strong>Tier 1 (<span className="font-bold text-green-600 dark:text-green-400">$5.99</span>/mo):</strong> When you receive payment confirmation from crew, your PSCS will update sometime within a NET30 window.</li>
-              <p className="text-red-500 font-bold mt-2">
-                (...DO YOU SEE HOW FUCKING STUPID THAT SOUNDS???)
-              </p>
-              <li><strong>Tier 2 (<span className="font-bold text-green-600 dark:text-green-400">$9.99</span>/mo):</strong> Real-time updates, advanced analytics, export reports</li>
-                    </ul>
-                  </div>
+                    <h3 className="text-xl font-bold mb-3">For Producers & Production Companies:</h3>
+                    
+                    <div className="space-y-6">
+                      <div className="border-l-4 border-primary/50 pl-4">
+                        <h4 className="text-lg font-bold mb-2">Tier 1 — NET30 Updates</h4>
+                        <div className="mb-3">
+                          <p className="text-muted-foreground">
+                            <strong>Monthly:</strong> $5.99/mo
+                          </p>
+                          <p className="text-muted-foreground">
+                            <strong>Annual:</strong> $50.00/yr (save $21.88)
+                          </p>
+                        </div>
+                        <p className="font-semibold mb-2">Features:</p>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                          <li>Full leaderboard access</li>
+                          <li>PSCS score visibility</li>
+                          <li>NET30 update cycle</li>
+                          <li>Producer dashboard tools</li>
+                        </ul>
+                      </div>
 
-                  <div>
-                    <h3 className="text-xl font-bold mb-3">Privacy Threshold</h3>
-                    <p className="text-muted-foreground">
-                      Producer names blurred until 20 unique verified producers exist in system.
-                    </p>
+                      <div className="border-l-4 border-green-600 pl-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-lg font-bold">Tier 2 — Instant Updates</h4>
+                          <span className="text-xs bg-green-600 text-white px-2 py-1 rounded">Recommended</span>
+                        </div>
+                        <div className="mb-3">
+                          <p className="text-muted-foreground">
+                            <strong>Monthly:</strong> $9.99/mo
+                          </p>
+                          <p className="text-muted-foreground">
+                            <strong>Annual:</strong> $80.00/yr (save $39.88)
+                          </p>
+                        </div>
+                        <p className="font-semibold mb-2">Features:</p>
+                        <ul className="list-disc list-inside space-y-1 text-muted-foreground ml-4">
+                          <li>Everything in Tier 1</li>
+                          <li>Real-time PSCS updates</li>
+                          <li>Advanced analytics</li>
+                          <li>Priority support</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </AccordionContent>

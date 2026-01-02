@@ -192,7 +192,7 @@ export default function SubmitReport() {
             <div className="flex items-start gap-3">
               <TrendingUp className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-semibold mb-1">Producer Social Credit Score (PSCS)</p>
+                <p className="font-semibold mb-1">Producing Social Credit Score (PSCS)</p>
                 <p className="text-muted-foreground">
                   Every confirmed debt affects the producer's <strong>PSCS</strong>. Paid debts start a 30-day recovery window. A producer's score affects how they appear on the leaderboard, and multiple debts accumulate heavier penalties.
                 </p>

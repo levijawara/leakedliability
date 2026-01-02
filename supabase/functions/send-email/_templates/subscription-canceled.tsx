@@ -97,7 +97,7 @@ export const SubscriptionCanceled = ({
           </Text>
           <Text style={footer}>
             ✓ Full leaderboard access<br />
-            ✓ Producer Social Credit Scores (PSCS)<br />
+            ✓ Producing Social Credit Scores (PSCS)<br />
             ✓ Detailed payment histories<br />
             ✓ Producer profiles and analytics<br />
             {subscriptionTier === 'producer_t2' && '✓ Instant PSCS updates (Tier 2 only)'}

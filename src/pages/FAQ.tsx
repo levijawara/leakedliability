@@ -49,7 +49,7 @@ export default function FAQ() {
               <AccordionItem value="credit-reporting">
                 <AccordionTrigger>Is this a credit reporting agency?</AccordionTrigger>
                 <AccordionContent>
-                  No. We are not a credit bureau and do not report to credit agencies. The Producer Social Credit Score (PSCS) is <strong>internal to Leaked Liability™ only</strong> and is designed to reflect payment behavior within the production community.
+                  No. We are not a credit bureau and do not report to credit agencies. The Producing Social Credit Score (PSCS) is <strong>internal to Leaked Liability™ only</strong> and is designed to reflect payment behavior within the production community.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -145,7 +145,7 @@ export default function FAQ() {
               </AccordionItem>
 
               <AccordionItem value="pscs-score">
-                <AccordionTrigger>What is the Producer Social Credit Score (PSCS)?</AccordionTrigger>
+                <AccordionTrigger>What is the Producing Social Credit Score (PSCS)?</AccordionTrigger>
                 <AccordionContent>
                   The PSCS is a scoring model that reflects payment reliability. It considers:
                   <ul className="list-disc ml-6 mt-2 space-y-1">
