@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { AlertTriangle, Instagram } from "lucide-react";
+import { AlertTriangle, Instagram, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -139,6 +139,7 @@ export default function Leaderboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'admin' | 'public'>('admin');
   const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [expandedPenalty, setExpandedPenalty] = useState<'age' | 'amount' | 'repeat' | null>(null);
   
   // Only check subscription if NOT admin
   const { accessState, loading: accessLoading, refreshAccess } = useLeaderboardAccess(!checkingAdmin && !isAdmin);
@@ -478,84 +479,141 @@ export default function Leaderboard() {
           </div>
         </Card>
 
-        {/* PSCS Formula */}
-        <Card className="mb-8 p-6 bg-gradient-to-br from-primary/5 to-accent/5 border-2">
-            <h3 className="font-black text-lg mb-2 text-center">PSCS™ CREDIT SCORE MODEL</h3>
-            <p className="text-xs text-muted-foreground text-center mb-4">
+        {/* PSCS Formula - Redesigned */}
+        <Card className="mb-8 p-4 md:p-5 bg-gradient-to-br from-primary/5 to-accent/5 border-2 max-w-5xl mx-auto">
+          {/* Tier 1: Title, Subtitle, Formula Banner */}
+          <div className="mb-4">
+            <h3 className="font-black text-lg mb-1 text-center">PSCS™ CREDIT SCORE MODEL</h3>
+            <p className="text-xs text-muted-foreground text-center mb-3">
               How producer scores decrease (and recover) over time
             </p>
-          <div className="space-y-4">
-            <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
-              <h4 className="font-bold text-sm mb-3 text-center">Active Debt Penalty</h4>
-              <div className="text-xs text-muted-foreground space-y-2">
-                <div className="font-mono text-center">
-                  PSCS = 1000 - (Age Penalty + Amount Penalty + Repeat Penalty)
-                </div>
-                <div className="grid md:grid-cols-3 gap-3 mt-3">
-                  <div className="bg-background/50 p-2 rounded text-center">
-                    <div className="font-bold text-foreground text-xs">Age (no cap)</div>
-                    <div className="text-[10px]">0-60d: -1/day</div>
-                    <div className="text-[10px]">60+: -60 + -2/day</div>
-                  </div>
-                  <div className="bg-background/50 p-2 rounded text-center">
-                    <div className="font-bold text-foreground text-xs">Amount (max -300)</div>
-                    <div className="text-[10px]">-0.06 per dollar</div>
-                    <div className="text-[10px]">Cap at $5,000</div>
-                  </div>
-                  <div className="bg-background/50 p-2 rounded text-center">
-                    <div className="font-bold text-foreground text-xs">Repeat (no cap)</div>
-                    <div className="text-[10px]">-10/crew, -20/vendor</div>
-                    <div className="text-[10px]">-10/job, -5/city</div>
-                  </div>
-                </div>
+            {/* Formula Ribbon Bar */}
+            <div className="bg-background/60 backdrop-blur-sm border-2 border-primary/30 rounded px-4 py-2.5 space-y-1.5">
+              <div className="font-mono text-xs text-center font-semibold">
+                PSCS = 1000 − (Age Penalty + Amount Penalty + Repeat Penalty)
+              </div>
+              <div className="font-mono text-[10px] text-center text-muted-foreground">
+                Recovery = 1000 × MIN(days_clean / 30, 1)
+              </div>
+            </div>
+          </div>
+
+          {/* Tier 2: Two Columns (Desktop) / Stacked (Mobile) */}
+          <div className="grid md:grid-cols-2 gap-3 md:gap-4 mb-4">
+            {/* Left: Active Debt Penalty */}
+            <div className="bg-card/80 backdrop-blur-sm p-3.5 rounded-lg border-2 border-primary/20">
+              <h4 className="font-bold text-sm mb-2.5 text-center">Active Debt Penalty</h4>
+              <div className="grid grid-cols-3 gap-2">
+                {/* Age Penalty - Yellow */}
+                <button
+                  onClick={() => setExpandedPenalty(expandedPenalty === 'age' ? null : 'age')}
+                  className="bg-yellow-500/20 border-2 border-yellow-500/40 p-2 rounded text-center hover:bg-yellow-500/30 transition-colors cursor-pointer"
+                >
+                  <div className="font-bold text-foreground text-[10px] mb-1">Age</div>
+                  <div className="text-[9px] text-muted-foreground">(no cap)</div>
+                  {expandedPenalty === 'age' ? (
+                    <ChevronUp className="h-3 w-3 mx-auto mt-1" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 mx-auto mt-1" />
+                  )}
+                  {expandedPenalty === 'age' && (
+                    <div className="mt-2 pt-2 border-t border-yellow-500/30 text-[9px] space-y-0.5">
+                      <div>0-60d: -1/day</div>
+                      <div>60+: -60 + -2/day</div>
+                    </div>
+                  )}
+                </button>
+                
+                {/* Amount Penalty - Red */}
+                <button
+                  onClick={() => setExpandedPenalty(expandedPenalty === 'amount' ? null : 'amount')}
+                  className="bg-red-500/20 border-2 border-red-500/40 p-2 rounded text-center hover:bg-red-500/30 transition-colors cursor-pointer"
+                >
+                  <div className="font-bold text-foreground text-[10px] mb-1">Amount</div>
+                  <div className="text-[9px] text-muted-foreground">(max -300)</div>
+                  {expandedPenalty === 'amount' ? (
+                    <ChevronUp className="h-3 w-3 mx-auto mt-1" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 mx-auto mt-1" />
+                  )}
+                  {expandedPenalty === 'amount' && (
+                    <div className="mt-2 pt-2 border-t border-red-500/30 text-[9px] space-y-0.5">
+                      <div>-0.06 per dollar</div>
+                      <div>Cap at $5,000</div>
+                    </div>
+                  )}
+                </button>
+                
+                {/* Repeat Penalty - Orange */}
+                <button
+                  onClick={() => setExpandedPenalty(expandedPenalty === 'repeat' ? null : 'repeat')}
+                  className="bg-orange-500/20 border-2 border-orange-500/40 p-2 rounded text-center hover:bg-orange-500/30 transition-colors cursor-pointer"
+                >
+                  <div className="font-bold text-foreground text-[10px] mb-1">Repeat</div>
+                  <div className="text-[9px] text-muted-foreground">(no cap)</div>
+                  {expandedPenalty === 'repeat' ? (
+                    <ChevronUp className="h-3 w-3 mx-auto mt-1" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3 mx-auto mt-1" />
+                  )}
+                  {expandedPenalty === 'repeat' && (
+                    <div className="mt-2 pt-2 border-t border-orange-500/30 text-[9px] space-y-0.5">
+                      <div>-10/crew, -20/vendor</div>
+                      <div>-10/job, -5/city</div>
+                    </div>
+                  )}
+                </button>
               </div>
             </div>
 
-            <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
-              <h4 className="font-bold text-sm mb-3 text-center">Credit Recovery (When All Debts Paid)</h4>
-              <div className="text-xs text-muted-foreground space-y-2">
-                <div className="font-mono text-center text-[10px]">
-                  recovery = 1000 × forgiveness_factor
+            {/* Right: Credit Recovery - Green */}
+            <div className="bg-card/80 backdrop-blur-sm p-3.5 rounded-lg border-2 border-primary/20">
+              <h4 className="font-bold text-sm mb-2.5 text-center">Credit Recovery</h4>
+              <div className="text-[10px] text-muted-foreground text-center mb-2 italic">
+                When all debts paid
+              </div>
+              
+              {/* Progress Bar Timeline */}
+              <div className="space-y-2">
+                <div className="relative h-8 bg-background/50 rounded-full border-2 border-green-500/30 overflow-hidden">
+                  {/* Progress segments */}
+                  <div className="absolute inset-0 flex">
+                    <div className="flex-1 bg-gradient-to-r from-green-900/20 to-green-700/30 border-r border-green-500/20"></div>
+                    <div className="flex-1 bg-gradient-to-r from-green-700/30 to-green-500/40 border-r border-green-500/30"></div>
+                    <div className="flex-1 bg-gradient-to-r from-green-500/40 to-green-400/50 border-r border-green-500/40"></div>
+                    <div className="flex-1 bg-green-400/50"></div>
+                  </div>
+                  {/* Labels */}
+                  <div className="absolute inset-0 flex items-center justify-around text-[9px] font-semibold text-foreground px-1">
+                    <span>0d</span>
+                    <span>15d</span>
+                    <span>30d</span>
+                    <span>30d+</span>
+                  </div>
+                  {/* Percentages below */}
+                  <div className="absolute -bottom-4 inset-x-0 flex items-center justify-around text-[9px] font-bold text-green-600 dark:text-green-400 px-1">
+                    <span>0%</span>
+                    <span>50%</span>
+                    <span>100%</span>
+                    <span>100%</span>
+                  </div>
                 </div>
-                <div className="font-mono text-center text-[10px]">
-                  forgiveness_factor = MIN(days_clean / 30, 1)
-                </div>
-                <div className="grid grid-cols-4 gap-2 mt-3 text-center">
-                  <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">0d</div>
-                    <div className="text-[10px]">0%</div>
-                  </div>
-                  <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">15d</div>
-                    <div className="text-[10px]">50%</div>
-                  </div>
-                  <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">30d</div>
-                    <div className="text-[10px]">100%</div>
-                  </div>
-                  <div className="bg-background/50 p-2 rounded">
-                    <div className="font-bold text-foreground">30d+</div>
-                    <div className="text-[10px]">100%</div>
-                  </div>
-                </div>
-                <div className="text-[10px] text-center italic mt-2">
+                <div className="text-[9px] text-center italic text-muted-foreground mt-3 pt-2 border-t">
                   After 30 clean days, all history penalties reset to zero
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Master Equation Card */}
-            <div className="bg-card/80 backdrop-blur-sm p-4 rounded-lg border-2 border-primary/20 shadow-lg">
-              <h4 className="font-bold text-sm mb-3 text-center">Final Score Calculation</h4>
-              <div className="text-xs text-muted-foreground space-y-2">
-                <div className="font-mono text-center text-sm font-bold">
-                  PSCS = 1000 – (Age + Amount + Repeat)
-                </div>
-                <div className="text-center text-[10px] mt-2">
-                  <div>Upper cap: 1000</div>
-                  <div className="text-red-700 font-semibold">No lower bound — scores can go negative</div>
-                </div>
-              </div>
+          {/* Tier 3: Final Score Banner Footer */}
+          <div className="bg-background/80 backdrop-blur-sm border-2 border-primary/30 rounded px-4 py-2.5">
+            <div className="font-mono text-xs font-bold text-center mb-1.5">
+              FINAL SCORE = 1000 − (Age + Amount + Repeat)
+            </div>
+            <div className="flex items-center justify-center gap-3 text-[10px] text-muted-foreground">
+              <span>Upper cap: 1000</span>
+              <span>|</span>
+              <span className="text-red-700 dark:text-red-400 font-semibold">No lower bound (scores can go negative)</span>
             </div>
           </div>
         </Card>
