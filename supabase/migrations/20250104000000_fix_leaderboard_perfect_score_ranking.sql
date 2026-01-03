@@ -20,7 +20,8 @@ SELECT
   p.total_cities_owed,
   p.paid_jobs_count,
   p.paid_crew_count,
-  p.momentum_active_until
+  p.momentum_active_until,
+  p.last_closed_date
 FROM producers p
 WHERE p.account_status != 'banned'
   AND (p.is_placeholder = false OR p.is_placeholder IS NULL)

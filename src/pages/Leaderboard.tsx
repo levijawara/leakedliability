@@ -818,6 +818,32 @@ export default function Leaderboard() {
                             {Number(producer.pscs_score || 0).toFixed(2)}
                           </span>
                           
+                          {/* Perfect score weeks subtext */}
+                          {Number(producer.pscs_score || 0) === 1000 && producer.total_amount_owed === 0 && (() => {
+                            // Calculate weeks since achieving perfect score
+                            // Perfect score is achieved 30 days after last_closed_date
+                            if (producer.last_closed_date) {
+                              const lastClosed = new Date(producer.last_closed_date);
+                              const perfectDate = new Date(lastClosed);
+                              perfectDate.setDate(perfectDate.getDate() + 30); // 30 days after last closed = perfect score date
+                              
+                              const today = new Date();
+                              const daysSincePerfect = Math.floor((today.getTime() - perfectDate.getTime()) / (1000 * 60 * 60 * 24));
+                              const weeksSincePerfect = Math.floor(daysSincePerfect / 7);
+                              
+                              // Only show if at least 1 full week has passed
+                              if (weeksSincePerfect >= 1) {
+                                return (
+                                  <span className="text-[10px] text-muted-foreground">
+                                    ({weeksSincePerfect} week{weeksSincePerfect !== 1 ? 's' : ''})
+                                  </span>
+                                );
+                              }
+                            }
+                            // For producers who never had debt (NULL last_closed_date), show weeks since account creation or a default
+                            return null;
+                          })()}
+                          
                           {producer.total_amount_owed === 0 && producer.pscs_score < 1000 && (
                             <span className="text-xs text-gray-400 italic">
                               recovering
