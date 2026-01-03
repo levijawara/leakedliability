@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
 const getDaysColor = (days: number | null) => {
@@ -654,8 +655,192 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Leaderboard Table */}
-        <Card className="overflow-hidden">
+        {/* Mobile Accordion View */}
+        <Card className="overflow-hidden md:hidden">
+          {isLoading ? (
+            <div className="text-center py-12 text-muted-foreground">
+              Loading producers...
+            </div>
+          ) : leaderboardError || queryError ? (
+            <div className="text-center py-12">
+              <div className="max-w-md mx-auto">
+                <div className="bg-card border border-status-warning/50 rounded-lg p-6">
+                  <AlertTriangle className="h-8 w-8 text-status-warning mx-auto mb-3" />
+                  <h3 className="font-bold text-lg mb-2">Unable to Load Leaderboard</h3>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    {leaderboardError || "An error occurred while loading producer data"}
+                  </p>
+                  {isAccessBlocked && (
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Access to the leaderboard may require a subscription.{" "}
+                      <a 
+                        href="/subscribe" 
+                        className="text-primary hover:underline font-medium"
+                      >
+                        View subscription options
+                      </a>
+                    </p>
+                  )}
+                  <Button
+                    onClick={() => refetchProducers()}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : (() => {
+            const filteredProducers = producers?.filter((producer) => {
+              if (!searchTerm.trim()) return true;
+              const search = searchTerm.trim().toLowerCase();
+              const name = (producer.producer_name || "").toLowerCase();
+              const company = (producer.company_name || "").toLowerCase();
+              return name === search || company === search;
+            }) || [];
+
+            return filteredProducers.length > 0 ? (
+              <Accordion type="multiple" className="w-full">
+                {filteredProducers.map((producer) => (
+                  <AccordionItem key={producer.producer_id} value={producer.producer_id} className="border-b-2">
+                    <AccordionTrigger className="hover:no-underline px-4 py-4 [&[data-state=open]]:bg-muted/30 transition-colors">
+                      <div className="flex flex-col w-full text-left space-y-2">
+                        {/* Name */}
+                        <div className="font-semibold text-base">
+                          {producer.producer_name || '—'}
+                          {producer.sub_name && (
+                            <div className="text-sm text-muted-foreground mt-1 font-normal">
+                              {producer.sub_name}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* PSCS and Total Owed Row */}
+                        <div className="flex items-center justify-between">
+                          {/* PSCS */}
+                          <div className="flex flex-col">
+                            <span className={cn(
+                              "font-mono text-base font-semibold",
+                              producer.pscs_score >= 800 && "text-green-500",
+                              producer.pscs_score >= 650 && producer.pscs_score < 800 && "text-green-300",
+                              producer.pscs_score >= 500 && producer.pscs_score < 650 && "text-yellow-300",
+                              producer.pscs_score >= 300 && producer.pscs_score < 500 && "text-orange-400",
+                              producer.pscs_score >= 0 && producer.pscs_score < 300 && "text-red-500",
+                              producer.pscs_score < 0 && "text-red-700 font-semibold"
+                            )}>
+                              {Number(producer.pscs_score || 0).toFixed(2)}
+                            </span>
+                            {/* Perfect score weeks subtext */}
+                            {producer.total_amount_owed === 0 && Number(producer.pscs_score || 0) === 1000 && (() => {
+                              const lastClosedDate = (producer as any).last_closed_date;
+                              if (lastClosedDate) {
+                                try {
+                                  const lastClosed = new Date(lastClosedDate);
+                                  const perfectDate = new Date(lastClosed);
+                                  perfectDate.setDate(perfectDate.getDate() + 30);
+                                  const today = new Date();
+                                  const daysSincePerfect = Math.floor((today.getTime() - perfectDate.getTime()) / (1000 * 60 * 60 * 24));
+                                  const weeksSincePerfect = Math.floor(daysSincePerfect / 7);
+                                  if (weeksSincePerfect >= 1) {
+                                    return (
+                                      <span className="text-xs text-gray-400 italic">
+                                        ({weeksSincePerfect} week{weeksSincePerfect !== 1 ? 's' : ''})
+                                      </span>
+                                    );
+                                  }
+                                } catch (e) {
+                                  console.warn('Invalid last_closed_date for producer:', producer.producer_id, e);
+                                }
+                              }
+                              return null;
+                            })()}
+                            {/* Recovering subtext */}
+                            {producer.total_amount_owed === 0 && producer.pscs_score < 1000 && (
+                              <span className="text-xs text-gray-400 italic">
+                                recovering
+                              </span>
+                            )}
+                          </div>
+                          
+                          {/* Total Owed */}
+                          <span className="text-green-500 font-semibold text-base">
+                            ${(producer.total_amount_owed || 0).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </AccordionTrigger>
+                    
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="space-y-3 pt-3 border-t-2 border-border">
+                        {/* Oldest Debt */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Oldest Debt:</span>
+                          <span className="text-sm font-medium">
+                            {producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'MM/dd/yyyy') : '—'}
+                          </span>
+                        </div>
+                        
+                        {/* Oldest Debt Day Counter */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Oldest Debt Day Counter:</span>
+                          <span className={cn(
+                            "inline-block px-3 py-1 rounded font-bold text-sm",
+                            getDaysColor(producer.oldest_debt_days)
+                          )}>
+                            {producer.oldest_debt_days || 0}
+                          </span>
+                        </div>
+                        
+                        {/* Crew Owed */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Crew Owed:</span>
+                          <span className="text-sm font-medium">{producer.total_crew_owed || 0}</span>
+                        </div>
+                        
+                        {/* Vendors Owed */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Vendors Owed:</span>
+                          <span className="text-sm font-medium">{producer.total_vendors_owed || 0}</span>
+                        </div>
+                        
+                        {/* Jobs Owed */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Jobs Owed:</span>
+                          <span className="text-sm font-medium">{producer.total_jobs_owed || 0}</span>
+                        </div>
+                        
+                        {/* Cities Owed */}
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Cities Owed:</span>
+                          <span className="text-sm font-medium">{producer.total_cities_owed || 0}</span>
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            ) : (
+              <div className="text-center py-12">
+                <div className="space-y-2">
+                  <p className="text-muted-foreground">
+                    {searchTerm 
+                      ? `No exact match found for "${searchTerm}". Try the full name as shown on the leaderboard.`
+                      : "No producers on the leaderboard yet."}
+                  </p>
+                  {!searchTerm && (
+                    <p className="text-sm text-muted-foreground">
+                      Producer information will appear here once verified payment reports are submitted.
+                    </p>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+        </Card>
+
+        {/* Desktop Table View */}
+        <Card className="overflow-hidden hidden md:block">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
