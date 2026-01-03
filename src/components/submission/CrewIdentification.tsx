@@ -9,6 +9,8 @@ interface CrewIdentificationProps {
   onChange: (value: any) => void;
   onContinue: () => void;
   onBack: () => void;
+  onNext?: () => void; // Optional: allows navigation without validation
+  showNextButton?: boolean; // Whether to show Next button for preview
 }
 
 const crewRoles = [
@@ -44,7 +46,7 @@ const crewRoles = [
   "VFX"
 ];
 
-export function CrewIdentification({ value, onChange, onContinue, onBack }: CrewIdentificationProps) {
+export function CrewIdentification({ value, onChange, onContinue, onBack, onNext, showNextButton = false }: CrewIdentificationProps) {
   const isValid = value.firstName && value.lastName && value.email && value.role;
 
   return (
@@ -106,13 +108,20 @@ export function CrewIdentification({ value, onChange, onContinue, onBack }: Crew
         </div>
       </div>
 
-      <div className="flex gap-3 mt-6">
+      <div className="flex gap-3 mt-6 justify-between">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={onContinue} disabled={!isValid}>
-          Continue
-        </Button>
+        <div className="flex gap-3">
+          {showNextButton && onNext && (
+            <Button variant="outline" onClick={onNext}>
+              Next
+            </Button>
+          )}
+          <Button onClick={onContinue} disabled={!isValid}>
+            Continue
+          </Button>
+        </div>
       </div>
     </Card>
   );

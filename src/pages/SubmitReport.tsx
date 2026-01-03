@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertCircle, ArrowLeft, ArrowRight, TrendingUp, CheckCircle2, Building2, Scale, Trophy, Shield } from "lucide-react";
 import { Navigation } from "@/components/Navigation";
 import { SubmissionWalkthrough } from "@/components/submission/SubmissionWalkthrough";
@@ -173,80 +174,96 @@ export default function SubmitReport() {
             </p>
           </div>
 
-          <Card className="p-6 mb-6 border-l-4 border-status-warning bg-status-warning/10">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-status-warning mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Identity Protection</p>
-                <p className="text-muted-foreground">
-                  <strong>Crew members:</strong> your identity is well-protected unless you choose to reveal it. <strong>Vendors:</strong> your business contact info is required and will appear on verified reports (standard B2B accountability).
-                </p>
-                <p className="text-muted-foreground mt-2">
-                  <strong>Reports filed under fake names will be rejected.</strong> Crew identities are private unless you choose to reveal them. Vendors must include business info. Leaked Liability™ is a legal-grade platform, not a gossip hotline.
-                </p>
-              </div>
-            </div>
-          </Card>
+          <Accordion type="multiple" className="space-y-4 mb-6">
+            <AccordionItem value="identity" className="border-l-4 border-status-warning bg-status-warning/10 rounded-lg overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="h-6 w-6 text-status-warning flex-shrink-0" />
+                  <h3 className="text-lg font-bold">Identity Protection</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                <div className="text-sm space-y-2">
+                  <p className="text-muted-foreground">
+                    <strong>Crew members:</strong> your identity is well-protected unless you choose to reveal it. <strong>Vendors:</strong> your business contact info is required and will appear on verified reports (standard B2B accountability).
+                  </p>
+                  <p className="text-muted-foreground">
+                    <strong>Reports filed under fake names will be rejected.</strong> Crew identities are private unless you choose to reveal them. Vendors must include business info. Leaked Liability™ is a legal-grade platform, not a gossip hotline.
+                  </p>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="p-6 mb-6 border-l-4 border-blue-500 bg-blue-500/10">
-            <div className="flex items-start gap-3">
-              <TrendingUp className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Producing Social Credit Score (PSCS)</p>
-                <p className="text-muted-foreground">
+            <AccordionItem value="pscs" className="border-l-4 border-blue-500 bg-blue-500/10 rounded-lg overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="h-6 w-6 text-blue-500 flex-shrink-0" />
+                  <h3 className="text-lg font-bold">Producing Social Credit Score (PSCS)</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                <p className="text-sm text-muted-foreground">
                   Every confirmed debt affects the producer's <strong>PSCS</strong>. Paid debts start a 30-day recovery window. A producer's score affects how they appear on the leaderboard, and multiple debts accumulate heavier penalties.
                 </p>
-              </div>
-            </div>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="p-6 mb-6 border-l-4 border-green-500 bg-green-500/10">
-            <div className="flex items-start gap-3">
-              <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Verification & Timeline</p>
-                <p className="text-muted-foreground">
+            <AccordionItem value="verification" className="border-l-4 border-green-500 bg-green-500/10 rounded-lg overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-6 w-6 text-green-500 flex-shrink-0" />
+                  <h3 className="text-lg font-bold">Verification & Timeline</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                <p className="text-sm text-muted-foreground">
                   <strong>All reports undergo verification.</strong> All disputes undergo review. All outcomes are logged permanently with date-stamped trails that protect both parties.
                 </p>
-              </div>
-            </div>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="p-6 mb-6 border-l-4 border-purple-500 bg-purple-500/10">
-            <div className="flex items-start gap-3">
-              <Building2 className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Vendor Categories</p>
-                <p className="text-muted-foreground">
+            <AccordionItem value="vendor" className="border-l-4 border-purple-500 bg-purple-500/10 rounded-lg overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <Building2 className="h-6 w-6 text-purple-500 flex-shrink-0" />
+                  <h3 className="text-lg font-bold">Vendor Categories</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                <p className="text-sm text-muted-foreground">
                   Vendors include <strong>equipment rentals, studios, trucking, grip/lighting suppliers, post houses, and any B2B service</strong>. If you provide services to productions, you belong here.
                 </p>
-              </div>
-            </div>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="p-6 mb-6 border-l-4 border-orange-500 bg-orange-500/10">
-            <div className="flex items-start gap-3">
-              <Scale className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Dispute Resolution Process</p>
-                <p className="text-muted-foreground">
+            <AccordionItem value="dispute" className="border-l-4 border-orange-500 bg-orange-500/10 rounded-lg overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <Scale className="h-6 w-6 text-orange-500 flex-shrink-0" />
+                  <h3 className="text-lg font-bold">Dispute Resolution Process</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                <p className="text-sm text-muted-foreground">
                   Producers may <strong>dispute reports</strong> through a guided resolution process, including document uploads, explanation statements, and evidence review. All resolutions are tracked and logged.
                 </p>
-              </div>
-            </div>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
 
-          <Card className="p-6 mb-6 border-l-4 border-pink-500 bg-pink-500/10">
-            <div className="flex items-start gap-3">
-              <Trophy className="h-5 w-5 text-pink-500 mt-0.5 flex-shrink-0" />
-              <div className="text-sm">
-                <p className="font-semibold mb-1">Leaderboard Access</p>
-                <p className="text-muted-foreground">
+            <AccordionItem value="leaderboard" className="border-l-4 border-pink-500 bg-pink-500/10 rounded-lg overflow-hidden">
+              <AccordionTrigger className="px-6 py-4 hover:no-underline">
+                <div className="flex items-center gap-3">
+                  <Trophy className="h-6 w-6 text-pink-500 flex-shrink-0" />
+                  <h3 className="text-lg font-bold">Leaderboard Access</h3>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-4">
+                <p className="text-sm text-muted-foreground">
                   <strong>Leaderboard access is available to crew, vendors, producers, and companies for $5.99/month.</strong> View PSCS scores, debt histories, and payment timelines for all verified producers.
                 </p>
-              </div>
-            </div>
-          </Card>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
 
           {/* Step 1: Walkthrough */}
           {step === 1 && (
@@ -293,6 +310,8 @@ export default function SubmitReport() {
               onChange={setUserInfo}
               onContinue={handleNext}
               onBack={handleBack}
+              onNext={handleNext}
+              showNextButton={true}
             />
           )}
 
@@ -303,6 +322,8 @@ export default function SubmitReport() {
               onChange={setUserInfo}
               onContinue={handleNext}
               onBack={handleBack}
+              onNext={handleNext}
+              showNextButton={true}
             />
           )}
 
@@ -312,6 +333,8 @@ export default function SubmitReport() {
               onChange={setUserInfo}
               onContinue={handleNext}
               onBack={handleBack}
+              onNext={handleNext}
+              showNextButton={true}
             />
           )}
 
@@ -336,13 +359,31 @@ export default function SubmitReport() {
             </Card>
           )}
 
-          {step === 4 && isAuthenticated && participantType === "vendor" && (() => {
-            if (!submissionType) {
-              setSubmissionType("vendor_report");
-              handleNext();
-            }
-            return null;
-          })()}
+          {step === 4 && isAuthenticated && participantType === "vendor" && (
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">Vendor Report Submission</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Vendors submit vendor reports. Click Continue to proceed to the vendor report form.
+              </p>
+              <div className="flex gap-3 mt-6 justify-between">
+                <Button variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+                <Button variant="outline" onClick={() => {
+                  setSubmissionType("vendor_report");
+                  handleNext();
+                }}>
+                  Next
+                </Button>
+                <Button onClick={() => {
+                  setSubmissionType("vendor_report");
+                  handleNext();
+                }}>
+                  Continue
+                </Button>
+              </div>
+            </Card>
+          )}
 
           {step === 4 && isAuthenticated && participantType !== "vendor" && (
             <SubmissionTypeSelector
@@ -353,10 +394,26 @@ export default function SubmitReport() {
                 handleNext();
               }}
               onBack={handleBack}
+              onNext={handleNext}
+              showNextButton={true}
             />
           )}
 
           {/* Step 5: Actual Form */}
+          {step === 5 && !submissionType && (
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-4">Preview Submission Form</h2>
+              <p className="text-muted-foreground mb-6">
+                Please go back and select a submission type to continue, or use the Next button to preview the form structure.
+              </p>
+              <div className="flex gap-3 mt-6">
+                <Button variant="outline" onClick={handleBack}>
+                  Back
+                </Button>
+              </div>
+            </Card>
+          )}
+
           {step === 5 && submissionType === "crew_report" && (
             <CrewReportForm
               userInfo={userInfo}

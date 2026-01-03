@@ -45,6 +45,7 @@ export function SubmissionWalkthrough({ onContinue }: SubmissionWalkthroughProps
               <li><strong>Payment Documentation</strong> - receipts, confirmations, bank proof</li>
               <li><strong>Report Explanations</strong> - acknowledge & explain why payment is delayed</li>
               <li><strong>Report Disputes</strong> - challenge a crew member's or vendor's report</li>
+              <li><strong>Liability Redirects</strong> - if you've been named as responsible for a debt that isn't yours, you can redirect liability to the actual responsible party (available through liability notification emails)</li>
             </ul>
             <p className="text-sm text-muted-foreground mt-3">
               Verified reports, self-reports, and confirmations all contribute to a producer's PSCS and may trigger short-term <span className="text-orange-500 font-semibold">Good Standing Momentum</span> periods.

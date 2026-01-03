@@ -8,9 +8,11 @@ interface SubmissionTypeSelectorProps {
   value: string | null;
   onChange: (type: string) => void;
   onBack: () => void;
+  onNext?: () => void; // Optional: allows navigation without validation
+  showNextButton?: boolean; // Whether to show Next button for preview
 }
 
-export function SubmissionTypeSelector({ participantType, value, onChange, onBack }: SubmissionTypeSelectorProps) {
+export function SubmissionTypeSelector({ participantType, value, onChange, onBack, onNext, showNextButton = false }: SubmissionTypeSelectorProps) {
   const crewOptions = [
     { value: "crew_report", label: "Crew Member Report", description: "Sworn statement of unpaid invoice" },
     { value: "payment_confirmation", label: "Payment Confirmation", description: "Verify a producer paid you" },
@@ -48,10 +50,15 @@ export function SubmissionTypeSelector({ participantType, value, onChange, onBac
         </div>
       </RadioGroup>
 
-      <div className="flex gap-3 mt-6">
+      <div className="flex gap-3 mt-6 justify-between">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
+        {showNextButton && onNext && (
+          <Button variant="outline" onClick={onNext}>
+            Next
+          </Button>
+        )}
       </div>
     </Card>
   );

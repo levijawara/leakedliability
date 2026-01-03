@@ -9,9 +9,11 @@ interface ProducerIdentificationProps {
   onChange: (value: any) => void;
   onContinue: () => void;
   onBack: () => void;
+  onNext?: () => void; // Optional: allows navigation without validation
+  showNextButton?: boolean; // Whether to show Next button for preview
 }
 
-export function ProducerIdentification({ type, value, onChange, onContinue, onBack }: ProducerIdentificationProps) {
+export function ProducerIdentification({ type, value, onChange, onContinue, onBack, onNext, showNextButton = false }: ProducerIdentificationProps) {
   const isValid = value.firstName && value.lastName && value.email;
 
   return (
@@ -60,13 +62,20 @@ export function ProducerIdentification({ type, value, onChange, onContinue, onBa
         </div>
       </div>
 
-      <div className="flex gap-3 mt-6">
+      <div className="flex gap-3 mt-6 justify-between">
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button onClick={onContinue} disabled={!isValid}>
-          Continue
-        </Button>
+        <div className="flex gap-3">
+          {showNextButton && onNext && (
+            <Button variant="outline" onClick={onNext}>
+              Next
+            </Button>
+          )}
+          <Button onClick={onContinue} disabled={!isValid}>
+            Continue
+          </Button>
+        </div>
       </div>
     </Card>
   );
