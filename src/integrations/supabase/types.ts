@@ -2288,6 +2288,7 @@ export type Database = {
       public_leaderboard: {
         Row: {
           company_name: string | null
+          last_closed_date: string | null
           momentum_active_until: string | null
           oldest_debt_date: string | null
           oldest_debt_days: number | null
@@ -2305,6 +2306,7 @@ export type Database = {
         }
         Insert: {
           company_name?: string | null
+          last_closed_date?: string | null
           momentum_active_until?: string | null
           oldest_debt_date?: string | null
           oldest_debt_days?: number | null
@@ -2322,6 +2324,7 @@ export type Database = {
         }
         Update: {
           company_name?: string | null
+          last_closed_date?: string | null
           momentum_active_until?: string | null
           oldest_debt_date?: string | null
           oldest_debt_days?: number | null
