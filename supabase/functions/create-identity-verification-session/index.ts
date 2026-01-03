@@ -111,8 +111,6 @@ serve(async (req) => {
       // STRIPE GUARDRAIL: Use shared validation (throws if missing)
       const { getStripeClient } = await import("../_shared/stripeValidation.ts");
       const stripe = getStripeClient();
-        apiVersion: "2023-10-16",
-      });
 
       try {
         const existingSession = await stripe.identity.verificationSessions.retrieve(

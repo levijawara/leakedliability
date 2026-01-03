@@ -82,23 +82,10 @@ const Subscribe = () => {
           return;
         }
 
-        // 3. Test Stripe.publishableKey
-        if (!stripe.publishableKey) {
-          const errorMsg = "stripe.publishableKey is undefined";
-          errors.push(errorMsg);
-          if (isAdmin) {
-            setAdminStripeErrors([...errors]);
-          }
-        }
-
-        // 4. Test redirectToCheckout (check if method exists)
-        if (typeof stripe.redirectToCheckout !== 'function') {
-          const errorMsg = "stripe.redirectToCheckout is not a function";
-          errors.push(errorMsg);
-          if (isAdmin) {
-            setAdminStripeErrors([...errors]);
-          }
-        }
+        // 3. Stripe instance is valid if we got here
+        // The Stripe.js API has changed - publishableKey and redirectToCheckout
+        // are not directly accessible properties on the Stripe instance
+        // The fact that we got a stripe instance means it's properly initialized
 
         // 5. Run comprehensive health check
         const health = await checkStripeHealth();
