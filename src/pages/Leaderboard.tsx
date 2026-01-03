@@ -818,29 +818,37 @@ export default function Leaderboard() {
                             {Number(producer.pscs_score || 0).toFixed(2)}
                           </span>
                           
-                          {/* Perfect score weeks subtext */}
-                          {Number(producer.pscs_score || 0) === 1000 && producer.total_amount_owed === 0 && (() => {
+                          {/* Perfect score weeks subtext - matches "recovering" pattern */}
+                          {producer.total_amount_owed === 0 && Number(producer.pscs_score || 0) === 1000 && (() => {
                             // Calculate weeks since achieving perfect score
                             // Perfect score is achieved 30 days after last_closed_date
-                            if (producer.last_closed_date) {
-                              const lastClosed = new Date(producer.last_closed_date);
-                              const perfectDate = new Date(lastClosed);
-                              perfectDate.setDate(perfectDate.getDate() + 30); // 30 days after last closed = perfect score date
-                              
-                              const today = new Date();
-                              const daysSincePerfect = Math.floor((today.getTime() - perfectDate.getTime()) / (1000 * 60 * 60 * 24));
-                              const weeksSincePerfect = Math.floor(daysSincePerfect / 7);
-                              
-                              // Only show if at least 1 full week has passed
-                              if (weeksSincePerfect >= 1) {
-                                return (
-                                  <span className="text-[10px] text-muted-foreground">
-                                    ({weeksSincePerfect} week{weeksSincePerfect !== 1 ? 's' : ''})
-                                  </span>
-                                );
+                            // TypeScript may not have last_closed_date typed yet, so use type assertion
+                            const lastClosedDate = (producer as any).last_closed_date;
+                            
+                            if (lastClosedDate) {
+                              try {
+                                const lastClosed = new Date(lastClosedDate);
+                                const perfectDate = new Date(lastClosed);
+                                perfectDate.setDate(perfectDate.getDate() + 30); // 30 days after last closed = perfect score date
+                                
+                                const today = new Date();
+                                const daysSincePerfect = Math.floor((today.getTime() - perfectDate.getTime()) / (1000 * 60 * 60 * 24));
+                                const weeksSincePerfect = Math.floor(daysSincePerfect / 7);
+                                
+                                // Only show if at least 1 full week has passed
+                                if (weeksSincePerfect >= 1) {
+                                  return (
+                                    <span className="text-xs text-gray-400 italic">
+                                      ({weeksSincePerfect} week{weeksSincePerfect !== 1 ? 's' : ''})
+                                    </span>
+                                  );
+                                }
+                              } catch (e) {
+                                // Invalid date, skip
+                                console.warn('Invalid last_closed_date for producer:', producer.producer_id, e);
                               }
                             }
-                            // For producers who never had debt (NULL last_closed_date), show weeks since account creation or a default
+                            // For producers who never had debt (NULL last_closed_date), don't show weeks
                             return null;
                           })()}
                           
