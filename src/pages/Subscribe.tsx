@@ -8,8 +8,9 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Check, Zap, DollarSign, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { isStripeAvailable } from "@/lib/stripeHelpers";
+import { isStripeAvailable, getStripeInstance } from "@/lib/stripeHelpers";
 import { validateStripeConfig } from "@/config/env";
+import { checkStripeHealth } from "@/lib/stripeHealthCheck";
 
 type UserRole = "crew" | "producer";
 type BillingFrequency = "monthly" | "annual";
@@ -21,19 +22,149 @@ const Subscribe = () => {
   const [loading, setLoading] = useState<string | null>(null);
   const [stripeAvailable, setStripeAvailable] = useState(true);
   const [stripeError, setStripeError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [adminStripeErrors, setAdminStripeErrors] = useState<string[]>([]);
+  const [healthCheckComplete, setHealthCheckComplete] = useState(false);
 
-  // Check Stripe availability on mount
+  // Check admin status
   useEffect(() => {
-    const available = isStripeAvailable();
-    setStripeAvailable(available);
-    
-    if (!available) {
-      const config = validateStripeConfig();
-      const issues = config.issues?.join(", ") || "Configuration error";
-      setStripeError(`Stripe is not configured: ${issues}`);
-      console.error("[Subscribe] Stripe not available:", issues);
-    }
+    const checkAdmin = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data, error } = await supabase.rpc('has_role', {
+            _user_id: user.id,
+            _role: 'admin'
+          });
+          if (!error && data) {
+            setIsAdmin(true);
+          }
+        }
+      } catch (error) {
+        console.error("[Subscribe] Admin check failed:", error);
+      }
+    };
+    checkAdmin();
   }, []);
+
+  // Comprehensive Stripe self-test on mount
+  useEffect(() => {
+    const runStripeSelfTest = async () => {
+      const errors: string[] = [];
+      
+      try {
+        // 1. Check publishable key
+        const config = validateStripeConfig();
+        if (!config.configured) {
+          const issues = config.issues?.join(", ") || "Configuration error";
+          const errorMsg = `VITE_STRIPE_PUBLISHABLE_KEY: ${issues}`;
+          errors.push(errorMsg);
+          setStripeError(errorMsg);
+          setStripeAvailable(false);
+          if (isAdmin) {
+            setAdminStripeErrors([...errors]);
+          }
+          setHealthCheckComplete(true);
+          return;
+        }
+
+        // 2. Test Stripe initialization
+        const { stripe, error: initError, configured } = await getStripeInstance();
+        if (!configured || !stripe || initError) {
+          const errorMsg = `Stripe initialization failed: ${initError || "Unknown error"}`;
+          errors.push(errorMsg);
+          setStripeError(errorMsg);
+          setStripeAvailable(false);
+          if (isAdmin) {
+            setAdminStripeErrors([...errors]);
+          }
+          setHealthCheckComplete(true);
+          return;
+        }
+
+        // 3. Test Stripe.publishableKey
+        if (!stripe.publishableKey) {
+          const errorMsg = "stripe.publishableKey is undefined";
+          errors.push(errorMsg);
+          if (isAdmin) {
+            setAdminStripeErrors([...errors]);
+          }
+        }
+
+        // 4. Test redirectToCheckout (check if method exists)
+        if (typeof stripe.redirectToCheckout !== 'function') {
+          const errorMsg = "stripe.redirectToCheckout is not a function";
+          errors.push(errorMsg);
+          if (isAdmin) {
+            setAdminStripeErrors([...errors]);
+          }
+        }
+
+        // 5. Run comprehensive health check
+        const health = await checkStripeHealth();
+        if (!health.healthy) {
+          errors.push(...health.errors);
+          if (isAdmin) {
+            setAdminStripeErrors([...errors]);
+          }
+        }
+
+        // 6. Test server-side health check endpoint
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session) {
+            const { data: healthData, error: healthError } = await supabase.functions.invoke('stripe-health-check', {
+              headers: { Authorization: `Bearer ${session.access_token}` }
+            });
+            
+            if (healthError) {
+              const errorMsg = `Server health check failed: ${healthError.message}`;
+              errors.push(errorMsg);
+              if (isAdmin) {
+                setAdminStripeErrors(prev => [...prev, errorMsg]);
+              }
+            } else if (healthData && !healthData.healthy) {
+              const serverErrors = healthData.errors || [];
+              errors.push(...serverErrors);
+              if (isAdmin) {
+                setAdminStripeErrors(prev => [...prev, ...serverErrors]);
+              }
+            }
+          }
+        } catch (healthCheckError: any) {
+          const errorMsg = `Health check endpoint error: ${healthCheckError?.message || "Unknown error"}`;
+          errors.push(errorMsg);
+          if (isAdmin) {
+            setAdminStripeErrors(prev => [...prev, errorMsg]);
+          }
+        }
+
+        // Set final state
+        if (errors.length > 0) {
+          setStripeAvailable(false);
+          setStripeError(errors[0]); // Show first error to all users
+          if (isAdmin) {
+            setAdminStripeErrors(errors);
+          }
+        } else {
+          setStripeAvailable(true);
+          setStripeError(null);
+        }
+      } catch (error: any) {
+        const errorMsg = `Stripe self-test exception: ${error?.message || "Unknown error"}`;
+        console.error("[Subscribe] Stripe self-test failed:", error);
+        setStripeAvailable(false);
+        setStripeError(errorMsg);
+        if (isAdmin) {
+          setAdminStripeErrors([errorMsg]);
+        }
+      } finally {
+        setHealthCheckComplete(true);
+      }
+    };
+
+    runStripeSelfTest();
+  }, [isAdmin]);
 
   const handleSubscribe = async (tier: string) => {
     // Check Stripe before proceeding
@@ -108,8 +239,35 @@ const Subscribe = () => {
       
       <div className="flex-1 container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
-          {/* Stripe Configuration Warning */}
-          {!stripeAvailable && (
+          {/* Admin-Only Stripe Misconfiguration Alert */}
+          {isAdmin && adminStripeErrors.length > 0 && (
+            <Card className="mb-8 border-2 border-red-600 bg-red-950/30">
+              <CardContent className="pt-6">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-2 text-red-600">
+                      ⚠️ STRIPE IS MISCONFIGURED — INVESTIGATE IMMEDIATELY
+                    </h3>
+                    <p className="text-sm text-red-400 mb-3 font-semibold">
+                      The following Stripe checks failed:
+                    </p>
+                    <ul className="list-disc list-inside space-y-1 mb-3 text-sm text-red-300">
+                      {adminStripeErrors.map((error, idx) => (
+                        <li key={idx}>{error}</li>
+                      ))}
+                    </ul>
+                    <p className="text-xs text-red-400 italic">
+                      This alert is only visible to admin accounts. Payment features are blocked until resolved.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Public Stripe Configuration Warning */}
+          {!stripeAvailable && healthCheckComplete && (
             <Card className="mb-8 border-status-warning/50 bg-status-warning/10">
               <CardContent className="pt-6">
                 <div className="flex items-start gap-3">

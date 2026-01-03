@@ -37,10 +37,9 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEY is not set");
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2022-11-15" });
+    // STRIPE GUARDRAIL: Use shared validation (throws if missing)
+    const { getStripeClient } = await import("../_shared/stripeValidation.ts");
+    const stripe = getStripeClient();
 
     // Get user's entitlement to find customer ID
     const { data: entitlement } = await supabaseClient

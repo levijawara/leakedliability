@@ -28,9 +28,9 @@ serve(async (req) => {
       return new Response("Method not allowed", { status: 405 });
     }
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
-      apiVersion: "2022-11-15",
-    });
+    // STRIPE GUARDRAIL: Use shared validation (throws if missing)
+    const { getStripeClient } = await import("../_shared/stripeValidation.ts");
+    const stripe = getStripeClient();
 
     const sig = req.headers.get("stripe-signature");
     if (!sig) return new Response("Missing signature", { status: 400 });

@@ -108,7 +108,9 @@ serve(async (req) => {
     if (producer.stripe_verification_status === "pending" && producer.stripe_verification_session_id) {
       logStep("Existing pending session found, retrieving");
       
-      const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      // STRIPE GUARDRAIL: Use shared validation (throws if missing)
+      const { getStripeClient } = await import("../_shared/stripeValidation.ts");
+      const stripe = getStripeClient();
         apiVersion: "2023-10-16",
       });
 
@@ -133,10 +135,9 @@ serve(async (req) => {
       }
     }
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2023-10-16",
-    });
+    // STRIPE GUARDRAIL: Use shared validation (throws if missing)
+    const { getStripeClient } = await import("../_shared/stripeValidation.ts");
+    const stripe = getStripeClient();
 
     // Create new Stripe Identity Verification Session
     logStep("Creating new Stripe Identity Verification session");

@@ -33,14 +33,10 @@ serve(async (req) => {
 
     logStep("Session ID received", { sessionId });
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) {
-      logStep("ERROR: Missing STRIPE_SECRET_KEY");
-      throw new Error("Missing STRIPE_SECRET_KEY");
-    }
-
-    const stripe = new Stripe(stripeKey, { apiVersion: "2022-11-15" });
-    logStep("Stripe client initialized");
+    // STRIPE GUARDRAIL: Use shared validation (throws if missing)
+    const { getStripeClient } = await import("../_shared/stripeValidation.ts");
+    const stripe = getStripeClient();
+    logStep("Stripe client initialized with validation");
 
     // Authenticate the caller
     const supabase = createClient(

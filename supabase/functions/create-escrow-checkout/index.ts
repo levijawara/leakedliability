@@ -51,10 +51,9 @@ serve(async (req) => {
       amount: escrow.amount_due 
     });
 
-    // Initialize Stripe
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
-      apiVersion: "2022-11-15",
-    });
+    // STRIPE GUARDRAIL: Use shared validation (throws if missing)
+    const { getStripeClient } = await import("../_shared/stripeValidation.ts");
+    const stripe = getStripeClient();
 
     // Create Stripe Checkout Session
     const origin = req.headers.get("origin") || "https://leakedliability.com";

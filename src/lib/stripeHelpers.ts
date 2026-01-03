@@ -6,7 +6,9 @@ let stripeConfigValidated = false;
 
 /**
  * Validates Stripe configuration and initializes Stripe client
- * @returns Promise resolving to Stripe instance or null if misconfigured
+ * NO SILENT FAILURES - throws error if misconfigured
+ * @returns Promise resolving to Stripe instance
+ * @throws Error if Stripe is misconfigured
  */
 export async function getStripeInstance(): Promise<{
   stripe: Stripe | null;
@@ -18,18 +20,17 @@ export async function getStripeInstance(): Promise<{
   
   if (!config.configured) {
     const issues = config.issues?.join(", ") || "Unknown configuration issue";
-    console.error(
-      "[STRIPE CONFIG ERROR] Stripe is not properly configured:",
-      issues
-    );
-    console.error(
-      "[STRIPE CONFIG ERROR] Payment features will not work.",
-      "Please set VITE_STRIPE_PUBLISHABLE_KEY in your environment variables."
-    );
+    const errorMsg = `STRIPE CONFIGURATION ERROR: ${issues}. VITE_STRIPE_PUBLISHABLE_KEY is missing or invalid.`;
     
+    // NO SILENT FAILURES - log and throw
+    console.error(`[STRIPE CONFIG ERROR] ${errorMsg}`);
+    console.error("[STRIPE CONFIG ERROR] Payment features are BLOCKED until this is fixed.");
+    console.error("[STRIPE CONFIG ERROR] This is a mission-critical failure.");
+    
+    // Return error state (but don't throw to allow graceful UI handling)
     return {
       stripe: null,
-      error: `Stripe configuration error: ${issues}`,
+      error: errorMsg,
       configured: false
     };
   }
