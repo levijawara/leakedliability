@@ -344,6 +344,8 @@ const Sitemap = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [emailViewMode, setEmailViewMode] = useState<"list" | "gallery">("list");
   const [selectedEmail, setSelectedEmail] = useState<EmailTemplateInfo | null>(null);
+  const [routeViewMode, setRouteViewMode] = useState<"list" | "gallery">("list");
+  const [selectedRoute, setSelectedRoute] = useState<RouteInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -437,6 +439,7 @@ const Sitemap = () => {
     const Icon = route.icon;
     const isCurrentPage = location.pathname === route.path;
     const isEdgeFunction = variant === "edgeFunctions";
+    const isSelected = selectedRoute?.path === route.path && routeViewMode === "gallery";
 
     const variantStyles = {
       public: "border-green-500/20 hover:border-green-500/40",
@@ -454,10 +457,19 @@ const Sitemap = () => {
       edgeFunctions: "bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20",
     };
 
+    const handleClick = () => {
+      if (isEdgeFunction) return;
+      if (routeViewMode === "gallery") {
+        setSelectedRoute(route);
+      } else {
+        navigate(route.path);
+      }
+    };
+
     return (
       <Card 
-        className={`${variantStyles[variant]} transition-all ${isEdgeFunction ? "opacity-75" : "cursor-pointer hover:shadow-md"} ${isCurrentPage ? "ring-2 ring-primary" : ""}`} 
-        onClick={() => !isEdgeFunction && navigate(route.path)}
+        className={`${variantStyles[variant]} transition-all ${isEdgeFunction ? "opacity-75" : "cursor-pointer hover:shadow-md"} ${isCurrentPage ? "ring-2 ring-primary" : ""} ${isSelected ? "ring-2 ring-primary bg-primary/5" : ""}`} 
+        onClick={handleClick}
       >
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
@@ -551,23 +563,62 @@ const Sitemap = () => {
 
         {/* Route Sections */}
         <div className="space-y-8">
-          {/* Public Routes */}
-          {filteredPublicRoutes.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Icons.Globe className="h-6 w-6 text-green-600" />
-                <h2 className="text-2xl font-bold">✔ PUBLIC ROUTES</h2>
-                <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20">
-                  {filteredPublicRoutes.length} routes
-                </Badge>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredPublicRoutes.map((route) => (
-                  <RouteCard key={route.path} route={route} variant="public" />
-                ))}
-              </div>
+          {/* View Mode Toggle for Routes */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Icons.Map className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Route Preview</h2>
             </div>
-          )}
+            <div className="flex gap-2">
+              <Button
+                variant={routeViewMode === "list" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setRouteViewMode("list");
+                  setSelectedRoute(null);
+                }}
+                className="gap-2"
+              >
+                <LayoutList className="h-4 w-4" />
+                List View
+              </Button>
+              <Button
+                variant={routeViewMode === "gallery" ? "default" : "outline"}
+                size="sm"
+                onClick={() => {
+                  setRouteViewMode("gallery");
+                  const allRoutes = [...filteredPublicRoutes, ...filteredAuthRoutes, ...filteredLeaderboardRoutes, ...filteredAdminRoutes];
+                  if (!selectedRoute && allRoutes.length > 0) {
+                    setSelectedRoute(allRoutes[0]);
+                  }
+                }}
+                className="gap-2"
+              >
+                <LayoutGrid className="h-4 w-4" />
+                Gallery View
+              </Button>
+            </div>
+          </div>
+
+          {routeViewMode === "list" ? (
+            <>
+              {/* Public Routes */}
+              {filteredPublicRoutes.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icons.Globe className="h-6 w-6 text-green-600" />
+                    <h2 className="text-2xl font-bold">✔ PUBLIC ROUTES</h2>
+                    <Badge variant="outline" className="bg-green-500/10 text-green-700 dark:text-green-300 border-green-500/20">
+                      {filteredPublicRoutes.length} routes
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredPublicRoutes.map((route) => (
+                      <RouteCard key={route.path} route={route} variant="public" />
+                    ))}
+                  </div>
+                </div>
+              )}
 
           {/* Authenticated Routes */}
           {filteredAuthRoutes.length > 0 && (
@@ -623,21 +674,112 @@ const Sitemap = () => {
             </div>
           )}
 
-          {/* Edge Functions */}
-          {filteredEdgeFunctions.length > 0 && (
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Icons.Settings className="h-6 w-6 text-gray-600" />
-                <h2 className="text-2xl font-bold">✔ EDGE FUNCTIONS (NON-ROUTE, ARCHITECTURE REFERENCES)</h2>
-                <Badge variant="outline" className="bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20">
-                  {filteredEdgeFunctions.length} references
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">These are backend functions, not user-accessible routes</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredEdgeFunctions.map((route) => (
-                  <RouteCard key={route.path} route={route} variant="edgeFunctions" />
-                ))}
+              {/* Edge Functions */}
+              {filteredEdgeFunctions.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Icons.Settings className="h-6 w-6 text-gray-600" />
+                    <h2 className="text-2xl font-bold">✔ EDGE FUNCTIONS (NON-ROUTE, ARCHITECTURE REFERENCES)</h2>
+                    <Badge variant="outline" className="bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20">
+                      {filteredEdgeFunctions.length} references
+                    </Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">These are backend functions, not user-accessible routes</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredEdgeFunctions.map((route) => (
+                      <RouteCard key={route.path} route={route} variant="edgeFunctions" />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            /* Gallery View - Finder Style */
+            <div className="grid grid-cols-1 lg:grid-cols-[350px,1fr] gap-6 h-[calc(100vh-300px)]">
+              {/* Left Column - Route List */}
+              <Card className="p-4 overflow-auto">
+                <div className="space-y-1">
+                  {/* All Routes Combined */}
+                  {[
+                    ...filteredPublicRoutes.map(r => ({ ...r, category: 'public' as const })),
+                    ...filteredAuthRoutes.map(r => ({ ...r, category: 'authenticated' as const })),
+                    ...filteredLeaderboardRoutes.map(r => ({ ...r, category: 'leaderboard' as const })),
+                    ...filteredAdminRoutes.map(r => ({ ...r, category: 'admin' as const })),
+                  ].map((route) => {
+                    const Icon = route.icon;
+                    const isSelected = selectedRoute?.path === route.path;
+                    const categoryColors = {
+                      public: 'text-green-600',
+                      authenticated: 'text-blue-600',
+                      leaderboard: 'text-purple-600',
+                      admin: 'text-red-600',
+                    };
+                    return (
+                      <button
+                        key={route.path}
+                        onClick={() => setSelectedRoute(route)}
+                        className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
+                          isSelected
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <Icon className={`h-4 w-4 ${isSelected ? 'text-primary-foreground' : categoryColors[route.category]} shrink-0`} />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{route.name}</div>
+                              <div className="text-xs opacity-70 truncate">{route.category}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
+
+              {/* Right Column - Preview Pane */}
+              <div className="flex flex-col gap-4 overflow-hidden">
+                {/* Preview */}
+                <div className="flex-1 overflow-hidden rounded-lg border bg-background">
+                  {selectedRoute ? (
+                    <iframe
+                      src={`${window.location.origin}${selectedRoute.path}`}
+                      className="w-full h-full border-0"
+                      style={{
+                        minHeight: '100%',
+                        display: 'block',
+                      }}
+                      title={`Preview of ${selectedRoute.name}`}
+                      scrolling={selectedRoute.path === '/leaderboard' ? 'yes' : 'auto'}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center bg-muted/20 rounded-lg border-2 border-dashed">
+                      <div className="text-center p-8">
+                        <Icons.Map className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
+                        <p className="text-muted-foreground">Select a route to preview</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Route Details Card */}
+                {selectedRoute && (
+                  <Card className="p-4 shrink-0">
+                    <h3 className="font-bold text-lg mb-3">{selectedRoute.name}</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-start gap-2">
+                        <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                        <code className="text-xs bg-muted px-2 py-1 rounded">{selectedRoute.path}</code>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                        <span className="text-muted-foreground">{selectedRoute.description}</span>
+                      </div>
+                    </div>
+                  </Card>
+                )}
               </div>
             </div>
           )}

@@ -89,7 +89,10 @@ const MOCK_DATA: Record<string, any> = {
     originalName: "Jane Crew Member",
     amountOwed: 6500,
     projectName: "Music Video Shoot",
+    invoiceDate: "2024-10-15",
+    daysOverdue: 45,
     claimUrl: "https://leakedliability.com/liability/claim/abc123xyz",
+    expirationDate: "2025-01-15",
   },
   "liability-loop-detected.tsx": {
     reportId: "LL-2024-LOOP-001",

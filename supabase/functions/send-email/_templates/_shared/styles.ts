@@ -76,3 +76,8 @@ export const buttonContainer = {
   textAlign: 'center' as const,
 };
 
+export const hr = {
+  borderColor: '#e1e8ed',
+  margin: '32px 0',
+};
+

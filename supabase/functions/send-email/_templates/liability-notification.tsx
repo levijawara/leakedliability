@@ -24,6 +24,7 @@ import {
   link,
   button,
   buttonContainer,
+  hr,
 } from './_shared/styles.ts';
 
 interface LiabilityNotificationProps {
