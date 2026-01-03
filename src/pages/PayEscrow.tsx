@@ -112,7 +112,7 @@ export default function PayEscrow() {
             <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
               <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
             </div>
-            <CardTitle className="text-2xl">Payment Successfully Submitted ✔️</CardTitle>
+            <CardTitle className="text-2xl">Payment Successfully Submitted</CardTitle>
             <CardDescription>
               {sessionId === "already_paid" 
                 ? "This payment has already been processed."

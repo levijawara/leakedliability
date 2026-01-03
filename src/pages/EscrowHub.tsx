@@ -37,7 +37,7 @@ export default function EscrowHub() {
           </div>
           <p className="text-sm text-neutral-300 leading-relaxed">
             For producers and companies who want to settle outstanding payments 
-            through a neutral third party. 🎉
+            through a neutral third party.
           </p>
         </button>
 
@@ -51,13 +51,13 @@ export default function EscrowHub() {
           </div>
           <p className="text-sm text-neutral-300 leading-relaxed">
             Already have an escrow payment code from Leaked Liability? Enter it 
-            here to go straight to the secure payment page. ✅
+            here to go straight to the secure payment page.
           </p>
         </button>
       </section>
 
       <section className="bg-green-500/5 border border-green-500/30 rounded-xl p-6 space-y-4 text-sm">
-        <h2 className="font-semibold text-lg text-green-400">How Escrow Works 💰</h2>
+        <h2 className="font-semibold text-lg text-green-400">How Escrow Works</h2>
         <ul className="space-y-3 text-neutral-300">
           <li className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
