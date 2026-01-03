@@ -310,7 +310,7 @@ const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
     recipient: "User with failed payment",
     edgeFunction: "leaderboard-stripe-webhooks",
     purpose: "Warn user of failed payment and upcoming access restriction",
-    status: "pending",
+    status: "implemented",
     category: "subscriptions"
   },
   {
@@ -320,29 +320,19 @@ const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
     recipient: "User",
     edgeFunction: "leaderboard-stripe-webhooks",
     purpose: "Confirm cancellation and explain access changes",
-    status: "pending",
+    status: "implemented",
     category: "subscriptions"
   },
 
-  // Admin System (2 emails)
+  // Admin System (1 email)
   {
     name: "Admin Notification",
     templateFile: "admin-notification.tsx",
-    trigger: "Various admin-worthy events (disputes, flags, etc.)",
+    trigger: "Various admin-worthy events (new reports, disputes, searches, etc.)",
     recipient: "Admin team",
     edgeFunction: "send-email",
-    purpose: "Alert admins to events requiring review or action",
+    purpose: "Alert admins to events requiring review or action, including new report submissions",
     status: "implemented",
-    category: "admin"
-  },
-  {
-    name: "New Report Alert",
-    templateFile: "admin-report-alert.tsx",
-    trigger: "New payment report submitted",
-    recipient: "Admin team",
-    edgeFunction: "send-email",
-    purpose: "Notify admins of new report awaiting verification",
-    status: "pending",
     category: "admin"
   },
 ];

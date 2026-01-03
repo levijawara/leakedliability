@@ -18,6 +18,13 @@ import { ProducerSubmission } from "../../../supabase/functions/send-email/_temp
 import { DisputeSubmission } from "../../../supabase/functions/send-email/_templates/dispute-submission";
 import { CounterDisputeSubmission } from "../../../supabase/functions/send-email/_templates/counter-dispute-submission";
 import { ProducerPaymentConfirmation } from "../../../supabase/functions/send-email/_templates/producer-payment-confirmation";
+import { DisputeEvidenceRoundStarted } from "../../../supabase/functions/send-email/_templates/dispute-evidence-round-started";
+import { DisputeAdditionalInfoRequired } from "../../../supabase/functions/send-email/_templates/dispute-additional-info-required";
+import { DisputeResolvedPaid } from "../../../supabase/functions/send-email/_templates/dispute-resolved-paid";
+import { DisputeResolvedMutual } from "../../../supabase/functions/send-email/_templates/dispute-resolved-mutual";
+import { DisputeClosedUnresolved } from "../../../supabase/functions/send-email/_templates/dispute-closed-unresolved";
+import { SubscriptionPaymentFailed } from "../../../supabase/functions/send-email/_templates/subscription-payment-failed";
+import { SubscriptionCanceled } from "../../../supabase/functions/send-email/_templates/subscription-canceled";
 
 // Mock data for each email template
 const MOCK_DATA: Record<string, any> = {
@@ -197,6 +204,18 @@ const MOCK_DATA: Record<string, any> = {
     closureDate: 'December 20, 2025',
     rounds: 2
   },
+  "subscription-payment-failed.tsx": {
+    userName: 'Alex Thompson',
+    gracePeriodEnd: '2025-12-25T00:00:00.000Z',
+    billingPortalUrl: 'https://leakedliability.com/subscribe',
+    failedAttempts: 1
+  },
+  "subscription-canceled.tsx": {
+    userName: 'Jordan Smith',
+    subscriptionTier: 'producer_t1',
+    resubscribeUrl: 'https://leakedliability.com/subscribe',
+    reason: 'grace_period_expired'
+  },
 };
 
 // Email subject lines
@@ -226,6 +245,8 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   "dispute-resolved-paid.tsx": "Dispute Resolved: Payment Confirmed",
   "dispute-resolved-mutual.tsx": "Dispute Resolved: Mutual Agreement",
   "dispute-closed-unresolved.tsx": "Dispute Closed: Unresolved",
+  "subscription-payment-failed.tsx": "Payment Failed - Action Required",
+  "subscription-canceled.tsx": "Subscription Canceled - Resubscribe Anytime",
 };
 
 interface EmailPreviewProps {
@@ -528,20 +549,19 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
         }
       
       case 'dispute-evidence-round-started.tsx':
+        return <DisputeEvidenceRoundStarted {...mockData} />;
       case 'dispute-additional-info-required.tsx':
+        return <DisputeAdditionalInfoRequired {...mockData} />;
       case 'dispute-resolved-paid.tsx':
+        return <DisputeResolvedPaid {...mockData} />;
       case 'dispute-resolved-mutual.tsx':
+        return <DisputeResolvedMutual {...mockData} />;
       case 'dispute-closed-unresolved.tsx':
-        return (
-          <div className="p-8 bg-background rounded-lg border">
-            <div className="text-center mb-4">
-              <Badge variant="default" className="mb-2">Template Implemented</Badge>
-              <p className="text-sm text-muted-foreground">
-                This email template is fully implemented in the backend. Preview rendering temporarily unavailable in frontend.
-              </p>
-            </div>
-          </div>
-        );
+        return <DisputeClosedUnresolved {...mockData} />;
+      case 'subscription-payment-failed.tsx':
+        return <SubscriptionPaymentFailed {...mockData} />;
+      case 'subscription-canceled.tsx':
+        return <SubscriptionCanceled {...mockData} />;
       
       default:
         return (
