@@ -10,8 +10,20 @@ import {
   Section,
   Text,
   Button,
-} from 'https://esm.sh/@react-email/components@0.0.22';
+} from 'https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1';
 import * as React from 'https://esm.sh/react@18.3.1';
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+  link,
+  button,
+  buttonContainer,
+} from './_shared/styles.ts';
 
 interface EmailVerificationProps {
   userName: string;
@@ -39,9 +51,8 @@ export const EmailVerification = ({
         </Text>
 
         {verificationCode && (
-          <Section style={codeContainer}>
-            <Text style={codeLabel}>Verification Code:</Text>
-            <Text style={code}>{verificationCode}</Text>
+          <Section style={detailsBox}>
+            <Text style={detailsText}><strong>Verification Code:</strong> {verificationCode}</Text>
           </Section>
         )}
 
@@ -51,18 +62,13 @@ export const EmailVerification = ({
           </Button>
         </Section>
 
-        <Text style={disclaimer}>
+        <Text style={text}>
           If you didn't create this account, you can safely ignore this email.
         </Text>
 
         <Text style={footer}>
-          Best regards,
-          <br />
+          Best regards,<br />
           The PSCS Team
-          <br />
-          <Link href="https://leakedliability.com" style={link}>
-            leakedliability.com
-          </Link>
         </Text>
       </Container>
     </Body>
@@ -70,90 +76,3 @@ export const EmailVerification = ({
 );
 
 export default EmailVerification;
-
-const main = {
-  backgroundColor: '#f6f6f6',
-  fontFamily: '"IBM Plex Mono", "Courier New", monospace',
-};
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '40px 20px',
-  maxWidth: '600px',
-};
-
-const h1 = {
-  color: '#000000',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '0 0 20px',
-  padding: '0',
-};
-
-const text = {
-  color: '#333333',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: '0 0 16px',
-};
-
-const codeContainer = {
-  backgroundColor: '#f0f0f0',
-  padding: '20px',
-  borderRadius: '5px',
-  margin: '20px 0',
-  textAlign: 'center' as const,
-};
-
-const codeLabel = {
-  color: '#666666',
-  fontSize: '12px',
-  margin: '0 0 8px',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '1px',
-};
-
-const code = {
-  color: '#000000',
-  fontSize: '32px',
-  fontWeight: 'bold',
-  letterSpacing: '8px',
-  margin: '0',
-};
-
-const buttonContainer = {
-  margin: '32px 0',
-  textAlign: 'center' as const,
-};
-
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '12px 24px',
-  borderRadius: '5px',
-};
-
-const disclaimer = {
-  color: '#999999',
-  fontSize: '12px',
-  lineHeight: '20px',
-  margin: '32px 0 16px',
-};
-
-const footer = {
-  color: '#666666',
-  fontSize: '12px',
-  lineHeight: '20px',
-  margin: '32px 0 0',
-};
-
-const link = {
-  color: '#000000',
-  textDecoration: 'underline',
-};

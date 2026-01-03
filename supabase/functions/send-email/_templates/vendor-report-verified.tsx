@@ -11,6 +11,16 @@ import {
   Text,
 } from 'https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1';
 import * as React from 'https://esm.sh/react@18.3.1';
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+  link,
+} from './_shared/styles.ts';
 
 interface VendorReportVerifiedProps {
   vendorCompany: string;
@@ -49,9 +59,8 @@ export const VendorReportVerified = ({
           <Text style={detailsText}><strong>Amount Owed:</strong> ${(typeof amountOwed === 'number' && isFinite(amountOwed) ? amountOwed : 0).toLocaleString()}</Text>
         </Section>
         {verificationNotes && (
-          <Section style={notesBox}>
-            <Text style={notesTitle}><strong>Verification Notes:</strong></Text>
-            <Text style={text}>{verificationNotes}</Text>
+          <Section style={detailsBox}>
+            <Text style={detailsText}><strong>Verification Notes:</strong> {verificationNotes}</Text>
           </Section>
         )}
         <Text style={text}>
@@ -81,15 +90,15 @@ export const VendorReportVerified = ({
   </Html>
 );
 
-const main = { backgroundColor: '#f6f9fc', fontFamily: 'IBM Plex Mono, monospace' };
-const container = { paddingLeft: '12px', paddingRight: '12px', margin: '0 auto', paddingTop: '40px', paddingBottom: '40px' };
-const h1 = { color: '#16a34a', fontSize: '24px', fontWeight: 'bold', margin: '40px 0 20px', fontFamily: 'IBM Plex Mono, monospace' };
-const text = { color: '#333', fontSize: '14px', lineHeight: '24px', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '12px' };
-const detailsBox = { backgroundColor: '#f0fdf4', padding: '20px', borderRadius: '5px', marginTop: '20px', marginBottom: '20px', border: '2px solid #16a34a' };
-const detailsText = { color: '#333', fontSize: '14px', lineHeight: '24px', margin: '8px 0', fontFamily: 'IBM Plex Mono, monospace' };
-const notesBox = { backgroundColor: '#fef3c7', padding: '15px', borderRadius: '5px', marginTop: '15px', marginBottom: '15px' };
-const notesTitle = { color: '#92400e', fontSize: '14px', marginBottom: '8px', fontFamily: 'IBM Plex Mono, monospace' };
-const link = { color: '#2563eb', textDecoration: 'underline', fontFamily: 'IBM Plex Mono, monospace' };
-const footer = { color: '#8898aa', fontSize: '12px', marginTop: '30px', fontFamily: 'IBM Plex Mono, monospace' };
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+  link,
+} from './_shared/styles.ts';
 
 export default VendorReportVerified;

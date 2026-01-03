@@ -10,6 +10,15 @@ import {
   Text,
 } from 'https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1';
 import * as React from 'https://esm.sh/react@18.3.1';
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+} from './_shared/styles.ts';
 
 interface VendorReportRejectedProps {
   vendorCompany: string;
@@ -44,9 +53,9 @@ export const VendorReportRejected = ({
           <Text style={detailsText}><strong>Project:</strong> {projectName}</Text>
           <Text style={detailsText}><strong>Invoice #:</strong> {invoiceNumber}</Text>
         </Section>
-        <Section style={reasonBox}>
-          <Text style={reasonTitle}><strong>Reason for Additional Information Request:</strong></Text>
-          <Text style={text}>{rejectionReason}</Text>
+        <Section style={detailsBox}>
+          <Text style={detailsText}><strong>Reason for Additional Information Request:</strong></Text>
+          <Text style={detailsText}>{rejectionReason}</Text>
         </Section>
         <Text style={text}>
           <strong>What you need to do:</strong>
@@ -85,14 +94,14 @@ export const VendorReportRejected = ({
   </Html>
 );
 
-const main = { backgroundColor: '#f6f9fc', fontFamily: 'IBM Plex Mono, monospace' };
-const container = { paddingLeft: '12px', paddingRight: '12px', margin: '0 auto', paddingTop: '40px', paddingBottom: '40px' };
-const h1 = { color: '#d97706', fontSize: '24px', fontWeight: 'bold', margin: '40px 0 20px', fontFamily: 'IBM Plex Mono, monospace' };
-const text = { color: '#333', fontSize: '14px', lineHeight: '24px', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '12px' };
-const detailsBox = { backgroundColor: '#fef3c7', padding: '20px', borderRadius: '5px', marginTop: '20px', marginBottom: '20px' };
-const detailsText = { color: '#333', fontSize: '14px', lineHeight: '24px', margin: '8px 0', fontFamily: 'IBM Plex Mono, monospace' };
-const reasonBox = { backgroundColor: '#fee2e2', padding: '20px', borderRadius: '5px', marginTop: '20px', marginBottom: '20px', border: '2px solid #dc2626' };
-const reasonTitle = { color: '#991b1b', fontSize: '14px', marginBottom: '12px', fontFamily: 'IBM Plex Mono, monospace' };
-const footer = { color: '#8898aa', fontSize: '12px', marginTop: '30px', fontFamily: 'IBM Plex Mono, monospace' };
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+} from './_shared/styles.ts';
 
 export default VendorReportRejected;

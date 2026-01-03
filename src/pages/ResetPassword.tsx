@@ -138,6 +138,24 @@ export default function ResetPassword() {
 
       if (error) throw error;
 
+      // Send custom branded password reset email
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'password_reset',
+            to: email,
+            data: {
+              resetUrl: `${window.location.origin}/reset-password`,
+              email: email,
+            },
+          },
+        });
+        console.log('[RESET] Custom password reset email sent successfully');
+      } catch (emailError) {
+        console.error('[RESET] Custom password reset email failed:', emailError);
+        // Don't block the flow if custom email fails - Supabase email was sent
+      }
+
       toast({
         title: "New link sent!",
         description: "Check your email for a fresh password reset link.",
@@ -158,16 +176,17 @@ export default function ResetPassword() {
     <>
       <Navigation />
       <div className="min-h-screen bg-background flex items-center justify-center p-4 pt-24 md:pt-28">
-      {isIGBrowser && (
-        <div className="max-w-md w-full mb-4 p-4 bg-destructive/10 border border-destructive rounded-sm">
-          <p className="text-sm text-destructive font-semibold">Instagram Browser Detected</p>
-          <p className="text-xs text-destructive/80 mt-1">
-            Password resets don't work in Instagram's browser. Tap the "..." menu and select "Open in Safari/Chrome" to continue.
-          </p>
-        </div>
-      )}
-      
-      <Card className="w-full max-w-md p-8">
+        <div className="w-full max-w-md mx-auto space-y-4">
+          {isIGBrowser && (
+            <div className="p-4 bg-destructive/10 border border-destructive rounded-sm">
+              <p className="text-sm text-destructive font-semibold">Instagram Browser Detected</p>
+              <p className="text-xs text-destructive/80 mt-1">
+                Password resets don't work in Instagram's browser. Tap the "..." menu and select "Open in Safari/Chrome" to continue.
+              </p>
+            </div>
+          )}
+          
+          <Card className="w-full p-8">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black mb-2">Reset Password</h1>
           <p className="text-muted-foreground">Enter your new password below</p>
@@ -268,7 +287,8 @@ export default function ResetPassword() {
             </form>
           )}
         </div>
-      </Card>
+          </Card>
+        </div>
       
       <Footer />
       </div>

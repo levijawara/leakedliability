@@ -124,9 +124,30 @@ export default function Auth() {
               },
             },
           });
+          console.log('[AUTH] Welcome email sent successfully');
         } catch (emailError) {
-          console.error('Welcome email failed:', emailError);
+          console.error('[AUTH] Welcome email failed:', emailError);
           // Don't block signup if email fails
+        }
+
+        // Send custom branded email verification email (in addition to Supabase default)
+        try {
+          const verificationUrl = `${window.location.origin}/verify-email`;
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'email_verification',
+              to: email,
+              data: {
+                userName: `${firstName} ${lastName}`,
+                verificationUrl: verificationUrl,
+                email: email,
+              },
+            },
+          });
+          console.log('[AUTH] Custom email verification sent successfully');
+        } catch (emailError) {
+          console.error('[AUTH] Custom email verification failed:', emailError);
+          // Don't block signup if email fails - Supabase verification email was sent
         }
       }
 
@@ -214,6 +235,24 @@ export default function Auth() {
 
       if (error) throw error;
 
+      // Send custom branded password reset email
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'password_reset',
+            to: email,
+            data: {
+              resetUrl: redirectUrl,
+              email: email,
+            },
+          },
+        });
+        console.log('[AUTH] Custom password reset email sent successfully');
+      } catch (emailError) {
+        console.error('[AUTH] Custom password reset email failed:', emailError);
+        // Don't block the flow if custom email fails - Supabase email was sent
+      }
+
       toast({
         title: "Check your email",
         description: `We've sent a password reset link to ${email}. The link expires in 60 minutes.`,
@@ -237,7 +276,7 @@ export default function Auth() {
     <>
       <Navigation />
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4 pt-24 md:pt-28">
-      <Card className="w-full max-w-md p-8">
+        <Card className="w-full max-w-md p-8 mx-auto">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-black mb-2">Leaked Liability™</h1>
           <p className="text-muted-foreground">Filmmaking's financial accountability platform.</p>

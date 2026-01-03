@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Body,
   Container,
@@ -10,6 +11,16 @@ import {
   Text,
 } from "https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1";
 import * as React from "https://esm.sh/react@18.3.1";
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+  link,
+} from './_shared/styles.ts';
 
 interface DisputeResolvedMutualProps {
   recipientName: string;
@@ -37,7 +48,7 @@ export const DisputeResolvedMutual = ({
       <Body style={main}>
         <Container style={container}>
           <Heading style={h1}>
-            🤝 Dispute Resolved — Mutual Agreement
+            Dispute Resolved — Mutual Agreement
           </Heading>
           
           <Text style={text}>Hi {recipientName},</Text>
@@ -48,53 +59,18 @@ export const DisputeResolvedMutual = ({
                 The dispute regarding Report <strong>#{reportId}</strong> has been resolved through mutual agreement. Both parties have confirmed that the matter has been settled privately.
               </Text>
               
-              <Section style={successBox}>
-                <Text style={successText}>
-                  🤝 <strong>Resolution Confirmed</strong><br />
-                  This dispute has been closed by mutual agreement.
-                </Text>
+              <Section style={detailsBox}>
+                <Text style={detailsText}><strong>Report ID:</strong> #{reportId}</Text>
+                <Text style={detailsText}><strong>Producer:</strong> {producerName}</Text>
+                <Text style={detailsText}><strong>Project:</strong> {projectName}</Text>
+                <Text style={detailsText}><strong>Original Amount:</strong> ${amountOwed.toLocaleString()}</Text>
+                <Text style={detailsText}><strong>Resolution Date:</strong> {resolutionDate}</Text>
+                <Text style={detailsText}><strong>Status:</strong> Resolved - Mutual Agreement</Text>
               </Section>
-            </>
-          )}
 
-          {recipientRole === 'producer' && (
-            <>
               <Text style={text}>
-                The dispute regarding Report <strong>#{reportId}</strong> has been resolved. Both parties have agreed to settle this matter privately, and the dispute is now closed.
+                <strong>What this means:</strong>
               </Text>
-              
-              <Section style={successBox}>
-                <Text style={successText}>
-                  🤝 <strong>Agreement Reached</strong><br />
-                  This report has been marked as resolved by mutual agreement.
-                </Text>
-              </Section>
-            </>
-          )}
-
-          {recipientRole === 'admin' && (
-            <>
-              <Text style={text}>
-                Dispute for Report <strong>#{reportId}</strong> has been resolved via mutual agreement between both parties.
-              </Text>
-            </>
-          )}
-
-          <Section style={infoBox}>
-            <Text style={infoLabel}>Resolution Details</Text>
-            <Text style={infoText}>
-              <strong>Report:</strong> #{reportId}<br />
-              <strong>Producer:</strong> {producerName}<br />
-              <strong>Project:</strong> {projectName}<br />
-              <strong>Original Amount:</strong> ${amountOwed.toLocaleString()}<br />
-              <strong>Resolution Date:</strong> {resolutionDate}<br />
-              <strong>Status:</strong> Resolved - Mutual Agreement
-            </Text>
-          </Section>
-
-          {recipientRole === 'reporter' && (
-            <>
-              <Heading style={h2}>What This Means:</Heading>
               <Text style={text}>
                 • The dispute is now closed<br />
                 • The report status has been updated to "RESOLVED"<br />
@@ -106,7 +82,22 @@ export const DisputeResolvedMutual = ({
 
           {recipientRole === 'producer' && (
             <>
-              <Heading style={h2}>Impact on Your Record:</Heading>
+              <Text style={text}>
+                The dispute regarding Report <strong>#{reportId}</strong> has been resolved. Both parties have agreed to settle this matter privately, and the dispute is now closed.
+              </Text>
+              
+              <Section style={detailsBox}>
+                <Text style={detailsText}><strong>Report ID:</strong> #{reportId}</Text>
+                <Text style={detailsText}><strong>Producer:</strong> {producerName}</Text>
+                <Text style={detailsText}><strong>Project:</strong> {projectName}</Text>
+                <Text style={detailsText}><strong>Original Amount:</strong> ${amountOwed.toLocaleString()}</Text>
+                <Text style={detailsText}><strong>Resolution Date:</strong> {resolutionDate}</Text>
+                <Text style={detailsText}><strong>Status:</strong> Resolved - Mutual Agreement</Text>
+              </Section>
+
+              <Text style={text}>
+                <strong>Impact on your record:</strong>
+              </Text>
               <Text style={text}>
                 • This mutual resolution is recorded on your profile<br />
                 • The dispute is permanently closed<br />
@@ -118,7 +109,17 @@ export const DisputeResolvedMutual = ({
 
           {recipientRole === 'admin' && (
             <>
-              <Heading style={h2}>Admin Note:</Heading>
+              <Text style={text}>
+                Dispute for Report <strong>#{reportId}</strong> has been resolved via mutual agreement between both parties.
+              </Text>
+              <Section style={detailsBox}>
+                <Text style={detailsText}><strong>Report ID:</strong> #{reportId}</Text>
+                <Text style={detailsText}><strong>Producer:</strong> {producerName}</Text>
+                <Text style={detailsText}><strong>Project:</strong> {projectName}</Text>
+                <Text style={detailsText}><strong>Original Amount:</strong> ${amountOwed.toLocaleString()}</Text>
+                <Text style={detailsText}><strong>Resolution Date:</strong> {resolutionDate}</Text>
+                <Text style={detailsText}><strong>Status:</strong> Resolved - Mutual Agreement</Text>
+              </Section>
               <Text style={text}>
                 Both parties confirmed mutual resolution. The report has been updated to "resolved" status and removed from active disputes. Timeline and evidence remain archived for record-keeping.
               </Text>
@@ -126,19 +127,14 @@ export const DisputeResolvedMutual = ({
           )}
 
           {recipientRole !== 'admin' && (
-            <Section style={noteBox}>
-              <Text style={noteText}>
-                ℹ️ <strong>Note:</strong> If either party later disputes this resolution, they may reopen the case through the LL™ admin team with new evidence.
-              </Text>
-            </Section>
+            <Text style={text}>
+              <strong>Note:</strong> If either party later disputes this resolution, they may reopen the case through the LL™ admin team with new evidence.
+            </Text>
           )}
 
           <Text style={footer}>
-            <Link href="https://leakedliability.com" style={link}>
-              Leaked Liability™
-            </Link>
-            <br />
-            Promoting Fair Resolution in Production
+            Best regards,<br />
+            The PSCS Team
           </Text>
         </Container>
       </Body>
@@ -147,101 +143,3 @@ export const DisputeResolvedMutual = ({
 };
 
 export default DisputeResolvedMutual;
-
-const main = {
-  backgroundColor: "#f6f9fc",
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-};
-
-const container = {
-  backgroundColor: "#ffffff",
-  margin: "0 auto",
-  padding: "20px 0 48px",
-  marginBottom: "64px",
-};
-
-const h1 = {
-  color: "#333",
-  fontSize: "24px",
-  fontWeight: "bold",
-  margin: "40px 0 20px",
-  padding: "0 40px",
-};
-
-const h2 = {
-  color: "#333",
-  fontSize: "18px",
-  fontWeight: "bold",
-  margin: "30px 40px 10px",
-};
-
-const text = {
-  color: "#333",
-  fontSize: "16px",
-  lineHeight: "26px",
-  margin: "16px 40px",
-};
-
-const successBox = {
-  backgroundColor: "#e8f5e9",
-  border: "2px solid #4caf50",
-  borderRadius: "5px",
-  padding: "20px",
-  margin: "20px 40px",
-};
-
-const successText = {
-  color: "#2e7d32",
-  fontSize: "15px",
-  lineHeight: "24px",
-  margin: "0",
-};
-
-const infoBox = {
-  backgroundColor: "#f0f0f0",
-  borderRadius: "5px",
-  padding: "20px",
-  margin: "20px 40px",
-};
-
-const infoLabel = {
-  color: "#666",
-  fontSize: "12px",
-  fontWeight: "bold",
-  textTransform: "uppercase" as const,
-  margin: "0 0 10px 0",
-};
-
-const infoText = {
-  color: "#333",
-  fontSize: "14px",
-  lineHeight: "22px",
-  margin: "0",
-};
-
-const noteBox = {
-  backgroundColor: "#e3f2fd",
-  border: "1px solid #90caf9",
-  borderRadius: "5px",
-  padding: "15px",
-  margin: "20px 40px",
-};
-
-const noteText = {
-  color: "#0d47a1",
-  fontSize: "13px",
-  lineHeight: "20px",
-  margin: "0",
-};
-
-const link = {
-  color: "#000000",
-  textDecoration: "underline",
-};
-
-const footer = {
-  color: "#8898aa",
-  fontSize: "12px",
-  lineHeight: "16px",
-  margin: "20px 40px",
-};

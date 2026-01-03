@@ -1,3 +1,4 @@
+// @ts-nocheck
 import {
   Body,
   Container,
@@ -7,10 +8,22 @@ import {
   Link,
   Preview,
   Text,
-  Hr,
   Section,
-} from "https://esm.sh/@react-email/components@0.0.22";
+  Button,
+} from "https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1";
 import * as React from "https://esm.sh/react@18.3.1";
+import {
+  main,
+  container,
+  h1,
+  text,
+  detailsBox,
+  detailsText,
+  footer,
+  link,
+  button,
+  buttonContainer,
+} from './_shared/styles.ts';
 
 interface SubscriptionCanceledProps {
   userName: string;
@@ -46,9 +59,9 @@ export const SubscriptionCanceled = ({
                 Your <strong>{tierDisplay}</strong> subscription has been canceled because the grace period expired without successful payment.
               </Text>
 
-              <Section style={alertBox}>
-                <Text style={alertText}>
-                  ⛔ Your leaderboard access has been suspended
+              <Section style={detailsBox}>
+                <Text style={detailsText}>
+                  <strong>Status:</strong> Your leaderboard access has been suspended
                 </Text>
               </Section>
 
@@ -62,9 +75,9 @@ export const SubscriptionCanceled = ({
                 Your <strong>{tierDisplay}</strong> subscription has been successfully canceled as requested.
               </Text>
 
-              <Section style={alertBox}>
-                <Text style={alertText}>
-                  Your leaderboard access has ended
+              <Section style={detailsBox}>
+                <Text style={detailsText}>
+                  <strong>Status:</strong> Your leaderboard access has ended
                 </Text>
               </Section>
 
@@ -73,8 +86,6 @@ export const SubscriptionCanceled = ({
               </Text>
             </>
           )}
-
-          <Hr style={hr} />
 
           <Text style={text}>
             <strong>Want to restore access?</strong>
@@ -85,34 +96,28 @@ export const SubscriptionCanceled = ({
           </Text>
 
           <Section style={buttonContainer}>
-            <Link href={resubscribeUrl} style={button}>
+            <Button href={resubscribeUrl} style={button}>
               Resubscribe Now
-            </Link>
+            </Button>
           </Section>
 
-          <Hr style={hr} />
-
-          <Text style={footer}>
+          <Text style={text}>
             <strong>What you'll regain with a subscription:</strong>
           </Text>
-          <Text style={footer}>
-            ✓ Full leaderboard access<br />
-            ✓ Producing Social Credit Scores (PSCS)<br />
-            ✓ Detailed payment histories<br />
-            ✓ Producer profiles and analytics<br />
-            {subscriptionTier === 'producer_t2' && '✓ Instant PSCS updates (Tier 2 only)'}
+          <Text style={text}>
+            • Full leaderboard access<br />
+            • Producing Social Credit Scores (PSCS)<br />
+            • Detailed payment histories<br />
+            • Producer profiles and analytics<br />
+            {subscriptionTier === 'producer_t2' && '• Instant PSCS updates (Tier 2 only)'}
           </Text>
 
-          <Hr style={hr} />
-
-          <Text style={footer}>
+          <Text style={text}>
             <strong>No hard feelings.</strong> We don't believe in long-term contracts or hidden fees. If you ever want to come back, we'll be here.
           </Text>
 
-          <Hr style={hr} />
-
-          <Text style={footer}>
-            Questions? Reply to this email or visit{" "}
+          <Text style={text}>
+            Questions? Reply to this email or visit{' '}
             <Link href="https://leakedliability.com/faq" style={link}>
               our FAQ
             </Link>
@@ -120,8 +125,8 @@ export const SubscriptionCanceled = ({
           </Text>
 
           <Text style={footer}>
-            <strong>Leaked Liability™</strong><br />
-            Transparency in Film Production Payments
+            Best regards,<br />
+            The PSCS Team
           </Text>
         </Container>
       </Body>
@@ -130,83 +135,3 @@ export const SubscriptionCanceled = ({
 };
 
 export default SubscriptionCanceled;
-
-const main = {
-  backgroundColor: "#0D0D0D",
-  fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif",
-};
-
-const container = {
-  margin: "0 auto",
-  padding: "40px 20px",
-  maxWidth: "600px",
-  backgroundColor: "#1A1A1A",
-  borderRadius: "8px",
-};
-
-const h1 = {
-  color: "#FFFFFF",
-  fontSize: "28px",
-  fontWeight: "bold",
-  marginBottom: "24px",
-  textAlign: "center" as const,
-};
-
-const text = {
-  color: "#E5E5E5",
-  fontSize: "16px",
-  lineHeight: "24px",
-  marginBottom: "16px",
-};
-
-const alertBox = {
-  backgroundColor: "#2D1B1B",
-  border: "2px solid #999999",
-  borderRadius: "6px",
-  padding: "20px",
-  marginBottom: "24px",
-  marginTop: "24px",
-};
-
-const alertText = {
-  color: "#FFFFFF",
-  fontSize: "18px",
-  fontWeight: "bold",
-  lineHeight: "24px",
-  textAlign: "center" as const,
-};
-
-const buttonContainer = {
-  textAlign: "center" as const,
-  marginTop: "32px",
-  marginBottom: "32px",
-};
-
-const button = {
-  backgroundColor: "#00B14F",
-  color: "#FFFFFF",
-  fontSize: "16px",
-  fontWeight: "bold",
-  textDecoration: "none",
-  padding: "14px 32px",
-  borderRadius: "6px",
-  display: "inline-block",
-};
-
-const hr = {
-  borderColor: "#333333",
-  marginTop: "24px",
-  marginBottom: "24px",
-};
-
-const footer = {
-  color: "#999999",
-  fontSize: "14px",
-  lineHeight: "20px",
-  marginBottom: "12px",
-};
-
-const link = {
-  color: "#00B14F",
-  textDecoration: "underline",
-};

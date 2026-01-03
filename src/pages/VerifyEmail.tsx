@@ -44,6 +44,26 @@ export default function VerifyEmail() {
 
       if (error) throw error;
 
+      // Send custom branded email verification email (in addition to Supabase default)
+      try {
+        const verificationUrl = `${window.location.origin}/verify-email`;
+        await supabase.functions.invoke('send-email', {
+          body: {
+            type: 'email_verification',
+            to: user.email,
+            data: {
+              userName: user.user_metadata?.full_name || user.email,
+              verificationUrl: verificationUrl,
+              email: user.email,
+            },
+          },
+        });
+        console.log('[VERIFY] Custom email verification sent successfully');
+      } catch (emailError) {
+        console.error('[VERIFY] Custom email verification failed:', emailError);
+        // Don't block the flow if custom email fails - Supabase email was sent
+      }
+
       toast.success("Verification email resent! Check your inbox.");
     } catch (error: any) {
       console.error("Error resending verification email:", error);
@@ -56,8 +76,8 @@ export default function VerifyEmail() {
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="container max-w-md">
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 pt-24 md:pt-28">
+        <div className="w-full max-w-md mx-auto">
           <Button
             variant="ghost"
             onClick={() => navigate("/")}
