@@ -429,13 +429,77 @@ serve(async (req) => {
     const fileSize = fileData.size;
     logAction(`PDF downloaded (${(fileSize / 1024).toFixed(1)} KB)`, downloadStart);
 
-    // Extract text from PDF
-    console.log("[parse-call-sheet] Extracting text from PDF with unpdf...");
-    const extractStart = Date.now();
-    const pdfText = await extractTextFromPdf(fileData);
+    // Extract text from PDF - try Firecrawl first (better OCR), fall back to unpdf
+    let pdfText = "";
+    let extractionMethod = "unpdf";
+    const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
 
-    logAction(`Text extracted (${pdfText.length} chars)`, extractStart);
-    console.log(`[parse-call-sheet] Text preview: ${pdfText.slice(0, 500)}...`);
+    if (firecrawlApiKey) {
+      console.log("[parse-call-sheet] Attempting extraction with Firecrawl...");
+      const firecrawlStart = Date.now();
+      
+      try {
+        // Generate signed URL for Firecrawl to access the PDF (5 min expiry)
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from("call_sheets")
+          .createSignedUrl(callSheet.master_file_path, 300);
+        
+        if (signedUrlError || !signedUrlData?.signedUrl) {
+          console.warn("[parse-call-sheet] Failed to create signed URL:", signedUrlError);
+          throw new Error("Failed to create signed URL");
+        }
+        
+        console.log("[parse-call-sheet] Signed URL created, calling Firecrawl...");
+        
+        // Call Firecrawl scrape endpoint
+        const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${firecrawlApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            url: signedUrlData.signedUrl,
+            formats: ["markdown"],
+            onlyMainContent: false,
+          }),
+        });
+        
+        if (!firecrawlResponse.ok) {
+          const errorText = await firecrawlResponse.text();
+          console.warn("[parse-call-sheet] Firecrawl API error:", firecrawlResponse.status, errorText);
+          throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
+        }
+        
+        const firecrawlData = await firecrawlResponse.json();
+        const firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
+        
+        if (firecrawlText && firecrawlText.trim().length >= 100) {
+          pdfText = firecrawlText;
+          extractionMethod = "firecrawl";
+          logAction(`Firecrawl extracted (${pdfText.length} chars)`, firecrawlStart);
+          console.log("[parse-call-sheet] Firecrawl extraction successful");
+        } else {
+          console.warn(`[parse-call-sheet] Firecrawl returned insufficient text (${firecrawlText?.length || 0} chars), falling back to unpdf`);
+          throw new Error("Firecrawl returned insufficient text");
+        }
+      } catch (firecrawlError) {
+        console.warn("[parse-call-sheet] Firecrawl failed, falling back to unpdf:", firecrawlError);
+      }
+    } else {
+      console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, using unpdf");
+    }
+
+    // Fallback to unpdf if Firecrawl didn't work
+    if (!pdfText || pdfText.trim().length < 100) {
+      console.log("[parse-call-sheet] Extracting text from PDF with unpdf...");
+      const extractStart = Date.now();
+      pdfText = await extractTextFromPdf(fileData);
+      extractionMethod = "unpdf";
+      logAction(`unpdf extracted (${pdfText.length} chars)`, extractStart);
+    }
+
+    console.log(`[parse-call-sheet] Text extracted via ${extractionMethod}: ${pdfText.slice(0, 500)}...`);
 
     if (!pdfText || pdfText.trim().length < 100) {
       console.error("[parse-call-sheet] Insufficient text extracted from PDF");
@@ -476,7 +540,8 @@ serve(async (req) => {
     const parseTiming = {
       total_elapsed_ms: totalElapsedMs,
       total_elapsed_formatted: totalElapsedFormatted,
-      model_used: "google/gemini-2.5-flash"
+      model_used: "google/gemini-2.5-flash",
+      extraction_method: extractionMethod
     };
 
     console.log(`[parse-call-sheet] Total processing time: ${totalElapsedFormatted}`);
