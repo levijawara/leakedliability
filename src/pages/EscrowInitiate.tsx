@@ -326,9 +326,11 @@ export default function EscrowInitiate() {
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           <span>{loading ? "Starting escrow..." : "Continue to secure payment"}</span>
         </button>
-      </form>
+        </form>
+      )}
+
       <Footer />
-      </div>
+    </div>
     </>
   );
 }
