@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.generate-arena-transcript]
 verify_jwt = false
+
+[functions.backfill-contact-sheet-attributions]
+verify_jwt = true
