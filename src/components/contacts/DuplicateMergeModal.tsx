@@ -198,7 +198,7 @@ export function DuplicateMergeModal({
           Select which contact to keep as the primary for each group.
         </p>
 
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1 max-h-[50vh] pr-4">
           <div className="space-y-4">
             {duplicateGroups.map((group, groupIndex) => {
               const allContacts = [group.primary, ...group.duplicates.map(d => d.contact)];
