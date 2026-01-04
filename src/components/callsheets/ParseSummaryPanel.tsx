@@ -138,12 +138,21 @@ function findPotentialMatch(
 ): DuplicateMatch | null {
   let bestMatch: DuplicateMatch | null = null;
   
+  // Pre-normalize parsed arrays once for consistent comparison
+  const parsedPhonesNorm = parsed.phones.map(normalizePhone);
+  const parsedEmailsNorm = parsed.emails.map(normalizeEmail);
+  
   for (const existing of existingContacts) {
     const matchedFields: DuplicateMatch['matchedFields'] = [];
     let hasPhoneOrEmailMatch = false;
     
-    // Field 1: Name (fuzzy)
-    if (fuzzyNameMatch(parsed.name, existing.name)) {
+    // Debug for specific names (e.g., "Levi")
+    const isDebugTarget = parsed.name.toLowerCase().includes('levi') || 
+                          existing.name.toLowerCase().includes('levi');
+    
+    // Field 1: Name (fuzzy OR exact match)
+    const exactNameMatch = parsed.name.toLowerCase().trim() === existing.name.toLowerCase().trim();
+    if (fuzzyNameMatch(parsed.name, existing.name) || exactNameMatch) {
       matchedFields.push('name');
     }
     
@@ -155,14 +164,16 @@ function findPotentialMatch(
     
     // Field 3: Phone (exact match, normalized)
     const existingPhonesNorm = (existing.phones || []).map(normalizePhone);
-    if (parsed.phones.some(p => existingPhonesNorm.includes(normalizePhone(p)))) {
+    const phoneMatch = parsedPhonesNorm.some(p => existingPhonesNorm.includes(p));
+    if (phoneMatch) {
       matchedFields.push('phone');
       hasPhoneOrEmailMatch = true;
     }
     
     // Field 4: Email (case-insensitive)
     const existingEmailsNorm = (existing.emails || []).map(normalizeEmail);
-    if (parsed.emails.some(e => existingEmailsNorm.includes(normalizeEmail(e)))) {
+    const emailMatch = parsedEmailsNorm.some(e => existingEmailsNorm.includes(e));
+    if (emailMatch) {
       matchedFields.push('email');
       hasPhoneOrEmailMatch = true;
     }
@@ -175,6 +186,11 @@ function findPotentialMatch(
       hasPhoneOrEmailMatch = true;
     }
     
+    // Debug logging for target names
+    if (isDebugTarget && matchedFields.length > 0) {
+      console.log(`[DEBUG] "${parsed.name}" vs "${existing.name}" matched fields:`, matchedFields);
+    }
+    
     // Require 2+ matched fields
     if (matchedFields.length >= 2) {
       // Single-word name protection (Refinement #24)
@@ -183,16 +199,12 @@ function findPotentialMatch(
         continue; // Skip - single-word name needs stronger evidence
       }
       
-      // Check for data overlap
+      // Check for data overlap (use already normalized arrays)
       const roleOverlap = parsed.roles.some(r => 
-        (existing.roles || []).map(er => er.toLowerCase()).includes(r.toLowerCase())
+        existingRolesLower.includes(r.toLowerCase())
       );
-      const phoneOverlap = parsed.phones.some(p => 
-        existingPhonesNorm.includes(normalizePhone(p))
-      );
-      const emailOverlap = parsed.emails.some(e => 
-        existingEmailsNorm.includes(normalizeEmail(e))
-      );
+      const phoneOverlap = parsedPhonesNorm.some(p => existingPhonesNorm.includes(p));
+      const emailOverlap = parsedEmailsNorm.some(e => existingEmailsNorm.includes(e));
       const hasOverlap = roleOverlap || phoneOverlap || emailOverlap;
       
       const result: DuplicateMatch = {
@@ -307,18 +319,33 @@ export function ParseSummaryPanel({
             console.warn('[ParseSummaryPanel] Exactly 1000 contacts returned - may be truncated');
           }
 
+          console.log(`[ParseSummaryPanel] Running duplicate detection against ${existing.length} existing contacts for userId: ${userId}`);
+          
           // Run duplicate detection for each parsed contact
           const contactsWithDups: ContactWithDuplicate[] = parsedContacts.map((contact, index) => {
-            const match = findPotentialMatch(
-              {
-                name: contact.name,
-                roles: contact.roles || [],
-                phones: contact.phones || [],
-                emails: contact.emails || [],
-                igHandle: contact.ig_handle
-              },
-              existing
-            );
+            const searchParams = {
+              name: contact.name,
+              roles: contact.roles || [],
+              phones: contact.phones || [],
+              emails: contact.emails || [],
+              igHandle: contact.ig_handle
+            };
+            
+            // Debug log for specific names
+            if (contact.name.toLowerCase().includes('levi')) {
+              console.log(`[ParseSummaryPanel] Checking "${contact.name}":`, searchParams);
+            }
+            
+            const match = findPotentialMatch(searchParams, existing);
+            
+            // Debug log match result for specific names
+            if (contact.name.toLowerCase().includes('levi')) {
+              console.log(`[ParseSummaryPanel] Match result for "${contact.name}":`, match ? {
+                existingName: match.existingName,
+                matchedFields: match.matchedFields,
+                matchScore: match.matchScore
+              } : 'NO MATCH');
+            }
             
             return {
               ...contact,
@@ -327,6 +354,10 @@ export function ParseSummaryPanel({
               decision: 'pending' as const
             };
           });
+          
+          // Summary log
+          const duplicateCount = contactsWithDups.filter(c => c.potentialDuplicate).length;
+          console.log(`[ParseSummaryPanel] Duplicate detection complete: ${duplicateCount}/${contactsWithDups.length} duplicates found`);
           
           setContactsWithDuplicates(contactsWithDups);
           setDuplicateCheckComplete(true);
