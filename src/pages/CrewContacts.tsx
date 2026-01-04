@@ -11,7 +11,8 @@ import { FilterModal, ContactFilters } from "@/components/contacts/FilterModal";
 import { BulkActionsBar } from "@/components/contacts/BulkActionsBar";
 import { ExportButton } from "@/components/contacts/ExportButton";
 import { DuplicateMergeModal } from "@/components/contacts/DuplicateMergeModal";
-import { Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Users, Database, Loader2 } from "lucide-react";
 import { findDuplicateGroups, DuplicateGroup, ContactForMatching } from "@/lib/duplicateDetection";
 
 export interface CrewContact {
@@ -71,6 +72,10 @@ export default function CrewContacts() {
   const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([]);
   const [findingDuplicates, setFindingDuplicates] = useState(false);
+  
+  // Admin backfill state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [backfillRunning, setBackfillRunning] = useState(false);
 
   // Persist view preference
   useEffect(() => {
@@ -96,6 +101,13 @@ export default function CrewContacts() {
       }
       setUser(session.user);
       fetchContacts(session.user.id);
+      
+      // Check admin status
+      const { data: adminData } = await supabase.rpc('has_role', {
+        _user_id: session.user.id,
+        _role: 'admin'
+      });
+      setIsAdmin(adminData === true);
     };
 
     checkAuth();
@@ -417,6 +429,37 @@ export default function CrewContacts() {
     setSelectedIds(new Set());
   };
 
+  const handleRunBackfill = async () => {
+    if (!user || !isAdmin) return;
+    
+    setBackfillRunning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        'backfill-contact-sheet-attributions'
+      );
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Backfill Complete",
+        description: `Scanned ${data.sheets_scanned} sheets, found ${data.matches_found} matches, inserted ${data.inserted} new attributions.`,
+      });
+      
+      // Refresh call sheet counts
+      await fetchCallSheetCounts(contacts.map(c => c.id));
+      
+    } catch (err: any) {
+      console.error('[CrewContacts] Backfill error:', err);
+      toast({
+        title: "Backfill Failed",
+        description: "Could not complete attribution backfill. Check console for details.",
+        variant: "destructive"
+      });
+    } finally {
+      setBackfillRunning(false);
+    }
+  };
+
   const handleToggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -454,7 +497,30 @@ export default function CrewContacts() {
                 </p>
               </div>
             </div>
-            <ExportButton contacts={filteredContacts} />
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRunBackfill}
+                  disabled={backfillRunning}
+                  className="gap-2"
+                >
+                  {backfillRunning ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Running...
+                    </>
+                  ) : (
+                    <>
+                      <Database className="h-4 w-4" />
+                      Backfill Attributions
+                    </>
+                  )}
+                </Button>
+              )}
+              <ExportButton contacts={filteredContacts} />
+            </div>
           </div>
 
           {/* Toolbar */}
