@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.backfill-contact-sheet-attributions]
 verify_jwt = true
+
+[functions.redeem-beta-code]
+verify_jwt = true

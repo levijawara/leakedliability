@@ -134,6 +134,65 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          current_uses: number
+          expired_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_uses?: number
+          expired_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_uses?: number
+          expired_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+        }
+        Relationships: []
+      }
+      beta_access_redemptions: {
+        Row: {
+          code_id: string
+          id: string
+          redeemed_at: string
+          user_id: string
+        }
+        Insert: {
+          code_id: string
+          id?: string
+          redeemed_at?: string
+          user_id: string
+        }
+        Update: {
+          code_id?: string
+          id?: string
+          redeemed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "beta_access_redemptions_code_id_fkey"
+            columns: ["code_id"]
+            isOneToOne: false
+            referencedRelation: "beta_access_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_sheet_config: {
         Row: {
           created_at: string | null
@@ -1974,6 +2033,7 @@ export type Database = {
         Row: {
           account_status: string | null
           account_type: Database["public"]["Enums"]["account_type"]
+          beta_access: boolean
           business_name: string | null
           confirmation_cash_balance: number | null
           created_at: string
@@ -1990,6 +2050,7 @@ export type Database = {
         Insert: {
           account_status?: string | null
           account_type: Database["public"]["Enums"]["account_type"]
+          beta_access?: boolean
           business_name?: string | null
           confirmation_cash_balance?: number | null
           created_at?: string
@@ -2006,6 +2067,7 @@ export type Database = {
         Update: {
           account_status?: string | null
           account_type?: Database["public"]["Enums"]["account_type"]
+          beta_access?: boolean
           business_name?: string | null
           confirmation_cash_balance?: number | null
           created_at?: string

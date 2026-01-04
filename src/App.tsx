@@ -57,6 +57,7 @@ import CrewContacts from "./pages/CrewContacts";
 import ParseReview from "./pages/ParseReview";
 import IGMatching from "./pages/IGMatching";
 import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
+import BetaUnlock from "./pages/BetaUnlock";
 import { FailureIndicator } from "./components/FailureIndicator";
 
 const queryClient = new QueryClient();
@@ -410,6 +411,7 @@ const AppContent = () => {
         <Route path="/call-sheets/:id/ig-matching" element={<IGMatching />} />
         <Route path="/crew-contacts" element={<CrewContacts />} />
         <Route path="/admin/call-sheet-reservoir" element={<AdminCallSheetReservoir />} />
+        <Route path="/beta-unlock" element={<BetaUnlock />} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
         </Routes>

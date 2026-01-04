@@ -45,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
 import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
 import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
+import { BetaAccessPanel } from "@/components/admin/BetaAccessPanel";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -2094,6 +2095,11 @@ export default function Admin() {
               </div>
             </div>
           </Card>
+          
+          {/* Beta Access Panel */}
+          <div className="mt-6">
+            <BetaAccessPanel />
+          </div>
         </TabsContent>
 
         {/* Users Tab */}

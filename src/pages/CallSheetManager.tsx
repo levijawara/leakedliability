@@ -32,6 +32,28 @@ export default function CallSheetManager() {
         navigate("/auth");
         return;
       }
+
+      // Check if user has beta access or is admin
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("beta_access")
+        .eq("user_id", session.user.id)
+        .single();
+
+      const { data: isAdminData } = await supabase.rpc('has_role', { 
+        _user_id: session.user.id, 
+        _role: 'admin' 
+      });
+
+      if (!profile?.beta_access && !isAdminData) {
+        toast({
+          title: "Beta Access Required",
+          description: "Unlock beta features from your profile page.",
+        });
+        navigate("/profile");
+        return;
+      }
+
       setUser(session.user);
       setLoading(false);
     };
