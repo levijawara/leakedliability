@@ -623,7 +623,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                 <TableHead>File Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-center">Contacts</TableHead>
-                <TableHead>Payment</TableHead>
+                <TableHead>Have you been paid yet?</TableHead>
                 <TableHead>{sortField === 'shootDate' ? 'Shoot Date' : 'Added'}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>

@@ -156,7 +156,7 @@ export function CallSheetCard({
               onStatusChange={(newStatus, locked) => {
                 onPaymentStatusChange?.(link.id, newStatus, locked);
               }}
-              compact
+              
             />
           </div>
         )}
