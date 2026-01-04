@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +12,7 @@ import { BulkActionsBar } from "@/components/contacts/BulkActionsBar";
 import { ExportButton } from "@/components/contacts/ExportButton";
 import { DuplicateMergeModal } from "@/components/contacts/DuplicateMergeModal";
 import { Button } from "@/components/ui/button";
-import { Users, Database, Loader2 } from "lucide-react";
+import { Users, Database, Loader2, FileSpreadsheet } from "lucide-react";
 import { findDuplicateGroups, DuplicateGroup, ContactForMatching } from "@/lib/duplicateDetection";
 
 export interface CrewContact {
@@ -498,6 +498,12 @@ export default function CrewContacts() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" asChild className="gap-2">
+                <Link to="/call-sheets">
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Call Sheets
+                </Link>
+              </Button>
               {isAdmin && (
                 <Button
                   variant="outline"
