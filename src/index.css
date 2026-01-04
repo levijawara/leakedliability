@@ -122,4 +122,13 @@ All colors MUST be HSL.
   }
 }
 
-/* Removed: Christmas lights and glow effects */
+/* Payment Status Thank You Animation */
+@keyframes paymentThankYouFade {
+  0% { opacity: 1; }
+  70% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.payment-thank-you-fade {
+  animation: paymentThankYouFade 1.5s ease-out forwards;
+}
