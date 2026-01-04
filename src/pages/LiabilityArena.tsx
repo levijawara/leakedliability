@@ -39,6 +39,7 @@ interface ReportData {
   current_liable_email: string | null;
   arena_active: boolean;
   arena_locked: boolean;
+  amount_owed: number | null;
 }
 
 export default function LiabilityArena() {
@@ -128,6 +129,7 @@ export default function LiabilityArena() {
               current_liable_email: null,
               arena_active: true,
               arena_locked: false,
+              amount_owed: null,
             });
             setLoading(false);
             return;
@@ -165,7 +167,7 @@ export default function LiabilityArena() {
         // Load report data
         const { data: report, error: reportError } = await supabase
           .from('payment_reports')
-          .select('id, report_id, current_liable_name, current_liable_email, arena_active, arena_locked')
+          .select('id, report_id, current_liable_name, current_liable_email, arena_active, arena_locked, amount_owed')
           .eq('report_id', reportId)
           .single();
 
@@ -181,6 +183,7 @@ export default function LiabilityArena() {
               current_liable_email: null,
               arena_active: true,
               arena_locked: false,
+              amount_owed: null,
             });
             setLoading(false);
             return;
@@ -412,6 +415,34 @@ export default function LiabilityArena() {
       setParticipant(newParticipant as ArenaParticipant);
       setShowNameForm(false);
       await loadParticipants(report.id);
+
+      // Auto-send welcome notice as admin/system message
+      const noticeMessage = `NOTICE:
+We are not stating that you are liable. You are here because someone involved in this production believes you may be responsible for the unpaid amount listed.
+
+If you believe the crew member or vendor who submitted the report made a mistake or lied, and you can provide documentation and a signed statement to support that, please notify us as soon as possible.
+
+If you believe another producer or production company representative made the mistake or lied, that is exactly why you've been brought into this conversation.
+
+We apologize for the inconvenience. You will remain a member of this arena until the debt has been paid by whoever accepts responsibility.
+
+You're free to ask questions or talk things out here. If people worked for you or provided materials, they deserve to be paid. Period.
+
+– LL™ Admin`;
+
+      await supabase
+        .from('liability_arena_messages')
+        .insert({
+          report_id: report.id,
+          user_id: null, // System message
+          participant_name: 'LL™ Admin',
+          participant_email: 'system@leakedliability.com',
+          message_text: noticeMessage,
+          is_admin: true,
+        });
+
+      // Refresh messages to show the notice
+      await loadMessages(report.id);
     } catch (error: any) {
       console.error("Error submitting name:", error);
       toast({
@@ -714,27 +745,105 @@ export default function LiabilityArena() {
 
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl md:text-5xl font-black mb-4">
+            <h1 className="text-4xl md:text-5xl font-black mb-6">
               So, who's ACTUALLY liable?
             </h1>
             {reportData && (
-              <>
-                <p className="text-xl font-semibold mb-2">
+              <div className="space-y-4">
+                {/* Report ID */}
+                <p className="text-2xl md:text-3xl font-semibold">
                   Report ID: {isPreviewMode ? 'PREVIEW' : reportData.report_id}
                 </p>
-                <p className="text-lg text-muted-foreground">
-                  Currently liable (as stated by crew, vendor, or redirecting producer/company):{' '}
-                  <span className="font-semibold text-foreground">
+                
+                {/* Currently Liable - multi-line format */}
+                <div className="text-2xl md:text-3xl font-semibold">
+                  <span>Currently Liable:</span>
+                  <br />
+                  <span className="text-foreground">
                     {isPreviewMode ? '—' : (reportData.current_liable_name || 'Not specified')}
                   </span>
+                  <br />
+                  <span className="text-base text-muted-foreground font-normal">
+                    (as stated by crew, vendor, or redirecting producer/company)
+                  </span>
+                </div>
+                
+                {/* Reported Debt Amount */}
+                <p className="text-2xl md:text-3xl font-semibold">
+                  Reported Debt Amount:{' '}
+                  <span className="text-foreground">
+                    {isPreviewMode ? '$—' : (reportData.amount_owed ? `$${reportData.amount_owed.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'Not specified')}
+                  </span>
                 </p>
-              </>
+              </div>
             )}
           </div>
 
-          {/* Action Buttons - disabled in preview mode */}
+
+          {reportData?.arena_locked && (
+            <Alert className="mb-6">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>
+                This arena is read-only. The debt has been paid and resolved.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Chat Area */}
+          <Card className="mb-4">
+            <CardHeader>
+              <CardTitle>Chat</CardTitle>
+              <CardDescription>
+                {participants.length} participant{participants.length !== 1 ? 's' : ''} in this arena
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[500px] w-full pr-4" ref={scrollRef}>
+                <div className="space-y-4">
+                  {messages.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No messages yet. Start the conversation.
+                    </p>
+                  ) : (
+                    messages.map((message) => {
+                      const isCurrentUser = message.participant_email === currentUser?.email;
+                      return (
+                        <div
+                          key={message.id}
+                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div
+                            className={`max-w-[75%] rounded-lg px-4 py-2 ${
+                              message.is_admin
+                                ? 'bg-red-500 text-white'
+                                : isCurrentUser
+                                ? 'bg-primary text-primary-foreground'
+                                : 'bg-muted'
+                            }`}
+                          >
+                            <p className="text-sm font-medium mb-1">
+                              {message.is_admin ? 'LL™ Admin' : message.participant_name}
+                            </p>
+                            <p className="text-sm whitespace-pre-wrap break-words">
+                              {message.message_text}
+                            </p>
+                            <p className="text-xs opacity-70 mt-1">
+                              {formatTime(message.created_at)} • {formatDate(message.created_at)}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons - moved between chat and input */}
           {reportData && !reportData.arena_locked && !isPreviewMode && (
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-4">
               <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="flex-1">
@@ -803,7 +912,7 @@ export default function LiabilityArena() {
 
           {/* Preview mode placeholder for action buttons */}
           {isPreviewMode && (
-            <div className="flex gap-4 mb-6">
+            <div className="flex gap-4 mb-4">
               <Button variant="outline" disabled className="flex-1 opacity-50">
                 <UserPlus className="mr-2 h-4 w-4" />
                 INVITE
@@ -816,67 +925,6 @@ export default function LiabilityArena() {
               </Button>
             </div>
           )}
-
-          {reportData?.arena_locked && (
-            <Alert className="mb-6">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                This arena is read-only. The debt has been paid and resolved.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Chat Area */}
-          <Card className="mb-4">
-            <CardHeader>
-              <CardTitle>Chat</CardTitle>
-              <CardDescription>
-                {participants.length} participant{participants.length !== 1 ? 's' : ''} in this arena
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-[500px] w-full pr-4" ref={scrollRef}>
-                <div className="space-y-4">
-                  {messages.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No messages yet. Start the conversation.
-                    </p>
-                  ) : (
-                    messages.map((message) => {
-                      const isCurrentUser = message.participant_email === currentUser?.email;
-                      return (
-                        <div
-                          key={message.id}
-                          className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
-                        >
-                          <div
-                            className={`max-w-[75%] rounded-lg px-4 py-2 ${
-                              message.is_admin
-                                ? 'bg-red-500 text-white'
-                                : isCurrentUser
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            }`}
-                          >
-                            <p className="text-sm font-medium mb-1">
-                              {message.is_admin ? 'LL™ Admin' : message.participant_name}
-                            </p>
-                            <p className="text-sm whitespace-pre-wrap break-words">
-                              {message.message_text}
-                            </p>
-                            <p className="text-xs opacity-70 mt-1">
-                              {formatTime(message.created_at)} • {formatDate(message.created_at)}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
 
           {/* Message Input */}
           {isPreviewMode ? (
