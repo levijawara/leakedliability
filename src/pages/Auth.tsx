@@ -50,11 +50,30 @@ export default function Auth() {
   const [showProducerModal, setShowProducerModal] = useState(false);
   const [newUserId, setNewUserId] = useState<string>("");
   const [redirectInfo, setRedirectInfo] = useState<ReturnType<typeof getRedirectInfo>>(null);
+  const [liabilityContext, setLiabilityContext] = useState<"initial" | "redirect" | null>(null);
 
-  // Get redirect info on mount
+  // Get redirect info and check for liability context on mount
   useEffect(() => {
     const info = getRedirectInfo();
     setRedirectInfo(info);
+
+    // Check for liability query parameter
+    const searchParams = new URLSearchParams(window.location.search);
+    const liabilityParam = searchParams.get('liability');
+    if (liabilityParam === 'initial' || liabilityParam === 'redirect') {
+      setLiabilityContext(liabilityParam as "initial" | "redirect");
+      
+      // Store token and report_id in sessionStorage for later use
+      const token = searchParams.get('token');
+      const reportId = searchParams.get('report_id');
+      
+      if (token) {
+        sessionStorage.setItem('liability_claim_token', token);
+      }
+      if (reportId) {
+        sessionStorage.setItem('liability_report_id', reportId);
+      }
+    }
   }, []);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -85,12 +104,26 @@ export default function Auth() {
         return;
       }
 
-      const redirectUrl = `${window.location.origin}/`;
+      // Determine redirect URL based on liability context
+      // If user has liability context, verification will route to arena
+      // Otherwise use default redirect
+      const redirectUrl = liabilityContext 
+        ? `${window.location.origin}/verify-email?liability=${liabilityContext}`
+        : `${window.location.origin}/`;
+
+      // Prepare user metadata with liability context if present
+      const userMetadata: Record<string, any> = {};
+      if (liabilityContext) {
+        userMetadata.liability_entry_context = liabilityContext;
+        userMetadata.pending_liability_verification = true;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
+          data: userMetadata,
         },
       });
 
@@ -108,6 +141,21 @@ export default function Auth() {
         });
 
         if (profileError) throw profileError;
+
+        // Update user metadata with liability context if present
+        // (Supabase signUp data may not persist, so we update it explicitly)
+        if (liabilityContext) {
+          const { error: metadataError } = await supabase.auth.updateUser({
+            data: {
+              liability_entry_context: liabilityContext,
+              pending_liability_verification: true,
+            },
+          });
+          if (metadataError) {
+            console.error('[AUTH] Failed to update user metadata:', metadataError);
+            // Don't block signup if metadata update fails
+          }
+        }
 
         // Send welcome email
         try {
@@ -132,7 +180,14 @@ export default function Auth() {
 
         // Send custom branded email verification email (in addition to Supabase default)
         try {
-          const verificationUrl = `${window.location.origin}/verify-email`;
+          // If liability context exists, verification URL should route to arena with report_id after verification
+          const reportId = sessionStorage.getItem('liability_report_id');
+          const verificationUrl = liabilityContext && reportId
+            ? `${window.location.origin}/verify-email?liability=${liabilityContext}&report_id=${reportId}`
+            : liabilityContext
+            ? `${window.location.origin}/verify-email?liability=${liabilityContext}`
+            : `${window.location.origin}/verify-email`;
+          
           await supabase.functions.invoke('send-email', {
             body: {
               type: 'email_verification',

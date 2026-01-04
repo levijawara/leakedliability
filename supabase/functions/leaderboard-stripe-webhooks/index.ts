@@ -83,18 +83,54 @@ serve(async (req) => {
             break;
           }
 
+          // Get report details to check for arena
+          const { data: report } = await supabase
+            .from("payment_reports")
+            .select("id, report_id, arena_active, arena_locked")
+            .eq("id", paymentReportId)
+            .single();
+
           // Update payment report to "paid"
+          const updateData: any = {
+            status: "paid",
+            payment_date: new Date().toISOString(),
+          };
+
+          // Handle arena locking and JSON transcript generation if arena is active
+          if (report && report.arena_active && !report.arena_locked) {
+            log("Arena payment detected - locking arena and generating JSON transcript", { 
+              report_id: report.report_id,
+              report_db_id: paymentReportId 
+            });
+            
+            // Lock the arena immediately
+            updateData.arena_locked = true;
+            
+            log("Arena will be locked after payment update");
+          }
+
           const { error: reportError } = await supabase
             .from("payment_reports")
-            .update({
-              status: "paid",
-              payment_date: new Date().toISOString(),
-            })
+            .update(updateData)
             .eq("id", paymentReportId);
 
           if (reportError) {
             log("payment report update error", reportError);
             break;
+          }
+
+          // If arena was locked, generate JSON transcript ZIP (async, non-blocking)
+          if (report && report.arena_active && updateData.arena_locked) {
+            // Invoke JSON transcript generation function
+            supabase.functions.invoke('generate-arena-transcript', {
+              body: {
+                report_id: paymentReportId,
+                report_display_id: report.report_id,
+              },
+            }).catch((err) => {
+              log("JSON transcript generation error (non-blocking)", err);
+              // Don't fail the payment if transcript generation fails
+            });
           }
 
           // Delete any queued notifications for this report
@@ -103,7 +139,7 @@ serve(async (req) => {
             .delete()
             .eq("payment_report_id", paymentReportId);
 
-          log("escrow payment processed successfully", { escrowId, paymentReportId });
+          log("escrow payment processed successfully", { escrowId, paymentReportId, arenaLocked: updateData.arena_locked });
           break;
         }
         

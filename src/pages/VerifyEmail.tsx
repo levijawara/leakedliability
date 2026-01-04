@@ -13,14 +13,51 @@ export default function VerifyEmail() {
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
-    const checkIfAlreadyVerified = async () => {
+    const checkVerificationAndRoute = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      
       if (user?.email_confirmed_at) {
-        toast.success("Your email is already verified!");
-        setTimeout(() => navigate("/"), 2000);
+        // Check for liability context routing
+        const liabilityContext = user.user_metadata?.liability_entry_context;
+        const pendingVerification = user.user_metadata?.pending_liability_verification;
+
+        // Check URL params for liability context and report_id (from query string)
+        const searchParams = new URLSearchParams(window.location.search);
+        const urlLiabilityParam = searchParams.get('liability');
+        const reportId = searchParams.get('report_id') || sessionStorage.getItem('liability_report_id');
+
+        // Determine if user should be routed to liability arena
+        const shouldRouteToArena = 
+          (liabilityContext === 'initial' || liabilityContext === 'redirect' || urlLiabilityParam) &&
+          pendingVerification === true &&
+          reportId; // Report ID is required for arena
+
+        if (shouldRouteToArena && reportId) {
+          // Clear pending verification flag but keep context
+          await supabase.auth.updateUser({
+            data: {
+              pending_liability_verification: false,
+            },
+          });
+
+          // Clear session storage
+          sessionStorage.removeItem('liability_report_id');
+          sessionStorage.removeItem('liability_claim_token');
+
+          toast.success("Email verified! Redirecting to liability arena...");
+          
+          // Route to arena with report_id in URL path
+          setTimeout(() => {
+            navigate(`/liability-arena/${reportId}`);
+          }, 1000);
+        } else {
+          // Normal verification flow
+          toast.success("Your email is already verified!");
+          setTimeout(() => navigate("/"), 2000);
+        }
       }
     };
-    checkIfAlreadyVerified();
+    checkVerificationAndRoute();
   }, [navigate]);
 
   const handleResendEmail = async () => {
@@ -44,9 +81,17 @@ export default function VerifyEmail() {
 
       if (error) throw error;
 
+      // Check if user has liability context for verification URL
+      const liabilityContext = user.user_metadata?.liability_entry_context;
+      const reportId = sessionStorage.getItem('liability_report_id');
+      const verificationUrl = liabilityContext && reportId
+        ? `${window.location.origin}/verify-email?liability=${liabilityContext}&report_id=${reportId}`
+        : liabilityContext
+        ? `${window.location.origin}/verify-email?liability=${liabilityContext}`
+        : `${window.location.origin}/verify-email`;
+
       // Send custom branded email verification email (in addition to Supabase default)
       try {
-        const verificationUrl = `${window.location.origin}/verify-email`;
         await supabase.functions.invoke('send-email', {
           body: {
             type: 'email_verification',

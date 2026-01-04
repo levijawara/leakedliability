@@ -44,6 +44,7 @@ import PayEscrow from "./pages/PayEscrow";
 import AdminSubmitExisting from "./pages/AdminSubmitExisting";
 import AdminSubmitNew from "./pages/AdminSubmitNew";
 import LiabilityClaim from "./pages/LiabilityClaim";
+import LiabilityArena from "./pages/LiabilityArena";
 import EscrowHub from "./pages/EscrowHub";
 import EscrowInitiate from "./pages/EscrowInitiate";
 import EscrowRedeem from "./pages/EscrowRedeem";
@@ -399,6 +400,7 @@ const AppContent = () => {
         <Route path="/pay/:code" element={<PayEscrow />} />
         <Route path="/pay/:code/success" element={<PayEscrow />} />
         <Route path="/liability/claim/:token" element={<LiabilityClaim />} />
+        <Route path="/liability-arena/:reportId" element={<LiabilityArena />} />
         <Route path="/escrow" element={<EscrowHub />} />
         <Route path="/escrow/initiate" element={<EscrowInitiate />} />
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />

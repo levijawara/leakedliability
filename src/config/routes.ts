@@ -45,6 +45,7 @@ export const ROUTES: RouteMetadata[] = [
   // Claim Routes
   { path: "/claim/:producerId", component: "ClaimProducer", name: "Claim Producer", icon: "UserCheck", description: "Verified claim submission", category: "public" },
   { path: "/liability/claim/:token", component: "LiabilityClaim", name: "Liability Claim", icon: "ShieldCheck", description: "Secure liability claim link", category: "public" },
+  { path: "/liability-arena/:reportId", component: "LiabilityArena", name: "Liability Arena", icon: "MessageSquare", description: "Liability resolution chat-room", category: "authenticated", requiresAuth: true },
 
   // Admin Routes
   { path: "/admin", component: "Admin", name: "Admin Dashboard", icon: "Shield", description: "Admin control panel", category: "admin", requiresAuth: true, requiresAdmin: true, tabs: ["Submissions", "Payments Due", "Paid Reports", "Disputes", "Users", "Producers", "Settings"] },

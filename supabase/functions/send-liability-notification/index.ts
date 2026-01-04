@@ -70,6 +70,19 @@ serve(async (req: Request) => {
     
     logStep('Report fetched', report);
     
+    // Determine if this is an initial notification or a redirect
+    // Check if there's already a liability chain entry for this report
+    const { data: existingChain } = await supabase
+      .from('liability_chain')
+      .select('id')
+      .eq('report_id', report_id)
+      .limit(1)
+      .maybeSingle();
+    
+    const isRedirect = !!existingChain || !!accuser_id;
+    const liabilityContext = isRedirect ? 'redirect' : 'initial';
+    logStep('Liability context determined', { context: liabilityContext, isRedirect, hasExistingChain: !!existingChain, hasAccuser: !!accuser_id });
+    
     // Generate unique token
     logStep('Generating liability claim token');
     const { data: tokenData, error: tokenError } = await supabase
@@ -173,8 +186,10 @@ serve(async (req: Request) => {
     logStep('Escrow payment created', { payment_code: paymentCode });
     
     // Build claim URL with proper domain
+    // Route "Respond to This Claim" button to auth page with liability context and report_id
     const publicUrl = Deno.env.get("PUBLIC_SITE_URL") || "https://leakedliability.com";
-    const claimUrl = `${publicUrl}/liability/claim/${tokenData.token}`;
+    // Store token and report_id in auth URL so we can link them to the claim after verification
+    const claimUrl = `${publicUrl}/auth?liability=${liabilityContext}&token=${tokenData.token}&report_id=${report.report_id}`;
     const paymentUrl = escrowPayment ? `${publicUrl}/pay/${paymentCode}` : null;
     
     // Create liability chain entry

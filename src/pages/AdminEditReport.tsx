@@ -97,6 +97,11 @@ export default function AdminEditReport() {
         `)
         .eq('id', id)
         .single();
+      
+      // Load document URLs if they exist
+      if (data?.document_urls && data.document_urls.length > 0) {
+        // Documents will be displayed in the UI
+      }
 
       if (error) throw error;
 
@@ -620,6 +625,101 @@ export default function AdminEditReport() {
               </div>
 
             </div>
+
+            {/* Documents Section (for arena transcripts) */}
+            {originalReport?.document_urls && originalReport.document_urls.length > 0 && (
+              <div className="mt-6 pt-6 border-t">
+                <div className="flex items-center justify-between mb-4">
+                  <Label className="text-base font-semibold">Documents:</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      try {
+                        // Get signed URLs for all documents
+                        const paths = originalReport.document_urls.map((url: string) => {
+                          // Extract path from full URL
+                          const urlObj = new URL(url);
+                          return urlObj.pathname.split('/storage/v1/object/public/submission-documents/')[1] || url.split('/').pop() || '';
+                        }).filter(Boolean);
+                        
+                        if (paths.length === 0) {
+                          toast({
+                            title: "Error",
+                            description: "No valid document paths found",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        const { data: signedUrls } = await supabase.storage
+                          .from('submission-documents')
+                          .createSignedUrls(paths, 3600);
+                        
+                        if (signedUrls) {
+                          // Download all as ZIP using JSZip
+                          const JSZip = (await import('jszip')).default;
+                          const zip = new JSZip();
+                          
+                          for (let i = 0; i < signedUrls.length; i++) {
+                            const response = await fetch(signedUrls[i].signedUrl);
+                            const blob = await response.blob();
+                            const fileName = originalReport.document_urls[i].split('/').pop() || `document_${i + 1}`;
+                            zip.file(fileName, blob);
+                          }
+                          
+                          const content = await zip.generateAsync({ type: 'blob' });
+                          const link = document.createElement('a');
+                          link.href = URL.createObjectURL(content);
+                          link.download = `report_${originalReport.report_id || id}_documents.zip`;
+                          link.click();
+                          URL.revokeObjectURL(link.href);
+                          
+                          toast({
+                            title: "Success",
+                            description: "Documents downloaded successfully",
+                          });
+                        }
+                      } catch (error: any) {
+                        console.error('Error downloading documents:', error);
+                        toast({
+                          title: "Error",
+                          description: "Failed to download documents",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    Download All as ZIP
+                  </Button>
+                </div>
+                <ul className="space-y-2">
+                  {originalReport.document_urls.map((url: string, idx: number) => {
+                    const fileName = url.split('/').pop() || `Document ${idx + 1}`;
+                    const isArenaTranscript = fileName.includes('arena-transcript');
+                    return (
+                      <li key={idx}>
+                        <a 
+                          href={url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="text-primary hover:underline flex items-center gap-2"
+                        >
+                          {isArenaTranscript ? (
+                            <>
+                              <span className="font-semibold">Arena Transcript</span>
+                              <span className="text-xs text-muted-foreground">({fileName})</span>
+                            </>
+                          ) : (
+                            <>Document {idx + 1}</>
+                          )}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
 
             <div className="mt-6 flex gap-3">
               <Button
