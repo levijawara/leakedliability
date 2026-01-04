@@ -146,8 +146,8 @@ export function CallSheetCard({
           </p>
         )}
 
-        {/* Payment Status - Only show for non-admins and non-locked */}
-        {!isAdmin && !paymentLocked && (
+        {/* Payment Status - show for everyone, hide when locked */}
+        {!paymentLocked && (
           <div className="pt-2 border-t">
             <PaymentStatusRadio
               linkId={link.id}
