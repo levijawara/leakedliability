@@ -97,11 +97,6 @@ export default function AdminEditReport() {
         `)
         .eq('id', id)
         .single();
-      
-      // Load document URLs if they exist
-      if (data?.document_urls && data.document_urls.length > 0) {
-        // Documents will be displayed in the UI
-      }
 
       if (error) throw error;
 

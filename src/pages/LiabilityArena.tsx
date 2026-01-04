@@ -33,6 +33,7 @@ interface ArenaMessage {
 }
 
 interface ReportData {
+  id: string;
   report_id: string;
   current_liable_name: string | null;
   current_liable_email: string | null;
@@ -132,7 +133,7 @@ export default function LiabilityArena() {
         // Load report data
         const { data: report, error: reportError } = await supabase
           .from('payment_reports')
-          .select('report_id, current_liable_name, current_liable_email, arena_active, arena_locked')
+          .select('id, report_id, current_liable_name, current_liable_email, arena_active, arena_locked')
           .eq('report_id', reportId)
           .single();
 
