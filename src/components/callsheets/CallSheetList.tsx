@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { 
   FileText, 
@@ -9,10 +9,13 @@ import {
   Trash2, 
   Eye,
   RefreshCw,
-  Users
+  Users,
+  Search,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -34,6 +37,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { SortToggle, SortField, SortDirection } from "./SortToggle";
 
 interface GlobalCallSheet {
   id: string;
@@ -44,6 +48,7 @@ interface GlobalCallSheet {
   error_message: string | null;
   created_at: string;
   parsed_contacts: unknown;
+  parsed_date: string | null;
 }
 
 interface UserCallSheetLink {
@@ -58,6 +63,21 @@ interface CallSheetListProps {
   userId: string;
 }
 
+// Custom hook for debounced value
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export function CallSheetList({ userId }: CallSheetListProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -68,6 +88,26 @@ export function CallSheetList({ userId }: CallSheetListProps) {
   const [deleteLink, setDeleteLink] = useState<UserCallSheetLink | null>(null);
   const [deleting, setDeleting] = useState(false);
   const { toast } = useToast();
+
+  // Sorting and search state
+  const [sortField, setSortField] = useState<SortField>('uploadDate');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Initialize search from URL param
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(decodeURIComponent(searchParam));
+    }
+  }, []);
+
+  // Sort handler
+  const handleSortChange = useCallback((field: SortField, direction: SortDirection) => {
+    setSortField(field);
+    setSortDirection(direction);
+  }, []);
 
   // Fetch user's call sheet links with global call sheet data
   const fetchUserCallSheets = async () => {
@@ -87,7 +127,8 @@ export function CallSheetList({ userId }: CallSheetListProps) {
             contacts_extracted,
             error_message,
             created_at,
-            parsed_contacts
+            parsed_contacts,
+            parsed_date
           )
         `)
         .eq('user_id', userId)
@@ -295,6 +336,74 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     }
   };
 
+  // Sorting logic
+  const sortedSheets = useMemo(() => {
+    const sorted = [...userLinks];
+    
+    if (sortField === 'uploadDate') {
+      sorted.sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      });
+    } else if (sortField === 'shootDate') {
+      // Split into with/without parsed_date
+      const withDate = sorted.filter(link => link.global_call_sheets.parsed_date);
+      const withoutDate = sorted.filter(link => !link.global_call_sheets.parsed_date);
+      
+      // Sort withDate by parsed_date
+      withDate.sort((a, b) => {
+        const dateA = new Date(a.global_call_sheets.parsed_date!).getTime();
+        const dateB = new Date(b.global_call_sheets.parsed_date!).getTime();
+        return sortDirection === 'asc' ? dateA - dateB : dateB - dateA;
+      });
+      
+      // Sort withoutDate alphabetically by filename
+      withoutDate.sort((a, b) => {
+        const nameA = (a.user_label || a.global_call_sheets.original_file_name).toLowerCase();
+        const nameB = (b.user_label || b.global_call_sheets.original_file_name).toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      
+      // Sheets with dates first, then those without
+      return [...withDate, ...withoutDate];
+    }
+    
+    return sorted;
+  }, [userLinks, sortField, sortDirection]);
+
+  // Search/filter logic
+  const filteredSheets = useMemo(() => {
+    if (!debouncedSearch.trim()) return sortedSheets;
+    
+    const query = debouncedSearch.toLowerCase().trim();
+    
+    return sortedSheets.filter(link => {
+      const sheet = link.global_call_sheets;
+      const displayName = link.user_label || sheet.original_file_name;
+      
+      // 1. Filename match
+      if (displayName.toLowerCase().includes(query)) return true;
+      
+      // 2. Parsed contacts match
+      if (sheet.parsed_contacts && Array.isArray(sheet.parsed_contacts)) {
+        const hasMatch = (sheet.parsed_contacts as any[]).some((contact: any) => {
+          const nameMatch = contact.name?.toLowerCase().includes(query);
+          const roleMatch = contact.roles?.some((r: string) => 
+            r.toLowerCase().includes(query)
+          );
+          const deptMatch = contact.departments?.some((d: string) => 
+            d.toLowerCase().includes(query)
+          );
+          return nameMatch || roleMatch || deptMatch;
+        });
+        if (hasMatch) return true;
+      }
+      
+      return false;
+    });
+  }, [sortedSheets, debouncedSearch]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -322,6 +431,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
 
   return (
     <>
+      {/* Filter banner for contact filter */}
       {contactIdFilter && (
         <div className="mb-4 p-3 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
@@ -333,21 +443,60 @@ export function CallSheetList({ userId }: CallSheetListProps) {
         </div>
       )}
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>File Name</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-center">Contacts</TableHead>
-              <TableHead>Added</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {userLinks.map((link) => {
-              const sheet = link.global_call_sheets;
-              const displayName = link.user_label || sheet.original_file_name;
+      {/* Search and Sort Controls */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by filename or contact..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 pr-9"
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+              onClick={() => setSearchQuery('')}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+        <SortToggle
+          sortField={sortField}
+          sortDirection={sortDirection}
+          onSortChange={handleSortChange}
+        />
+      </div>
+
+      {/* No results message */}
+      {filteredSheets.length === 0 && debouncedSearch && (
+        <div className="text-center py-8">
+          <Search className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
+          <p className="text-sm text-muted-foreground">
+            No call sheets match "{debouncedSearch}"
+          </p>
+        </div>
+      )}
+
+      {filteredSheets.length > 0 && (
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>File Name</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Contacts</TableHead>
+                <TableHead>{sortField === 'shootDate' ? 'Shoot Date' : 'Added'}</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSheets.map((link) => {
+                const sheet = link.global_call_sheets;
+                const displayName = link.user_label || sheet.original_file_name;
               
               return (
                 <TableRow key={link.id}>
@@ -378,7 +527,12 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
-                    {link.created_at ? format(new Date(link.created_at), 'MMM d, yyyy') : '—'}
+                    {sortField === 'shootDate' && sheet.parsed_date
+                      ? format(new Date(sheet.parsed_date), 'MMM d, yyyy')
+                      : link.created_at 
+                        ? format(new Date(link.created_at), 'MMM d, yyyy') 
+                        : '—'
+                    }
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
@@ -417,9 +571,8 @@ export function CallSheetList({ userId }: CallSheetListProps) {
             })}
           </TableBody>
         </Table>
-      </div>
-
-
+        </div>
+      )}
       {/* Remove from Library Confirmation - preserves global artifact */}
       <AlertDialog open={!!deleteLink} onOpenChange={() => setDeleteLink(null)}>
         <AlertDialogContent>
