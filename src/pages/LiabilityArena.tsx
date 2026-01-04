@@ -49,6 +49,7 @@ export default function LiabilityArena() {
   const [loading, setLoading] = useState(true);
   const [hasAccess, setHasAccess] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [participant, setParticipant] = useState<ArenaParticipant | null>(null);
@@ -92,22 +93,54 @@ export default function LiabilityArena() {
 
   // Load initial data
   useEffect(() => {
-    if (!reportId) {
-      toast({
-        title: "Error",
-        description: "Report ID is required",
-        variant: "destructive",
-      });
-      navigate("/");
-      return;
-    }
-
     const loadArena = async () => {
       try {
         setLoading(true);
 
         // Check authentication
         const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        // Check admin status first (even if not logged in, for preview mode)
+        let userIsAdmin = false;
+        if (user) {
+          const { data: adminRole } = await supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', user.id)
+            .eq('role', 'admin')
+            .maybeSingle();
+          
+          userIsAdmin = !!adminRole;
+          setIsAdmin(userIsAdmin);
+          setCurrentUser(user);
+        }
+
+        // Handle missing or invalid reportId
+        if (!reportId) {
+          if (userIsAdmin) {
+            // Admin preview mode - no reportId required
+            setIsPreviewMode(true);
+            setHasAccess(true);
+            setReportData({
+              id: 'preview',
+              report_id: 'PREVIEW',
+              current_liable_name: null,
+              current_liable_email: null,
+              arena_active: true,
+              arena_locked: false,
+            });
+            setLoading(false);
+            return;
+          }
+          // Non-admin without reportId - redirect
+          toast({
+            title: "Error",
+            description: "Report ID is required",
+            variant: "destructive",
+          });
+          navigate("/");
+          return;
+        }
         
         if (authError || !user) {
           toast({
@@ -118,19 +151,6 @@ export default function LiabilityArena() {
           navigate(`/auth?liability=initial&report_id=${reportId}`);
           return;
         }
-
-        setCurrentUser(user);
-        
-        // Check admin status first
-        const { data: adminRole } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .maybeSingle();
-        
-        const userIsAdmin = !!adminRole;
-        setIsAdmin(userIsAdmin);
 
         // Check for liability entry context (admins bypass this check)
         if (!userIsAdmin) {
@@ -150,6 +170,22 @@ export default function LiabilityArena() {
           .single();
 
         if (reportError || !report) {
+          // Report not found - check if admin for preview mode
+          if (userIsAdmin) {
+            setIsPreviewMode(true);
+            setHasAccess(true);
+            setReportData({
+              id: 'preview',
+              report_id: 'PREVIEW',
+              current_liable_name: null,
+              current_liable_email: null,
+              arena_active: true,
+              arena_locked: false,
+            });
+            setLoading(false);
+            return;
+          }
+          // Non-admin - show error
           toast({
             title: "Error",
             description: "Report not found",
@@ -232,9 +268,9 @@ export default function LiabilityArena() {
     }
   };
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions - skip in preview mode
   useEffect(() => {
-    if (!reportId || !hasAccess || !reportData) return;
+    if (!reportId || !hasAccess || !reportData || isPreviewMode) return;
 
     const setupRealtime = async () => {
       // Load report DB ID
@@ -605,8 +641,8 @@ export default function LiabilityArena() {
     );
   }
 
-  // Name collection form
-  if (showNameForm) {
+  // Name collection form - skip in preview mode
+  if (showNameForm && !isPreviewMode) {
     return (
       <>
         <Navigation />
@@ -666,6 +702,16 @@ export default function LiabilityArena() {
       <Navigation />
       <div className="min-h-screen bg-background pt-20 md:pt-24">
         <div className="container max-w-4xl mx-auto px-4 py-8">
+          {/* Admin Preview Mode Banner */}
+          {isPreviewMode && (
+            <Alert className="mb-6 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20">
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-700 dark:text-yellow-400">
+                <strong>Admin Preview Mode</strong> — Viewing UI shell only. All actions are disabled.
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-4xl md:text-5xl font-black mb-4">
@@ -674,20 +720,20 @@ export default function LiabilityArena() {
             {reportData && (
               <>
                 <p className="text-xl font-semibold mb-2">
-                  Report ID: {reportData.report_id}
+                  Report ID: {isPreviewMode ? 'PREVIEW' : reportData.report_id}
                 </p>
                 <p className="text-lg text-muted-foreground">
                   Currently liable (as stated by crew, vendor, or redirecting producer/company):{' '}
                   <span className="font-semibold text-foreground">
-                    {reportData.current_liable_name || 'Not specified'}
+                    {isPreviewMode ? '—' : (reportData.current_liable_name || 'Not specified')}
                   </span>
                 </p>
               </>
             )}
           </div>
 
-          {/* Action Buttons */}
-          {reportData && !reportData.arena_locked && (
+          {/* Action Buttons - disabled in preview mode */}
+          {reportData && !reportData.arena_locked && !isPreviewMode && (
             <div className="flex gap-4 mb-6">
               <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
                 <DialogTrigger asChild>
@@ -748,6 +794,22 @@ export default function LiabilityArena() {
               </Dialog>
 
               <Button onClick={handleResolve} className="flex-1">
+                <CreditCard className="mr-2 h-4 w-4" />
+                RESOLVE
+                <span className="ml-2 text-xs opacity-80">(PAY REPORTED DEBT)</span>
+              </Button>
+            </div>
+          )}
+
+          {/* Preview mode placeholder for action buttons */}
+          {isPreviewMode && (
+            <div className="flex gap-4 mb-6">
+              <Button variant="outline" disabled className="flex-1 opacity-50">
+                <UserPlus className="mr-2 h-4 w-4" />
+                INVITE
+                <span className="ml-2 text-xs text-muted-foreground">(REDIRECT LIABILITY)</span>
+              </Button>
+              <Button disabled className="flex-1 opacity-50">
                 <CreditCard className="mr-2 h-4 w-4" />
                 RESOLVE
                 <span className="ml-2 text-xs opacity-80">(PAY REPORTED DEBT)</span>
@@ -817,7 +879,22 @@ export default function LiabilityArena() {
           </Card>
 
           {/* Message Input */}
-          {reportData && !reportData.arena_locked && participant && (
+          {isPreviewMode ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex gap-2">
+                  <Textarea
+                    placeholder="Messaging disabled in preview mode."
+                    className="min-h-[80px] resize-none opacity-50"
+                    disabled
+                  />
+                  <Button disabled size="lg" className="opacity-50">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : reportData && !reportData.arena_locked && participant ? (
             <Card>
               <CardContent className="pt-6">
                 <div className="flex gap-2">
@@ -848,7 +925,7 @@ export default function LiabilityArena() {
                 </div>
               </CardContent>
             </Card>
-          )}
+          ) : null}
         </div>
       </div>
       <Footer />
