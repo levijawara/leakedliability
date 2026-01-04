@@ -196,22 +196,35 @@ export default function AdminCallSheetReservoir() {
       // Get user link counts and payment status data for each sheet
       const sheetsWithCounts = await Promise.all(
         (sheets || []).map(async (sheet) => {
-          // Fetch user_call_sheets with payment status and profile info
+          // Fetch user_call_sheets with payment status (no FK join - it doesn't exist)
           const { data: userLinks, count } = await supabase
             .from('user_call_sheets')
-            .select(`
-              id,
-              user_id,
-              payment_status,
-              profiles!user_call_sheets_user_id_fkey (
-                legal_first_name,
-                legal_last_name,
-                email
-              )
-            `, { count: 'exact' })
+            .select('id, user_id, payment_status', { count: 'exact' })
             .eq('global_call_sheet_id', sheet.id);
           
-          const paymentCounts = aggregatePaymentStatus(userLinks || []);
+          // Collect unique user_ids to fetch profiles separately
+          const userIds = [...new Set((userLinks || []).map(l => l.user_id))];
+          
+          // Fetch profiles for these users (separate query)
+          let profilesMap: Record<string, { legal_first_name: string | null; legal_last_name: string | null; email: string | null }> = {};
+          if (userIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('user_id, legal_first_name, legal_last_name, email')
+              .in('user_id', userIds);
+            
+            profiles?.forEach(p => {
+              profilesMap[p.user_id] = p;
+            });
+          }
+          
+          // Merge profile data into userLinks
+          const userLinksWithProfiles = (userLinks || []).map(link => ({
+            ...link,
+            profiles: profilesMap[link.user_id] || null
+          }));
+          
+          const paymentCounts = aggregatePaymentStatus(userLinksWithProfiles);
           
           return {
             ...sheet,
