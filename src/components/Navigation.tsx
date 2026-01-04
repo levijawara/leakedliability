@@ -12,6 +12,7 @@ export function Navigation() {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [hasBetaAccess, setHasBetaAccess] = useState(false);
 
   useEffect(() => {
     // Gracefully handle if Supabase is unavailable
@@ -26,12 +27,14 @@ export function Navigation() {
       setUser(session?.user ?? null);
       if (session?.user) {
         checkAdminStatus(session.user.id);
+        checkBetaAccess(session.user.id);
       }
     }).catch((err) => {
       // Gracefully handle auth errors - navigation still works
       console.debug('[Navigation] Auth session check failed (expected if backend unavailable):', err);
       setUser(null);
       setIsAdmin(false);
+      setHasBetaAccess(false);
     });
 
     let subscription: any;
@@ -40,8 +43,10 @@ export function Navigation() {
         setUser(session?.user ?? null);
         if (session?.user) {
           checkAdminStatus(session.user.id);
+          checkBetaAccess(session.user.id);
         } else {
           setIsAdmin(false);
+          setHasBetaAccess(false);
         }
       });
       subscription = sub;
@@ -102,6 +107,27 @@ export function Navigation() {
       });
       console.error('[Navigation] checkAdminStatus exception', e);
       setIsAdmin(false);
+    }
+  };
+
+  const checkBetaAccess = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('beta_access')
+        .eq('user_id', userId)
+        .single();
+      
+      if (error) {
+        console.debug('[Navigation] Beta access check failed:', error);
+        setHasBetaAccess(false);
+        return;
+      }
+      
+      setHasBetaAccess(data?.beta_access ?? false);
+    } catch (e) {
+      console.debug('[Navigation] Beta access check exception:', e);
+      setHasBetaAccess(false);
     }
   };
 
@@ -233,14 +259,18 @@ export function Navigation() {
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
-                    Call Sheets
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate("/crew-contacts")}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Crew Contacts
-                  </DropdownMenuItem>
+                  {(hasBetaAccess || isAdmin) && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        Call Sheets
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/crew-contacts")}>
+                        <Users className="h-4 w-4 mr-2" />
+                        Crew Contacts
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   {isAdmin && (
                     <>
                       <DropdownMenuItem onClick={() => navigate("/admin")}>
@@ -316,14 +346,18 @@ export function Navigation() {
                       <User className="h-4 w-4 mr-2" />
                       Profile
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleNavigate("/call-sheets")}>
-                      <FileSpreadsheet className="h-4 w-4 mr-2" />
-                      Call Sheets
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleNavigate("/crew-contacts")}>
-                      <Users className="h-4 w-4 mr-2" />
-                      Crew Contacts
-                    </DropdownMenuItem>
+                    {(hasBetaAccess || isAdmin) && (
+                      <>
+                        <DropdownMenuItem onClick={() => handleNavigate("/call-sheets")}>
+                          <FileSpreadsheet className="h-4 w-4 mr-2" />
+                          Call Sheets
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleNavigate("/crew-contacts")}>
+                          <Users className="h-4 w-4 mr-2" />
+                          Crew Contacts
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     {isAdmin && (
                       <>
                         <DropdownMenuItem onClick={() => handleNavigate("/admin")}>
