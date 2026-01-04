@@ -157,24 +157,42 @@ export default function CrewContacts() {
     }
   };
 
-  const fetchCallSheetCounts = async (contactIds: string[]) => {
-    if (contactIds.length === 0) return;
+  const fetchCallSheetCounts = async (_contactIds: string[]) => {
+    // Note: We don't use contactIds filter to avoid URL-length issues with large sets.
+    // RLS ensures we only see rows belonging to the current user's contacts.
+    const PAGE_SIZE = 1000;
+    let allRows: { contact_id: string }[] = [];
+    let from = 0;
+
+    console.log(`[CrewContacts] Counting call sheet appearances for ${_contactIds.length} contacts...`);
 
     try {
-      const { data, error } = await supabase
-        .from('contact_call_sheets')
-        .select('contact_id')
-        .in('contact_id', contactIds);
+      while (true) {
+        const { data, error } = await supabase
+          .from('contact_call_sheets')
+          .select('contact_id')
+          .range(from, from + PAGE_SIZE - 1);
 
-      if (error) throw error;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        allRows = [...allRows, ...data];
+
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+
+      console.log(`[CrewContacts] Loaded ${allRows.length} contact_call_sheets rows`);
 
       const counts: Record<string, number> = {};
-      data?.forEach(row => {
+      allRows.forEach(row => {
         counts[row.contact_id] = (counts[row.contact_id] || 0) + 1;
       });
 
+      const nonZeroCount = Object.keys(counts).length;
+      console.log(`[CrewContacts] Contacts with appearances: ${nonZeroCount}`);
+
       setCallSheetCounts(counts);
-      console.log(`[CrewContacts] Call sheet counts loaded for ${Object.keys(counts).length} contacts`);
     } catch (error: any) {
       console.error('[CrewContacts] Failed to fetch call sheet counts:', error);
     }
