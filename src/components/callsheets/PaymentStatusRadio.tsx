@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +21,6 @@ interface PaymentStatusRadioProps {
   currentStatus: PaymentStatus;
   isLocked: boolean;
   onStatusChange: (newStatus: PaymentStatus, locked: boolean) => void;
-  compact?: boolean;
 }
 
 export function PaymentStatusRadio({
@@ -31,7 +28,6 @@ export function PaymentStatusRadio({
   currentStatus,
   isLocked,
   onStatusChange,
-  compact = false
 }: PaymentStatusRadioProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -69,7 +65,7 @@ export function PaymentStatusRadio({
     }
   };
 
-  const handleRadioChange = (value: string) => {
+  const handleButtonClick = (value: string) => {
     if (saving) return;
     
     switch (value) {
@@ -129,36 +125,47 @@ export function PaymentStatusRadio({
     );
   }
 
-  // Map status to radio value
-  const getRadioValue = () => {
-    if (currentStatus === 'waiting') return 'waiting';
-    // Only show selection for "waiting" - all others stay unselected
-    return '';
-  };
 
   return (
     <>
-      <div className={cn("flex items-center gap-2", compact ? "flex-col items-start gap-1" : "")}>
-        <Label className="text-xs font-semibold text-muted-foreground whitespace-nowrap">PAID?</Label>
-        <RadioGroup 
-          value={getRadioValue()}
-          onValueChange={handleRadioChange}
-          className={cn("flex gap-2", compact ? "flex-wrap gap-1" : "")}
+      <div className="flex gap-1.5">
+        {/* Yup! - Green */}
+        <button
+          onClick={() => handleButtonClick('paid')}
           disabled={saving}
+          className={cn(
+            "px-2 py-1 rounded text-[10px] font-medium transition-colors",
+            "bg-green-500/20 border border-green-500/40 hover:bg-green-500/30 text-green-700 dark:text-green-300",
+            currentStatus === 'paid' && "ring-2 ring-green-500"
+          )}
         >
-          <div className="flex items-center space-x-1">
-            <RadioGroupItem value="paid" id={`paid-${linkId}`} className="h-3 w-3" />
-            <Label htmlFor={`paid-${linkId}`} className="text-xs cursor-pointer">Yup!</Label>
-          </div>
-          <div className="flex items-center space-x-1">
-            <RadioGroupItem value="waiting" id={`waiting-${linkId}`} className="h-3 w-3" />
-            <Label htmlFor={`waiting-${linkId}`} className="text-xs cursor-pointer">Still waiting...</Label>
-          </div>
-          <div className="flex items-center space-x-1">
-            <RadioGroupItem value="never" id={`never-${linkId}`} className="h-3 w-3" />
-            <Label htmlFor={`never-${linkId}`} className="text-xs cursor-pointer">Never.</Label>
-          </div>
-        </RadioGroup>
+          Yup!
+        </button>
+        
+        {/* Still waiting... - Yellow */}
+        <button
+          onClick={() => handleButtonClick('waiting')}
+          disabled={saving}
+          className={cn(
+            "px-2 py-1 rounded text-[10px] font-medium transition-colors",
+            "bg-yellow-500/20 border border-yellow-500/40 hover:bg-yellow-500/30 text-yellow-700 dark:text-yellow-300",
+            currentStatus === 'waiting' && "ring-2 ring-yellow-500"
+          )}
+        >
+          Still waiting...
+        </button>
+        
+        {/* Never. - Red */}
+        <button
+          onClick={() => handleButtonClick('never')}
+          disabled={saving}
+          className={cn(
+            "px-2 py-1 rounded text-[10px] font-medium transition-colors",
+            "bg-red-500/20 border border-red-500/40 hover:bg-red-500/30 text-red-700 dark:text-red-300"
+          )}
+        >
+          Never.
+        </button>
       </div>
 
       {/* Confirm Paid Modal */}
