@@ -623,7 +623,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                 <TableHead>File Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-center">Contacts</TableHead>
-                {!isAdmin && <TableHead>Payment</TableHead>}
+                <TableHead>Payment</TableHead>
                 <TableHead>{sortField === 'shootDate' ? 'Shoot Date' : 'Added'}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -667,19 +667,17 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
-                  {/* Payment Status Column - Only for non-admins */}
-                  {!isAdmin && (
-                    <TableCell>
-                      {!link.payment_status_locked ? (
-                        <PaymentStatusRadio
-                          linkId={link.id}
-                          currentStatus={link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor'}
-                          isLocked={link.payment_status_locked}
-                          onStatusChange={(newStatus, locked) => handlePaymentStatusChange(link.id, newStatus, locked)}
-                        />
-                      ) : null}
-                    </TableCell>
-                  )}
+                  {/* Payment Status Column */}
+                  <TableCell>
+                    {!link.payment_status_locked ? (
+                      <PaymentStatusRadio
+                        linkId={link.id}
+                        currentStatus={link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor'}
+                        isLocked={link.payment_status_locked}
+                        onStatusChange={(newStatus, locked) => handlePaymentStatusChange(link.id, newStatus, locked)}
+                      />
+                    ) : null}
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {sortField === 'shootDate' && sheet.parsed_date
                       ? format(new Date(sheet.parsed_date), 'MMM d, yyyy')
