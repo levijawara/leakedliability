@@ -23,6 +23,43 @@ const logStep = (step: string, data?: any) => {
   console.log(`[process-liability-claim] ${step}`, data || '');
 };
 
+// ---------- VALIDATION HELPERS ----------
+const isValidEmail = (email: string) =>
+  typeof email === "string" &&
+  email.length <= 255 &&
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
+const isValidName = (name: string) =>
+  typeof name === "string" &&
+  name.trim().length >= 2 &&
+  name.trim().length <= 100;
+
+const isValidRole = (role: string) => {
+  const allowedRoles = [
+    "producer",
+    "executive producer",
+    "company",
+    "line producer",
+    "production manager",
+    "accounting",
+    "director",
+    "agency",
+    "client",
+    "upm",
+    "payroll",
+    "coordinator"
+  ];
+  return typeof role === "string" &&
+    allowedRoles.includes(role.trim().toLowerCase());
+};
+
+const isValidTextBlock = (text: string, max = 2000) =>
+  typeof text === "string" && text.length <= max;
+
+// ---------- SANITIZER (strips control characters) ----------
+const clean = (value: string | undefined | null): string =>
+  value?.trim().replace(/[\u0000-\u001F\u007F]/g, "") || "";
+
 serve(async (req: Request) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -41,12 +78,60 @@ serve(async (req: Request) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
-    const { token, action, redirect_to, dispute_reason, user_ip }: ProcessClaimRequest = await req.json();
+    let { token, action, redirect_to, dispute_reason, user_ip }: ProcessClaimRequest = await req.json();
     
     logStep('Request payload', { token, action });
     
     if (!token || !action) {
       throw new Error('Missing required fields: token, action');
+    }
+    
+    // Sanitize token
+    token = clean(token);
+    if (token.length > 100) {
+      throw new Error('Invalid token format');
+    }
+    
+    // ---------- REDIRECT VALIDATION ----------
+    if (redirect_to) {
+      const name = clean(redirect_to.name);
+      const email = clean(redirect_to.email);
+      const role = clean(redirect_to.role);
+
+      if (!isValidName(name)) {
+        throw new Error("Invalid name. Must be 2–100 characters.");
+      }
+
+      if (!isValidEmail(email)) {
+        throw new Error("Invalid email format.");
+      }
+
+      if (!isValidRole(role)) {
+        throw new Error(
+          "Invalid role. Must be one of: producer, executive producer, company, line producer, production manager, accounting, director, agency, client, upm, payroll, coordinator."
+        );
+      }
+
+      if (redirect_to.affirmation !== true) {
+        throw new Error("Affirmation must be explicitly true.");
+      }
+
+      // Replace raw with sanitized
+      redirect_to.name = name;
+      redirect_to.email = email;
+      redirect_to.role = role;
+      
+      logStep('Redirect validation passed', { name, email, role });
+    }
+    
+    // ---------- DISPUTE REASON VALIDATION ----------
+    if (dispute_reason !== undefined) {
+      const cleanedReason = clean(dispute_reason);
+      if (!isValidTextBlock(cleanedReason, 2000)) {
+        throw new Error("Dispute reason too long or invalid (max 2000 chars).");
+      }
+      dispute_reason = cleanedReason;
+      logStep('Dispute reason validated', { length: cleanedReason.length });
     }
     
     // Validate and fetch token
