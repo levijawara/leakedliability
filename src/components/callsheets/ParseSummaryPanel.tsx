@@ -492,9 +492,30 @@ export function ParseSummaryPanel({
     let merged = 0;
     let created = 0;
     let attributed = 0;
+    let skippedAlreadyLinked = 0;
 
     try {
+      // Fetch contacts already linked to THIS call sheet to prevent duplicates
+      const { data: alreadyLinked } = await supabase
+        .from('contact_call_sheets')
+        .select('crew_contacts(name)')
+        .eq('call_sheet_id', callSheetId);
+
+      const alreadyLinkedNames = new Set(
+        (alreadyLinked || [])
+          .map(link => (link.crew_contacts as any)?.name?.toLowerCase())
+          .filter(Boolean)
+      );
+      
+      console.log(`[ParseSummaryPanel] Already linked to call sheet: ${alreadyLinkedNames.size} contacts`);
+
       for (const contact of contactsToProcess) {
+        // Skip if this person is already linked to this call sheet
+        if (alreadyLinkedNames.has(contact.name.toLowerCase())) {
+          console.log(`[ParseSummaryPanel] Skipping ${contact.name} - already linked`);
+          skippedAlreadyLinked++;
+          continue;
+        }
         const override = overrides[contact.originalIndex] || {};
         const finalContact = {
           ...contact,

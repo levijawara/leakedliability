@@ -113,6 +113,20 @@ export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedConta
     try {
       const contactsToSave = contacts.filter((_, i) => selectedIds.has(i));
       
+      // Fetch contacts already linked to THIS call sheet to prevent duplicates
+      const { data: alreadyLinked } = await supabase
+        .from('contact_call_sheets')
+        .select('crew_contacts(name)')
+        .eq('call_sheet_id', callSheet.id);
+
+      const alreadyLinkedNames = new Set(
+        (alreadyLinked || [])
+          .map(link => (link.crew_contacts as any)?.name?.toLowerCase())
+          .filter(Boolean)
+      );
+      
+      console.log(`[SaveContacts] Already linked to call sheet: ${alreadyLinkedNames.size} contacts`);
+      
       // Check admin status if not already checked
       let userIsAdmin = isAdmin;
       if (!userIsAdmin) {
@@ -177,6 +191,12 @@ export function ParsedContactsViewer({ callSheet, onClose, userId }: ParsedConta
       };
 
       for (const contact of contactsToSave) {
+        // Skip if this person is already linked to this call sheet
+        if (alreadyLinkedNames.has(contact.name.toLowerCase())) {
+          console.log(`[SaveContacts] Skipping ${contact.name} - already linked to call sheet`);
+          continue;
+        }
+        
         let existingContact: ExistingContact | null = null;
 
         // Priority 1: Exact email match
