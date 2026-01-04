@@ -952,6 +952,150 @@ export type Database = {
         }
         Relationships: []
       }
+      liability_arena_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+          message_text: string
+          participant_email: string
+          participant_name: string
+          report_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          message_text: string
+          participant_email: string
+          participant_name: string
+          report_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          message_text?: string
+          participant_email?: string
+          participant_name?: string
+          report_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_arena_messages_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_arena_messages_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liability_arena_participants: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+          joined_at: string | null
+          participant_email: string
+          participant_name: string
+          report_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          joined_at?: string | null
+          participant_email: string
+          participant_name: string
+          report_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          joined_at?: string | null
+          participant_email?: string
+          participant_name?: string
+          report_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_arena_participants_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_arena_participants_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liability_arena_redirects: {
+        Row: {
+          created_at: string | null
+          from_participant_email: string
+          from_participant_id: string | null
+          from_participant_name: string
+          id: string
+          report_id: string
+          to_email: string
+          to_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          from_participant_email: string
+          from_participant_id?: string | null
+          from_participant_name: string
+          id?: string
+          report_id: string
+          to_email: string
+          to_name: string
+        }
+        Update: {
+          created_at?: string | null
+          from_participant_email?: string
+          from_participant_id?: string | null
+          from_participant_name?: string
+          id?: string
+          report_id?: string
+          to_email?: string
+          to_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liability_arena_redirects_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "payment_reports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liability_arena_redirects_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_reports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       liability_chain: {
         Row: {
           accused_email: string
@@ -1402,6 +1546,8 @@ export type Database = {
         Row: {
           admin_creator_id: string | null
           amount_owed: number
+          arena_active: boolean | null
+          arena_locked: boolean | null
           city: string | null
           closed_date: string | null
           confirmation_count: number | null
@@ -1433,6 +1579,8 @@ export type Database = {
         Insert: {
           admin_creator_id?: string | null
           amount_owed: number
+          arena_active?: boolean | null
+          arena_locked?: boolean | null
           city?: string | null
           closed_date?: string | null
           confirmation_count?: number | null
@@ -1464,6 +1612,8 @@ export type Database = {
         Update: {
           admin_creator_id?: string | null
           amount_owed?: number
+          arena_active?: boolean | null
+          arena_locked?: boolean | null
           city?: string | null
           closed_date?: string | null
           confirmation_count?: number | null

@@ -35,7 +35,7 @@ const vendorTypes = [
   "Other"
 ];
 
-export function VendorIdentification({ value, onChange, onContinue, onBack }: VendorIdentificationProps) {
+export function VendorIdentification({ value, onChange, onContinue, onBack, onNext, showNextButton }: VendorIdentificationProps) {
   const isValid = value.vendorCompany && value.contactName && value.contactEmail && value.vendorType && 
     (value.vendorType !== "Other" || value.vendorTypeOther);
 
