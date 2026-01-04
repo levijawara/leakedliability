@@ -80,14 +80,4 @@ export const VendorReportConfirmation = ({
   </Html>
 );
 
-import {
-  main,
-  container,
-  h1,
-  text,
-  detailsBox,
-  detailsText,
-  footer,
-} from './_shared/styles.ts';
-
 export default VendorReportConfirmation;
