@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,9 +13,12 @@ import { FileSpreadsheet, Users } from "lucide-react";
 
 export default function CallSheetManager() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  const contactIdFilter = searchParams.get('contact_id');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -80,7 +83,7 @@ export default function CallSheetManager() {
           </div>
 
           {/* Main Content */}
-          <Tabs defaultValue="upload" className="space-y-6">
+          <Tabs defaultValue={contactIdFilter ? "sheets" : "upload"} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="upload">Upload</TabsTrigger>
               <TabsTrigger value="sheets">My Call Sheets</TabsTrigger>

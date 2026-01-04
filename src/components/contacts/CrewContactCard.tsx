@@ -39,7 +39,7 @@ export function CrewContactCard({
 
   const handleCallSheetClick = () => {
     if (callSheetCount > 0) {
-      navigate(`/call-sheet-manager?contact_id=${contact.id}`);
+      navigate(`/call-sheets?contact_id=${contact.id}&contact_name=${encodeURIComponent(contact.name)}`);
     }
   };
 
