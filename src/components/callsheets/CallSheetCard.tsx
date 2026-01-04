@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GlobalCallSheet {
@@ -28,6 +29,8 @@ interface UserCallSheetLink {
 interface CallSheetCardProps {
   link: UserCallSheetLink;
   sortField: 'uploadDate' | 'shootDate';
+  isSelected?: boolean;
+  onSelect?: (linkId: string, selected: boolean) => void;
   onView: (sheet: GlobalCallSheet) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
   onCredits: (sheet: GlobalCallSheet) => void;
@@ -38,6 +41,8 @@ interface CallSheetCardProps {
 export function CallSheetCard({ 
   link, 
   sortField,
+  isSelected = false,
+  onSelect,
   onView, 
   onViewPdf, 
   onCredits, 
@@ -83,11 +88,20 @@ export function CallSheetCard({
   };
 
   return (
-    <Card className="hover:border-primary/50 transition-colors">
+    <Card className={`hover:border-primary/50 transition-colors ${isSelected ? 'border-primary ring-1 ring-primary' : ''}`}>
       <CardContent className="p-4 space-y-3">
-        {/* Header: Status + Contact Count */}
+        {/* Header: Checkbox + Status + Contact Count */}
         <div className="flex items-center justify-between">
-          {getStatusBadge(sheet.status)}
+          <div className="flex items-center gap-2">
+            {onSelect && (
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => onSelect(link.id, !!checked)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
+            {getStatusBadge(sheet.status)}
+          </div>
           {sheet.status === 'parsed' && sheet.contacts_extracted !== null && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Users className="h-3 w-3" />

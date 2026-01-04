@@ -18,6 +18,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -45,6 +46,7 @@ import { ViewToggle } from "@/components/contacts/ViewToggle";
 import { CallSheetCard } from "./CallSheetCard";
 import { PDFViewerModal } from "./PDFViewerModal";
 import { CreditsModal } from "./CreditsModal";
+import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
 
 interface GlobalCallSheet {
   id: string;
@@ -110,6 +112,9 @@ export function CallSheetList({ userId }: CallSheetListProps) {
   
   // Credits modal state
   const [creditsSheet, setCreditsSheet] = useState<{ id: string; fileName: string } | null>(null);
+
+  // Selection state for bulk operations
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Initialize search from URL param
   useEffect(() => {
@@ -420,6 +425,39 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     });
   }, [sortedSheets, debouncedSearch]);
 
+  // Selection helpers
+  const handleSelectOne = useCallback((linkId: string, selected: boolean) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (selected) {
+        next.add(linkId);
+      } else {
+        next.delete(linkId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleSelectAll = useCallback(() => {
+    setSelectedIds(new Set(filteredSheets.map(link => link.id)));
+  }, [filteredSheets]);
+
+  const handleDeselectAll = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const handleBulkComplete = useCallback(() => {
+    setSelectedIds(new Set());
+    fetchUserCallSheets();
+  }, []);
+
+  // Get global IDs for selected links (for re-parse)
+  const selectedGlobalIds = useMemo(() => {
+    return filteredSheets
+      .filter(link => selectedIds.has(link.id))
+      .map(link => link.global_call_sheet_id);
+  }, [filteredSheets, selectedIds]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -488,6 +526,19 @@ export function CallSheetList({ userId }: CallSheetListProps) {
         <ViewToggle view={viewMode} onViewChange={setViewMode} />
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedIds.size > 0 && (
+        <CallSheetBulkActionsBar
+          selectedIds={Array.from(selectedIds)}
+          selectedGlobalIds={selectedGlobalIds}
+          totalCount={filteredSheets.length}
+          onSelectAll={handleSelectAll}
+          onDeselectAll={handleDeselectAll}
+          onBulkComplete={handleBulkComplete}
+          userId={userId}
+        />
+      )}
+
       {/* No results message */}
       {filteredSheets.length === 0 && debouncedSearch && (
         <div className="text-center py-8">
@@ -505,6 +556,8 @@ export function CallSheetList({ userId }: CallSheetListProps) {
               key={link.id}
               link={link}
               sortField={sortField}
+              isSelected={selectedIds.has(link.id)}
+              onSelect={handleSelectOne}
               onView={(sheet) => navigate(`/call-sheets/${sheet.id}/review`)}
               onViewPdf={(sheet) => setViewingPdf({ 
                 filePath: sheet.master_file_path, 
@@ -526,6 +579,12 @@ export function CallSheetList({ userId }: CallSheetListProps) {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[40px]">
+                  <Checkbox
+                    checked={selectedIds.size === filteredSheets.length && filteredSheets.length > 0}
+                    onCheckedChange={(checked) => checked ? handleSelectAll() : handleDeselectAll()}
+                  />
+                </TableHead>
                 <TableHead>File Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-center">Contacts</TableHead>
@@ -539,7 +598,13 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                 const displayName = link.user_label || sheet.original_file_name;
               
               return (
-                <TableRow key={link.id}>
+                <TableRow key={link.id} className={selectedIds.has(link.id) ? 'bg-muted/50' : ''}>
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(link.id)}
+                      onCheckedChange={(checked) => handleSelectOne(link.id, !!checked)}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
