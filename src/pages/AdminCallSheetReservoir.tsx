@@ -50,6 +50,14 @@ import {
   Archive
 } from "lucide-react";
 import { format } from "date-fns";
+import { ReservoirPaymentButtons, PaymentStatusCounts } from "@/components/callsheets/ReservoirPaymentButtons";
+
+interface UserPaymentInfo {
+  userId: string;
+  name: string;
+  email: string | null;
+  status: string;
+}
 
 interface GlobalCallSheet {
   id: string;
@@ -64,6 +72,7 @@ interface GlobalCallSheet {
   updated_at: string;
   project_title: string | null;
   user_link_count?: number;
+  paymentCounts?: PaymentStatusCounts;
 }
 
 interface ReservoirStats {
@@ -130,6 +139,50 @@ export default function AdminCallSheetReservoir() {
     }
   };
 
+  const aggregatePaymentStatus = (userLinks: any[]): PaymentStatusCounts => {
+    const result: PaymentStatusCounts = {
+      paid: { count: 0, users: [] },
+      waiting: { count: 0, users: [] },
+      unpaid: { count: 0, users: [] },
+      unanswered: { count: 0, users: [] }
+    };
+    
+    userLinks?.forEach(link => {
+      const profile = link.profiles;
+      const name = profile?.legal_first_name && profile?.legal_last_name
+        ? `${profile.legal_first_name} ${profile.legal_last_name}`
+        : profile?.email || 'Unknown User';
+      
+      const userInfo: UserPaymentInfo = { 
+        userId: link.user_id, 
+        name, 
+        email: profile?.email || null, 
+        status: link.payment_status 
+      };
+      
+      switch (link.payment_status) {
+        case 'paid':
+          result.paid.users.push(userInfo);
+          result.paid.count++;
+          break;
+        case 'waiting':
+          result.waiting.users.push(userInfo);
+          result.waiting.count++;
+          break;
+        case 'unpaid_needs_proof':
+        case 'free_labor':
+          result.unpaid.users.push(userInfo);
+          result.unpaid.count++;
+          break;
+        default: // 'unanswered' or any other
+          result.unanswered.users.push(userInfo);
+          result.unanswered.count++;
+      }
+    });
+    
+    return result;
+  };
+
   const loadReservoirData = async () => {
     try {
       // Load all global call sheets
@@ -140,17 +193,30 @@ export default function AdminCallSheetReservoir() {
 
       if (error) throw error;
 
-      // Get user link counts for each sheet
+      // Get user link counts and payment status data for each sheet
       const sheetsWithCounts = await Promise.all(
         (sheets || []).map(async (sheet) => {
-          const { count } = await supabase
+          // Fetch user_call_sheets with payment status and profile info
+          const { data: userLinks, count } = await supabase
             .from('user_call_sheets')
-            .select('*', { count: 'exact', head: true })
+            .select(`
+              id,
+              user_id,
+              payment_status,
+              profiles!user_call_sheets_user_id_fkey (
+                legal_first_name,
+                legal_last_name,
+                email
+              )
+            `, { count: 'exact' })
             .eq('global_call_sheet_id', sheet.id);
+          
+          const paymentCounts = aggregatePaymentStatus(userLinks || []);
           
           return {
             ...sheet,
-            user_link_count: count || 0
+            user_link_count: count || 0,
+            paymentCounts
           };
         })
       );
@@ -463,7 +529,8 @@ export default function AdminCallSheetReservoir() {
                     <TableHead>Content Hash</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-center">Contacts</TableHead>
-                    <TableHead className="text-center">Users Linked</TableHead>
+                    <TableHead className="text-center">Users</TableHead>
+                    <TableHead>Payment Responses</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -471,7 +538,7 @@ export default function AdminCallSheetReservoir() {
                 <TableBody>
                   {filteredSheets.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                         No call sheets found
                       </TableCell>
                     </TableRow>
@@ -521,6 +588,13 @@ export default function AdminCallSheetReservoir() {
                           <Badge variant={sheet.user_link_count === 0 ? "secondary" : "default"}>
                             {sheet.user_link_count}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {sheet.user_link_count && sheet.user_link_count > 0 && sheet.paymentCounts ? (
+                            <ReservoirPaymentButtons paymentCounts={sheet.paymentCounts} />
+                          ) : (
+                            <span className="text-muted-foreground text-sm">—</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {format(new Date(sheet.created_at), 'MMM d, yyyy')}
