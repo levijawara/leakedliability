@@ -151,17 +151,23 @@ export function CreditsModal({ open, onOpenChange, callSheetId, fileName }: Cred
 
       if (sheetError) throw sheetError;
 
-      // Build fullSheetContacts from parsed_contacts
+      // Build fullSheetContacts and a lookup map for role/department per call sheet
       const fullContacts: CreditEntry[] = [];
-      const parsedNames = new Set<string>();
+      const parsedContactMap = new Map<string, { role: string | null; department: string; originalIndex: number }>();
       
       if (sheet?.parsed_contacts && Array.isArray(sheet.parsed_contacts)) {
         (sheet.parsed_contacts as any[]).forEach((contact, index) => {
           if (!contact?.name) return;
-          parsedNames.add(contact.name.toLowerCase());
           
           const departments = contact.departments || ['Other'];
           const roles = contact.roles || [];
+          
+          // Store in lookup map (keyed by lowercase name)
+          parsedContactMap.set(contact.name.toLowerCase(), {
+            role: roles[0] || null,
+            department: departments[0] || 'Other',
+            originalIndex: index,
+          });
           
           fullContacts.push({
             name: contact.name,
@@ -178,31 +184,29 @@ export function CreditsModal({ open, onOpenChange, callSheetId, fileName }: Cred
         .from('contact_call_sheets')
         .select(`
           contact_id,
-          crew_contacts (name, roles, departments, ig_handle)
+          crew_contacts (name, ig_handle)
         `)
         .eq('call_sheet_id', callSheetId);
 
       if (savedError) throw savedError;
 
-      // Build savedContacts - filter by matching names with parsed contacts
+      // Build savedContacts - use role/department from parsed contacts (THIS call sheet)
       const saved: CreditEntry[] = [];
       if (savedLinks) {
-        savedLinks.forEach((link, index) => {
+        savedLinks.forEach((link) => {
           const contact = link.crew_contacts as any;
           if (!contact?.name) return;
           
-          // Only include if name matches a parsed contact
-          if (!parsedNames.has(contact.name.toLowerCase())) return;
-          
-          const departments = contact.departments || ['Other'];
-          const roles = contact.roles || [];
+          // Look up this person in parsed contacts for THIS call sheet
+          const parsedMatch = parsedContactMap.get(contact.name.toLowerCase());
+          if (!parsedMatch) return; // Skip if not on this call sheet
           
           saved.push({
             name: contact.name,
-            role: roles[0] || null,
-            department: departments[0] || 'Other',
-            igHandle: contact.ig_handle,
-            originalIndex: index,
+            role: parsedMatch.role,             // Role from THIS call sheet
+            department: parsedMatch.department, // Department from THIS call sheet
+            igHandle: contact.ig_handle,        // IG handle from saved contact
+            originalIndex: parsedMatch.originalIndex,
           });
         });
       }
