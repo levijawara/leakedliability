@@ -143,7 +143,7 @@ serve(async (req: Request) => {
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('submission-documents')
-      .upload(filePath, zipBytes, {
+      .upload(filePath, zipBuffer, {
         contentType: 'application/zip',
         upsert: false,
       });
