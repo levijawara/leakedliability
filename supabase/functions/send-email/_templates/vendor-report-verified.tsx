@@ -90,15 +90,4 @@ export const VendorReportVerified = ({
   </Html>
 );
 
-import {
-  main,
-  container,
-  h1,
-  text,
-  detailsBox,
-  detailsText,
-  footer,
-  link,
-} from './_shared/styles.ts';
-
 export default VendorReportVerified;
