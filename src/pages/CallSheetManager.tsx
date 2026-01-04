@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CallSheetUploader } from "@/components/callsheets/CallSheetUploader";
 import { CallSheetList } from "@/components/callsheets/CallSheetList";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Users } from "lucide-react";
 
 export default function CallSheetManager() {
   const navigate = useNavigate();
@@ -60,14 +61,22 @@ export default function CallSheetManager() {
       <main className="flex-1 container mx-auto px-4 py-8 md:pt-24">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <FileSpreadsheet className="h-8 w-8 text-primary" />
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight">Call Sheet Manager</h1>
-              <p className="text-muted-foreground">
-                Upload, parse, and manage your call sheets to extract crew contacts
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <FileSpreadsheet className="h-8 w-8 text-primary" />
+              <div>
+                <h1 className="text-3xl font-bold tracking-tight">Call Sheet Manager</h1>
+                <p className="text-muted-foreground">
+                  Upload, parse, and manage your call sheets to extract crew contacts
+                </p>
+              </div>
             </div>
+            <Button variant="outline" size="sm" asChild className="gap-2">
+              <Link to="/crew-contacts">
+                <Users className="h-4 w-4" />
+                Crew Contacts
+              </Link>
+            </Button>
           </div>
 
           {/* Main Content */}
