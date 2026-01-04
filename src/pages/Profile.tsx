@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, LogOut, User as UserIcon, Shield, CheckCircle, Clock, Search, Eye } from "lucide-react";
+import { Loader2, LogOut, User as UserIcon, Shield, CheckCircle, Clock, Search } from "lucide-react";
 import { LeaderboardAccessStatus } from "@/components/LeaderboardAccessStatus";
 import { Footer } from "@/components/Footer";
 import { Badge } from "@/components/ui/badge";
@@ -56,6 +56,7 @@ const Profile = () => {
   const [claimedProducer, setClaimedProducer] = useState<ClaimedProducer | null>(null);
   const [loadingClaim, setLoadingClaim] = useState(false);
   const [betaAccess, setBetaAccess] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -108,6 +109,13 @@ const Profile = () => {
 
     setProfile(data);
     setBetaAccess(data?.beta_access ?? false);
+    
+    // Check if user is admin
+    const { data: isAdminData } = await supabase.rpc('has_role', { 
+      _user_id: userId, 
+      _role: 'admin' 
+    });
+    setIsAdmin(!!isAdminData);
   };
 
   const fetchSubmissionStats = async (userId: string) => {
@@ -376,32 +384,31 @@ const Profile = () => {
               <CardDescription>Your current access status</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Beta Access Section */}
-              {!betaAccess ? (
+              {/* Leaderboard Access Status - PRIORITY */}
+              <LeaderboardAccessStatus />
+              
+              {/* Beta Access Section - ONLY for non-admins, BELOW Refresh Status */}
+              {!isAdmin && (
                 <>
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => navigate('/beta-unlock')}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Can you keep a secret? 👀
-                  </Button>
                   <Separator />
-                </>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Beta Access Unlocked
-                    </Badge>
-                  </div>
-                  <Separator />
+                  {!betaAccess ? (
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => navigate('/beta-unlock')}
+                    >
+                      Can you keep a secret? 👀
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Beta Access Unlocked
+                      </Badge>
+                    </div>
+                  )}
                 </>
               )}
-              
-              <LeaderboardAccessStatus />
             </CardContent>
           </Card>
 
