@@ -181,7 +181,7 @@ export function CreditsModal({ open, onOpenChange, callSheetId, fileName }: Cred
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-lg h-[80vh] flex flex-col overflow-hidden min-h-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <List className="h-5 w-5" />
@@ -224,7 +224,7 @@ export function CreditsModal({ open, onOpenChange, callSheetId, fileName }: Cred
               </Button>
             </div>
             
-            <ScrollArea className="flex-1 max-h-[50vh] border rounded-md p-4 bg-muted/30">
+            <ScrollArea className="flex-1 min-h-0 border rounded-md p-4 bg-muted/30">
               <div className="space-y-4 font-mono text-sm">
                 {Array.from(credits.keys()).sort().map(dept => (
                   <div key={dept}>
