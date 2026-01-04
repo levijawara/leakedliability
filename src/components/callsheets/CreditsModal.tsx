@@ -192,14 +192,23 @@ export function CreditsModal({ open, onOpenChange, callSheetId, fileName }: Cred
 
       // Build savedContacts - use role/department from parsed contacts (THIS call sheet)
       const saved: CreditEntry[] = [];
+      const seenNames = new Set<string>(); // Track names to prevent duplicates
+      
       if (savedLinks) {
         savedLinks.forEach((link) => {
           const contact = link.crew_contacts as any;
           if (!contact?.name) return;
           
+          const nameLower = contact.name.toLowerCase();
+          
+          // Skip if we've already added this person (prevent duplicates)
+          if (seenNames.has(nameLower)) return;
+          
           // Look up this person in parsed contacts for THIS call sheet
-          const parsedMatch = parsedContactMap.get(contact.name.toLowerCase());
+          const parsedMatch = parsedContactMap.get(nameLower);
           if (!parsedMatch) return; // Skip if not on this call sheet
+          
+          seenNames.add(nameLower); // Mark as seen
           
           saved.push({
             name: contact.name,
