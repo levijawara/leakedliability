@@ -111,7 +111,7 @@ export const LiabilityNotification = ({
         
         <Section style={buttonContainer}>
           <Button href={claimUrl} style={button}>
-            Respond to This Claim
+            Redirect Liability
           </Button>
         </Section>
         
