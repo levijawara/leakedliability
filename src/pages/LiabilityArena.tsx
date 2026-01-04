@@ -120,14 +120,26 @@ export default function LiabilityArena() {
         }
 
         setCurrentUser(user);
-        await checkAdminStatus(user.id);
+        
+        // Check admin status first
+        const { data: adminRole } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id)
+          .eq('role', 'admin')
+          .maybeSingle();
+        
+        const userIsAdmin = !!adminRole;
+        setIsAdmin(userIsAdmin);
 
-        // Check for liability entry context
-        const liabilityContext = user.user_metadata?.liability_entry_context;
-        if (!liabilityContext || (liabilityContext !== 'initial' && liabilityContext !== 'redirect')) {
-          setHasAccess(false);
-          setLoading(false);
-          return;
+        // Check for liability entry context (admins bypass this check)
+        if (!userIsAdmin) {
+          const liabilityContext = user.user_metadata?.liability_entry_context;
+          if (!liabilityContext || (liabilityContext !== 'initial' && liabilityContext !== 'redirect')) {
+            setHasAccess(false);
+            setLoading(false);
+            return;
+          }
         }
 
         // Load report data
