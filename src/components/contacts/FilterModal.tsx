@@ -139,7 +139,7 @@ export function FilterModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+      <DialogContent className="max-w-2xl h-[85vh] flex flex-col overflow-hidden min-h-0">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>Filter Contacts</span>
@@ -149,7 +149,8 @@ export function FilterModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden space-y-6">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
+          <div className="space-y-6">
           {/* Search Roles */}
           <div className="space-y-2">
             <Label>Search Roles</Label>
@@ -235,7 +236,7 @@ export function FilterModal({
           {/* Roles by Department */}
           <div className="space-y-2">
             <Label>Roles</Label>
-            <ScrollArea className="h-[200px] border rounded-md p-3">
+            <div className="border rounded-md p-3 max-h-[200px] overflow-y-auto">
               {Object.entries(rolesByDepartment).map(([dept, roles]) => (
                 <div key={dept} className="mb-4">
                   <p className="text-xs font-medium text-muted-foreground mb-2">{dept}</p>
@@ -264,9 +265,10 @@ export function FilterModal({
                   No roles found
                 </p>
               )}
-            </ScrollArea>
+            </div>
           </div>
         </div>
+        </ScrollArea>
 
         <DialogFooter className="flex items-center justify-between sm:justify-between">
           <Button variant="ghost" onClick={clearAll}>
