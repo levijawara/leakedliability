@@ -1,0 +1,185 @@
+import { FileText, Users, Eye, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle, FileType, List } from "lucide-react";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+
+interface GlobalCallSheet {
+  id: string;
+  original_file_name: string;
+  master_file_path: string;
+  status: string;
+  contacts_extracted: number | null;
+  error_message: string | null;
+  created_at: string;
+  parsed_contacts: unknown;
+  parsed_date: string | null;
+}
+
+interface UserCallSheetLink {
+  id: string;
+  user_label: string | null;
+  created_at: string;
+  global_call_sheet_id: string;
+  global_call_sheets: GlobalCallSheet;
+}
+
+interface CallSheetCardProps {
+  link: UserCallSheetLink;
+  sortField: 'uploadDate' | 'shootDate';
+  onView: (sheet: GlobalCallSheet) => void;
+  onViewPdf: (sheet: GlobalCallSheet) => void;
+  onCredits: (sheet: GlobalCallSheet) => void;
+  onRetry: (sheet: GlobalCallSheet) => void;
+  onDelete: (link: UserCallSheetLink) => void;
+}
+
+export function CallSheetCard({ 
+  link, 
+  sortField,
+  onView, 
+  onViewPdf, 
+  onCredits, 
+  onRetry, 
+  onDelete 
+}: CallSheetCardProps) {
+  const sheet = link.global_call_sheets;
+  const displayName = link.user_label || sheet.original_file_name;
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'queued':
+        return (
+          <Badge variant="outline" className="gap-1">
+            <Clock className="h-3 w-3" />
+            Queued
+          </Badge>
+        );
+      case 'parsing':
+        return (
+          <Badge variant="secondary" className="gap-1">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Parsing
+          </Badge>
+        );
+      case 'parsed':
+        return (
+          <Badge className="gap-1 bg-green-500 hover:bg-green-600">
+            <CheckCircle className="h-3 w-3" />
+            Complete
+          </Badge>
+        );
+      case 'error':
+        return (
+          <Badge variant="destructive" className="gap-1">
+            <AlertCircle className="h-3 w-3" />
+            Error
+          </Badge>
+        );
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  return (
+    <Card className="hover:border-primary/50 transition-colors">
+      <CardContent className="p-4 space-y-3">
+        {/* Header: Status + Contact Count */}
+        <div className="flex items-center justify-between">
+          {getStatusBadge(sheet.status)}
+          {sheet.status === 'parsed' && sheet.contacts_extracted !== null && (
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+              <Users className="h-3 w-3" />
+              <span>{sheet.contacts_extracted}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Filename */}
+        <div className="flex items-start gap-2">
+          <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+          <p className="text-sm font-medium truncate" title={displayName}>
+            {displayName}
+          </p>
+        </div>
+
+        {/* Dates */}
+        <div className="text-xs text-muted-foreground space-y-1">
+          {sheet.parsed_date && (
+            <p>Shoot: {format(new Date(sheet.parsed_date), 'MMM d, yyyy')}</p>
+          )}
+          <p>
+            {sortField === 'shootDate' && !sheet.parsed_date ? 'Added: ' : 'Added: '}
+            {format(new Date(link.created_at), 'MMM d, yyyy')}
+          </p>
+        </div>
+
+        {/* Error message */}
+        {sheet.status === 'error' && sheet.error_message && (
+          <p className="text-xs text-destructive truncate" title={sheet.error_message}>
+            {sheet.error_message}
+          </p>
+        )}
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-1 pt-1 border-t">
+          <TooltipProvider delayDuration={300}>
+            {sheet.status === 'parsed' && (
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => onView(sheet)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>View contacts</TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => onViewPdf(sheet)}>
+                      <FileType className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>View PDF</TooltipContent>
+                </Tooltip>
+                
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="sm" onClick={() => onCredits(sheet)}>
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Generate credits</TooltipContent>
+                </Tooltip>
+              </>
+            )}
+            
+            {sheet.status === 'error' && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="sm" onClick={() => onRetry(sheet)}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Retry parsing</TooltipContent>
+              </Tooltip>
+            )}
+            
+            <div className="flex-1" />
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" onClick={() => onDelete(link)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Remove from library</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

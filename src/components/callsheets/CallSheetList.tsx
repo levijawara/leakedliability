@@ -11,7 +11,9 @@ import {
   RefreshCw,
   Users,
   Search,
-  X
+  X,
+  FileType,
+  List
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,10 +36,15 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { SortToggle, SortField, SortDirection } from "./SortToggle";
+import { ViewToggle } from "@/components/contacts/ViewToggle";
+import { CallSheetCard } from "./CallSheetCard";
+import { PDFViewerModal } from "./PDFViewerModal";
+import { CreditsModal } from "./CreditsModal";
 
 interface GlobalCallSheet {
   id: string;
@@ -94,6 +101,15 @@ export function CallSheetList({ userId }: CallSheetListProps) {
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
+  
+  // View mode state
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  
+  // PDF viewer modal state
+  const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
+  
+  // Credits modal state
+  const [creditsSheet, setCreditsSheet] = useState<{ id: string; fileName: string } | null>(null);
 
   // Initialize search from URL param
   useEffect(() => {
@@ -469,6 +485,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
           sortDirection={sortDirection}
           onSortChange={handleSortChange}
         />
+        <ViewToggle view={viewMode} onViewChange={setViewMode} />
       </div>
 
       {/* No results message */}
@@ -481,7 +498,30 @@ export function CallSheetList({ userId }: CallSheetListProps) {
         </div>
       )}
 
-      {filteredSheets.length > 0 && (
+      {filteredSheets.length > 0 && viewMode === 'cards' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredSheets.map((link) => (
+            <CallSheetCard
+              key={link.id}
+              link={link}
+              sortField={sortField}
+              onView={(sheet) => navigate(`/call-sheets/${sheet.id}/review`)}
+              onViewPdf={(sheet) => setViewingPdf({ 
+                filePath: sheet.master_file_path, 
+                fileName: sheet.original_file_name 
+              })}
+              onCredits={(sheet) => setCreditsSheet({ 
+                id: sheet.id, 
+                fileName: sheet.original_file_name 
+              })}
+              onRetry={handleRetry}
+              onDelete={setDeleteLink}
+            />
+          ))}
+        </div>
+      )}
+
+      {filteredSheets.length > 0 && viewMode === 'list' && (
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -535,36 +575,84 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                     }
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {sheet.status === 'parsed' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/call-sheets/${sheet.id}/review`)}
-                          title="View contacts"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {sheet.status === 'error' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRetry(sheet)}
-                          title="Retry parsing"
-                        >
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteLink(link)}
-                        title="Remove from my library"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    <TooltipProvider delayDuration={300}>
+                      <div className="flex items-center justify-end gap-1">
+                        {sheet.status === 'parsed' && (
+                          <>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => navigate(`/call-sheets/${sheet.id}/review`)}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View contacts</TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setViewingPdf({ 
+                                    filePath: sheet.master_file_path, 
+                                    fileName: sheet.original_file_name 
+                                  })}
+                                >
+                                  <FileType className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>View PDF</TooltipContent>
+                            </Tooltip>
+                            
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setCreditsSheet({ 
+                                    id: sheet.id, 
+                                    fileName: sheet.original_file_name 
+                                  })}
+                                >
+                                  <List className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Generate credits</TooltipContent>
+                            </Tooltip>
+                          </>
+                        )}
+                        {sheet.status === 'error' && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRetry(sheet)}
+                              >
+                                <RefreshCw className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Retry parsing</TooltipContent>
+                          </Tooltip>
+                        )}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeleteLink(link)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Remove from library</TooltipContent>
+                        </Tooltip>
+                      </div>
+                    </TooltipProvider>
                   </TableCell>
                 </TableRow>
               );
@@ -573,6 +661,22 @@ export function CallSheetList({ userId }: CallSheetListProps) {
         </Table>
         </div>
       )}
+
+      {/* PDF Viewer Modal */}
+      <PDFViewerModal
+        open={!!viewingPdf}
+        onOpenChange={(open) => !open && setViewingPdf(null)}
+        filePath={viewingPdf?.filePath || ''}
+        fileName={viewingPdf?.fileName || ''}
+      />
+
+      {/* Credits Modal */}
+      <CreditsModal
+        open={!!creditsSheet}
+        onOpenChange={(open) => !open && setCreditsSheet(null)}
+        callSheetId={creditsSheet?.id || ''}
+        fileName={creditsSheet?.fileName || ''}
+      />
       {/* Remove from Library Confirmation - preserves global artifact */}
       <AlertDialog open={!!deleteLink} onOpenChange={() => setDeleteLink(null)}>
         <AlertDialogContent>
