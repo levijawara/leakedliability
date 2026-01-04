@@ -325,7 +325,10 @@ export function CallSheetList({ userId }: CallSheetListProps) {
       {contactIdFilter && (
         <div className="mb-4 p-3 bg-muted/50 rounded-lg">
           <p className="text-sm text-muted-foreground">
-            Showing call sheets linked to selected contact
+            {searchParams.get('contact_name') 
+              ? `Showing call sheets for ${decodeURIComponent(searchParams.get('contact_name')!)}`
+              : "Showing call sheets linked to selected contact"
+            }
           </p>
         </div>
       )}
