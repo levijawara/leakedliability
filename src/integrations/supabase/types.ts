@@ -2377,6 +2377,8 @@ export type Database = {
           created_at: string | null
           global_call_sheet_id: string
           id: string
+          payment_status: string | null
+          payment_status_locked: boolean | null
           user_id: string
           user_label: string | null
         }
@@ -2384,6 +2386,8 @@ export type Database = {
           created_at?: string | null
           global_call_sheet_id: string
           id?: string
+          payment_status?: string | null
+          payment_status_locked?: boolean | null
           user_id: string
           user_label?: string | null
         }
@@ -2391,6 +2395,8 @@ export type Database = {
           created_at?: string | null
           global_call_sheet_id?: string
           id?: string
+          payment_status?: string | null
+          payment_status_locked?: boolean | null
           user_id?: string
           user_label?: string | null
         }

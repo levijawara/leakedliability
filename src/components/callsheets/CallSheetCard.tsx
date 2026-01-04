@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { PaymentStatusRadio } from "./PaymentStatusRadio";
 
 interface GlobalCallSheet {
   id: string;
@@ -24,33 +25,42 @@ interface UserCallSheetLink {
   created_at: string;
   global_call_sheet_id: string;
   global_call_sheets: GlobalCallSheet;
+  payment_status: string;
+  payment_status_locked: boolean;
 }
 
 interface CallSheetCardProps {
   link: UserCallSheetLink;
   sortField: 'uploadDate' | 'shootDate';
   isSelected?: boolean;
+  isAdmin?: boolean;
   onSelect?: (linkId: string, selected: boolean) => void;
   onView: (sheet: GlobalCallSheet) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
   onCredits: (sheet: GlobalCallSheet) => void;
   onRetry: (sheet: GlobalCallSheet) => void;
   onDelete: (link: UserCallSheetLink) => void;
+  onPaymentStatusChange?: (linkId: string, status: string, locked: boolean) => void;
 }
 
 export function CallSheetCard({ 
   link, 
   sortField,
   isSelected = false,
+  isAdmin = false,
   onSelect,
   onView, 
   onViewPdf, 
   onCredits, 
   onRetry, 
-  onDelete 
+  onDelete,
+  onPaymentStatusChange
 }: CallSheetCardProps) {
   const sheet = link.global_call_sheets;
   const displayName = link.user_label || sheet.original_file_name;
+  
+  const paymentStatus = link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor';
+  const paymentLocked = link.payment_status_locked;
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -134,6 +144,21 @@ export function CallSheetCard({
           <p className="text-xs text-destructive truncate" title={sheet.error_message}>
             {sheet.error_message}
           </p>
+        )}
+
+        {/* Payment Status - Only show for non-admins and non-locked */}
+        {!isAdmin && !paymentLocked && (
+          <div className="pt-2 border-t">
+            <PaymentStatusRadio
+              linkId={link.id}
+              currentStatus={paymentStatus}
+              isLocked={paymentLocked}
+              onStatusChange={(newStatus, locked) => {
+                onPaymentStatusChange?.(link.id, newStatus, locked);
+              }}
+              compact
+            />
+          </div>
         )}
 
         {/* Action buttons */}

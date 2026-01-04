@@ -47,6 +47,7 @@ import { CallSheetCard } from "./CallSheetCard";
 import { PDFViewerModal } from "./PDFViewerModal";
 import { CreditsModal } from "./CreditsModal";
 import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
+import { PaymentStatusRadio } from "./PaymentStatusRadio";
 
 interface GlobalCallSheet {
   id: string;
@@ -66,6 +67,8 @@ interface UserCallSheetLink {
   created_at: string;
   global_call_sheet_id: string;
   global_call_sheets: GlobalCallSheet;
+  payment_status: string;
+  payment_status_locked: boolean;
 }
 
 interface CallSheetListProps {
@@ -115,6 +118,9 @@ export function CallSheetList({ userId }: CallSheetListProps) {
 
   // Selection state for bulk operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  
+  // Admin state
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // Initialize search from URL param
   useEffect(() => {
@@ -140,6 +146,8 @@ export function CallSheetList({ userId }: CallSheetListProps) {
           user_label,
           created_at,
           global_call_sheet_id,
+          payment_status,
+          payment_status_locked,
           global_call_sheets (
             id,
             original_file_name,
@@ -179,8 +187,14 @@ export function CallSheetList({ userId }: CallSheetListProps) {
 
       if (error) throw error;
       
-      // Filter out any links where global_call_sheets is null
-      const validLinks = (data || []).filter(link => link.global_call_sheets) as UserCallSheetLink[];
+      // Filter out any links where global_call_sheets is null, and ensure defaults for payment fields
+      const validLinks = (data || [])
+        .filter(link => link.global_call_sheets)
+        .map(link => ({
+          ...link,
+          payment_status: link.payment_status || 'unanswered',
+          payment_status_locked: link.payment_status_locked ?? false
+        })) as UserCallSheetLink[];
       setUserLinks(validLinks);
     } catch (error: any) {
       console.error('[CallSheetList] Fetch error:', error);
@@ -197,6 +211,16 @@ export function CallSheetList({ userId }: CallSheetListProps) {
   // Initial fetch and realtime subscription
   useEffect(() => {
     fetchUserCallSheets();
+    
+    // Check if user is admin
+    const checkAdmin = async () => {
+      const { data: isAdminData } = await supabase.rpc('has_role', { 
+        _user_id: userId, 
+        _role: 'admin' 
+      });
+      setIsAdmin(!!isAdminData);
+    };
+    checkAdmin();
 
     // Subscribe to realtime updates on user_call_sheets
     const userChannel = supabase
@@ -451,6 +475,15 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     fetchUserCallSheets();
   }, []);
 
+  // Payment status change handler
+  const handlePaymentStatusChange = useCallback((linkId: string, newStatus: string, locked: boolean) => {
+    setUserLinks(prev => prev.map(link => 
+      link.id === linkId 
+        ? { ...link, payment_status: newStatus, payment_status_locked: locked }
+        : link
+    ));
+  }, []);
+
   // Get global IDs for selected links (for re-parse)
   const selectedGlobalIds = useMemo(() => {
     return filteredSheets
@@ -557,6 +590,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
               link={link}
               sortField={sortField}
               isSelected={selectedIds.has(link.id)}
+              isAdmin={isAdmin}
               onSelect={handleSelectOne}
               onView={(sheet) => navigate(`/call-sheets/${sheet.id}/review`)}
               onViewPdf={(sheet) => setViewingPdf({ 
@@ -568,7 +602,8 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                 fileName: sheet.original_file_name 
               })}
               onRetry={handleRetry}
-              onDelete={setDeleteLink}
+              onDelete={(link) => setDeleteLink(link)}
+              onPaymentStatusChange={handlePaymentStatusChange}
             />
           ))}
         </div>
@@ -588,6 +623,7 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                 <TableHead>File Name</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-center">Contacts</TableHead>
+                {!isAdmin && <TableHead>Payment</TableHead>}
                 <TableHead>{sortField === 'shootDate' ? 'Shoot Date' : 'Added'}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -631,6 +667,19 @@ export function CallSheetList({ userId }: CallSheetListProps) {
                       <span className="text-muted-foreground">—</span>
                     )}
                   </TableCell>
+                  {/* Payment Status Column - Only for non-admins */}
+                  {!isAdmin && (
+                    <TableCell>
+                      {!link.payment_status_locked ? (
+                        <PaymentStatusRadio
+                          linkId={link.id}
+                          currentStatus={link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor'}
+                          isLocked={link.payment_status_locked}
+                          onStatusChange={(newStatus, locked) => handlePaymentStatusChange(link.id, newStatus, locked)}
+                        />
+                      ) : null}
+                    </TableCell>
+                  )}
                   <TableCell className="text-muted-foreground text-sm">
                     {sortField === 'shootDate' && sheet.parsed_date
                       ? format(new Date(sheet.parsed_date), 'MMM d, yyyy')
