@@ -185,7 +185,7 @@ export function DuplicateMergeModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl h-[80vh] flex flex-col overflow-hidden min-h-0">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <GitMerge className="h-5 w-5 text-primary" />
@@ -198,7 +198,7 @@ export function DuplicateMergeModal({
           Select which contact to keep as the primary for each group.
         </p>
 
-        <ScrollArea className="flex-1 max-h-[50vh] pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           <div className="space-y-4">
             {duplicateGroups.map((group, groupIndex) => {
               const allContacts = [group.primary, ...group.duplicates.map(d => d.contact)];
