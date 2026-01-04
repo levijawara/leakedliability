@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -10,7 +10,9 @@ import { ContactsToolbar } from "@/components/contacts/ContactsToolbar";
 import { FilterModal, ContactFilters } from "@/components/contacts/FilterModal";
 import { BulkActionsBar } from "@/components/contacts/BulkActionsBar";
 import { ExportButton } from "@/components/contacts/ExportButton";
+import { DuplicateMergeModal } from "@/components/contacts/DuplicateMergeModal";
 import { Users } from "lucide-react";
+import { findDuplicateGroups, DuplicateGroup, ContactForMatching } from "@/lib/duplicateDetection";
 
 export interface CrewContact {
   id: string;
@@ -64,6 +66,11 @@ export default function CrewContacts() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState<ContactFilters>(defaultFilters);
+  
+  // Duplicate detection state
+  const [duplicateModalOpen, setDuplicateModalOpen] = useState(false);
+  const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([]);
+  const [findingDuplicates, setFindingDuplicates] = useState(false);
 
   // Persist view preference
   useEffect(() => {
@@ -330,6 +337,64 @@ export default function CrewContacts() {
     setSelectedIds(new Set(filteredContacts.map(c => c.id)));
   };
 
+  // Find duplicates handler
+  const handleFindDuplicates = useCallback(() => {
+    setFindingDuplicates(true);
+    
+    // Run in next tick to allow UI to update
+    setTimeout(() => {
+      try {
+        // Convert contacts to matching format
+        const contactsForMatching: ContactForMatching[] = contacts.map(c => ({
+          id: c.id,
+          name: c.name,
+          roles: c.roles,
+          phones: c.phones,
+          emails: c.emails,
+          ig_handle: c.ig_handle
+        }));
+        
+        const groups = findDuplicateGroups(contactsForMatching);
+        console.log(`[CrewContacts] Found ${groups.length} duplicate groups`);
+        
+        setDuplicateGroups(groups);
+        
+        if (groups.length > 0) {
+          setDuplicateModalOpen(true);
+        } else {
+          toast({
+            title: "No duplicates found",
+            description: "All your contacts appear to be unique."
+          });
+        }
+      } catch (error) {
+        console.error('[CrewContacts] Duplicate detection error:', error);
+        toast({
+          title: "Error finding duplicates",
+          description: "An error occurred while scanning for duplicates.",
+          variant: "destructive"
+        });
+      } finally {
+        setFindingDuplicates(false);
+      }
+    }, 50);
+  }, [contacts, toast]);
+
+  // Handle merge complete
+  const handleMergeComplete = useCallback((deletedIds: string[], updatedContacts: CrewContact[]) => {
+    setContacts(prev => {
+      // Remove deleted contacts
+      let updated = prev.filter(c => !deletedIds.includes(c.id));
+      // Update merged contacts
+      updated = updated.map(c => {
+        const updatedVersion = updatedContacts.find(u => u.id === c.id);
+        return updatedVersion || c;
+      });
+      return updated;
+    });
+    setDuplicateGroups([]);
+  }, []);
+
   const handleDeselectAll = () => {
     setSelectedIds(new Set());
   };
@@ -392,6 +457,9 @@ export default function CrewContacts() {
             totalCount={contacts.length}
             showContactInfo={showContactInfo}
             onShowContactInfoChange={setShowContactInfo}
+            onFindDuplicates={handleFindDuplicates}
+            duplicateCount={duplicateGroups.length}
+            findingDuplicates={findingDuplicates}
           />
 
           {/* Bulk Actions Bar */}
@@ -443,6 +511,15 @@ export default function CrewContacts() {
         onFiltersChange={setFilters}
         availableRoles={availableRoles}
         availableDepartments={availableDepartments}
+      />
+
+      {/* Duplicate Merge Modal */}
+      <DuplicateMergeModal
+        isOpen={duplicateModalOpen}
+        onClose={() => setDuplicateModalOpen(false)}
+        duplicateGroups={duplicateGroups}
+        contacts={contacts}
+        onMergeComplete={handleMergeComplete}
       />
 
       <Footer />

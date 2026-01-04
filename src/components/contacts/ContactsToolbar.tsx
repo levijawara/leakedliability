@@ -9,7 +9,9 @@ import {
   List, 
   LayoutGrid,
   Eye,
-  EyeOff
+  EyeOff,
+  GitMerge,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,6 +39,10 @@ interface ContactsToolbarProps {
   // Privacy
   showContactInfo: boolean;
   onShowContactInfoChange: (value: boolean) => void;
+  // Duplicates
+  onFindDuplicates?: () => void;
+  duplicateCount?: number;
+  findingDuplicates?: boolean;
 }
 
 export function ContactsToolbar({
@@ -56,6 +62,9 @@ export function ContactsToolbar({
   totalCount,
   showContactInfo,
   onShowContactInfoChange,
+  onFindDuplicates,
+  duplicateCount,
+  findingDuplicates,
 }: ContactsToolbarProps) {
   return (
     <div className="sticky top-[73px] z-10 bg-background pb-4 pt-2">
@@ -127,6 +136,29 @@ export function ContactsToolbar({
             </Badge>
           )}
         </Button>
+
+        {/* Find Duplicates */}
+        {onFindDuplicates && (
+          <Button
+            variant={duplicateCount && duplicateCount > 0 ? 'default' : 'outline'}
+            size="sm"
+            onClick={onFindDuplicates}
+            disabled={findingDuplicates}
+            className="h-9"
+          >
+            {findingDuplicates ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <GitMerge className="h-4 w-4 mr-2" />
+            )}
+            {findingDuplicates ? 'Scanning...' : 'Find Duplicates'}
+            {duplicateCount !== undefined && duplicateCount > 0 && (
+              <Badge variant="secondary" className="ml-2 h-5 px-1.5">
+                {duplicateCount}
+              </Badge>
+            )}
+          </Button>
+        )}
 
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
