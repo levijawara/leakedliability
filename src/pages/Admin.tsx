@@ -113,6 +113,8 @@ export default function Admin() {
   const [callSheetRateLimitEnabled, setCallSheetRateLimitEnabled] = useState(false);
   const [callSheetRateLimitPerHour, setCallSheetRateLimitPerHour] = useState(20);
   const [callSheetConfigId, setCallSheetConfigId] = useState<string | null>(null);
+  const [processingQueue, setProcessingQueue] = useState(false);
+  const [queuedCallSheetsCount, setQueuedCallSheetsCount] = useState(0);
 
   useEffect(() => {
     checkAdminAccess();
@@ -263,6 +265,13 @@ export default function Admin() {
         setCallSheetRateLimitPerHour(callSheetConfig.rate_limit_per_hour ?? 20);
         setCallSheetConfigId(callSheetConfig.id);
       }
+
+      // Load queued call sheets count
+      const { count: queuedCount } = await supabase
+        .from("global_call_sheets")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "queued");
+      setQueuedCallSheetsCount(queuedCount || 0);
 
       // Load queued notifications count
       const { data: queued } = await supabase
@@ -1268,6 +1277,37 @@ export default function Admin() {
     });
   };
 
+  const triggerQueueProcessor = async () => {
+    setProcessingQueue(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("queue-processor", {
+        body: { triggered_by: "admin" },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Queue Processor Triggered",
+        description: `Processing ${data?.processed || 0} call sheets. ${data?.remaining || 0} remaining.`,
+      });
+
+      // Refresh the queued count
+      const { count } = await supabase
+        .from("global_call_sheets")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "queued");
+      setQueuedCallSheetsCount(count || 0);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to trigger queue processor",
+        variant: "destructive",
+      });
+    } finally {
+      setProcessingQueue(false);
+    }
+  };
+
   const handleGenerateEscrowLink = async (reportId: string) => {
     setGeneratingEscrowLink(reportId);
     try {
@@ -1763,6 +1803,34 @@ export default function Admin() {
                 variant="status"
               />
             </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-4 border-t">
+            <div className="space-y-1">
+              <Label className="text-lg font-semibold flex items-center gap-2">
+                <Loader2 className={`h-5 w-5 text-muted-foreground ${processingQueue ? 'animate-spin' : ''}`} />
+                Call Sheet Parse Queue
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {queuedCallSheetsCount > 0 
+                  ? `${queuedCallSheetsCount} call sheets waiting to be parsed` 
+                  : "No call sheets in queue"}
+              </p>
+            </div>
+            <Button
+              onClick={triggerQueueProcessor}
+              disabled={processingQueue || queuedCallSheetsCount === 0}
+              variant={queuedCallSheetsCount > 0 ? "default" : "outline"}
+            >
+              {processingQueue ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
+              )}
+            </Button>
           </div>
         </div>
       </Card>
