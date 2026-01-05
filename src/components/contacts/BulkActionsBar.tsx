@@ -6,7 +6,8 @@ import {
   X, 
   CheckSquare,
   Square,
-  Loader2
+  Loader2,
+  GitMerge
 } from "lucide-react";
 import {
   AlertDialog,
@@ -28,6 +29,7 @@ interface BulkActionsBarProps {
   onDeselectAll: () => void;
   onBulkFavorite: () => void;
   onBulkDelete: (ids: string[]) => void;
+  onManualMerge?: () => void;
   userId: string;
 }
 
@@ -38,6 +40,7 @@ export function BulkActionsBar({
   onDeselectAll,
   onBulkFavorite,
   onBulkDelete,
+  onManualMerge,
   userId,
 }: BulkActionsBarProps) {
   const { toast } = useToast();
@@ -151,6 +154,19 @@ export function BulkActionsBar({
             )}
             Favorite
           </Button>
+
+          {onManualMerge && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onManualMerge}
+              disabled={selectedIds.length < 2}
+              className="h-8"
+            >
+              <GitMerge className="h-4 w-4 mr-2" />
+              Manual Merge
+            </Button>
+          )}
 
           <Button
             variant="outline"
