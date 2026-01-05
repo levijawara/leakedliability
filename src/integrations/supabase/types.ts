@@ -217,6 +217,50 @@ export type Database = {
         }
         Relationships: []
       }
+      call_sheet_heat_metrics: {
+        Row: {
+          global_call_sheet_id: string | null
+          heat_score: number | null
+          id: string
+          never_paid_count: number | null
+          paid_count: number | null
+          total_responses: number | null
+          unanswered_count: number | null
+          updated_at: string | null
+          waiting_count: number | null
+        }
+        Insert: {
+          global_call_sheet_id?: string | null
+          heat_score?: number | null
+          id?: string
+          never_paid_count?: number | null
+          paid_count?: number | null
+          total_responses?: number | null
+          unanswered_count?: number | null
+          updated_at?: string | null
+          waiting_count?: number | null
+        }
+        Update: {
+          global_call_sheet_id?: string | null
+          heat_score?: number | null
+          id?: string
+          never_paid_count?: number | null
+          paid_count?: number | null
+          total_responses?: number | null
+          unanswered_count?: number | null
+          updated_at?: string | null
+          waiting_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_sheet_heat_metrics_global_call_sheet_id_fkey"
+            columns: ["global_call_sheet_id"]
+            isOneToOne: true
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_sheets: {
         Row: {
           contacts_extracted: number | null
@@ -394,6 +438,8 @@ export type Database = {
           hidden_phones: string[] | null
           hidden_roles: string[] | null
           id: string
+          identity_confidence: number | null
+          identity_group_id: string | null
           ig_handle: string | null
           is_favorite: boolean | null
           name: string
@@ -415,6 +461,8 @@ export type Database = {
           hidden_phones?: string[] | null
           hidden_roles?: string[] | null
           id?: string
+          identity_confidence?: number | null
+          identity_group_id?: string | null
           ig_handle?: string | null
           is_favorite?: boolean | null
           name: string
@@ -436,6 +484,8 @@ export type Database = {
           hidden_phones?: string[] | null
           hidden_roles?: string[] | null
           id?: string
+          identity_confidence?: number | null
+          identity_group_id?: string | null
           ig_handle?: string | null
           is_favorite?: boolean | null
           name?: string
@@ -446,7 +496,15 @@ export type Database = {
           source_files?: string[] | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crew_contacts_identity_group_id_fkey"
+            columns: ["identity_group_id"]
+            isOneToOne: false
+            referencedRelation: "identity_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_departments: {
         Row: {
@@ -914,6 +972,42 @@ export type Database = {
             referencedColumns: ["producer_id"]
           },
         ]
+      }
+      identity_groups: {
+        Row: {
+          canonical_name: string
+          created_at: string | null
+          emails: string[] | null
+          id: string
+          is_producer: boolean | null
+          phones: string[] | null
+          project_count: number | null
+          roles: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          canonical_name: string
+          created_at?: string | null
+          emails?: string[] | null
+          id?: string
+          is_producer?: boolean | null
+          phones?: string[] | null
+          project_count?: number | null
+          roles?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          canonical_name?: string
+          created_at?: string | null
+          emails?: string[] | null
+          id?: string
+          is_producer?: boolean | null
+          phones?: string[] | null
+          project_count?: number | null
+          roles?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       ig_usernames: {
         Row: {
@@ -1458,6 +1552,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      network_nodes: {
+        Row: {
+          display_name: string
+          heat_context: Json | null
+          id: string
+          identity_group_id: string | null
+          is_producer: boolean | null
+          project_count: number | null
+          roles: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          display_name: string
+          heat_context?: Json | null
+          id?: string
+          identity_group_id?: string | null
+          is_producer?: boolean | null
+          project_count?: number | null
+          roles?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          display_name?: string
+          heat_context?: Json | null
+          id?: string
+          identity_group_id?: string | null
+          is_producer?: boolean | null
+          project_count?: number | null
+          roles?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "network_nodes_identity_group_id_fkey"
+            columns: ["identity_group_id"]
+            isOneToOne: true
+            referencedRelation: "identity_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       past_debts: {
         Row: {
@@ -2152,6 +2287,54 @@ export type Database = {
           },
         ]
       }
+      relationship_edges: {
+        Row: {
+          created_at: string | null
+          id: string
+          shared_project_titles: string[] | null
+          shared_projects: string[] | null
+          source_group_id: string | null
+          target_group_id: string | null
+          updated_at: string | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          shared_project_titles?: string[] | null
+          shared_projects?: string[] | null
+          source_group_id?: string | null
+          target_group_id?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          shared_project_titles?: string[] | null
+          shared_projects?: string[] | null
+          source_group_id?: string | null
+          target_group_id?: string | null
+          updated_at?: string | null
+          weight?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "relationship_edges_source_group_id_fkey"
+            columns: ["source_group_id"]
+            isOneToOne: false
+            referencedRelation: "identity_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "relationship_edges_target_group_id_fkey"
+            columns: ["target_group_id"]
+            isOneToOne: false
+            referencedRelation: "identity_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_dictionary: {
         Row: {
           aliases: string[] | null
@@ -2700,6 +2883,23 @@ export type Database = {
         Args: { _reason: string; _target_user_id: string }
         Returns: Json
       }
+      calculate_call_sheet_heat_score: {
+        Args: { sheet_id: string }
+        Returns: number
+      }
+      calculate_identity_score: {
+        Args: {
+          emails1: string[]
+          emails2: string[]
+          name1: string
+          name2: string
+          phones1: string[]
+          phones2: string[]
+          roles1: string[]
+          roles2: string[]
+        }
+        Returns: number
+      }
       calculate_pscs_score: { Args: { producer_uuid: string }; Returns: number }
       cleanup_old_past_debts: { Args: never; Returns: undefined }
       generate_payment_code: { Args: never; Returns: string }
@@ -2753,6 +2953,8 @@ export type Database = {
         Args: { _content_hash: string }
         Returns: Json
       }
+      normalize_contact_name: { Args: { raw_name: string }; Returns: string }
+      recalculate_all_heat_scores: { Args: never; Returns: number }
       refresh_all_producer_stats: { Args: never; Returns: undefined }
       revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }
       upsert_ig_handles: { Args: { handles_data: Json }; Returns: Json }
