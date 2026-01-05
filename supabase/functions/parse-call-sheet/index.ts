@@ -628,6 +628,230 @@ serve(async (req) => {
 
     console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${validatedContacts.length}`);
 
+    // ============================================================================
+    // AUTOMATED 4-STEP PIPELINE (Runs after EVERY successful parse)
+    // Step 1: Auto-Add Crew Contacts (for uploader only)
+    // Step 2: Create Attributions (link contacts to call sheet)
+    // Step 3: Auto-Merge Duplicates (for this user only)
+    // Step 4: Auto-Restore IG Handles (from user's IG map)
+    // ============================================================================
+
+    const uploaderUserId = callSheet.first_uploaded_by;
+    
+    if (uploaderUserId) {
+      console.log(`[parse-call-sheet] PIPELINE START: Automating crew contact management for user ${uploaderUserId}`);
+      
+      try {
+        // ========== STEP 1: AUTO-ADD CREW CONTACTS ==========
+        console.log(`[parse-call-sheet] STEP 1: Auto-adding ${validatedContacts.length} contacts`);
+        const insertedContactIds: string[] = [];
+        
+        for (const contact of validatedContacts) {
+          // Build query to find existing contact by email, phone, or name
+          // Check for existing contact with same name (case-insensitive)
+          const { data: existingByName } = await supabase
+            .from('crew_contacts')
+            .select('id, phones, emails, roles, departments, ig_handle')
+            .eq('user_id', uploaderUserId)
+            .ilike('name', contact.name)
+            .limit(1)
+            .maybeSingle();
+          
+          // Check for existing contact by phone
+          let existingByPhone = null;
+          if (contact.phones && contact.phones.length > 0) {
+            const { data } = await supabase
+              .from('crew_contacts')
+              .select('id, phones, emails, roles, departments, ig_handle, name')
+              .eq('user_id', uploaderUserId)
+              .overlaps('phones', contact.phones)
+              .limit(1)
+              .maybeSingle();
+            existingByPhone = data;
+          }
+          
+          // Check for existing contact by email
+          let existingByEmail = null;
+          if (contact.emails && contact.emails.length > 0) {
+            const { data } = await supabase
+              .from('crew_contacts')
+              .select('id, phones, emails, roles, departments, ig_handle, name')
+              .eq('user_id', uploaderUserId)
+              .overlaps('emails', contact.emails)
+              .limit(1)
+              .maybeSingle();
+            existingByEmail = data;
+          }
+          
+          const existing = existingByName || existingByPhone || existingByEmail;
+          
+          if (existing) {
+            // Merge with existing contact
+            const mergedPhones = [...new Set([...(existing.phones || []), ...(contact.phones || [])])];
+            const mergedEmails = [...new Set([...(existing.emails || []), ...(contact.emails || [])])];
+            const mergedRoles = [...new Set([...(existing.roles || []), ...(contact.roles || [])])];
+            const mergedDepartments = [...new Set([...(existing.departments || []), ...(contact.departments || [])])];
+            
+            await supabase
+              .from('crew_contacts')
+              .update({
+                phones: mergedPhones,
+                emails: mergedEmails,
+                roles: mergedRoles,
+                departments: mergedDepartments
+              })
+              .eq('id', existing.id);
+            
+            insertedContactIds.push(existing.id);
+          } else {
+            // Insert new contact
+            const { data: newContact, error: insertError } = await supabase
+              .from('crew_contacts')
+              .insert({
+                user_id: uploaderUserId,
+                name: contact.name,
+                phones: contact.phones || [],
+                emails: contact.emails || [],
+                roles: contact.roles || [],
+                departments: contact.departments || [],
+                confidence: contact.confidence,
+                needs_review: contact.needs_review,
+                project_title: parseResult.project_title
+              })
+              .select('id')
+              .single();
+            
+            if (newContact && !insertError) {
+              insertedContactIds.push(newContact.id);
+            } else if (insertError) {
+              console.error(`[parse-call-sheet] STEP 1 ERROR inserting ${contact.name}:`, insertError.message);
+            }
+          }
+        }
+        
+        console.log(`[parse-call-sheet] STEP 1 COMPLETE: ${insertedContactIds.length} contacts added/merged`);
+        
+        // ========== STEP 2: CREATE ATTRIBUTIONS ==========
+        console.log(`[parse-call-sheet] STEP 2: Creating ${insertedContactIds.length} attributions`);
+        
+        for (const contactId of insertedContactIds) {
+          const { error: attrError } = await supabase
+            .from('contact_call_sheets')
+            .upsert(
+              { contact_id: contactId, call_sheet_id: call_sheet_id },
+              { onConflict: 'contact_id,call_sheet_id', ignoreDuplicates: true }
+            );
+          
+          if (attrError) {
+            console.error(`[parse-call-sheet] STEP 2 attribution error for ${contactId}:`, attrError.message);
+          }
+        }
+        
+        console.log(`[parse-call-sheet] STEP 2 COMPLETE: Attributions created`);
+        
+        // ========== STEP 3: AUTO-MERGE DUPLICATES ==========
+        console.log(`[parse-call-sheet] STEP 3: Running duplicate detection for user ${uploaderUserId}`);
+        
+        // Fetch all contacts for this user
+        const { data: userContacts } = await supabase
+          .from('crew_contacts')
+          .select('id, name, roles, phones, emails, ig_handle, departments')
+          .eq('user_id', uploaderUserId);
+        
+        if (userContacts && userContacts.length > 1) {
+          const duplicateGroups = findDuplicateGroupsInline(userContacts);
+          
+          let mergedCount = 0;
+          for (const group of duplicateGroups) {
+            // Merge data into primary
+            const merged = mergeContactDataInline(group.primary, group.duplicates.map(d => d.contact));
+            
+            // Update primary contact with merged data
+            await supabase
+              .from('crew_contacts')
+              .update({
+                phones: merged.phones,
+                emails: merged.emails,
+                roles: merged.roles,
+                departments: merged.departments,
+                ig_handle: merged.ig_handle || group.primary.ig_handle
+              })
+              .eq('id', group.primary.id);
+            
+            // Get duplicate IDs
+            const duplicateIds = group.duplicates.map(d => d.contact.id);
+            
+            // Re-assign attributions from duplicates to primary
+            await supabase
+              .from('contact_call_sheets')
+              .update({ contact_id: group.primary.id })
+              .in('contact_id', duplicateIds);
+            
+            // Delete duplicates
+            await supabase
+              .from('crew_contacts')
+              .delete()
+              .in('id', duplicateIds);
+            
+            mergedCount += duplicateIds.length;
+            console.log(`[parse-call-sheet] STEP 3: Merged ${duplicateIds.length} duplicates into "${group.primary.name}"`);
+          }
+          
+          console.log(`[parse-call-sheet] STEP 3 COMPLETE: Merged ${mergedCount} total duplicates`);
+        } else {
+          console.log(`[parse-call-sheet] STEP 3: No duplicates to merge (${userContacts?.length || 0} contacts)`);
+        }
+        
+        // ========== STEP 4: AUTO-RESTORE IG HANDLES ==========
+        console.log(`[parse-call-sheet] STEP 4: Restoring IG handles for user ${uploaderUserId}`);
+        
+        // Fetch user's IG map
+        const { data: igMap } = await supabase
+          .from('user_ig_map')
+          .select('name, ig_handle')
+          .eq('user_id', uploaderUserId);
+        
+        if (igMap && igMap.length > 0) {
+          // Build lookup by normalized name
+          const igLookup = new Map<string, string>();
+          for (const entry of igMap) {
+            igLookup.set(entry.name.toLowerCase().trim(), entry.ig_handle);
+          }
+          
+          // Fetch contacts missing IG handles
+          const { data: contactsMissingIG } = await supabase
+            .from('crew_contacts')
+            .select('id, name, ig_handle')
+            .eq('user_id', uploaderUserId)
+            .is('ig_handle', null);
+          
+          let restoredCount = 0;
+          for (const contact of contactsMissingIG || []) {
+            const normalizedName = contact.name.toLowerCase().trim();
+            if (igLookup.has(normalizedName)) {
+              await supabase
+                .from('crew_contacts')
+                .update({ ig_handle: igLookup.get(normalizedName) })
+                .eq('id', contact.id);
+              restoredCount++;
+            }
+          }
+          
+          console.log(`[parse-call-sheet] STEP 4 COMPLETE: Restored ${restoredCount} IG handles`);
+        } else {
+          console.log(`[parse-call-sheet] STEP 4: No IG map found for user, skipping`);
+        }
+        
+        console.log(`[parse-call-sheet] PIPELINE COMPLETE for call sheet ${call_sheet_id}`);
+        
+      } catch (pipelineError) {
+        // Log pipeline errors but don't fail the entire parse
+        console.error(`[parse-call-sheet] PIPELINE ERROR:`, pipelineError);
+      }
+    } else {
+      console.log(`[parse-call-sheet] PIPELINE SKIPPED: No uploader user_id found`);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -988,4 +1212,185 @@ async function parseWithAI(text: string, apiKey: string): Promise<ParseResult> {
   }
 
   throw new Error("AI returned unexpected response format");
+}
+
+// ============================================================================
+// INLINE DUPLICATE DETECTION (Ported from src/lib/duplicateDetection.ts)
+// These functions run inside the edge function without external imports
+// ============================================================================
+
+interface ContactForMatchingInline {
+  id: string;
+  name: string;
+  roles: string[] | null;
+  phones: string[] | null;
+  emails: string[] | null;
+  ig_handle: string | null;
+  departments?: string[] | null;
+}
+
+interface DuplicateGroupInline {
+  primary: ContactForMatchingInline;
+  duplicates: Array<{
+    contact: ContactForMatchingInline;
+    matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[];
+  }>;
+}
+
+function normalizePhoneInline(phone: string): string {
+  return phone.replace(/\D/g, '');
+}
+
+function normalizeEmailInline(email: string): string {
+  return email.toLowerCase().trim();
+}
+
+function fuzzyNameMatchInline(name1: string, name2: string): boolean {
+  const n1 = name1.toLowerCase().trim();
+  const n2 = name2.toLowerCase().trim();
+  
+  if (n1 === n2) return true;
+  
+  const parts1 = n1.split(/\s+/);
+  const parts2 = n2.split(/\s+/);
+  
+  if (parts1.length < 2 || parts2.length < 2) {
+    return n1.startsWith(n2) || n2.startsWith(n1);
+  }
+  
+  const last1 = parts1[parts1.length - 1];
+  const last2 = parts2[parts2.length - 1];
+  if (last1 !== last2) return false;
+  
+  const first1 = parts1[0];
+  const first2 = parts2[0];
+  return first1.startsWith(first2) || first2.startsWith(first1);
+}
+
+function areContactsDuplicatesInline(
+  contact1: ContactForMatchingInline,
+  contact2: ContactForMatchingInline
+): { isDuplicate: boolean; matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[] } {
+  const matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[] = [];
+  let hasPhoneOrEmailMatch = false;
+  
+  const phones1 = (contact1.phones || []).map(normalizePhoneInline);
+  const phones2 = (contact2.phones || []).map(normalizePhoneInline);
+  const emails1 = (contact1.emails || []).map(normalizeEmailInline);
+  const emails2 = (contact2.emails || []).map(normalizeEmailInline);
+  
+  if (fuzzyNameMatchInline(contact1.name, contact2.name)) {
+    matchedFields.push('name');
+  }
+  
+  const roles1 = (contact1.roles || []).map(r => r.toLowerCase());
+  const roles2 = (contact2.roles || []).map(r => r.toLowerCase());
+  if (roles1.some(r => roles2.includes(r))) {
+    matchedFields.push('role');
+  }
+  
+  if (phones1.some(p => p && phones2.includes(p))) {
+    matchedFields.push('phone');
+    hasPhoneOrEmailMatch = true;
+  }
+  
+  if (emails1.some(e => e && emails2.includes(e))) {
+    matchedFields.push('email');
+    hasPhoneOrEmailMatch = true;
+  }
+  
+  const ig1 = contact1.ig_handle?.toLowerCase().replace('@', '');
+  const ig2 = contact2.ig_handle?.toLowerCase().replace('@', '');
+  if (ig1 && ig2 && ig1 === ig2) {
+    matchedFields.push('ig');
+    hasPhoneOrEmailMatch = true;
+  }
+  
+  if (matchedFields.length < 2) {
+    return { isDuplicate: false, matchedFields: [] };
+  }
+  
+  const isSingleWordName = contact1.name.trim().split(/\s+/).length === 1 ||
+                           contact2.name.trim().split(/\s+/).length === 1;
+  if (isSingleWordName && !hasPhoneOrEmailMatch) {
+    return { isDuplicate: false, matchedFields: [] };
+  }
+  
+  return { isDuplicate: true, matchedFields };
+}
+
+function findDuplicateGroupsInline(contacts: ContactForMatchingInline[]): DuplicateGroupInline[] {
+  const groups: DuplicateGroupInline[] = [];
+  const processedIds = new Set<string>();
+  
+  for (let i = 0; i < contacts.length; i++) {
+    const contact = contacts[i];
+    
+    if (processedIds.has(contact.id)) continue;
+    
+    const duplicates: DuplicateGroupInline['duplicates'] = [];
+    
+    for (let j = i + 1; j < contacts.length; j++) {
+      const other = contacts[j];
+      
+      if (processedIds.has(other.id)) continue;
+      
+      const { isDuplicate, matchedFields } = areContactsDuplicatesInline(contact, other);
+      
+      if (isDuplicate) {
+        duplicates.push({ contact: other, matchedFields });
+        processedIds.add(other.id);
+      }
+    }
+    
+    if (duplicates.length > 0) {
+      processedIds.add(contact.id);
+      groups.push({
+        primary: contact,
+        duplicates
+      });
+    }
+  }
+  
+  return groups;
+}
+
+function mergeContactDataInline(
+  primary: ContactForMatchingInline,
+  duplicates: ContactForMatchingInline[]
+): {
+  phones: string[];
+  emails: string[];
+  roles: string[];
+  departments: string[];
+  ig_handle: string | null;
+} {
+  const allPhones = new Set<string>();
+  const allEmails = new Set<string>();
+  const allRoles = new Set<string>();
+  const allDepartments = new Set<string>();
+  let igHandle = primary.ig_handle;
+  
+  (primary.phones || []).forEach(p => allPhones.add(p));
+  (primary.emails || []).forEach(e => allEmails.add(e));
+  (primary.roles || []).forEach(r => allRoles.add(r));
+  (primary.departments || []).forEach(d => allDepartments.add(d));
+  
+  for (const dup of duplicates) {
+    (dup.phones || []).forEach(p => allPhones.add(p));
+    (dup.emails || []).forEach(e => allEmails.add(e));
+    (dup.roles || []).forEach(r => allRoles.add(r));
+    (dup.departments || []).forEach(d => allDepartments.add(d));
+    if (!igHandle && dup.ig_handle) {
+      igHandle = dup.ig_handle;
+    }
+  }
+  
+  return {
+    phones: Array.from(allPhones),
+    emails: Array.from(allEmails),
+    roles: Array.from(allRoles),
+    departments: Array.from(allDepartments),
+    ig_handle: igHandle
+  };
 }
