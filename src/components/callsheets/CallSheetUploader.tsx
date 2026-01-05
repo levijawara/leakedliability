@@ -1,16 +1,25 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Upload, FileText, Loader2, CheckCircle } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Upload, FileText, Loader2, CheckCircle, XCircle, Copy, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface CallSheetUploaderProps {
   userId: string;
   onUploadComplete?: () => void;
 }
+
+interface FileUploadState {
+  file: File;
+  status: 'pending' | 'hashing' | 'checking' | 'uploading' | 'queued' | 'duplicate' | 'error';
+  message?: string;
+  sheetId?: string;
+}
+
+const MAX_FILES = 50;
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 // Compute SHA-256 hash of file bytes
 async function computeFileHash(file: File): Promise<string> {
@@ -21,78 +30,40 @@ async function computeFileHash(file: File): Promise<string> {
 }
 
 export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploaderProps) {
-  const navigate = useNavigate();
   const [isDragging, setIsDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
-  const [monitoringSheetId, setMonitoringSheetId] = useState<string | null>(null);
-  const [monitorChannel, setMonitorChannel] = useState<RealtimeChannel | null>(null);
-  const pollIntervalRef = useRef<number | null>(null);
+  const [uploadQueue, setUploadQueue] = useState<FileUploadState[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const processingRef = useRef(false);
   const { toast } = useToast();
 
-  // Cleanup realtime subscription and polling on unmount
-  useEffect(() => {
-    return () => {
-      if (monitorChannel) {
-        supabase.removeChannel(monitorChannel);
-      }
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-      }
-    };
-  }, [monitorChannel]);
+  const updateFileStatus = (index: number, updates: Partial<FileUploadState>) => {
+    setUploadQueue(prev => prev.map((item, i) => 
+      i === index ? { ...item, ...updates } : item
+    ));
+  };
 
-  const handleUpload = async (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      toast({
-        title: "Invalid File Type",
-        description: "Only PDF files are accepted for call sheets.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "File Too Large",
-        description: "Maximum file size is 10MB.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setUploading(true);
-    setUploadProgress(10);
-
+  const processFile = async (file: File, index: number): Promise<void> => {
     try {
-      // Step 1: Compute hash client-side
-      console.log('[CallSheetUploader] Computing file hash...');
+      // Step 1: Hash
+      updateFileStatus(index, { status: 'hashing' });
       const clientHash = await computeFileHash(file);
-      console.log(`[CallSheetUploader] Client hash computed: ${clientHash.slice(0, 12)}...`);
+      console.log(`[BulkUploader] File ${index + 1}: hash computed`);
 
-      setUploadProgress(20);
-
-      // Step 2: Check if artifact exists globally using secure RPC (bypasses RLS for hash lookup)
+      // Step 2: Check for duplicate
+      updateFileStatus(index, { status: 'checking' });
       const { data: existingData, error: checkError } = await supabase
         .rpc('lookup_global_call_sheet_by_hash', { _content_hash: clientHash });
 
       if (checkError) {
-        console.error('[CallSheetUploader] Hash check error:', checkError);
         throw new Error(`Hash check failed: ${checkError.message}`);
       }
 
-      // Parse the result - function returns jsonb or null
       const existing = existingData as { id: string; status: string } | null;
 
-      setUploadProgress(30);
-
       if (existing) {
-        // Duplicate detected - artifact already exists
-        console.log(`[CallSheetUploader] Duplicate detected, artifact exists: ${existing.id}`);
-
-        // Create user link (upsert to handle re-uploads)
-        const { error: linkError } = await supabase
+        // Duplicate - link and mark
+        await supabase
           .from('user_call_sheets')
           .upsert({
             user_id: userId,
@@ -100,64 +71,18 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
             user_label: file.name
           }, { onConflict: 'user_id,global_call_sheet_id' });
 
-        if (linkError) {
-          console.error('[CallSheetUploader] Link creation error:', linkError);
-          throw new Error(`Failed to link call sheet: ${linkError.message}`);
-        }
-
-        setUploadProgress(100);
-
-        // If already parsed, redirect immediately
-        if (existing.status === 'parsed') {
-          toast({
-            title: "Already parsed!",
-            description: "Redirecting to your contacts...",
-          });
-          
-          onUploadComplete?.();
-          navigate(`/call-sheets/${existing.id}/review`);
-          return;
-        }
-
-        // If still parsing, monitor for completion
-        if (existing.status === 'parsing' || existing.status === 'queued') {
-          setUploadedFile(file.name);
-          setMonitoringSheetId(existing.id);
-          startMonitoring(existing.id);
-          
-          toast({
-            title: "Already uploaded",
-            description: "This call sheet is being processed. You'll be redirected when ready.",
-          });
-          
-          onUploadComplete?.();
-          return;
-        }
-
-        // Status is error or unknown - show message
-        setUploadedFile(file.name);
-        toast({
-          title: "Already uploaded",
-          description: "This call sheet was previously uploaded. Check the status in 'My Call Sheets'.",
+        updateFileStatus(index, { 
+          status: 'duplicate', 
+          sheetId: existing.id,
+          message: existing.status === 'parsed' ? 'Already parsed' : 'Already queued'
         });
-
-        onUploadComplete?.();
-
-        // Reset after delay
-        setTimeout(() => {
-          setUploadedFile(null);
-          setUploadProgress(0);
-        }, 3000);
-
         return;
       }
 
-      // Step 3: New artifact - upload to master bucket path
-      console.log('[CallSheetUploader] New artifact - uploading to master path...');
+      // Step 3: Upload new file
+      updateFileStatus(index, { status: 'uploading' });
       const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
       const masterPath = `master/${clientHash}/${sanitizedName}`;
-
-      setUploadProgress(40);
 
       const { error: uploadError } = await supabase.storage
         .from('call_sheets')
@@ -170,10 +95,7 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
 
-      setUploadProgress(60);
-
-      // Step 4: Create global artifact record
-      console.log('[CallSheetUploader] Creating global artifact record...');
+      // Step 4: Create global record
       const { data: newSheet, error: insertError } = await supabase
         .from('global_call_sheets')
         .insert({
@@ -190,11 +112,8 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
         throw new Error(`Failed to create record: ${insertError.message}`);
       }
 
-      setUploadProgress(75);
-
       // Step 5: Create user link
-      console.log('[CallSheetUploader] Creating user link...');
-      const { error: linkError } = await supabase
+      await supabase
         .from('user_call_sheets')
         .insert({
           user_id: userId,
@@ -202,216 +121,201 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
           user_label: file.name
         });
 
-      if (linkError) {
-        console.error('[CallSheetUploader] Link creation error:', linkError);
-        // Don't throw - the artifact was created successfully
-      }
-
-      setUploadProgress(85);
-
-      // Step 6: Trigger parsing
-      console.log('[CallSheetUploader] Triggering parse...');
-      const { error: parseError } = await supabase.functions.invoke('parse-call-sheet', {
+      // Step 6: Trigger parse
+      await supabase.functions.invoke('parse-call-sheet', {
         body: { call_sheet_id: newSheet.id }
       });
 
-      if (parseError) {
-        console.warn('[CallSheetUploader] Parse trigger failed, will be picked up by queue:', parseError);
-      }
-
-      setUploadProgress(100);
-      setUploadedFile(file.name);
-      setMonitoringSheetId(newSheet.id);
-
-      console.log(`[CallSheetUploader] New artifact created: ${newSheet.id}, starting realtime monitoring`);
-
-      // Start monitoring for parse completion
-      startMonitoring(newSheet.id);
-
-      toast({
-        title: "Upload Successful",
-        description: "Parsing in progress. You'll be redirected when complete.",
+      updateFileStatus(index, { 
+        status: 'queued', 
+        sheetId: newSheet.id,
+        message: 'Queued for parsing'
       });
 
-      onUploadComplete?.();
-
     } catch (error: any) {
-      console.error('[CallSheetUploader] Error:', error);
-      
-      // Handle rate limit error specifically
-      if (error.message?.includes('RATE_LIMIT_EXCEEDED')) {
-        toast({
-          title: "Upload Limit Reached",
-          description: "You can upload up to 20 call sheets per hour. Please try again later.",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "Upload Failed",
-          description: error.message || "An unexpected error occurred.",
-          variant: "destructive"
-        });
-      }
-      setUploading(false);
+      console.error(`[BulkUploader] File ${index + 1} error:`, error);
+      updateFileStatus(index, { 
+        status: 'error', 
+        message: error.message || 'Upload failed'
+      });
     }
   };
 
-  const startMonitoring = (sheetId: string) => {
-    console.log(`[CallSheetUploader] Starting realtime + polling monitoring for sheet: ${sheetId}`);
-    
-    // Helper to cleanup and navigate on success
-    const handleParseComplete = (contactsCount: number) => {
-      console.log(`[CallSheetUploader] Parse complete! Contacts: ${contactsCount}`);
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-      if (monitorChannel) {
-        supabase.removeChannel(monitorChannel);
-      }
-      setMonitorChannel(null);
-      setMonitoringSheetId(null);
-      
-      toast({
-        title: "Parsing Complete!",
-        description: `Found ${contactsCount} contacts. Redirecting...`,
-      });
-      navigate(`/call-sheets/${sheetId}/review`);
-    };
+  const processBulkUpload = async (files: File[]) => {
+    if (processingRef.current) return;
+    processingRef.current = true;
+    setIsProcessing(true);
 
-    // Helper to cleanup and reset on error
-    const handleParseError = (errorMsg: string) => {
-      console.log(`[CallSheetUploader] Parse error: ${errorMsg}`);
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
+    console.log(`[BulkUploader] Starting bulk upload of ${files.length} files`);
+
+    for (let i = 0; i < files.length; i++) {
+      setCurrentIndex(i);
+      await processFile(files[i], i);
+    }
+
+    processingRef.current = false;
+    setIsProcessing(false);
+
+    // Summary
+    const results = uploadQueue;
+    const queued = results.filter(r => r.status === 'queued').length;
+    const duplicates = results.filter(r => r.status === 'duplicate').length;
+    const errors = results.filter(r => r.status === 'error').length;
+
+    toast({
+      title: "Bulk Upload Complete",
+      description: `${queued} queued, ${duplicates} duplicates, ${errors} errors`,
+    });
+
+    onUploadComplete?.();
+  };
+
+  const handleBulkUpload = (files: File[]) => {
+    // Validate and filter files
+    const validFiles: File[] = [];
+    const invalidFiles: { name: string; reason: string }[] = [];
+
+    for (const file of files) {
+      if (!file.name.toLowerCase().endsWith('.pdf')) {
+        invalidFiles.push({ name: file.name, reason: 'Not a PDF' });
+      } else if (file.size > MAX_FILE_SIZE) {
+        invalidFiles.push({ name: file.name, reason: 'Exceeds 10MB' });
+      } else {
+        validFiles.push(file);
       }
-      if (monitorChannel) {
-        supabase.removeChannel(monitorChannel);
-      }
-      setMonitorChannel(null);
-      setMonitoringSheetId(null);
-      
+    }
+
+    if (invalidFiles.length > 0) {
       toast({
-        title: "Parsing Failed",
-        description: errorMsg || "An error occurred during parsing.",
+        title: `${invalidFiles.length} files rejected`,
+        description: invalidFiles.slice(0, 3).map(f => `${f.name}: ${f.reason}`).join(', '),
         variant: "destructive"
       });
-      
-      setUploadedFile(null);
-      setUploadProgress(0);
-      setUploading(false);
-    };
+    }
 
-    // Setup realtime subscription
-    const channel = supabase
-      .channel(`call_sheet_monitor_${sheetId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'global_call_sheets',
-          filter: `id=eq.${sheetId}`
-        },
-        (payload) => {
-          const newStatus = payload.new?.status;
-          console.log(`[CallSheetUploader] Realtime status update: ${newStatus}`);
-          
-          if (newStatus === 'parsed') {
-            handleParseComplete(payload.new?.contacts_extracted || 0);
-          } else if (newStatus === 'error') {
-            handleParseError(payload.new?.error_message || "An error occurred.");
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log(`[CallSheetUploader] Realtime subscription status: ${status}`);
+    if (validFiles.length === 0) return;
+
+    // Limit to MAX_FILES
+    const filesToProcess = validFiles.slice(0, MAX_FILES);
+    if (validFiles.length > MAX_FILES) {
+      toast({
+        title: "File limit reached",
+        description: `Processing first ${MAX_FILES} files. You can upload more after.`,
       });
+    }
 
-    setMonitorChannel(channel);
+    // Initialize queue
+    const queue: FileUploadState[] = filesToProcess.map(file => ({
+      file,
+      status: 'pending'
+    }));
+    setUploadQueue(queue);
+    setCurrentIndex(0);
 
-    // Aggressive polling fallback - first check at 500ms, then every 2 seconds
-    const pollStatus = async () => {
-      console.log(`[CallSheetUploader] Polling status for: ${sheetId}`);
-      const { data, error } = await supabase
-        .from('global_call_sheets')
-        .select('status, contacts_extracted, error_message')
-        .eq('id', sheetId)
-        .single();
-      
-      if (error) {
-        console.log(`[CallSheetUploader] Poll error:`, error.message);
-        return;
-      }
-      
-      console.log(`[CallSheetUploader] Poll result: status=${data?.status}`);
-      
-      if (data?.status === 'parsed') {
-        handleParseComplete(data.contacts_extracted || 0);
-      } else if (data?.status === 'error') {
-        handleParseError(data.error_message || "An error occurred.");
-      }
-    };
-
-    // First check quickly (500ms)
-    setTimeout(pollStatus, 500);
-    
-    // Then poll every 2 seconds
-    pollIntervalRef.current = window.setInterval(pollStatus, 2000);
-
-    // Auto-stop polling after 2 minutes
-    setTimeout(() => {
-      if (pollIntervalRef.current) {
-        console.log('[CallSheetUploader] Stopping polling after timeout');
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    }, 120000);
+    // Start processing
+    processBulkUpload(filesToProcess);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     
+    if (isProcessing) return;
+
     const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
-      handleUpload(files[0]);
+      handleBulkUpload(files);
     }
-  }, [userId]);
+  }, [userId, isProcessing]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      handleUpload(e.target.files[0]);
+      handleBulkUpload(Array.from(e.target.files));
+    }
+    // Reset input so same files can be selected again
+    e.target.value = '';
+  };
+
+  const resetUploader = () => {
+    setUploadQueue([]);
+    setCurrentIndex(0);
+  };
+
+  const getStatusIcon = (status: FileUploadState['status']) => {
+    switch (status) {
+      case 'pending': return <Clock className="h-4 w-4 text-muted-foreground" />;
+      case 'hashing': 
+      case 'checking':
+      case 'uploading': return <Loader2 className="h-4 w-4 animate-spin text-primary" />;
+      case 'queued': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'duplicate': return <Copy className="h-4 w-4 text-blue-500" />;
+      case 'error': return <XCircle className="h-4 w-4 text-destructive" />;
     }
   };
 
-  // Show monitoring state when waiting for parse
-  if (uploadedFile && monitoringSheetId) {
-    return (
-      <div className="border-2 border-dashed border-primary rounded-lg p-8 text-center bg-primary/5">
-        <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
-        <p className="text-lg font-medium text-primary">
-          Parsing in Progress...
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {uploadedFile} is being analyzed. You'll be redirected automatically.
-        </p>
-      </div>
-    );
-  }
+  const getStatusLabel = (item: FileUploadState) => {
+    switch (item.status) {
+      case 'pending': return 'Waiting...';
+      case 'hashing': return 'Hashing...';
+      case 'checking': return 'Checking...';
+      case 'uploading': return 'Uploading...';
+      case 'queued': return 'Queued ✓';
+      case 'duplicate': return item.message || 'Duplicate';
+      case 'error': return item.message || 'Error';
+    }
+  };
 
-  // Show success state briefly (only for non-monitored cases)
-  if (uploadedFile) {
+  // Show upload queue if files are being processed or completed
+  if (uploadQueue.length > 0) {
+    const completed = uploadQueue.filter(f => ['queued', 'duplicate', 'error'].includes(f.status)).length;
+    const progress = Math.round((completed / uploadQueue.length) * 100);
+
     return (
-      <div className="border-2 border-dashed border-green-500 rounded-lg p-8 text-center bg-green-500/5">
-        <CheckCircle className="h-12 w-12 mx-auto mb-4 text-green-500" />
-        <p className="text-lg font-medium text-green-600 dark:text-green-400">
-          Upload Complete!
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {uploadedFile} is now being processed
-        </p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-medium">
+              {isProcessing 
+                ? `Processing ${currentIndex + 1} of ${uploadQueue.length}...` 
+                : 'Upload Complete'}
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              {uploadQueue.filter(f => f.status === 'queued').length} queued, {' '}
+              {uploadQueue.filter(f => f.status === 'duplicate').length} duplicates, {' '}
+              {uploadQueue.filter(f => f.status === 'error').length} errors
+            </p>
+          </div>
+          {!isProcessing && (
+            <Button variant="outline" size="sm" onClick={resetUploader}>
+              Upload More
+            </Button>
+          )}
+        </div>
+
+        {isProcessing && (
+          <Progress value={progress} className="h-2" />
+        )}
+
+        <ScrollArea className="h-64 rounded-md border">
+          <div className="p-2 space-y-1">
+            {uploadQueue.map((item, i) => (
+              <div 
+                key={i} 
+                className={`flex items-center gap-3 p-2 rounded text-sm ${
+                  i === currentIndex && isProcessing ? 'bg-primary/10' : 'bg-muted/50'
+                }`}
+              >
+                {getStatusIcon(item.status)}
+                <span className="truncate flex-1" title={item.file.name}>
+                  {item.file.name}
+                </span>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">
+                  {getStatusLabel(item)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </ScrollArea>
       </div>
     );
   }
@@ -423,64 +327,39 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
           isDragging 
             ? "border-primary bg-primary/5" 
             : "border-muted-foreground/25 hover:border-primary/50"
-        } ${uploading ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+        } ${isProcessing ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
         }}
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
-        onClick={() => !uploading && document.getElementById('call-sheet-upload')?.click()}
+        onClick={() => !isProcessing && document.getElementById('call-sheet-upload')?.click()}
       >
-        {uploading ? (
-          <>
-            <Loader2 className="h-12 w-12 mx-auto mb-4 text-primary animate-spin" />
-            <p className="text-lg font-medium">Uploading...</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Please wait while your file is being uploaded
-            </p>
-          </>
-        ) : (
-          <>
-            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-lg font-medium">
-              Drag & drop your call sheet here
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              or click to browse files
-            </p>
-            <div className="flex items-center justify-center gap-2 mt-4">
-              <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">
-                PDF files only, max 10MB
-              </span>
-            </div>
-          </>
-        )}
+        <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+        <p className="text-lg font-medium">
+          Drag & drop call sheets here
+        </p>
+        <p className="text-sm text-muted-foreground mt-1">
+          or click to browse files
+        </p>
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <FileText className="h-4 w-4 text-muted-foreground" />
+          <span className="text-xs text-muted-foreground">
+            PDF files only, max 10MB each, up to 50 files at once
+          </span>
+        </div>
 
         <input
           type="file"
           id="call-sheet-upload"
           accept=".pdf"
+          multiple
           onChange={handleFileSelect}
           className="hidden"
-          disabled={uploading}
+          disabled={isProcessing}
         />
       </div>
-
-      {uploading && (
-        <div className="space-y-2">
-          <Progress value={uploadProgress} className="h-2" />
-          <p className="text-xs text-center text-muted-foreground">
-            {uploadProgress < 20 && "Computing file hash..."}
-            {uploadProgress >= 20 && uploadProgress < 30 && "Checking for duplicates..."}
-            {uploadProgress >= 30 && uploadProgress < 60 && "Uploading to storage..."}
-            {uploadProgress >= 60 && uploadProgress < 75 && "Creating record..."}
-            {uploadProgress >= 75 && uploadProgress < 85 && "Linking to your account..."}
-            {uploadProgress >= 85 && "Starting parse..."}
-          </p>
-        </div>
-      )}
     </div>
   );
 }
