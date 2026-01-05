@@ -12,7 +12,7 @@ import { BulkActionsBar } from "@/components/contacts/BulkActionsBar";
 import { ExportButton } from "@/components/contacts/ExportButton";
 import { DuplicateMergeModal } from "@/components/contacts/DuplicateMergeModal";
 import { Button } from "@/components/ui/button";
-import { Users, Database, Loader2, FileSpreadsheet } from "lucide-react";
+import { Users, Database, Loader2, FileSpreadsheet, Instagram } from "lucide-react";
 import { findDuplicateGroups, DuplicateGroup, ContactForMatching } from "@/lib/duplicateDetection";
 
 export interface CrewContact {
@@ -76,6 +76,9 @@ export default function CrewContacts() {
   // Admin backfill state
   const [isAdmin, setIsAdmin] = useState(false);
   const [backfillRunning, setBackfillRunning] = useState(false);
+  
+  // IG auto-match state
+  const [autoMatchRunning, setAutoMatchRunning] = useState(false);
 
   // Persist view preference
   useEffect(() => {
@@ -481,6 +484,37 @@ export default function CrewContacts() {
     }
   };
 
+  const handleAutoMatchIG = async () => {
+    if (!user) return;
+    
+    setAutoMatchRunning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('auto-backfill-ig-from-master');
+      
+      if (error) throw error;
+      
+      toast({
+        title: "IG Handles Matched",
+        description: `Matched ${data.matched} of ${data.total} contacts without IG handles.`,
+      });
+      
+      // Refresh contacts to show updated IG handles
+      if (data.matched > 0) {
+        fetchContacts(user.id);
+      }
+      
+    } catch (err: any) {
+      console.error('[CrewContacts] Auto-match IG error:', err);
+      toast({
+        title: "Auto-Match Failed",
+        description: err.message || "Could not complete IG auto-matching. Check console for details.",
+        variant: "destructive"
+      });
+    } finally {
+      setAutoMatchRunning(false);
+    }
+  };
+
   const handleToggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
@@ -524,6 +558,25 @@ export default function CrewContacts() {
                   <FileSpreadsheet className="h-4 w-4" />
                   Call Sheets
                 </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAutoMatchIG}
+                disabled={autoMatchRunning}
+                className="gap-2"
+              >
+                {autoMatchRunning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Matching...
+                  </>
+                ) : (
+                  <>
+                    <Instagram className="h-4 w-4" />
+                    Auto-Match IG
+                  </>
+                )}
               </Button>
               {isAdmin && (
                 <Button

@@ -195,7 +195,6 @@ export function IGContactCard({
       .upsert({ handle, roles: [role] }, { onConflict: 'handle' });
 
     // 3. Write to user_ig_map for future auto-restoration
-    // Use raw SQL via RPC to handle the LOWER(TRIM(name)) unique constraint
     if (user) {
       await supabase.rpc('upsert_user_ig_map', {
         p_user_id: user.id,
@@ -203,6 +202,18 @@ export function IGContactCard({
         p_ig_handle: handle
       });
     }
+
+    // 4. Sync to ig_master_identities (non-blocking)
+    supabase.functions.invoke('update-ig-master-list', {
+      body: {
+        instagram_handle: handle,
+        contact_name: contactName,
+        roles: role ? [role] : [],
+        phones: contactPhones || [],
+        emails: contactEmails || [],
+        source: 'ig_match_portal'
+      }
+    }).catch(err => console.error('[IGContactCard] Master list sync failed:', err));
 
     onMatch(handle);
   };
@@ -227,7 +238,6 @@ export function IGContactCard({
       .upsert({ handle, roles: [role] }, { onConflict: 'handle' });
 
     // 3. Write to user_ig_map for future auto-restoration
-    // Use raw SQL via RPC to handle the LOWER(TRIM(name)) unique constraint
     if (user) {
       await supabase.rpc('upsert_user_ig_map', {
         p_user_id: user.id,
@@ -235,6 +245,18 @@ export function IGContactCard({
         p_ig_handle: handle
       });
     }
+
+    // 4. Sync to ig_master_identities (non-blocking)
+    supabase.functions.invoke('update-ig-master-list', {
+      body: {
+        instagram_handle: handle,
+        contact_name: contactName,
+        roles: role ? [role] : [],
+        phones: contactPhones || [],
+        emails: contactEmails || [],
+        source: 'ig_match_portal'
+      }
+    }).catch(err => console.error('[IGContactCard] Master list sync failed:', err));
 
     onMatch(handle);
   };
