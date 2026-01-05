@@ -58,6 +58,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReservoirPaymentButtons, PaymentStatusCounts } from "@/components/callsheets/ReservoirPaymentButtons";
+import { HeatScoreIndicator } from "@/components/callsheets/HeatScoreIndicator";
 
 interface UserPaymentInfo {
   userId: string;
@@ -88,6 +89,11 @@ interface GlobalCallSheet {
   project_title: string | null;
   user_link_count?: number;
   paymentCounts?: PaymentStatusCounts;
+  // Heat metrics
+  heat_score?: number | null;
+  paid_count?: number;
+  waiting_count?: number;
+  never_paid_count?: number;
 }
 
 interface ReservoirStats {
@@ -213,6 +219,13 @@ export default function AdminCallSheetReservoir() {
 
       if (error) throw error;
 
+      // Get heat metrics for all sheets
+      const { data: heatMetrics } = await supabase
+        .from('call_sheet_heat_metrics')
+        .select('*');
+      
+      const heatMap = new Map(heatMetrics?.map(h => [h.global_call_sheet_id, h]) || []);
+
       // Get user link counts and payment status data for each sheet
       const sheetsWithCounts = await Promise.all(
         (sheets || []).map(async (sheet) => {
@@ -246,10 +259,17 @@ export default function AdminCallSheetReservoir() {
           
           const paymentCounts = aggregatePaymentStatus(userLinksWithProfiles);
           
+          // Get heat metrics for this sheet
+          const heatData = heatMap.get(sheet.id);
+          
           return {
             ...sheet,
             user_link_count: count || 0,
-            paymentCounts
+            paymentCounts,
+            heat_score: heatData?.heat_score ?? null,
+            paid_count: heatData?.paid_count ?? 0,
+            waiting_count: heatData?.waiting_count ?? 0,
+            never_paid_count: heatData?.never_paid_count ?? 0,
           };
         })
       );
@@ -637,6 +657,7 @@ export default function AdminCallSheetReservoir() {
                     <TableHead className="text-center">Contacts</TableHead>
                     <TableHead className="text-center">Users</TableHead>
                     <TableHead>Payment Responses</TableHead>
+                    <TableHead>Heat Score</TableHead>
                     <TableHead>Created</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -644,7 +665,7 @@ export default function AdminCallSheetReservoir() {
                 <TableBody>
                   {filteredSheets.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                         No call sheets found
                       </TableCell>
                     </TableRow>
@@ -701,6 +722,15 @@ export default function AdminCallSheetReservoir() {
                           ) : (
                             <span className="text-muted-foreground text-sm">—</span>
                           )}
+                        </TableCell>
+                        <TableCell>
+                          <HeatScoreIndicator 
+                            heatScore={sheet.heat_score ?? null}
+                            paidCount={sheet.paid_count}
+                            waitingCount={sheet.waiting_count}
+                            neverPaidCount={sheet.never_paid_count}
+                            compact
+                          />
                         </TableCell>
                         <TableCell className="text-muted-foreground text-sm">
                           {format(new Date(sheet.created_at), 'MMM d, yyyy')}

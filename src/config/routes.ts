@@ -57,6 +57,10 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/admin-submit-new", component: "AdminSubmitNew", name: "Submit for New User", icon: "UserPlus", description: "Admin proxy submission (new user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/leaderboard-analytics", component: "LeaderboardAnalytics", name: "Leaderboard Analytics", icon: "BarChart3", description: "Leaderboard performance metrics", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/call-sheet-reservoir", component: "AdminCallSheetReservoir", name: "Call Sheet Reservoir", icon: "Archive", description: "Complete call sheet archive", category: "admin", requiresAuth: true, requiresAdmin: true },
+  
+  // Intelligence Tools
+  { path: "/admin/intelligence/network-graph", component: "AdminNetworkGraph", name: "Network Graph", icon: "Share2", description: "Relationship visualization", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin/intelligence/heat-map", component: "AdminCallSheetReservoir", name: "Payment Heat Map", icon: "Flame", description: "Payment risk analysis", category: "admin", requiresAuth: true, requiresAdmin: true },
 
   // System Routes
   { path: "/sitemap", component: "Sitemap", name: "Platform Sitemap", icon: "Map", description: "Complete navigation map", category: "system", requiresAuth: true, requiresAdmin: true },
