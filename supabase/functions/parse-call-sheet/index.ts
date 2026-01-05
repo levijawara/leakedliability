@@ -18,6 +18,49 @@ interface ParsedContact {
   needs_review: boolean;
 }
 
+interface CanonicalProducer {
+  name: string;
+  roles: string[];
+  emails: string[];
+  phones: string[];
+}
+
+// Producer role patterns for canonical producer extraction (LOCKED AT FIRST PARSE)
+const PRODUCER_ROLE_PATTERNS = [
+  'producer', 'executive producer', 'line producer', 'associate producer',
+  'production supervisor', 'production manager', 'creative producer',
+  'showrunner', 'coordinating producer', 'production coordinator',
+  'upm', 'pm', 'ep', 'hop', 'lp', 'ap', 'head of production',
+  'vp production', 'production director', 'supervising producer',
+  'co-producer', 'co producer', 'coproducer', 'segment producer',
+  'field producer', 'post producer', 'post-production supervisor',
+  'production executive', 'senior producer', 'junior producer',
+  'development producer', 'branded content producer', 'content producer',
+  'digital producer', 'social producer', 'podcast producer',
+  'news producer', 'sports producer', 'entertainment producer'
+];
+
+function hasProducerRole(roles: string[]): boolean {
+  if (!roles || roles.length === 0) return false;
+  return roles.some(role => {
+    const normalized = role.toLowerCase().trim();
+    return PRODUCER_ROLE_PATTERNS.some(pattern => 
+      normalized.includes(pattern) || normalized === pattern
+    );
+  });
+}
+
+function extractCanonicalProducers(contacts: ParsedContact[]): CanonicalProducer[] {
+  return contacts
+    .filter(c => hasProducerRole(c.roles))
+    .map(c => ({
+      name: c.name,
+      roles: c.roles,
+      emails: c.emails || [],
+      phones: c.phones || []
+    }));
+}
+
 interface ParseResult {
   contacts: ParsedContact[];
   project_title: string | null;
@@ -546,6 +589,17 @@ serve(async (req) => {
 
     console.log(`[parse-call-sheet] Total processing time: ${totalElapsedFormatted}`);
 
+    // CRITICAL: Extract canonical producers ONLY if not already set (FIRST PARSE ONLY)
+    // This snapshot is IMMUTABLE and feeds the Heat Map + Network Graph
+    let canonicalProducersUpdate: { canonical_producers?: CanonicalProducer[] } = {};
+    if (!callSheet.canonical_producers) {
+      const canonicalProducers = extractCanonicalProducers(validatedContacts);
+      canonicalProducersUpdate = { canonical_producers: canonicalProducers };
+      console.log(`[parse-call-sheet] LOCKED ${canonicalProducers.length} canonical producers (immutable snapshot)`);
+    } else {
+      console.log(`[parse-call-sheet] canonical_producers already locked, skipping (immutable)`);
+    }
+
     // Update global_call_sheets with parsed data including timing
     const { error: updateError } = await supabase
       .from("global_call_sheets")
@@ -558,7 +612,8 @@ serve(async (req) => {
         parse_timing: parseTiming,
         parse_action_log: actionLog,
         error_message: null,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        ...canonicalProducersUpdate
       })
       .eq("id", call_sheet_id);
 

@@ -848,6 +848,7 @@ export type Database = {
       }
       global_call_sheets: {
         Row: {
+          canonical_producers: Json | null
           contacts_extracted: number | null
           content_hash: string
           created_at: string | null
@@ -867,6 +868,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          canonical_producers?: Json | null
           contacts_extracted?: number | null
           content_hash: string
           created_at?: string | null
@@ -886,6 +888,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          canonical_producers?: Json | null
           contacts_extracted?: number | null
           content_hash?: string
           created_at?: string | null
