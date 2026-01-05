@@ -54,8 +54,14 @@ serve(async (req) => {
 
     let result: Record<string, unknown> = {};
 
+    // BACKFILL: Populate canonical_producers for existing sheets that don't have it
+    if (action === "backfill_canonical" || action === "all") {
+      const backfillResult = await backfillCanonicalProducers(supabase);
+      result.backfill = backfillResult;
+    }
+
     if (action === "build_network" || action === "all") {
-      // Build network from parsed contacts
+      // Build network from CANONICAL PRODUCERS (immutable source)
       const networkResult = await buildNetworkFromParsedContacts(supabase);
       result.network = networkResult;
     }
@@ -143,14 +149,22 @@ function hasProducerRole(roles: string[] | null | undefined): boolean {
   });
 }
 
-async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof createClient>) {
-  console.log("[build-intelligence-data] Building network from parsed contacts (PRODUCERS ONLY)...");
+interface CanonicalProducer {
+  name: string;
+  roles: string[];
+  emails: string[];
+  phones: string[];
+}
 
-  // Get all parsed call sheets
+async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof createClient>) {
+  console.log("[build-intelligence-data] Building network from CANONICAL PRODUCERS ONLY (immutable source)...");
+
+  // Get all call sheets with canonical_producers (IMMUTABLE snapshot from first parse)
+  // This ensures the intelligence system is immune to user edits
   const { data: sheets, error: sheetsError } = await supabase
     .from("global_call_sheets")
-    .select("id, parsed_contacts, project_title")
-    .not("parsed_contacts", "is", null);
+    .select("id, canonical_producers, project_title")
+    .not("canonical_producers", "is", null);
 
   if (sheetsError) {
     console.error("[build-intelligence-data] Failed to fetch sheets:", sheetsError);
@@ -158,37 +172,34 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
   }
 
   if (!sheets || sheets.length === 0) {
-    return { message: "No parsed call sheets found" };
+    return { message: "No call sheets with canonical_producers found. Run parse first." };
   }
 
   let nodesCreated = 0;
-  let nodesSkipped = 0;
+  let sheetsWithProducers = 0;
   let edgesCreated = 0;
   let edgesUpdated = 0;
 
-  // Process each sheet
+  // Process each sheet using ONLY canonical_producers (not parsed_contacts)
   for (const sheet of sheets) {
-    const contacts = sheet.parsed_contacts as ParsedContact[] | null;
-    if (!contacts || !Array.isArray(contacts) || contacts.length === 0) continue;
+    const producers = sheet.canonical_producers as CanonicalProducer[] | null;
+    if (!producers || !Array.isArray(producers) || producers.length === 0) continue;
 
-    const contactGroups: string[] = [];
+    sheetsWithProducers++;
+    const producerGroupIds: string[] = [];
 
-    // Create/update identity groups for each contact - ONLY PRODUCERS
-    for (const contact of contacts) {
-      if (!contact.name || contact.name.trim() === "") continue;
+    // Create/update identity groups for each CANONICAL producer
+    // NO fuzzy matching - different spellings = different nodes (until manual merge)
+    for (const producer of producers) {
+      if (!producer.name || producer.name.trim() === "") continue;
 
-      // FILTER: Only process contacts with producer roles
-      const isProducer = hasProducerRole(contact.roles);
-      if (!isProducer) {
-        nodesSkipped++;
-        continue;
-      }
+      const canonicalName = producer.name.trim();
 
-      // Check if identity group already exists
+      // Check if identity group already exists (EXACT name match only)
       const { data: existingGroup } = await supabase
         .from("identity_groups")
-        .select("id")
-        .eq("canonical_name", contact.name.trim())
+        .select("id, project_count")
+        .eq("canonical_name", canonicalName)
         .maybeSingle();
 
       let groupId: string;
@@ -200,20 +211,28 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
         await supabase
           .from("identity_groups")
           .update({ 
-            project_count: supabase.rpc("increment", { x: 1 }),
+            project_count: (existingGroup.project_count || 0) + 1,
             updated_at: new Date().toISOString()
           })
           .eq("id", groupId);
+
+        // Update network node project count
+        await supabase
+          .from("network_nodes")
+          .update({
+            project_count: (existingGroup.project_count || 0) + 1,
+          })
+          .eq("identity_group_id", groupId);
       } else {
-        // Create new identity group
+        // Create new identity group (EXACT name - no merging)
         const { data: newGroup, error: createError } = await supabase
           .from("identity_groups")
           .insert({
-            canonical_name: contact.name.trim(),
-            emails: contact.emails || [],
-            phones: contact.phones || [],
-            roles: contact.roles || [],
-            is_producer: isProducer,
+            canonical_name: canonicalName,
+            emails: producer.emails || [],
+            phones: producer.phones || [],
+            roles: producer.roles || [],
+            is_producer: true, // Always true - we only process producers
             project_count: 1,
           })
           .select("id")
@@ -232,21 +251,21 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
           .from("network_nodes")
           .upsert({
             identity_group_id: groupId,
-            display_name: contact.name.trim(),
-            roles: contact.roles || [],
+            display_name: canonicalName,
+            roles: producer.roles || [],
             project_count: 1,
-            is_producer: isProducer,
+            is_producer: true,
           }, { onConflict: "identity_group_id" });
       }
 
-      contactGroups.push(groupId);
+      producerGroupIds.push(groupId);
     }
 
-    // Create edges between all pairs of contacts on this sheet
-    for (let i = 0; i < contactGroups.length; i++) {
-      for (let j = i + 1; j < contactGroups.length; j++) {
-        const sourceId = contactGroups[i];
-        const targetId = contactGroups[j];
+    // Create edges between all pairs of producers on this sheet
+    for (let i = 0; i < producerGroupIds.length; i++) {
+      for (let j = i + 1; j < producerGroupIds.length; j++) {
+        const sourceId = producerGroupIds[i];
+        const targetId = producerGroupIds[j];
         
         // Ensure consistent ordering
         const [smaller, larger] = sourceId < targetId 
@@ -300,14 +319,74 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
     }
   }
 
-  console.log(`[build-intelligence-data] Network build complete: ${nodesCreated} producer nodes created, ${nodesSkipped} non-producers skipped, ${edgesCreated} new edges, ${edgesUpdated} updated edges`);
+  console.log(`[build-intelligence-data] Network build complete from CANONICAL PRODUCERS: ${nodesCreated} nodes created, ${edgesCreated} new edges, ${edgesUpdated} updated edges`);
 
   return {
     sheetsProcessed: sheets.length,
+    sheetsWithProducers,
     nodesCreated,
-    nodesSkipped,
     edgesCreated,
     edgesUpdated,
+  };
+}
+
+// BACKFILL: Populate canonical_producers for existing parsed sheets
+// This runs ONCE per sheet - after that, canonical_producers is IMMUTABLE
+async function backfillCanonicalProducers(supabase: ReturnType<typeof createClient>) {
+  console.log("[build-intelligence-data] Backfilling canonical_producers for existing sheets...");
+
+  // Get sheets that have parsed_contacts but no canonical_producers
+  const { data: sheets, error: sheetsError } = await supabase
+    .from("global_call_sheets")
+    .select("id, parsed_contacts")
+    .is("canonical_producers", null)
+    .not("parsed_contacts", "is", null);
+
+  if (sheetsError) {
+    console.error("[build-intelligence-data] Failed to fetch sheets for backfill:", sheetsError);
+    return { error: sheetsError.message };
+  }
+
+  if (!sheets || sheets.length === 0) {
+    return { message: "No sheets need backfill - all have canonical_producers" };
+  }
+
+  let backfilled = 0;
+  let totalProducers = 0;
+
+  for (const sheet of sheets) {
+    const contacts = sheet.parsed_contacts as ParsedContact[] | null;
+    if (!contacts || !Array.isArray(contacts)) continue;
+
+    // Extract producers using the same logic as parse-call-sheet
+    const canonicalProducers = contacts
+      .filter(c => hasProducerRole(c.roles))
+      .map(c => ({
+        name: c.name,
+        roles: c.roles || [],
+        emails: c.emails || [],
+        phones: c.phones || []
+      }));
+
+    const { error: updateError } = await supabase
+      .from("global_call_sheets")
+      .update({ canonical_producers: canonicalProducers })
+      .eq("id", sheet.id);
+
+    if (updateError) {
+      console.error(`[build-intelligence-data] Failed to backfill sheet ${sheet.id}:`, updateError);
+      continue;
+    }
+
+    backfilled++;
+    totalProducers += canonicalProducers.length;
+  }
+
+  console.log(`[build-intelligence-data] Backfill complete: ${backfilled} sheets, ${totalProducers} canonical producers locked`);
+
+  return {
+    sheetsBackfilled: backfilled,
+    totalProducersLocked: totalProducers,
   };
 }
 
