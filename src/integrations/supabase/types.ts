@@ -2988,6 +2988,10 @@ export type Database = {
       refresh_all_producer_stats: { Args: never; Returns: undefined }
       revoke_ban: { Args: { _ban_id: string; _reason: string }; Returns: Json }
       upsert_ig_handles: { Args: { handles_data: Json }; Returns: Json }
+      upsert_user_ig_map: {
+        Args: { p_ig_handle: string; p_name: string; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       account_type:
