@@ -92,8 +92,59 @@ interface ParsedContact {
   department?: string;
 }
 
+// Producer role patterns - only these roles should appear in the network graph
+const PRODUCER_ROLE_PATTERNS = [
+  'producer',
+  'executive producer',
+  'line producer',
+  'associate producer',
+  'co-producer',
+  'co producer',
+  'creative producer',
+  'supervising producer',
+  'post producer',
+  'post-production producer',
+  'field producer',
+  'story producer',
+  'segment producer',
+  'senior producer',
+  'junior producer',
+  'assistant producer',
+  'production manager',
+  'production supervisor',
+  'production coordinator',
+  'production contact',
+  'unit production manager',
+  'post production supervisor',
+  'post production manager',
+  'post production coordinator',
+  'upm',
+  'pm',
+  'ep',
+  'hop',
+  'lp',
+  'ap',
+  'head of production',
+  'head of post',
+  'vp production',
+  'vp of production',
+  'director of production',
+  'production director',
+  'production executive',
+];
+
+function hasProducerRole(roles: string[] | null | undefined): boolean {
+  if (!roles || !Array.isArray(roles)) return false;
+  return roles.some(role => {
+    const normalized = role.toLowerCase().trim();
+    return PRODUCER_ROLE_PATTERNS.some(pattern => 
+      normalized === pattern || normalized.includes(pattern)
+    );
+  });
+}
+
 async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof createClient>) {
-  console.log("[build-intelligence-data] Building network from parsed contacts...");
+  console.log("[build-intelligence-data] Building network from parsed contacts (PRODUCERS ONLY)...");
 
   // Get all parsed call sheets
   const { data: sheets, error: sheetsError } = await supabase
@@ -111,6 +162,7 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
   }
 
   let nodesCreated = 0;
+  let nodesSkipped = 0;
   let edgesCreated = 0;
   let edgesUpdated = 0;
 
@@ -121,16 +173,16 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
 
     const contactGroups: string[] = [];
 
-    // Create/update identity groups for each contact
+    // Create/update identity groups for each contact - ONLY PRODUCERS
     for (const contact of contacts) {
       if (!contact.name || contact.name.trim() === "") continue;
 
-      const normalizedName = contact.name.trim().toLowerCase();
-      const isProducer = (contact.roles || []).some(r => 
-        r.toLowerCase().includes("producer") || 
-        r.toLowerCase().includes("pm") ||
-        r.toLowerCase().includes("production manager")
-      );
+      // FILTER: Only process contacts with producer roles
+      const isProducer = hasProducerRole(contact.roles);
+      if (!isProducer) {
+        nodesSkipped++;
+        continue;
+      }
 
       // Check if identity group already exists
       const { data: existingGroup } = await supabase
@@ -248,11 +300,12 @@ async function buildNetworkFromParsedContacts(supabase: ReturnType<typeof create
     }
   }
 
-  console.log(`[build-intelligence-data] Network build complete: ${nodesCreated} nodes, ${edgesCreated} new edges, ${edgesUpdated} updated edges`);
+  console.log(`[build-intelligence-data] Network build complete: ${nodesCreated} producer nodes created, ${nodesSkipped} non-producers skipped, ${edgesCreated} new edges, ${edgesUpdated} updated edges`);
 
   return {
     sheetsProcessed: sheets.length,
     nodesCreated,
+    nodesSkipped,
     edgesCreated,
     edgesUpdated,
   };

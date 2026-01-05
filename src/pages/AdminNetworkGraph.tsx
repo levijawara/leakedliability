@@ -183,10 +183,11 @@ export default function AdminNetworkGraph() {
 
   const loadNetworkData = async () => {
     try {
-      // Load network nodes
+      // Load network nodes - ONLY PRODUCERS
       const { data: nodesData, error: nodesError } = await supabase
         .from('network_nodes')
-        .select('*');
+        .select('*')
+        .eq('is_producer', true);
 
       if (nodesError) throw nodesError;
 
