@@ -180,16 +180,29 @@ export function IGContactCard({
   }, [searchValue]);
 
   const handleSelectSuggestion = async (handle: string) => {
-    // Update the contact's ig_handle
+    // Get current user for user_ig_map
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 1. Update the contact's ig_handle
     await supabase
       .from('crew_contacts')
       .update({ ig_handle: handle })
       .eq('id', contactId);
 
-    // Add to ig_usernames if not exists
+    // 2. Add to ig_usernames if not exists
     await supabase
       .from('ig_usernames')
       .upsert({ handle, roles: [role] }, { onConflict: 'handle' });
+
+    // 3. Write to user_ig_map for future auto-restoration
+    // Use raw SQL via RPC to handle the LOWER(TRIM(name)) unique constraint
+    if (user) {
+      await supabase.rpc('upsert_user_ig_map', {
+        p_user_id: user.id,
+        p_name: contactName,
+        p_ig_handle: handle
+      });
+    }
 
     onMatch(handle);
   };
@@ -199,16 +212,29 @@ export function IGContactCard({
 
     const handle = searchValue.replace(/^@/, '').trim();
     
-    // Update the contact's ig_handle
+    // Get current user for user_ig_map
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 1. Update the contact's ig_handle
     await supabase
       .from('crew_contacts')
       .update({ ig_handle: handle })
       .eq('id', contactId);
 
-    // Add to ig_usernames
+    // 2. Add to ig_usernames
     await supabase
       .from('ig_usernames')
       .upsert({ handle, roles: [role] }, { onConflict: 'handle' });
+
+    // 3. Write to user_ig_map for future auto-restoration
+    // Use raw SQL via RPC to handle the LOWER(TRIM(name)) unique constraint
+    if (user) {
+      await supabase.rpc('upsert_user_ig_map', {
+        p_user_id: user.id,
+        p_name: contactName,
+        p_ig_handle: handle
+      });
+    }
 
     onMatch(handle);
   };
