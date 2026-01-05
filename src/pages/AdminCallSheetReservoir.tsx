@@ -26,6 +26,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -57,6 +64,14 @@ interface UserPaymentInfo {
   name: string;
   email: string | null;
   status: string;
+}
+
+interface UserSubmissionCount {
+  userId: string;
+  firstName: string | null;
+  lastName: string | null;
+  email: string | null;
+  uploadCount: number;
 }
 
 interface GlobalCallSheet {
@@ -99,6 +114,11 @@ export default function AdminCallSheetReservoir() {
   const [deleteSheet, setDeleteSheet] = useState<GlobalCallSheet | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [retryingId, setRetryingId] = useState<string | null>(null);
+  
+  // User submission count modal state
+  const [showUserCountModal, setShowUserCountModal] = useState(false);
+  const [userSubmissionCounts, setUserSubmissionCounts] = useState<UserSubmissionCount[]>([]);
+  const [loadingUserCounts, setLoadingUserCounts] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -399,6 +419,66 @@ export default function AdminCallSheetReservoir() {
     }
   };
 
+  // Load user submission counts
+  const loadUserSubmissionCounts = async (): Promise<UserSubmissionCount[]> => {
+    // Get ALL user_call_sheets entries (every upload attempt counts)
+    const { data: allLinks, error } = await supabase
+      .from('user_call_sheets')
+      .select('user_id');
+    
+    if (error) throw error;
+    if (!allLinks || allLinks.length === 0) return [];
+    
+    // Count uploads per user
+    const countMap: Record<string, number> = {};
+    allLinks.forEach(link => {
+      countMap[link.user_id] = (countMap[link.user_id] || 0) + 1;
+    });
+    
+    // Get unique user IDs
+    const userIds = Object.keys(countMap);
+    
+    // Fetch profiles for these users
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, legal_first_name, legal_last_name, email')
+      .in('user_id', userIds);
+    
+    const profilesMap: Record<string, { legal_first_name: string | null; legal_last_name: string | null; email: string | null }> = {};
+    profiles?.forEach(p => {
+      profilesMap[p.user_id] = p;
+    });
+    
+    // Build result array sorted by upload count descending
+    return userIds
+      .map(userId => ({
+        userId,
+        firstName: profilesMap[userId]?.legal_first_name || null,
+        lastName: profilesMap[userId]?.legal_last_name || null,
+        email: profilesMap[userId]?.email || null,
+        uploadCount: countMap[userId]
+      }))
+      .sort((a, b) => b.uploadCount - a.uploadCount);
+  };
+
+  const handleOpenUserCounts = async () => {
+    setShowUserCountModal(true);
+    setLoadingUserCounts(true);
+    try {
+      const counts = await loadUserSubmissionCounts();
+      setUserSubmissionCounts(counts);
+    } catch (error: any) {
+      console.error('[Reservoir] Error loading user counts:', error);
+      toast({
+        title: "Failed to load user submission counts",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoadingUserCounts(false);
+    }
+  };
+
   // Filter call sheets
   const filteredSheets = callSheets.filter(sheet => {
     const matchesSearch = !searchQuery || 
@@ -528,10 +608,23 @@ export default function AdminCallSheetReservoir() {
         {/* Call Sheets Table */}
         <Card>
           <CardHeader>
-            <CardTitle>All Call Sheets ({filteredSheets.length})</CardTitle>
-            <CardDescription>
-              Complete archive of all call sheets uploaded to the platform
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>All Call Sheets ({filteredSheets.length})</CardTitle>
+                <CardDescription>
+                  Complete archive of all call sheets uploaded to the platform
+                </CardDescription>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleOpenUserCounts}
+                className="gap-2"
+              >
+                <Users className="h-4 w-4" />
+                User Submission Count
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="rounded-md border">
@@ -712,6 +805,57 @@ export default function AdminCallSheetReservoir() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* User Submission Count Modal */}
+      <Dialog open={showUserCountModal} onOpenChange={setShowUserCountModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>User Submission Count</DialogTitle>
+            <DialogDescription>
+              Total Users: {userSubmissionCounts.length}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="max-h-[400px] overflow-y-auto">
+            {loadingUserCounts ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            ) : userSubmissionCounts.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">
+                No uploads yet
+              </p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead className="text-right">Uploads</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {userSubmissionCounts.map((user) => (
+                    <TableRow key={user.userId}>
+                      <TableCell>
+                        {user.firstName && user.lastName
+                          ? `${user.firstName} ${user.lastName}`
+                          : 'Unknown User'}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
+                        {user.email || '—'}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {user.uploadCount}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
