@@ -447,7 +447,47 @@ export default function CrewContacts() {
       return updated;
     });
     setDuplicateGroups([]);
+    // Exit select mode after merge
+    setSelectMode(false);
+    setSelectedIds(new Set());
   }, []);
+
+  // Manual merge handler - creates a group from selected contacts
+  const handleManualMerge = useCallback(() => {
+    const selectedContacts = contacts.filter(c => selectedIds.has(c.id));
+    
+    if (selectedContacts.length < 2) {
+      toast({
+        title: "Select at least 2 contacts",
+        description: "Manual merge requires 2 or more contacts.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Convert to ContactForMatching format
+    const contactsForMatching: ContactForMatching[] = selectedContacts.map(c => ({
+      id: c.id,
+      name: c.name,
+      roles: c.roles,
+      phones: c.phones,
+      emails: c.emails,
+      ig_handle: c.ig_handle
+    }));
+    
+    // Create a single group with first contact as primary
+    const [primary, ...rest] = contactsForMatching;
+    const manualGroup: DuplicateGroup = {
+      primary,
+      duplicates: rest.map(contact => ({
+        contact,
+        matchedFields: ['name'] as ('name' | 'role' | 'phone' | 'email' | 'ig')[]
+      }))
+    };
+    
+    setDuplicateGroups([manualGroup]);
+    setDuplicateModalOpen(true);
+  }, [contacts, selectedIds, toast]);
 
   const handleDeselectAll = () => {
     setSelectedIds(new Set());
@@ -635,6 +675,7 @@ export default function CrewContacts() {
               onDeselectAll={handleDeselectAll}
               onBulkFavorite={handleBulkFavorite}
               onBulkDelete={handleBulkDelete}
+              onManualMerge={handleManualMerge}
               userId={user?.id}
             />
           )}
