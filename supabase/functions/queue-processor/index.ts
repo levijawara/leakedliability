@@ -46,12 +46,12 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    // Fetch queued call sheets (including retry_count for retry logic)
+    // Fetch queued call sheets from global_call_sheets (including retry_count for retry logic)
     const { data: queuedSheets, error: fetchError } = await supabase
-      .from("call_sheets")
-      .select("id, file_name, file_path, user_id, uploaded_at, retry_count")
+      .from("global_call_sheets")
+      .select("id, original_file_name, master_file_path, first_uploaded_by, created_at, retry_count")
       .eq("status", "queued")
-      .order("uploaded_at", { ascending: true }) // FIFO processing
+      .order("created_at", { ascending: true }) // FIFO processing
       .limit(BATCH_SIZE);
 
     if (fetchError) {
@@ -96,14 +96,14 @@ serve(async (req) => {
       const currentRetryCount = sheet.retry_count || 0;
       logStep("Processing call sheet", { 
         id: sheet.id, 
-        fileName: sheet.file_name,
+        fileName: sheet.original_file_name,
         retryCount: currentRetryCount 
       });
 
       try {
         // Mark as parsing and set parsing_started_at timestamp
         const { error: updateError } = await supabase
-          .from("call_sheets")
+          .from("global_call_sheets")
           .update({ 
             status: "parsing",
             parsing_started_at: new Date().toISOString()
@@ -115,7 +115,7 @@ serve(async (req) => {
           logStep("Failed to mark as parsing", { id: sheet.id, error: updateError.message });
           results.push({
             callSheetId: sheet.id,
-            fileName: sheet.file_name,
+            fileName: sheet.original_file_name,
             status: "skipped",
             message: `Failed to acquire lock: ${updateError.message}`,
             retryCount: currentRetryCount,
@@ -144,12 +144,11 @@ serve(async (req) => {
             // Terminal error state
             logStep("Max retries exceeded, marking as terminal error", { id: sheet.id, retryCount: newRetryCount });
             await supabase
-              .from("call_sheets")
+              .from("global_call_sheets")
               .update({
                 status: "error",
                 error_message: `Max retries (${MAX_RETRIES}) exceeded. Last error: ${parseError.message}`.substring(0, 500),
                 retry_count: newRetryCount,
-                last_error_at: now,
                 parsing_started_at: null,
               })
               .eq("id", sheet.id);
@@ -157,12 +156,11 @@ serve(async (req) => {
             // Reset to queued for retry
             logStep("Resetting to queued for retry", { id: sheet.id, retryCount: newRetryCount });
             await supabase
-              .from("call_sheets")
+              .from("global_call_sheets")
               .update({
                 status: "queued",
                 error_message: `Retry ${newRetryCount}/${MAX_RETRIES}: ${parseError.message}`.substring(0, 500),
                 retry_count: newRetryCount,
-                last_error_at: now,
                 parsing_started_at: null,
               })
               .eq("id", sheet.id);
@@ -170,7 +168,7 @@ serve(async (req) => {
 
           results.push({
             callSheetId: sheet.id,
-            fileName: sheet.file_name,
+            fileName: sheet.original_file_name,
             status: "error",
             message: parseError.message,
             durationMs,
@@ -182,13 +180,13 @@ serve(async (req) => {
           
           // Clear parsing_started_at on success
           await supabase
-            .from("call_sheets")
+            .from("global_call_sheets")
             .update({ parsing_started_at: null })
             .eq("id", sheet.id);
 
           results.push({
             callSheetId: sheet.id,
-            fileName: sheet.file_name,
+            fileName: sheet.original_file_name,
             status: "success",
             message: parseResult?.message || "Parsed successfully",
             durationMs,
@@ -208,12 +206,11 @@ serve(async (req) => {
           // Terminal error state
           logStep("Max retries exceeded, marking as terminal error", { id: sheet.id, retryCount: newRetryCount });
           await supabase
-            .from("call_sheets")
+            .from("global_call_sheets")
             .update({
               status: "error",
               error_message: `Max retries (${MAX_RETRIES}) exceeded. Last error: ${errorMsg}`.substring(0, 500),
               retry_count: newRetryCount,
-              last_error_at: now,
               parsing_started_at: null,
             })
             .eq("id", sheet.id);
@@ -221,12 +218,11 @@ serve(async (req) => {
           // Reset to queued for retry
           logStep("Resetting to queued for retry", { id: sheet.id, retryCount: newRetryCount });
           await supabase
-            .from("call_sheets")
+            .from("global_call_sheets")
             .update({
               status: "queued",
               error_message: `Retry ${newRetryCount}/${MAX_RETRIES}: ${errorMsg}`.substring(0, 500),
               retry_count: newRetryCount,
-              last_error_at: now,
               parsing_started_at: null,
             })
             .eq("id", sheet.id);
@@ -234,7 +230,7 @@ serve(async (req) => {
 
         results.push({
           callSheetId: sheet.id,
-          fileName: sheet.file_name,
+          fileName: sheet.original_file_name,
           status: "error",
           message: errorMsg,
           durationMs: Date.now() - sheetStartTime,
