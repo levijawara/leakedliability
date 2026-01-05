@@ -115,6 +115,10 @@ export default function Admin() {
   const [callSheetConfigId, setCallSheetConfigId] = useState<string | null>(null);
   const [processingQueue, setProcessingQueue] = useState(false);
   const [queuedCallSheetsCount, setQueuedCallSheetsCount] = useState(0);
+  
+  // IG Master List state
+  const [igMasterImporting, setIgMasterImporting] = useState(false);
+  const [igMasterStats, setIgMasterStats] = useState<{ total: number } | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -1961,7 +1965,7 @@ export default function Admin() {
       </Card>
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 gap-1 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 gap-1 h-auto p-1">
           <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">Payments Due</TabsTrigger>
           <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">Paid</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">Settings</TabsTrigger>
@@ -1979,6 +1983,9 @@ export default function Admin() {
             {suggestions.length > 0 && (
               <Badge variant="secondary" className="ml-1">{suggestions.length}</Badge>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="ig_master" className="text-xs sm:text-sm px-2 py-1.5">
+            IG Master
           </TabsTrigger>
         </TabsList>
 
@@ -3657,6 +3664,112 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </Card>
+        </TabsContent>
+
+        {/* IG Master List Tab */}
+        <TabsContent value="ig_master">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-1">IG Master List</h2>
+              <p className="text-sm text-muted-foreground">
+                Global Instagram handle registry for auto-matching contacts
+              </p>
+            </div>
+
+            <div className="space-y-6">
+              {/* Stats */}
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    const { count } = await supabase
+                      .from('ig_master_identities')
+                      .select('*', { count: 'exact', head: true });
+                    setIgMasterStats({ total: count || 0 });
+                    toast({
+                      title: "Stats Loaded",
+                      description: `Master list contains ${count || 0} entries.`,
+                    });
+                  }}
+                >
+                  Refresh Stats
+                </Button>
+                {igMasterStats && (
+                  <Badge variant="secondary">{igMasterStats.total} entries</Badge>
+                )}
+              </div>
+
+              {/* Import Section */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="font-medium">Import Seed Data</h3>
+                <p className="text-sm text-muted-foreground">
+                  Paste JSON array of contacts with instagram, name, roles, phone, email fields.
+                </p>
+                <Textarea
+                  id="ig-import-json"
+                  placeholder='[{"name": "John Doe", "instagram": "@johndoe", "roles": "DP", "phone": "555-1234", "email": "john@example.com"}]'
+                  className="font-mono text-xs"
+                  rows={6}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    onClick={async () => {
+                      const textarea = document.getElementById('ig-import-json') as HTMLTextAreaElement;
+                      if (!textarea?.value.trim()) {
+                        toast({ title: "No data", description: "Paste JSON data first.", variant: "destructive" });
+                        return;
+                      }
+                      
+                      try {
+                        const contacts = JSON.parse(textarea.value);
+                        if (!Array.isArray(contacts)) throw new Error("Must be an array");
+                        
+                        setIgMasterImporting(true);
+                        const { data, error } = await supabase.functions.invoke('import-ig-master-list', {
+                          body: { contacts, source: 'admin_import' }
+                        });
+                        
+                        if (error) throw error;
+                        
+                        toast({
+                          title: "Import Complete",
+                          description: `Imported: ${data.imported}, Updated: ${data.updated}, Skipped: ${data.skipped}`,
+                        });
+                        
+                        textarea.value = '';
+                        
+                        // Refresh stats
+                        const { count } = await supabase
+                          .from('ig_master_identities')
+                          .select('*', { count: 'exact', head: true });
+                        setIgMasterStats({ total: count || 0 });
+                        
+                      } catch (err: any) {
+                        toast({
+                          title: "Import Failed",
+                          description: err.message || "Invalid JSON or import error",
+                          variant: "destructive"
+                        });
+                      } finally {
+                        setIgMasterImporting(false);
+                      }
+                    }}
+                    disabled={igMasterImporting}
+                  >
+                    {igMasterImporting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Importing...
+                      </>
+                    ) : (
+                      'Import JSON'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
           </Card>
         </TabsContent>
 

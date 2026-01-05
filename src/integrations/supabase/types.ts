@@ -1012,6 +1012,45 @@ export type Database = {
         }
         Relationships: []
       }
+      ig_master_identities: {
+        Row: {
+          created_at: string | null
+          emails: string[] | null
+          id: string
+          instagram: string
+          normalized_name: string
+          phones: string[] | null
+          raw_name: string
+          roles: string[] | null
+          sources: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          emails?: string[] | null
+          id?: string
+          instagram: string
+          normalized_name: string
+          phones?: string[] | null
+          raw_name: string
+          roles?: string[] | null
+          sources?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          emails?: string[] | null
+          id?: string
+          instagram?: string
+          normalized_name?: string
+          phones?: string[] | null
+          raw_name?: string
+          roles?: string[] | null
+          sources?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ig_usernames: {
         Row: {
           co_workers: string[] | null
