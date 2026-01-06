@@ -853,8 +853,10 @@ export type Database = {
           content_hash: string
           created_at: string | null
           error_message: string | null
+          extraction_mode: string | null
           first_uploaded_by: string | null
           id: string
+          last_priority_requested_at: string | null
           master_file_path: string
           original_file_name: string
           parse_action_log: Json | null
@@ -873,8 +875,10 @@ export type Database = {
           content_hash: string
           created_at?: string | null
           error_message?: string | null
+          extraction_mode?: string | null
           first_uploaded_by?: string | null
           id?: string
+          last_priority_requested_at?: string | null
           master_file_path: string
           original_file_name: string
           parse_action_log?: Json | null
@@ -893,8 +897,10 @@ export type Database = {
           content_hash?: string
           created_at?: string | null
           error_message?: string | null
+          extraction_mode?: string | null
           first_uploaded_by?: string | null
           id?: string
+          last_priority_requested_at?: string | null
           master_file_path?: string
           original_file_name?: string
           parse_action_log?: Json | null

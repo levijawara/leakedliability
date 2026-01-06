@@ -54,7 +54,10 @@ import {
   CheckCircle,
   AlertCircle,
   Copy,
-  Archive
+  Archive,
+  Flame,
+  CheckSquare,
+  Square
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReservoirPaymentButtons, PaymentStatusCounts } from "@/components/callsheets/ReservoirPaymentButtons";
@@ -125,6 +128,11 @@ export default function AdminCallSheetReservoir() {
   const [showUserCountModal, setShowUserCountModal] = useState(false);
   const [userSubmissionCounts, setUserSubmissionCounts] = useState<UserSubmissionCount[]>([]);
   const [loadingUserCounts, setLoadingUserCounts] = useState(false);
+  
+  // Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [priorityQueueing, setPriorityQueueing] = useState(false);
+  const [showPriorityConfirm, setShowPriorityConfirm] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -499,6 +507,66 @@ export default function AdminCallSheetReservoir() {
     }
   };
 
+  // Toggle selection for a single row
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  // Toggle select all (for current filtered view)
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredSheets.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredSheets.map(s => s.id)));
+    }
+  };
+
+  // Handle FIRECRAWL PRIORITY action
+  const handleFirecrawlPriority = async () => {
+    if (selectedIds.size === 0) return;
+    
+    setPriorityQueueing(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('queue-firecrawl-priority', {
+        body: { callSheetIds: Array.from(selectedIds) }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Priority Queue Started",
+        description: `Queued ${data.updated} call sheets for Firecrawl priority parsing`,
+      });
+
+      // Optimistically update status in UI
+      setCallSheets(prev => prev.map(sheet => 
+        selectedIds.has(sheet.id) 
+          ? { ...sheet, status: 'queued', error_message: null }
+          : sheet
+      ));
+      
+      setSelectedIds(new Set());
+      setShowPriorityConfirm(false);
+    } catch (error: any) {
+      console.error('[Reservoir] Priority queue error:', error);
+      toast({
+        title: "Failed to queue priority parsing",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setPriorityQueueing(false);
+    }
+  };
+
   // Filter call sheets
   const filteredSheets = callSheets.filter(sheet => {
     const matchesSearch = !searchQuery || 
@@ -625,6 +693,40 @@ export default function AdminCallSheetReservoir() {
           </CardContent>
         </Card>
 
+        {/* Bulk Actions Bar */}
+        {selectedIds.size > 0 && (
+          <Card className="mb-6 border-primary">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Badge variant="secondary" className="text-sm">
+                    {selectedIds.size} selected
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedIds(new Set())}
+                  >
+                    Clear Selection
+                  </Button>
+                </div>
+                <Button
+                  onClick={() => setShowPriorityConfirm(true)}
+                  disabled={priorityQueueing}
+                  className="gap-2 bg-orange-600 hover:bg-orange-700"
+                >
+                  {priorityQueueing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Flame className="h-4 w-4" />
+                  )}
+                  FIRECRAWL PRIORITY
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Call Sheets Table */}
         <Card>
           <CardHeader>
@@ -651,6 +753,20 @@ export default function AdminCallSheetReservoir() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={toggleSelectAll}
+                      >
+                        {selectedIds.size === filteredSheets.length && filteredSheets.length > 0 ? (
+                          <CheckSquare className="h-4 w-4" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </TableHead>
                     <TableHead>File Name</TableHead>
                     <TableHead>Content Hash</TableHead>
                     <TableHead>Status</TableHead>
@@ -665,13 +781,27 @@ export default function AdminCallSheetReservoir() {
                 <TableBody>
                   {filteredSheets.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
                         No call sheets found
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredSheets.map((sheet) => (
-                      <TableRow key={sheet.id}>
+                      <TableRow key={sheet.id} className={selectedIds.has(sheet.id) ? "bg-muted/50" : ""}>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 w-6 p-0"
+                            onClick={() => toggleSelection(sheet.id)}
+                          >
+                            {selectedIds.has(sheet.id) ? (
+                              <CheckSquare className="h-4 w-4 text-primary" />
+                            ) : (
+                              <Square className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -886,6 +1016,56 @@ export default function AdminCallSheetReservoir() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Priority Firecrawl Confirmation Dialog */}
+      <AlertDialog open={showPriorityConfirm} onOpenChange={setShowPriorityConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Flame className="h-5 w-5 text-orange-500" />
+              Firecrawl Priority Parsing
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <p>
+                  Run <strong>{selectedIds.size}</strong> call sheet{selectedIds.size !== 1 ? 's' : ''} through Firecrawl priority parsing?
+                </p>
+                <div className="mt-3 p-3 bg-muted rounded-lg text-sm">
+                  <p className="font-medium mb-1">What this does:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li>Uses Firecrawl OCR first (not unpdf)</li>
+                    <li>Applies relaxed quality thresholds</li>
+                    <li>Takes ~25 seconds per sheet</li>
+                  </ul>
+                </div>
+                <p className="mt-3 text-muted-foreground text-sm">
+                  Use this for stubborn errors, scanned PDFs, or crew-grid sheets that failed normal parsing.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={priorityQueueing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleFirecrawlPriority}
+              disabled={priorityQueueing}
+              className="bg-orange-600 hover:bg-orange-700"
+            >
+              {priorityQueueing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Queueing...
+                </>
+              ) : (
+                <>
+                  <Flame className="h-4 w-4 mr-2" />
+                  Run Priority Parse
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

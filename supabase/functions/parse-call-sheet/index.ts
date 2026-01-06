@@ -79,10 +79,12 @@ interface ExtractionQuality {
   phonePatterns: number;
   emailPatterns: number;
   keywordScore: number;
+  callTimePatterns: number;
+  passedVia: 'contact' | 'crew_grid' | 'priority' | null;
   reason?: string;
 }
 
-function scoreExtraction(text: string): ExtractionQuality {
+function scoreExtraction(text: string, priorityMode: boolean = false): ExtractionQuality {
   const charCount = text.trim().length;
   
   // Phone patterns (count unique matches)
@@ -95,6 +97,10 @@ function scoreExtraction(text: string): ExtractionQuality {
   const emailMatches = text.match(emailRegex) || [];
   const emailPatterns = new Set(emailMatches.map(e => e.toLowerCase())).size;
   
+  // Call time patterns (e.g., "9:00 AM", "10:00A", "3:30PM", "8:00a")
+  const callTimeRegex = /\b\d{1,2}:\d{2}\s?(AM|PM|A|P)\b/gi;
+  const callTimePatterns = (text.match(callTimeRegex) || []).length;
+  
   // Call sheet keywords - must have at least 1
   const keywords = [
     'CALL SHEET', 'CALL TIME', 'CREW', 'LOCATION', 'LUNCH', 
@@ -106,18 +112,29 @@ function scoreExtraction(text: string): ExtractionQuality {
     text.toUpperCase().includes(kw)
   ).length;
   
-  // Quality thresholds - relaxed: 800 chars, (3 phones OR 2 emails), 1 keyword
+  // MODE A: Contact-heavy call sheet (relaxed: 800 chars, 3 phones OR 2 emails, 1 keyword)
   const hasEnoughContent = charCount >= 800;
   const hasContactInfo = phonePatterns >= 3 || emailPatterns >= 2;
   const hasKeywords = keywordScore >= 1;
+  const passesContactRule = hasEnoughContent && hasContactInfo && hasKeywords;
   
-  const passed = hasEnoughContent && hasContactInfo && hasKeywords;
+  // MODE B: Crew-grid call sheet (lots of call times, minimal contact info)
+  const passesCrewGridRule = charCount >= 400 && callTimePatterns >= 8 && keywordScore >= 1;
+  
+  // MODE C: Priority mode (admin override - very relaxed: 200 chars, 1 keyword)
+  const passesPriorityRule = priorityMode && charCount >= 200 && keywordScore >= 1;
+  
+  const passed = passesContactRule || passesCrewGridRule || passesPriorityRule;
+  const passedVia = passesContactRule ? 'contact' : 
+                    passesCrewGridRule ? 'crew_grid' : 
+                    passesPriorityRule ? 'priority' : null;
   
   let reason: string | undefined;
   if (!passed) {
     const issues: string[] = [];
     if (!hasEnoughContent) issues.push(`chars: ${charCount}/800`);
     if (!hasContactInfo) issues.push(`phones: ${phonePatterns}/3 OR emails: ${emailPatterns}/2`);
+    if (callTimePatterns < 8) issues.push(`callTimes: ${callTimePatterns}/8`);
     if (!hasKeywords) issues.push(`keywords: ${keywordScore}/1`);
     reason = `Quality check failed: ${issues.join(', ')}`;
   }
@@ -128,6 +145,8 @@ function scoreExtraction(text: string): ExtractionQuality {
     phonePatterns,
     emailPatterns,
     keywordScore,
+    callTimePatterns,
+    passedVia,
     reason
   };
 }
@@ -535,8 +554,15 @@ serve(async (req) => {
     const fileSize = fileData.size;
     logAction(`PDF downloaded (${(fileSize / 1024).toFixed(1)} KB)`, downloadStart);
 
+    // Check if this is a priority mode parse (admin override)
+    const isPriorityMode = callSheet.extraction_mode === "firecrawl_priority";
+    if (isPriorityMode) {
+      console.log("[parse-call-sheet] PRIORITY MODE: Firecrawl first with relaxed thresholds");
+    }
+
     // =========================================================================
     // QUALITY-GATED EXTRACTION: unpdf first (fast), Firecrawl fallback (OCR)
+    // In PRIORITY MODE: Firecrawl FIRST with relaxed thresholds
     // Gemini only sees text that passes quality checks
     // =========================================================================
     
@@ -546,40 +572,20 @@ serve(async (req) => {
     let firecrawlQuality: ExtractionQuality | null = null;
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
 
-    // STEP 1: Try unpdf first (fast, local, free)
-    console.log("[parse-call-sheet] Extracting text from PDF with unpdf (fast path)...");
-    const unpdfStart = Date.now();
-    const unpdfText = await extractTextFromPdf(fileData);
-    logAction(`unpdf extracted (${unpdfText.length} chars)`, unpdfStart);
-    
-    // STEP 2: Score unpdf extraction quality
-    unpdfQuality = scoreExtraction(unpdfText);
-    console.log(`[parse-call-sheet] unpdf quality: passed=${unpdfQuality.passed}, chars=${unpdfQuality.charCount}, phones=${unpdfQuality.phonePatterns}, emails=${unpdfQuality.emailPatterns}, keywords=${unpdfQuality.keywordScore}`);
-    
-    if (unpdfQuality.passed) {
-      // Fast path: unpdf quality is good enough
-      pdfText = unpdfText;
-      extractionMethod = "unpdf";
-      console.log("[parse-call-sheet] unpdf passed quality check, skipping Firecrawl");
-    } else if (firecrawlApiKey) {
-      // STEP 3: Fallback to Firecrawl OCR (slow but handles scanned PDFs)
-      console.log(`[parse-call-sheet] unpdf failed quality check (${unpdfQuality.reason}), trying Firecrawl OCR...`);
+    if (isPriorityMode && firecrawlApiKey) {
+      // PRIORITY MODE: Firecrawl FIRST with relaxed quality gate
+      console.log("[parse-call-sheet] PRIORITY: Running Firecrawl first...");
       const firecrawlStart = Date.now();
       
       try {
-        // Generate signed URL for Firecrawl to access the PDF (5 min expiry)
         const { data: signedUrlData, error: signedUrlError } = await supabase.storage
           .from("call_sheets")
           .createSignedUrl(callSheet.master_file_path, 300);
         
         if (signedUrlError || !signedUrlData?.signedUrl) {
-          console.warn("[parse-call-sheet] Failed to create signed URL:", signedUrlError);
           throw new Error("Failed to create signed URL");
         }
         
-        console.log("[parse-call-sheet] Signed URL created, calling Firecrawl...");
-        
-        // Call Firecrawl scrape endpoint
         const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
           method: "POST",
           headers: {
@@ -594,46 +600,121 @@ serve(async (req) => {
         });
         
         if (!firecrawlResponse.ok) {
-          const errorText = await firecrawlResponse.text();
-          console.warn("[parse-call-sheet] Firecrawl API error:", firecrawlResponse.status, errorText);
           throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
         }
         
         const firecrawlData = await firecrawlResponse.json();
         const firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
-        logAction(`Firecrawl extracted (${firecrawlText.length} chars)`, firecrawlStart);
+        logAction(`PRIORITY Firecrawl extracted (${firecrawlText.length} chars)`, firecrawlStart);
         
-        // STEP 4: Score Firecrawl extraction quality
-        firecrawlQuality = scoreExtraction(firecrawlText);
-        console.log(`[parse-call-sheet] Firecrawl quality: passed=${firecrawlQuality.passed}, chars=${firecrawlQuality.charCount}, phones=${firecrawlQuality.phonePatterns}, emails=${firecrawlQuality.emailPatterns}, keywords=${firecrawlQuality.keywordScore}`);
+        // Priority mode uses relaxed quality gate
+        firecrawlQuality = scoreExtraction(firecrawlText, true);
+        console.log(`[parse-call-sheet] PRIORITY Firecrawl quality: passed=${firecrawlQuality.passed}, passedVia=${firecrawlQuality.passedVia}, chars=${firecrawlQuality.charCount}, callTimes=${firecrawlQuality.callTimePatterns}`);
         
         if (firecrawlQuality.passed) {
           pdfText = firecrawlText;
-          extractionMethod = "firecrawl";
-          console.log("[parse-call-sheet] Firecrawl passed quality check");
-        } else {
-          console.warn(`[parse-call-sheet] Firecrawl also failed quality check: ${firecrawlQuality.reason}`);
+          extractionMethod = "firecrawl_priority";
         }
       } catch (firecrawlError) {
-        console.warn("[parse-call-sheet] Firecrawl failed:", firecrawlError);
+        console.warn("[parse-call-sheet] PRIORITY Firecrawl failed:", firecrawlError);
+      }
+      
+      // If priority Firecrawl failed, fall back to unpdf with priority mode scoring
+      if (!pdfText) {
+        console.log("[parse-call-sheet] PRIORITY: Firecrawl failed, trying unpdf with relaxed thresholds...");
+        const unpdfStart = Date.now();
+        const unpdfText = await extractTextFromPdf(fileData);
+        logAction(`PRIORITY unpdf extracted (${unpdfText.length} chars)`, unpdfStart);
+        
+        unpdfQuality = scoreExtraction(unpdfText, true);
+        if (unpdfQuality.passed) {
+          pdfText = unpdfText;
+          extractionMethod = "unpdf_priority";
+        }
       }
     } else {
-      console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, cannot fallback to OCR");
+      // NORMAL MODE: unpdf first (fast), Firecrawl fallback
+      console.log("[parse-call-sheet] Extracting text from PDF with unpdf (fast path)...");
+      const unpdfStart = Date.now();
+      const unpdfText = await extractTextFromPdf(fileData);
+      logAction(`unpdf extracted (${unpdfText.length} chars)`, unpdfStart);
+      
+      // Score unpdf extraction quality (normal mode)
+      unpdfQuality = scoreExtraction(unpdfText, false);
+      console.log(`[parse-call-sheet] unpdf quality: passed=${unpdfQuality.passed}, passedVia=${unpdfQuality.passedVia}, chars=${unpdfQuality.charCount}, phones=${unpdfQuality.phonePatterns}, emails=${unpdfQuality.emailPatterns}, callTimes=${unpdfQuality.callTimePatterns}, keywords=${unpdfQuality.keywordScore}`);
+      
+      if (unpdfQuality.passed) {
+        pdfText = unpdfText;
+        extractionMethod = "unpdf";
+        console.log(`[parse-call-sheet] unpdf passed quality check via ${unpdfQuality.passedVia} mode`);
+      } else if (firecrawlApiKey) {
+        // Fallback to Firecrawl OCR
+        console.log(`[parse-call-sheet] unpdf failed quality check (${unpdfQuality.reason}), trying Firecrawl OCR...`);
+        const firecrawlStart = Date.now();
+        
+        try {
+          const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+            .from("call_sheets")
+            .createSignedUrl(callSheet.master_file_path, 300);
+          
+          if (signedUrlError || !signedUrlData?.signedUrl) {
+            throw new Error("Failed to create signed URL");
+          }
+          
+          const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${firecrawlApiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              url: signedUrlData.signedUrl,
+              formats: ["markdown"],
+              onlyMainContent: false,
+            }),
+          });
+          
+          if (!firecrawlResponse.ok) {
+            throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
+          }
+          
+          const firecrawlData = await firecrawlResponse.json();
+          const firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
+          logAction(`Firecrawl extracted (${firecrawlText.length} chars)`, firecrawlStart);
+          
+          firecrawlQuality = scoreExtraction(firecrawlText, false);
+          console.log(`[parse-call-sheet] Firecrawl quality: passed=${firecrawlQuality.passed}, passedVia=${firecrawlQuality.passedVia}, chars=${firecrawlQuality.charCount}, phones=${firecrawlQuality.phonePatterns}, emails=${firecrawlQuality.emailPatterns}, callTimes=${firecrawlQuality.callTimePatterns}`);
+          
+          if (firecrawlQuality.passed) {
+            pdfText = firecrawlText;
+            extractionMethod = "firecrawl";
+            console.log(`[parse-call-sheet] Firecrawl passed quality check via ${firecrawlQuality.passedVia} mode`);
+          } else {
+            console.warn(`[parse-call-sheet] Firecrawl also failed quality check: ${firecrawlQuality.reason}`);
+          }
+        } catch (firecrawlError) {
+          console.warn("[parse-call-sheet] Firecrawl failed:", firecrawlError);
+        }
+      } else {
+        console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, cannot fallback to OCR");
+      }
     }
     
     // STEP 5: Final quality gate - block Gemini if quality too low
-    const finalQuality = extractionMethod === "firecrawl" ? firecrawlQuality : unpdfQuality;
+    const finalQuality = extractionMethod.includes("firecrawl") ? firecrawlQuality : unpdfQuality;
     if (!finalQuality?.passed) {
       const errorDetails = [
-        `chars: ${finalQuality?.charCount ?? 0}/800`,
-        `phones: ${finalQuality?.phonePatterns ?? 0}/3`,
-        `emails: ${finalQuality?.emailPatterns ?? 0}/2`,
-        `keywords: ${finalQuality?.keywordScore ?? 0}/1`
-      ].join(', ');
+        `chars: ${finalQuality?.charCount ?? 0}`,
+        `phones: ${finalQuality?.phonePatterns ?? 0}`,
+        `emails: ${finalQuality?.emailPatterns ?? 0}`,
+        `callTimes: ${finalQuality?.callTimePatterns ?? 0}`,
+        `keywords: ${finalQuality?.keywordScore ?? 0}`,
+        isPriorityMode ? '(priority mode)' : ''
+      ].filter(Boolean).join(', ');
       
       console.error(`[parse-call-sheet] Quality too low for reliable parsing: ${errorDetails}`);
       await markAsError(supabase, call_sheet_id, 
-        `Document quality too low for reliable parsing (${errorDetails}). This may be a corrupted file, scanned image without OCR, or non-standard format. Try uploading a text-based PDF.`
+        `Document quality too low for reliable parsing (${errorDetails}). ${isPriorityMode ? 'Even priority mode could not extract usable content.' : 'Try uploading a text-based PDF or use FIRECRAWL PRIORITY for scanned documents.'}`
       );
       // Return 200 with error_code so queue processor treats as terminal (no retry)
       return new Response(
@@ -712,6 +793,8 @@ serve(async (req) => {
         parse_action_log: actionLog,
         error_message: null,
         updated_at: new Date().toISOString(),
+        // Reset extraction_mode back to 'auto' after successful parse
+        extraction_mode: "auto",
         ...canonicalProducersUpdate
       })
       .eq("id", call_sheet_id);
