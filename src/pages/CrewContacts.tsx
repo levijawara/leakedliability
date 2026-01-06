@@ -351,8 +351,19 @@ export default function CrewContacts() {
       result = result.filter(c => c.is_favorite === true);
     }
 
+    // Sort by appearances if enabled (works independently of other filters)
+    if (filters.sortByAppearances) {
+      result.sort((a, b) => {
+        const aCount = callSheetCounts[a.id] || 0;
+        const bCount = callSheetCounts[b.id] || 0;
+        return filters.sortByAppearances === 'desc' 
+          ? bCount - aCount 
+          : aCount - bCount;
+      });
+    }
+
     setFilteredContacts(result);
-  }, [contacts, searchQuery, filters, recentlyAddedActive, recentlyAddedContacts]);
+  }, [contacts, searchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts]);
 
   // Clear selection when exiting select mode
   useEffect(() => {
