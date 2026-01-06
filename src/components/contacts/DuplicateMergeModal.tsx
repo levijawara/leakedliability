@@ -22,19 +22,22 @@ import {
   AtSign,
   ChevronDown,
   ChevronUp,
-  Check
+  Check,
+  AlertTriangle
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { DuplicateGroup, mergeContactData } from "@/lib/duplicateDetection";
 import { CrewContact } from "@/pages/CrewContacts";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { IgnoreErrorsModal } from "./IgnoreErrorsModal";
 
 interface DuplicateMergeModalProps {
   isOpen: boolean;
   onClose: () => void;
   duplicateGroups: DuplicateGroup[];
   contacts: CrewContact[];
+  userId: string;
   onMergeComplete: (deletedIds: string[], updatedContacts: CrewContact[]) => void;
 }
 
@@ -43,6 +46,7 @@ export function DuplicateMergeModal({
   onClose,
   duplicateGroups,
   contacts,
+  userId,
   onMergeComplete
 }: DuplicateMergeModalProps) {
   const { toast } = useToast();
@@ -412,10 +416,22 @@ export function DuplicateMergeModal({
           </div>
         </ScrollArea>
 
-        <DialogFooter className="gap-2 sm:gap-0">
+        <DialogFooter className="gap-2 sm:gap-0 flex-wrap">
           <Button variant="outline" onClick={onClose} disabled={merging}>
             Cancel
           </Button>
+          <IgnoreErrorsButton 
+            selectedGroups={selectedGroups}
+            duplicateGroups={duplicateGroups}
+            contacts={contacts}
+            userId={userId}
+            onComplete={(cleanedIds) => {
+              // Trigger a refresh - pass empty arrays to signal data changed
+              onMergeComplete([], []);
+              onClose();
+            }}
+            disabled={merging}
+          />
           <Button onClick={handleMergeSelected} disabled={merging || selectedGroups.size === 0}>
             {merging ? (
               <>
@@ -432,5 +448,50 @@ export function DuplicateMergeModal({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// Sub-component for the Ignore Errors button and modal
+function IgnoreErrorsButton({
+  selectedGroups,
+  duplicateGroups,
+  contacts,
+  userId,
+  onComplete,
+  disabled
+}: {
+  selectedGroups: Set<number>;
+  duplicateGroups: DuplicateGroup[];
+  contacts: CrewContact[];
+  userId: string;
+  onComplete: (cleanedIds: string[]) => void;
+  disabled: boolean;
+}) {
+  const [showModal, setShowModal] = useState(false);
+  
+  const selectedDuplicateGroups = duplicateGroups.filter((_, idx) => selectedGroups.has(idx));
+  
+  return (
+    <>
+      <Button 
+        variant="secondary" 
+        onClick={() => setShowModal(true)}
+        disabled={disabled || selectedGroups.size === 0}
+      >
+        <AlertTriangle className="h-4 w-4 mr-2" />
+        Ignore Errors
+      </Button>
+      
+      {showModal && (
+        <IgnoreErrorsModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          groups={selectedDuplicateGroups}
+          contacts={contacts}
+          userId={userId}
+          onComplete={onComplete}
+        />
+      )}
+    </>
   );
 }
