@@ -22,6 +22,16 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+const BATCH_SIZE = 100;
+
+const batchArray = <T,>(array: T[], size: number): T[][] => {
+  const batches: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    batches.push(array.slice(i, i + size));
+  }
+  return batches;
+};
+
 interface BulkActionsBarProps {
   selectedIds: string[];
   totalCount: number;
@@ -47,23 +57,42 @@ export function BulkActionsBar({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isFavoriting, setIsFavoriting] = useState(false);
+  const [deleteProgress, setDeleteProgress] = useState({ current: 0, total: 0 });
 
   const handleBulkFavorite = async () => {
     if (selectedIds.length === 0) return;
     
     setIsFavoriting(true);
     try {
-      const { error } = await supabase
-        .from('crew_contacts')
-        .update({ is_favorite: true })
-        .in('id', selectedIds)
-        .eq('user_id', userId);
+      const batches = batchArray(selectedIds, BATCH_SIZE);
+      let totalFavorited = 0;
 
-      if (error) throw error;
+      console.log('[BulkActionsBar] Starting batch favorite:', {
+        totalContacts: selectedIds.length,
+        batchCount: batches.length
+      });
+
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        const { data, error } = await supabase
+          .from('crew_contacts')
+          .update({ is_favorite: true })
+          .in('id', batch)
+          .eq('user_id', userId)
+          .select();
+
+        if (error) {
+          console.error(`[BulkActionsBar] Favorite batch ${i + 1} failed:`, error);
+          throw error;
+        }
+        totalFavorited += data?.length ?? 0;
+      }
+
+      console.log('[BulkActionsBar] Batch favorite complete:', { totalFavorited });
 
       toast({
         title: "Contacts favorited",
-        description: `${selectedIds.length} contact(s) added to favorites.`
+        description: `${totalFavorited} contact(s) added to favorites.`
       });
       onBulkFavorite();
     } catch (error: any) {
@@ -82,18 +111,46 @@ export function BulkActionsBar({
     if (selectedIds.length === 0) return;
     
     setIsDeleting(true);
+    setDeleteProgress({ current: 0, total: 0 });
+    
     try {
-      const { error } = await supabase
-        .from('crew_contacts')
-        .delete()
-        .in('id', selectedIds)
-        .eq('user_id', userId);
+      const batches = batchArray(selectedIds, BATCH_SIZE);
+      let totalDeleted = 0;
+      
+      console.log('[BulkActionsBar] Starting batch delete:', {
+        totalContacts: selectedIds.length,
+        batchCount: batches.length,
+        batchSize: BATCH_SIZE
+      });
 
-      if (error) throw error;
+      setDeleteProgress({ current: 0, total: batches.length });
+
+      for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        setDeleteProgress({ current: i + 1, total: batches.length });
+        
+        console.log(`[BulkActionsBar] Deleting batch ${i + 1}/${batches.length} (${batch.length} contacts)`);
+        
+        const { data, error } = await supabase
+          .from('crew_contacts')
+          .delete()
+          .in('id', batch)
+          .eq('user_id', userId)
+          .select();
+
+        if (error) {
+          console.error(`[BulkActionsBar] Batch ${i + 1} failed:`, error);
+          throw error;
+        }
+        
+        totalDeleted += data?.length ?? 0;
+      }
+
+      console.log('[BulkActionsBar] Batch delete complete:', { totalDeleted });
 
       toast({
         title: "Contacts deleted",
-        description: `${selectedIds.length} contact(s) removed.`
+        description: `${totalDeleted} contact(s) removed.`
       });
       onBulkDelete(selectedIds);
       setShowDeleteConfirm(false);
@@ -106,6 +163,7 @@ export function BulkActionsBar({
       });
     } finally {
       setIsDeleting(false);
+      setDeleteProgress({ current: 0, total: 0 });
     }
   };
 
@@ -209,7 +267,9 @@ export function BulkActionsBar({
               {isDeleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
+                  {deleteProgress.total > 1 
+                    ? `Batch ${deleteProgress.current}/${deleteProgress.total}...`
+                    : "Deleting..."}
                 </>
               ) : (
                 "Delete"
