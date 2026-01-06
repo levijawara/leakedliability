@@ -88,7 +88,7 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
         .from('call_sheets')
         .upload(masterPath, file, {
           cacheControl: '3600',
-          upsert: false
+          upsert: true // Safe: path includes content hash, so identical content
         });
 
       if (uploadError) {
