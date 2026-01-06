@@ -37,8 +37,36 @@ function uniqueArray(arr: (string | null | undefined)[]): string[] {
   return [...new Set(arr.filter((v): v is string => !!v && v.trim() !== ''))];
 }
 
-function mergeArrays(existing: string[], incoming: string[]): string[] {
-  return uniqueArray([...existing, ...incoming]);
+function mergeArrays(existing: string[] | null, incoming: string[]): string[] {
+  return uniqueArray([...(existing || []), ...incoming]);
+}
+
+interface ContactInput {
+  instagram?: string;
+  name?: string;
+  roles?: string | string[];
+  phone?: string | string[];
+  email?: string | string[];
+}
+
+interface ProcessedContact {
+  instagram: string;
+  raw_name: string;
+  normalized_name: string;
+  roles: string[];
+  phones: string[];
+  emails: string[];
+}
+
+interface ExistingRecord {
+  id: string;
+  instagram: string;
+  raw_name: string;
+  normalized_name: string;
+  roles: string[] | null;
+  phones: string[] | null;
+  emails: string[] | null;
+  sources: string[] | null;
 }
 
 serve(async (req) => {
@@ -48,7 +76,8 @@ serve(async (req) => {
   }
 
   try {
-    console.log("[import-ig-master-list] Starting import...");
+    console.log("[import-ig-master-list] Starting batch import...");
+    const startTime = Date.now();
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -98,93 +127,208 @@ serve(async (req) => {
       });
     }
 
-    console.log(`[import-ig-master-list] Processing ${contacts.length} contacts...`);
+    console.log(`[import-ig-master-list] Processing ${contacts.length} contacts in batch mode...`);
 
-    let imported = 0;
-    let updated = 0;
+    // Step 1: Pre-process all contacts in memory (no DB calls)
+    const processedContacts: ProcessedContact[] = [];
     let skipped = 0;
-    const errors: string[] = [];
 
-    for (const contact of contacts) {
-      try {
-        // Validate required fields
-        if (!contact.instagram || !contact.name) {
-          skipped++;
-          continue;
+    for (const contact of contacts as ContactInput[]) {
+      if (!contact.instagram || !contact.name) {
+        skipped++;
+        continue;
+      }
+
+      const instagram = stripInstagramHandle(contact.instagram);
+      if (!instagram) {
+        skipped++;
+        continue;
+      }
+
+      const rawName = contact.name.trim();
+      const normalizedName = normalizeName(rawName);
+
+      // Parse roles
+      const roles = uniqueArray(
+        typeof contact.roles === 'string'
+          ? contact.roles.split(',').map((r: string) => r.trim())
+          : Array.isArray(contact.roles)
+          ? contact.roles
+          : []
+      );
+
+      // Parse phones
+      const phones = uniqueArray(
+        (typeof contact.phone === 'string' ? [contact.phone] : Array.isArray(contact.phone) ? contact.phone : [])
+          .map((p: string) => normalizePhone(p))
+      );
+
+      // Parse emails
+      const emails = uniqueArray(
+        (typeof contact.email === 'string' ? [contact.email] : Array.isArray(contact.email) ? contact.email : [])
+          .map((e: string) => normalizeEmail(e))
+      );
+
+      processedContacts.push({
+        instagram,
+        raw_name: rawName,
+        normalized_name: normalizedName,
+        roles,
+        phones,
+        emails,
+      });
+    }
+
+    // Deduplicate by instagram handle (keep first occurrence, merge data)
+    const deduplicatedMap = new Map<string, ProcessedContact>();
+    for (const contact of processedContacts) {
+      const existing = deduplicatedMap.get(contact.instagram);
+      if (existing) {
+        // Merge into existing
+        existing.roles = uniqueArray([...existing.roles, ...contact.roles]);
+        existing.phones = uniqueArray([...existing.phones, ...contact.phones]);
+        existing.emails = uniqueArray([...existing.emails, ...contact.emails]);
+        // Keep the longer name
+        if (contact.raw_name.split(' ').length > existing.raw_name.split(' ').length) {
+          existing.raw_name = contact.raw_name;
+          existing.normalized_name = contact.normalized_name;
         }
+      } else {
+        deduplicatedMap.set(contact.instagram, { ...contact });
+      }
+    }
+    const uniqueContacts = Array.from(deduplicatedMap.values());
 
-        const instagram = stripInstagramHandle(contact.instagram);
-        const rawName = contact.name.trim();
-        const normalizedName = normalizeName(rawName);
+    console.log(`[import-ig-master-list] ${uniqueContacts.length} unique contacts after deduplication, ${skipped} skipped`);
 
-        // Parse roles
-        const roles = uniqueArray(
-          typeof contact.roles === 'string'
-            ? contact.roles.split(',').map((r: string) => r.trim())
-            : Array.isArray(contact.roles)
-            ? contact.roles
-            : []
-        );
+    // Step 2: Fetch all existing IGs in batches (Supabase has 1000 row limit per query)
+    const allIGs = uniqueContacts.map(c => c.instagram);
+    const existingMap = new Map<string, ExistingRecord>();
 
-        // Parse phones
-        const phones = uniqueArray(
-          (typeof contact.phone === 'string' ? [contact.phone] : Array.isArray(contact.phone) ? contact.phone : [])
-            .map((p: string) => normalizePhone(p))
-        );
+    // Query in chunks of 500 to be safe
+    const chunkSize = 500;
+    for (let i = 0; i < allIGs.length; i += chunkSize) {
+      const chunk = allIGs.slice(i, i + chunkSize);
+      const { data: existingRecords, error: fetchError } = await supabase
+        .from("ig_master_identities")
+        .select("id, instagram, raw_name, normalized_name, roles, phones, emails, sources")
+        .in("instagram", chunk);
 
-        // Parse emails
-        const emails = uniqueArray(
-          (typeof contact.email === 'string' ? [contact.email] : Array.isArray(contact.email) ? contact.email : [])
-            .map((e: string) => normalizeEmail(e))
-        );
+      if (fetchError) {
+        console.error(`[import-ig-master-list] Error fetching existing records:`, fetchError);
+        throw fetchError;
+      }
 
-        // Check if IG already exists
-        const { data: existing } = await supabase
-          .from("ig_master_identities")
-          .select("*")
-          .eq("instagram", instagram)
-          .maybeSingle();
-
-        if (existing) {
-          // Merge arrays
-          const mergedRoles = mergeArrays(existing.roles || [], roles);
-          const mergedPhones = mergeArrays(existing.phones || [], phones);
-          const mergedEmails = mergeArrays(existing.emails || [], emails);
-          const mergedSources = mergeArrays(existing.sources || [], [source]);
-
-          await supabase
-            .from("ig_master_identities")
-            .update({
-              roles: mergedRoles,
-              phones: mergedPhones,
-              emails: mergedEmails,
-              sources: mergedSources,
-              updated_at: new Date().toISOString(),
-            })
-            .eq("id", existing.id);
-
-          updated++;
-        } else {
-          // Insert new record
-          await supabase.from("ig_master_identities").insert({
-            raw_name: rawName,
-            normalized_name: normalizedName,
-            instagram,
-            roles,
-            phones,
-            emails,
-            sources: [source],
-          });
-
-          imported++;
-        }
-      } catch (err) {
-        const errorMsg = err instanceof Error ? err.message : String(err);
-        errors.push(`${contact.name || 'Unknown'}: ${errorMsg}`);
+      for (const record of (existingRecords || []) as ExistingRecord[]) {
+        existingMap.set(record.instagram, record);
       }
     }
 
-    console.log(`[import-ig-master-list] Complete: ${imported} imported, ${updated} updated, ${skipped} skipped, ${errors.length} errors`);
+    console.log(`[import-ig-master-list] Found ${existingMap.size} existing records in database`);
+
+    // Step 3: Separate into new vs existing
+    const toInsert: Array<{
+      raw_name: string;
+      normalized_name: string;
+      instagram: string;
+      roles: string[];
+      phones: string[];
+      emails: string[];
+      sources: string[];
+    }> = [];
+
+    const toUpdate: Array<{
+      id: string;
+      raw_name: string;
+      normalized_name: string;
+      roles: string[];
+      phones: string[];
+      emails: string[];
+      sources: string[];
+      updated_at: string;
+    }> = [];
+
+    for (const contact of uniqueContacts) {
+      const existing = existingMap.get(contact.instagram);
+      if (existing) {
+        // Merge arrays and prepare for update
+        const mergedRoles = mergeArrays(existing.roles, contact.roles);
+        const mergedPhones = mergeArrays(existing.phones, contact.phones);
+        const mergedEmails = mergeArrays(existing.emails, contact.emails);
+        const mergedSources = mergeArrays(existing.sources, [source]);
+
+        // Check if incoming name is more complete
+        const existingWordCount = existing.raw_name.split(' ').length;
+        const incomingWordCount = contact.raw_name.split(' ').length;
+        const shouldUpdateName = incomingWordCount > existingWordCount;
+
+        toUpdate.push({
+          id: existing.id,
+          raw_name: shouldUpdateName ? contact.raw_name : existing.raw_name,
+          normalized_name: shouldUpdateName ? contact.normalized_name : existing.normalized_name,
+          roles: mergedRoles,
+          phones: mergedPhones,
+          emails: mergedEmails,
+          sources: mergedSources,
+          updated_at: new Date().toISOString(),
+        });
+      } else {
+        // New record
+        toInsert.push({
+          raw_name: contact.raw_name,
+          normalized_name: contact.normalized_name,
+          instagram: contact.instagram,
+          roles: contact.roles,
+          phones: contact.phones,
+          emails: contact.emails,
+          sources: [source],
+        });
+      }
+    }
+
+    console.log(`[import-ig-master-list] ${toInsert.length} to insert, ${toUpdate.length} to update`);
+
+    // Step 4: Batch insert new records (chunks of 100)
+    let imported = 0;
+    const insertErrors: string[] = [];
+    const batchSize = 100;
+
+    for (let i = 0; i < toInsert.length; i += batchSize) {
+      const chunk = toInsert.slice(i, i + batchSize);
+      const { error: insertError } = await supabase
+        .from("ig_master_identities")
+        .insert(chunk);
+
+      if (insertError) {
+        console.error(`[import-ig-master-list] Insert batch error:`, insertError);
+        insertErrors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${insertError.message}`);
+      } else {
+        imported += chunk.length;
+      }
+    }
+
+    // Step 5: Batch upsert updates (chunks of 100)
+    let updated = 0;
+    const updateErrors: string[] = [];
+
+    for (let i = 0; i < toUpdate.length; i += batchSize) {
+      const chunk = toUpdate.slice(i, i + batchSize);
+      const { error: upsertError } = await supabase
+        .from("ig_master_identities")
+        .upsert(chunk, { onConflict: 'id' });
+
+      if (upsertError) {
+        console.error(`[import-ig-master-list] Update batch error:`, upsertError);
+        updateErrors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${upsertError.message}`);
+      } else {
+        updated += chunk.length;
+      }
+    }
+
+    const elapsed = Date.now() - startTime;
+    console.log(`[import-ig-master-list] Complete in ${elapsed}ms: ${imported} imported, ${updated} updated, ${skipped} skipped`);
+
+    const allErrors = [...insertErrors, ...updateErrors];
 
     return new Response(
       JSON.stringify({
@@ -192,8 +336,10 @@ serve(async (req) => {
         imported,
         updated,
         skipped,
-        errors: errors.slice(0, 10), // Return first 10 errors
+        errors: allErrors.slice(0, 10),
         total: contacts.length,
+        uniqueProcessed: uniqueContacts.length,
+        elapsedMs: elapsed,
       }),
       {
         status: 200,
