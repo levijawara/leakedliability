@@ -59,23 +59,21 @@ const Profile = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        navigate("/auth");
-        return;
+      // Session is guaranteed by RequireAuth wrapper
+      if (session) {
+        setUser(session.user);
+        await fetchProfile(session.user.id);
+        await fetchSubmissionStats(session.user.id);
+        await fetchClaimedProducer(session.user.id);
       }
-
-      setUser(session.user);
-      await fetchProfile(session.user.id);
-      await fetchSubmissionStats(session.user.id);
-      await fetchClaimedProducer(session.user.id);
       setLoading(false);
     };
 
-    checkAuth();
-  }, [navigate]);
+    loadProfile();
+  }, []);
 
   const fetchClaimedProducer = async (userId: string) => {
     setLoadingClaim(true);

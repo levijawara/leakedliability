@@ -14,31 +14,29 @@ export default function BetaUnlock() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    const checkAccess = async () => {
+    const checkBetaAccess = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
+      // Session is guaranteed by RequireAuth wrapper
+      if (session) {
+        // Check if user already has beta access
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("beta_access")
+          .eq("user_id", session.user.id)
+          .single();
 
-      // Check if user already has beta access
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("beta_access")
-        .eq("user_id", session.user.id)
-        .single();
-
-      if (profile?.beta_access) {
-        // Already have access, redirect to call sheets
-        navigate("/call-sheets");
-        return;
+        if (profile?.beta_access) {
+          // Already have access, redirect to call sheets
+          navigate("/call-sheets");
+          return;
+        }
       }
 
       setChecking(false);
     };
 
-    checkAccess();
+    checkBetaAccess();
   }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
