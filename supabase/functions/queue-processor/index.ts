@@ -175,6 +175,25 @@ serve(async (req) => {
             retryCount: newRetryCount,
           });
           errorCount++;
+        } else if (parseResult?.error_code === "quality_too_low") {
+          // Terminal error - quality too low, do NOT retry
+          logStep("Quality too low (terminal)", { id: sheet.id, quality: parseResult.quality });
+          
+          // Already marked as error by parse-call-sheet, just clear parsing_started_at
+          await supabase
+            .from("global_call_sheets")
+            .update({ parsing_started_at: null })
+            .eq("id", sheet.id);
+
+          results.push({
+            callSheetId: sheet.id,
+            fileName: sheet.original_file_name,
+            status: "error",
+            message: "Quality too low (terminal - no retry)",
+            durationMs,
+            retryCount: currentRetryCount,
+          });
+          errorCount++;
         } else {
           logStep("Parse completed", { id: sheet.id, result: parseResult });
           
