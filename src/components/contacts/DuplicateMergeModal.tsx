@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   GitMerge, 
   Loader2, 
@@ -48,12 +49,16 @@ export function DuplicateMergeModal({
   const [merging, setMerging] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<number>>(new Set([0]));
   const [primarySelections, setPrimarySelections] = useState<Record<number, string>>(() => {
-    // Default to first contact (existing primary) in each group
     const selections: Record<number, string> = {};
     duplicateGroups.forEach((group, idx) => {
       selections[idx] = group.primary.id;
     });
     return selections;
+  });
+  
+  // Track which groups are selected for merging (default: all selected)
+  const [selectedGroups, setSelectedGroups] = useState<Set<number>>(() => {
+    return new Set(duplicateGroups.map((_, idx) => idx));
   });
 
   const toggleExpanded = (index: number) => {
@@ -68,28 +73,60 @@ export function DuplicateMergeModal({
     });
   };
 
+  const toggleGroupSelection = (index: number) => {
+    setSelectedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedGroups(new Set(duplicateGroups.map((_, idx) => idx)));
+  };
+
+  const deselectAll = () => {
+    setSelectedGroups(new Set());
+  };
+
   const handlePrimaryChange = (groupIndex: number, contactId: string) => {
     setPrimarySelections(prev => ({ ...prev, [groupIndex]: contactId }));
   };
 
-  const handleMergeAll = async () => {
+  const handleMergeSelected = async () => {
+    if (selectedGroups.size === 0) {
+      toast({
+        title: "No groups selected",
+        description: "Please select at least one group to merge.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setMerging(true);
     const deletedIds: string[] = [];
     const updatedContacts: CrewContact[] = [];
 
     try {
-      for (let i = 0; i < duplicateGroups.length; i++) {
-        const group = duplicateGroups[i];
-        const primaryId = primarySelections[i];
+      // Only process selected groups
+      const groupsToMerge = duplicateGroups.filter((_, idx) => selectedGroups.has(idx));
+      
+      for (let i = 0; i < groupsToMerge.length; i++) {
+        const group = groupsToMerge[i];
+        // Find the original index for primary selection lookup
+        const originalIndex = duplicateGroups.indexOf(group);
+        const primaryId = primarySelections[originalIndex];
         
-        // Get all contacts in this group
         const allGroupContacts = [group.primary, ...group.duplicates.map(d => d.contact)];
         const primaryContact = allGroupContacts.find(c => c.id === primaryId);
         const duplicatesToMerge = allGroupContacts.filter(c => c.id !== primaryId);
         
         if (!primaryContact || duplicatesToMerge.length === 0) continue;
 
-        // Get full contact data for merging
         const primaryFull = contacts.find(c => c.id === primaryId);
         const duplicatesFull = duplicatesToMerge
           .map(d => contacts.find(c => c.id === d.id))
@@ -97,13 +134,9 @@ export function DuplicateMergeModal({
 
         if (!primaryFull) continue;
 
-        // Merge data
         const mergedData = mergeContactData(primaryFull, duplicatesFull);
-        
-        // Also merge is_favorite (keep true if any is favorited)
         const isFavorite = primaryFull.is_favorite || duplicatesFull.some(d => d.is_favorite);
 
-        // Update primary contact
         const { error: updateError } = await supabase
           .from('crew_contacts')
           .update({
@@ -121,7 +154,6 @@ export function DuplicateMergeModal({
           throw updateError;
         }
 
-        // Delete duplicates
         const idsToDelete = duplicatesToMerge.map(d => d.id);
         const { error: deleteError } = await supabase
           .from('crew_contacts')
@@ -147,7 +179,7 @@ export function DuplicateMergeModal({
 
       toast({
         title: "Merge complete",
-        description: `Merged ${duplicateGroups.length} groups, removed ${deletedIds.length} duplicates.`
+        description: `Merged ${groupsToMerge.length} groups, removed ${deletedIds.length} duplicates.`
       });
 
       onMergeComplete(deletedIds, updatedContacts);
@@ -195,8 +227,23 @@ export function DuplicateMergeModal({
 
         <p className="text-sm text-muted-foreground">
           Found {duplicateGroups.length} groups of potential duplicates. 
-          Select which contact to keep as the primary for each group.
+          Select which groups to merge.
         </p>
+
+        {/* Selection controls */}
+        <div className="flex items-center justify-between py-2 border-b">
+          <span className="text-sm text-muted-foreground">
+            {selectedGroups.size} of {duplicateGroups.length} groups selected
+          </span>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={selectAll}>
+              Select All
+            </Button>
+            <Button variant="ghost" size="sm" onClick={deselectAll}>
+              Clear
+            </Button>
+          </div>
+        </div>
 
         <ScrollArea className="flex-1 min-h-0 pr-4">
           <div className="space-y-4">
@@ -204,16 +251,22 @@ export function DuplicateMergeModal({
               const allContacts = [group.primary, ...group.duplicates.map(d => d.contact)];
               const isExpanded = expandedGroups.has(groupIndex);
               const selectedPrimary = primarySelections[groupIndex];
+              const isSelected = selectedGroups.has(groupIndex);
 
               return (
                 <Collapsible key={groupIndex} open={isExpanded}>
-                  <div className="border rounded-lg overflow-hidden">
+                  <div className={`border rounded-lg overflow-hidden ${isSelected ? 'border-primary/50' : 'opacity-60'}`}>
                     <CollapsibleTrigger asChild>
                       <button
                         onClick={() => toggleExpanded(groupIndex)}
                         className="w-full flex items-center justify-between p-3 hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                          <Checkbox 
+                            checked={isSelected}
+                            onCheckedChange={() => toggleGroupSelection(groupIndex)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
                           <Badge variant="outline">{allContacts.length} contacts</Badge>
                           <span className="font-medium">{group.primary.name}</span>
                           <span className="text-muted-foreground text-sm">
@@ -314,7 +367,7 @@ export function DuplicateMergeModal({
           <Button variant="outline" onClick={onClose} disabled={merging}>
             Cancel
           </Button>
-          <Button onClick={handleMergeAll} disabled={merging}>
+          <Button onClick={handleMergeSelected} disabled={merging || selectedGroups.size === 0}>
             {merging ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -323,7 +376,7 @@ export function DuplicateMergeModal({
             ) : (
               <>
                 <GitMerge className="h-4 w-4 mr-2" />
-                Merge All ({duplicateGroups.length} groups)
+                Merge Selected ({selectedGroups.size} of {duplicateGroups.length})
               </>
             )}
           </Button>
