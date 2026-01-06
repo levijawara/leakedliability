@@ -115,6 +115,8 @@ export function DuplicateMergeModal({
       // Only process selected groups
       const groupsToMerge = duplicateGroups.filter((_, idx) => selectedGroups.has(idx));
       
+      console.log('[DuplicateMergeModal] Starting merge for', groupsToMerge.length, 'groups');
+      
       for (let i = 0; i < groupsToMerge.length; i++) {
         const group = groupsToMerge[i];
         // Find the original index for primary selection lookup
@@ -134,10 +136,20 @@ export function DuplicateMergeModal({
 
         if (!primaryFull) continue;
 
+        const idsToDelete = duplicatesToMerge.map(d => d.id);
+        
+        console.log('[DuplicateMergeModal] Group', i + 1, {
+          primaryId,
+          primaryName: primaryContact.name,
+          deletingIds: idsToDelete,
+          deletingNames: duplicatesToMerge.map(d => d.name)
+        });
+
         const mergedData = mergeContactData(primaryFull, duplicatesFull);
         const isFavorite = primaryFull.is_favorite || duplicatesFull.some(d => d.is_favorite);
 
-        const { error: updateError } = await supabase
+        // UPDATE with .select() to verify rows affected
+        const { data: updateData, error: updateError } = await supabase
           .from('crew_contacts')
           .update({
             phones: mergedData.phones,
@@ -147,22 +159,53 @@ export function DuplicateMergeModal({
             ig_handle: mergedData.ig_handle,
             is_favorite: isFavorite
           })
-          .eq('id', primaryId);
+          .eq('id', primaryId)
+          .select();
+
+        console.log('[DuplicateMergeModal] Update result:', {
+          updateData,
+          updateError,
+          rowsUpdated: updateData?.length ?? 0
+        });
 
         if (updateError) {
-          console.error('[DuplicateMergeModal] Update error:', updateError);
+          console.error('[DuplicateMergeModal] Update FAILED:', updateError);
           throw updateError;
         }
 
-        const idsToDelete = duplicatesToMerge.map(d => d.id);
-        const { error: deleteError } = await supabase
+        if (!updateData || updateData.length === 0) {
+          console.error('[DuplicateMergeModal] Update returned no rows - primary contact may not exist or RLS blocked');
+          throw new Error(`Failed to update primary contact ${primaryContact.name}. No rows affected.`);
+        }
+
+        // DELETE with .select() to verify rows affected
+        const { data: deleteData, error: deleteError } = await supabase
           .from('crew_contacts')
           .delete()
-          .in('id', idsToDelete);
+          .in('id', idsToDelete)
+          .select();
+
+        console.log('[DuplicateMergeModal] Delete result:', {
+          deleteData,
+          deleteError,
+          rowsDeleted: deleteData?.length ?? 0,
+          expectedDeletes: idsToDelete.length
+        });
 
         if (deleteError) {
-          console.error('[DuplicateMergeModal] Delete error:', deleteError);
+          console.error('[DuplicateMergeModal] Delete FAILED:', deleteError);
           throw deleteError;
+        }
+
+        // Validate delete actually removed the expected rows
+        if (!deleteData || deleteData.length !== idsToDelete.length) {
+          const msg = `Expected to delete ${idsToDelete.length} contacts but only ${deleteData?.length ?? 0} were deleted`;
+          console.error('[DuplicateMergeModal] DELETE MISMATCH:', msg);
+          toast({
+            title: "Merge may have partially failed",
+            description: msg,
+            variant: "destructive"
+          });
         }
 
         deletedIds.push(...idsToDelete);
@@ -176,6 +219,12 @@ export function DuplicateMergeModal({
           is_favorite: isFavorite
         });
       }
+
+      console.log('[DuplicateMergeModal] Merge complete:', {
+        groupsMerged: groupsToMerge.length,
+        totalDeleted: deletedIds.length,
+        deletedIds
+      });
 
       toast({
         title: "Merge complete",
