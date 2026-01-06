@@ -104,3 +104,6 @@ verify_jwt = true
 
 [functions.auto-backfill-ig-from-master]
 verify_jwt = true
+
+[functions.queue-firecrawl-priority]
+verify_jwt = true
