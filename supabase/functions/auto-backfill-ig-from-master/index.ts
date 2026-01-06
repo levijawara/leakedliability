@@ -8,6 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const BATCH_SIZE = 100;
+
 // Normalization utilities
 function normalizeName(name: string): string {
   return name
@@ -50,6 +52,17 @@ interface MatchResult {
   contactName: string;
   igHandle: string;
   matchType: "email" | "phone" | "name";
+}
+
+interface ContactUpdate {
+  id: string;
+  ig_handle: string;
+}
+
+interface IGMapEntry {
+  user_id: string;
+  name: string;
+  ig_handle: string;
 }
 
 serve(async (req) => {
@@ -157,8 +170,10 @@ serve(async (req) => {
       }
     }
 
+    // Collect all matches first (no DB writes in loop)
+    const contactUpdates: ContactUpdate[] = [];
+    const igMapEntries: IGMapEntry[] = [];
     const updates: MatchResult[] = [];
-    let matchedCount = 0;
 
     for (const contact of contacts) {
       let match: MasterIdentity | null = null;
@@ -197,38 +212,68 @@ serve(async (req) => {
         }
       }
 
-      // Apply match
+      // Collect match for batch processing
       if (match && matchType) {
-        const { error: updateError } = await supabase
-          .from("crew_contacts")
-          .update({ ig_handle: match.instagram })
-          .eq("id", contact.id);
-
-        if (updateError) {
-          console.error(`[auto-backfill-ig-from-master] Failed to update ${contact.name}:`, updateError);
-          continue;
-        }
-
-        // Also update user_ig_map for future restoration
-        await supabase.rpc("upsert_user_ig_map", {
-          p_user_id: user.id,
-          p_name: contact.name,
-          p_ig_handle: match.instagram,
+        contactUpdates.push({ id: contact.id, ig_handle: match.instagram });
+        igMapEntries.push({ 
+          user_id: user.id, 
+          name: contact.name, 
+          ig_handle: match.instagram 
         });
-
         updates.push({
           contactId: contact.id,
           contactName: contact.name,
           igHandle: match.instagram,
           matchType,
         });
-        matchedCount++;
 
         console.log(`[auto-backfill-ig-from-master] Matched ${contact.name} -> @${match.instagram} (${matchType})`);
       }
     }
 
-    console.log(`[auto-backfill-ig-from-master] Complete: ${matchedCount}/${contacts.length} matched`);
+    console.log(`[auto-backfill-ig-from-master] Found ${contactUpdates.length} matches, starting batch updates...`);
+
+    // Batch update crew_contacts
+    let contactUpdateErrors = 0;
+    for (let i = 0; i < contactUpdates.length; i += BATCH_SIZE) {
+      const chunk = contactUpdates.slice(i, i + BATCH_SIZE);
+      
+      // Use individual updates since we can't upsert with only id + ig_handle
+      // (other required fields like user_id, name would be missing)
+      for (const update of chunk) {
+        const { error } = await supabase
+          .from("crew_contacts")
+          .update({ ig_handle: update.ig_handle })
+          .eq("id", update.id);
+        
+        if (error) {
+          console.error(`[auto-backfill-ig-from-master] Failed to update contact ${update.id}:`, error);
+          contactUpdateErrors++;
+        }
+      }
+      
+      console.log(`[auto-backfill-ig-from-master] Updated contacts batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(contactUpdates.length / BATCH_SIZE)}`);
+    }
+
+    // Batch upsert user_ig_map
+    let igMapErrors = 0;
+    for (let i = 0; i < igMapEntries.length; i += BATCH_SIZE) {
+      const chunk = igMapEntries.slice(i, i + BATCH_SIZE);
+      
+      const { error } = await supabase
+        .from("user_ig_map")
+        .upsert(chunk, { onConflict: 'user_id,name' });
+      
+      if (error) {
+        console.error(`[auto-backfill-ig-from-master] Failed to upsert ig_map batch:`, error);
+        igMapErrors++;
+      } else {
+        console.log(`[auto-backfill-ig-from-master] Upserted ig_map batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(igMapEntries.length / BATCH_SIZE)}`);
+      }
+    }
+
+    const matchedCount = contactUpdates.length - contactUpdateErrors;
+    console.log(`[auto-backfill-ig-from-master] Complete: ${matchedCount}/${contacts.length} matched (${contactUpdateErrors} contact errors, ${igMapErrors} map errors)`);
 
     return new Response(
       JSON.stringify({
@@ -236,6 +281,7 @@ serve(async (req) => {
         matched: matchedCount,
         total: contacts.length,
         updates,
+        errors: { contactUpdates: contactUpdateErrors, igMap: igMapErrors }
       }),
       {
         status: 200,
