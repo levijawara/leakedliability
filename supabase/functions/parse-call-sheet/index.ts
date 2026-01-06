@@ -70,6 +70,69 @@ interface ParseResult {
 }
 
 // ============================================================================
+// EXTRACTION QUALITY SCORING - Gate before Gemini to prevent hallucinations
+// ============================================================================
+
+interface ExtractionQuality {
+  passed: boolean;
+  charCount: number;
+  phonePatterns: number;
+  emailPatterns: number;
+  keywordScore: number;
+  reason?: string;
+}
+
+function scoreExtraction(text: string): ExtractionQuality {
+  const charCount = text.trim().length;
+  
+  // Phone patterns (count unique matches)
+  const phoneRegex = /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
+  const phoneMatches = text.match(phoneRegex) || [];
+  const phonePatterns = new Set(phoneMatches.map(p => p.replace(/\D/g, ''))).size;
+  
+  // Email patterns (count unique matches)
+  const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
+  const emailMatches = text.match(emailRegex) || [];
+  const emailPatterns = new Set(emailMatches.map(e => e.toLowerCase())).size;
+  
+  // Call sheet keywords - must have at least 1
+  const keywords = [
+    'CALL SHEET', 'CALL TIME', 'CREW', 'LOCATION', 'LUNCH', 
+    'WRAP', 'PRODUCTION', 'DIRECTOR', 'PRODUCER', 'SET',
+    'DEPARTMENT', 'CAMERA', 'SOUND', 'GRIP', 'ELECTRIC',
+    'HAIR', 'MAKEUP', 'WARDROBE', 'TALENT', 'CAST'
+  ];
+  const keywordScore = keywords.filter(kw => 
+    text.toUpperCase().includes(kw)
+  ).length;
+  
+  // Quality thresholds: 1500 chars, 3 phones, 3 emails, 1 keyword
+  const passed = charCount >= 1500 
+              && phonePatterns >= 3 
+              && emailPatterns >= 3 
+              && keywordScore >= 1;
+  
+  let reason: string | undefined;
+  if (!passed) {
+    const issues: string[] = [];
+    if (charCount < 1500) issues.push(`chars: ${charCount}/1500`);
+    if (phonePatterns < 3) issues.push(`phones: ${phonePatterns}/3`);
+    if (emailPatterns < 3) issues.push(`emails: ${emailPatterns}/3`);
+    if (keywordScore < 1) issues.push(`keywords: ${keywordScore}/1`);
+    reason = `Quality check failed: ${issues.join(', ')}`;
+  }
+  
+  return {
+    passed,
+    charCount,
+    phonePatterns,
+    emailPatterns,
+    keywordScore,
+    reason
+  };
+}
+
+// ============================================================================
 // COMPLETE EXTRA CREDIT PARSER SYSTEM PROMPT
 // All 23 refinements, 4-pass extraction, 12 canonical departments, role normalization
 // ============================================================================
@@ -472,13 +535,35 @@ serve(async (req) => {
     const fileSize = fileData.size;
     logAction(`PDF downloaded (${(fileSize / 1024).toFixed(1)} KB)`, downloadStart);
 
-    // Extract text from PDF - try Firecrawl first (better OCR), fall back to unpdf
+    // =========================================================================
+    // QUALITY-GATED EXTRACTION: unpdf first (fast), Firecrawl fallback (OCR)
+    // Gemini only sees text that passes quality checks
+    // =========================================================================
+    
     let pdfText = "";
     let extractionMethod = "unpdf";
+    let unpdfQuality: ExtractionQuality | null = null;
+    let firecrawlQuality: ExtractionQuality | null = null;
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
 
-    if (firecrawlApiKey) {
-      console.log("[parse-call-sheet] Attempting extraction with Firecrawl...");
+    // STEP 1: Try unpdf first (fast, local, free)
+    console.log("[parse-call-sheet] Extracting text from PDF with unpdf (fast path)...");
+    const unpdfStart = Date.now();
+    const unpdfText = await extractTextFromPdf(fileData);
+    logAction(`unpdf extracted (${unpdfText.length} chars)`, unpdfStart);
+    
+    // STEP 2: Score unpdf extraction quality
+    unpdfQuality = scoreExtraction(unpdfText);
+    console.log(`[parse-call-sheet] unpdf quality: passed=${unpdfQuality.passed}, chars=${unpdfQuality.charCount}, phones=${unpdfQuality.phonePatterns}, emails=${unpdfQuality.emailPatterns}, keywords=${unpdfQuality.keywordScore}`);
+    
+    if (unpdfQuality.passed) {
+      // Fast path: unpdf quality is good enough
+      pdfText = unpdfText;
+      extractionMethod = "unpdf";
+      console.log("[parse-call-sheet] unpdf passed quality check, skipping Firecrawl");
+    } else if (firecrawlApiKey) {
+      // STEP 3: Fallback to Firecrawl OCR (slow but handles scanned PDFs)
+      console.log(`[parse-call-sheet] unpdf failed quality check (${unpdfQuality.reason}), trying Firecrawl OCR...`);
       const firecrawlStart = Date.now();
       
       try {
@@ -516,42 +601,50 @@ serve(async (req) => {
         
         const firecrawlData = await firecrawlResponse.json();
         const firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
+        logAction(`Firecrawl extracted (${firecrawlText.length} chars)`, firecrawlStart);
         
-        if (firecrawlText && firecrawlText.trim().length >= 100) {
+        // STEP 4: Score Firecrawl extraction quality
+        firecrawlQuality = scoreExtraction(firecrawlText);
+        console.log(`[parse-call-sheet] Firecrawl quality: passed=${firecrawlQuality.passed}, chars=${firecrawlQuality.charCount}, phones=${firecrawlQuality.phonePatterns}, emails=${firecrawlQuality.emailPatterns}, keywords=${firecrawlQuality.keywordScore}`);
+        
+        if (firecrawlQuality.passed) {
           pdfText = firecrawlText;
           extractionMethod = "firecrawl";
-          logAction(`Firecrawl extracted (${pdfText.length} chars)`, firecrawlStart);
-          console.log("[parse-call-sheet] Firecrawl extraction successful");
+          console.log("[parse-call-sheet] Firecrawl passed quality check");
         } else {
-          console.warn(`[parse-call-sheet] Firecrawl returned insufficient text (${firecrawlText?.length || 0} chars), falling back to unpdf`);
-          throw new Error("Firecrawl returned insufficient text");
+          console.warn(`[parse-call-sheet] Firecrawl also failed quality check: ${firecrawlQuality.reason}`);
         }
       } catch (firecrawlError) {
-        console.warn("[parse-call-sheet] Firecrawl failed, falling back to unpdf:", firecrawlError);
+        console.warn("[parse-call-sheet] Firecrawl failed:", firecrawlError);
       }
     } else {
-      console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, using unpdf");
+      console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, cannot fallback to OCR");
     }
-
-    // Fallback to unpdf if Firecrawl didn't work
-    if (!pdfText || pdfText.trim().length < 100) {
-      console.log("[parse-call-sheet] Extracting text from PDF with unpdf...");
-      const extractStart = Date.now();
-      pdfText = await extractTextFromPdf(fileData);
-      extractionMethod = "unpdf";
-      logAction(`unpdf extracted (${pdfText.length} chars)`, extractStart);
-    }
-
-    console.log(`[parse-call-sheet] Text extracted via ${extractionMethod}: ${pdfText.slice(0, 500)}...`);
-
-    if (!pdfText || pdfText.trim().length < 100) {
-      console.error("[parse-call-sheet] Insufficient text extracted from PDF");
-      await markAsError(supabase, call_sheet_id, "PDF contains insufficient extractable text. It may be a scanned image - please upload a text-based PDF or try OCR.");
+    
+    // STEP 5: Final quality gate - block Gemini if quality too low
+    const finalQuality = extractionMethod === "firecrawl" ? firecrawlQuality : unpdfQuality;
+    if (!finalQuality?.passed) {
+      const errorDetails = [
+        `chars: ${finalQuality?.charCount ?? 0}/1500`,
+        `phones: ${finalQuality?.phonePatterns ?? 0}/3`,
+        `emails: ${finalQuality?.emailPatterns ?? 0}/3`,
+        `keywords: ${finalQuality?.keywordScore ?? 0}/1`
+      ].join(', ');
+      
+      console.error(`[parse-call-sheet] Quality too low for reliable parsing: ${errorDetails}`);
+      await markAsError(supabase, call_sheet_id, 
+        `Document quality too low for reliable parsing (${errorDetails}). This may be a corrupted file, scanned image without OCR, or non-standard format. Try uploading a text-based PDF.`
+      );
       return new Response(
-        JSON.stringify({ error: "Insufficient extractable text in PDF" }),
+        JSON.stringify({ 
+          error: "Document quality too low for reliable parsing",
+          quality: finalQuality 
+        }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log(`[parse-call-sheet] Text extracted via ${extractionMethod}: ${pdfText.slice(0, 500)}...`);
 
     // Use AI to parse contacts with google/gemini-2.5-flash
     console.log("[parse-call-sheet] Sending to AI for parsing (google/gemini-2.5-flash)...");
@@ -584,10 +677,13 @@ serve(async (req) => {
       total_elapsed_ms: totalElapsedMs,
       total_elapsed_formatted: totalElapsedFormatted,
       model_used: "google/gemini-2.5-flash",
-      extraction_method: extractionMethod
+      extraction_method: extractionMethod,
+      unpdf_quality: unpdfQuality,
+      firecrawl_quality: firecrawlQuality,
+      fallback_triggered: extractionMethod === "firecrawl"
     };
 
-    console.log(`[parse-call-sheet] Total processing time: ${totalElapsedFormatted}`);
+    console.log(`[parse-call-sheet] Total processing time: ${totalElapsedFormatted}, method: ${extractionMethod}, fallback: ${extractionMethod === "firecrawl"}`);
 
     // CRITICAL: Extract canonical producers ONLY if not already set (FIRST PARSE ONLY)
     // This snapshot is IMMUTABLE and feeds the Heat Map + Network Graph
