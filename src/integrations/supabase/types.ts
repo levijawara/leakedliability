@@ -426,6 +426,51 @@ export type Database = {
           },
         ]
       }
+      contact_dedupe_exceptions: {
+        Row: {
+          contact_id_a: string
+          contact_id_b: string
+          created_at: string | null
+          field_type: string
+          field_value: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          contact_id_a: string
+          contact_id_b: string
+          created_at?: string | null
+          field_type: string
+          field_value: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          contact_id_a?: string
+          contact_id_b?: string
+          created_at?: string | null
+          field_type?: string
+          field_value?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contact_dedupe_exceptions_contact_id_a_fkey"
+            columns: ["contact_id_a"]
+            isOneToOne: false
+            referencedRelation: "crew_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contact_dedupe_exceptions_contact_id_b_fkey"
+            columns: ["contact_id_b"]
+            isOneToOne: false
+            referencedRelation: "crew_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_contacts: {
         Row: {
           confidence: number | null

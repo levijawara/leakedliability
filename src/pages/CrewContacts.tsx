@@ -735,6 +735,7 @@ export default function CrewContacts() {
         onClose={() => setDuplicateModalOpen(false)}
         duplicateGroups={duplicateGroups}
         contacts={contacts}
+        userId={user?.id || ''}
         onMergeComplete={handleMergeComplete}
       />
 
