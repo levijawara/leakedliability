@@ -106,19 +106,19 @@ function scoreExtraction(text: string): ExtractionQuality {
     text.toUpperCase().includes(kw)
   ).length;
   
-  // Quality thresholds: 1500 chars, 3 phones, 3 emails, 1 keyword
-  const passed = charCount >= 1500 
-              && phonePatterns >= 3 
-              && emailPatterns >= 3 
-              && keywordScore >= 1;
+  // Quality thresholds - relaxed: 800 chars, (3 phones OR 2 emails), 1 keyword
+  const hasEnoughContent = charCount >= 800;
+  const hasContactInfo = phonePatterns >= 3 || emailPatterns >= 2;
+  const hasKeywords = keywordScore >= 1;
+  
+  const passed = hasEnoughContent && hasContactInfo && hasKeywords;
   
   let reason: string | undefined;
   if (!passed) {
     const issues: string[] = [];
-    if (charCount < 1500) issues.push(`chars: ${charCount}/1500`);
-    if (phonePatterns < 3) issues.push(`phones: ${phonePatterns}/3`);
-    if (emailPatterns < 3) issues.push(`emails: ${emailPatterns}/3`);
-    if (keywordScore < 1) issues.push(`keywords: ${keywordScore}/1`);
+    if (!hasEnoughContent) issues.push(`chars: ${charCount}/800`);
+    if (!hasContactInfo) issues.push(`phones: ${phonePatterns}/3 OR emails: ${emailPatterns}/2`);
+    if (!hasKeywords) issues.push(`keywords: ${keywordScore}/1`);
     reason = `Quality check failed: ${issues.join(', ')}`;
   }
   
@@ -625,9 +625,9 @@ serve(async (req) => {
     const finalQuality = extractionMethod === "firecrawl" ? firecrawlQuality : unpdfQuality;
     if (!finalQuality?.passed) {
       const errorDetails = [
-        `chars: ${finalQuality?.charCount ?? 0}/1500`,
+        `chars: ${finalQuality?.charCount ?? 0}/800`,
         `phones: ${finalQuality?.phonePatterns ?? 0}/3`,
-        `emails: ${finalQuality?.emailPatterns ?? 0}/3`,
+        `emails: ${finalQuality?.emailPatterns ?? 0}/2`,
         `keywords: ${finalQuality?.keywordScore ?? 0}/1`
       ].join(', ');
       
@@ -635,12 +635,15 @@ serve(async (req) => {
       await markAsError(supabase, call_sheet_id, 
         `Document quality too low for reliable parsing (${errorDetails}). This may be a corrupted file, scanned image without OCR, or non-standard format. Try uploading a text-based PDF.`
       );
+      // Return 200 with error_code so queue processor treats as terminal (no retry)
       return new Response(
         JSON.stringify({ 
+          success: false,
+          error_code: "quality_too_low",
           error: "Document quality too low for reliable parsing",
           quality: finalQuality 
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
