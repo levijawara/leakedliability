@@ -201,35 +201,19 @@ export default function Admin() {
 
   const checkAdminAccess = async () => {
     try {
+      // Session and admin access are guaranteed by RequireAuth wrapper
       const { data: { user } } = await supabase.auth.getUser();
       
-      if (!user) {
-        navigate("/auth");
-        return;
+      if (user) {
+        setIsAdmin(true);
+        await loadAdminData();
       }
-
-      // Check if user has admin role via secure function
-      const { data, error } = await supabase.rpc('has_role', { _user_id: user.id, _role: 'admin' });
-
-      if (error || !data) {
-        toast({
-          title: "Access Denied",
-          description: "You don't have admin privileges.",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
-      setIsAdmin(true);
-      await loadAdminData();
     } catch (error: any) {
       toast({
         title: "Error",
         description: mapDatabaseError(error),
         variant: "destructive",
       });
-      navigate("/");
     } finally {
       setLoading(false);
     }

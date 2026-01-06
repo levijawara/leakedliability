@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +44,6 @@ const defaultFilters: ContactFilters = {
 };
 
 export default function CrewContacts() {
-  const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -91,61 +90,34 @@ export default function CrewContacts() {
   }, [showContactInfo]);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadContacts = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to view contacts.",
-          variant: "destructive"
+      // Session and beta access are guaranteed by RequireAuth wrapper
+      if (session) {
+        setUser(session.user);
+        fetchContacts(session.user.id);
+        
+        // Check admin status
+        const { data: adminData } = await supabase.rpc('has_role', {
+          _user_id: session.user.id,
+          _role: 'admin'
         });
-        navigate("/auth");
-        return;
+        setIsAdmin(adminData === true);
+      } else {
+        setLoading(false);
       }
-
-      // Check if user has beta access or is admin
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("beta_access")
-        .eq("user_id", session.user.id)
-        .single();
-
-      const { data: isAdminData } = await supabase.rpc('has_role', { 
-        _user_id: session.user.id, 
-        _role: 'admin' 
-      });
-
-      if (!profile?.beta_access && !isAdminData) {
-        toast({
-          title: "Beta Access Required",
-          description: "Unlock beta features from your profile page.",
-        });
-        navigate("/profile");
-        return;
-      }
-      setUser(session.user);
-      fetchContacts(session.user.id);
-      
-      // Check admin status
-      const { data: adminData } = await supabase.rpc('has_role', {
-        _user_id: session.user.id,
-        _role: 'admin'
-      });
-      setIsAdmin(adminData === true);
     };
 
-    checkAuth();
+    loadContacts();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
+      if (session) {
         setUser(session.user);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, []);
 
   const fetchContacts = async (userId: string) => {
     const PAGE_SIZE = 1000;

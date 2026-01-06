@@ -39,24 +39,19 @@ export default function ProducerDashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
-    checkAuthAndLoadReports();
+    loadReportsForUser();
   }, []);
 
-  const checkAuthAndLoadReports = async () => {
+  const loadReportsForUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     
-    if (!user?.email) {
-      toast({
-        title: "Authentication Required",
-        description: "Please log in to view your producer dashboard",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
+    // Session is guaranteed by RequireAuth wrapper
+    if (user?.email) {
+      setUserEmail(user.email);
+      await loadReports(user.email);
+    } else {
+      setLoading(false);
     }
-
-    setUserEmail(user.email);
-    await loadReports(user.email);
   };
 
   const loadReports = async (email: string) => {

@@ -1,75 +1,42 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { CallSheetUploader } from "@/components/callsheets/CallSheetUploader";
 import { CallSheetList } from "@/components/callsheets/CallSheetList";
 import { FileSpreadsheet, Users } from "lucide-react";
 
 export default function CallSheetManager() {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { toast } = useToast();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
   const contactIdFilter = searchParams.get('contact_id');
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to manage call sheets.",
-          variant: "destructive"
-        });
-        navigate("/auth");
-        return;
+      // Session and beta access are guaranteed by RequireAuth wrapper
+      if (session) {
+        setUser(session.user);
       }
-
-      // Check if user has beta access or is admin
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("beta_access")
-        .eq("user_id", session.user.id)
-        .single();
-
-      const { data: isAdminData } = await supabase.rpc('has_role', { 
-        _user_id: session.user.id, 
-        _role: 'admin' 
-      });
-
-      if (!profile?.beta_access && !isAdminData) {
-        toast({
-          title: "Beta Access Required",
-          description: "Unlock beta features from your profile page.",
-        });
-        navigate("/profile");
-        return;
-      }
-
-      setUser(session.user);
       setLoading(false);
     };
 
-    checkAuth();
+    loadUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
+      if (session) {
         setUser(session.user);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, toast]);
+  }, []);
 
   if (loading) {
     return (

@@ -14,6 +14,7 @@ import { validateRLSAssumptions, logRLSValidationResults, getRLSViolationsSummar
 import { validateEnv, testSupabaseConnection } from "@/config/env";
 import { validateTableExistence, logTableValidationResults, getTableValidationSummary } from "@/lib/tableValidation";
 import { validateStorageBuckets, logStorageBucketValidationResults } from "@/lib/storageValidation";
+import { RequireAuth } from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import Leaderboard from "./pages/Leaderboard";
 import SubmitReport from "./pages/SubmitReport";
@@ -380,20 +381,20 @@ const AppContent = () => {
         <Route path="/faq" element={<FAQ />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/admin/search-insights" element={<AdminSearchInsights />} />
-        <Route path="/admin/edit-report/:id" element={<AdminEditReport />} />
-        <Route path="/admin/merge-producers" element={<AdminProducerMerge />} />
-        <Route path="/admin-submit-existing" element={<AdminSubmitExisting />} />
-        <Route path="/admin-submit-new" element={<AdminSubmitNew />} />
+        <Route path="/profile" element={<RequireAuth><Profile /></RequireAuth>} />
+        <Route path="/admin" element={<RequireAuth requireAdmin><Admin /></RequireAuth>} />
+        <Route path="/admin/search-insights" element={<RequireAuth requireAdmin><AdminSearchInsights /></RequireAuth>} />
+        <Route path="/admin/edit-report/:id" element={<RequireAuth requireAdmin><AdminEditReport /></RequireAuth>} />
+        <Route path="/admin/merge-producers" element={<RequireAuth requireAdmin><AdminProducerMerge /></RequireAuth>} />
+        <Route path="/admin-submit-existing" element={<RequireAuth requireAdmin><AdminSubmitExisting /></RequireAuth>} />
+        <Route path="/admin-submit-new" element={<RequireAuth requireAdmin><AdminSubmitNew /></RequireAuth>} />
         <Route path="/hold-that-l" element={<HoldThatLGenerator />} />
-        <Route path="/producer-dashboard" element={<ProducerDashboard />} />
+        <Route path="/producer-dashboard" element={<RequireAuth><ProducerDashboard /></RequireAuth>} />
         <Route path="/suggestion-box" element={<SuggestionBox />} />
         <Route path="/suggestions" element={<SuggestionBox />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
-        <Route path="/leaderboard-analytics" element={<LeaderboardAnalytics />} />
-        <Route path="/admin/analytics/daily-visitors" element={<DailyVisitors />} />
+        <Route path="/leaderboard-analytics" element={<RequireAuth requireAdmin><LeaderboardAnalytics /></RequireAuth>} />
+        <Route path="/admin/analytics/daily-visitors" element={<RequireAuth requireAdmin><DailyVisitors /></RequireAuth>} />
         <Route path="/subscribe" element={<Subscribe />} />
         <Route path="/sitemap" element={<Sitemap />} />
         <Route path="/maintenance" element={<Maintenance message={maintenanceMessage} />} />
@@ -407,14 +408,14 @@ const AppContent = () => {
         <Route path="/escrow/initiate" element={<EscrowInitiate />} />
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
-        <Route path="/call-sheets" element={<CallSheetManager />} />
-        <Route path="/call-sheets/:id/review" element={<ParseReview />} />
-        <Route path="/call-sheets/:id/ig-matching" element={<IGMatching />} />
-        <Route path="/crew-contacts" element={<CrewContacts />} />
-        <Route path="/admin/call-sheet-reservoir" element={<AdminCallSheetReservoir />} />
-        <Route path="/admin/intelligence/network-graph" element={<AdminNetworkGraph />} />
-        <Route path="/admin/intelligence/heat-map" element={<AdminCallSheetReservoir />} />
-        <Route path="/beta-unlock" element={<BetaUnlock />} />
+        <Route path="/call-sheets" element={<RequireAuth requireBeta><CallSheetManager /></RequireAuth>} />
+        <Route path="/call-sheets/:id/review" element={<RequireAuth requireBeta><ParseReview /></RequireAuth>} />
+        <Route path="/call-sheets/:id/ig-matching" element={<RequireAuth requireBeta><IGMatching /></RequireAuth>} />
+        <Route path="/crew-contacts" element={<RequireAuth requireBeta><CrewContacts /></RequireAuth>} />
+        <Route path="/admin/call-sheet-reservoir" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
+        <Route path="/admin/intelligence/network-graph" element={<RequireAuth requireAdmin><AdminNetworkGraph /></RequireAuth>} />
+        <Route path="/admin/intelligence/heat-map" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
+        <Route path="/beta-unlock" element={<RequireAuth><BetaUnlock /></RequireAuth>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
         </Routes>

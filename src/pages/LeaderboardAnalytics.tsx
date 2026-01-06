@@ -117,28 +117,7 @@ export default function LeaderboardAnalytics() {
 
   const checkAccessAndLoadData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        navigate("/auth");
-        return;
-      }
-
-      const { data: isAdmin } = await supabase.rpc('has_role', { 
-        _user_id: user.id, 
-        _role: 'admin' 
-      });
-
-      if (!isAdmin) {
-        toast({
-          title: "Access Denied",
-          description: "Admin privileges required",
-          variant: "destructive",
-        });
-        navigate("/");
-        return;
-      }
-
+      // Session and admin access are guaranteed by RequireAuth wrapper
       const { data, error } = await supabase.functions.invoke('leaderboard-insights');
 
       if (error) {
