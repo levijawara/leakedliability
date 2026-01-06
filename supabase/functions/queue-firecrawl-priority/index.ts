@@ -43,15 +43,14 @@ serve(async (req) => {
       );
     }
 
-    // Verify admin role
-    const { data: profile, error: profileError } = await supabase
-      .from("user_profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
+    // Verify admin role using has_role RPC
+    const { data: isAdmin, error: roleError } = await supabase.rpc('has_role', {
+      _user_id: user.id,
+      _role: 'admin'
+    });
 
-    if (profileError || profile?.role !== "admin") {
-      console.error("[queue-firecrawl-priority] Admin check failed:", profileError, profile);
+    if (roleError || !isAdmin) {
+      console.error("[queue-firecrawl-priority] Admin check failed:", roleError);
       return new Response(
         JSON.stringify({ error: "Admin access required" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
