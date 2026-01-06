@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -119,6 +119,7 @@ export default function Admin() {
   // IG Master List state
   const [igMasterImporting, setIgMasterImporting] = useState(false);
   const [igMasterStats, setIgMasterStats] = useState<{ total: number } | null>(null);
+  const [igMasterFile, setIgMasterFile] = useState<File | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -3705,30 +3706,60 @@ export default function Admin() {
               <div className="border rounded-lg p-4 space-y-4">
                 <h3 className="font-medium">Import Seed Data</h3>
                 <p className="text-sm text-muted-foreground">
-                  Paste JSON array of contacts with instagram, name, roles, phone, email fields.
+                  Upload a JSON file with contacts (name, instagram, roles, phone, email fields).
                 </p>
-                <Textarea
-                  id="ig-import-json"
-                  placeholder='[{"name": "John Doe", "instagram": "@johndoe", "roles": "DP", "phone": "555-1234", "email": "john@example.com"}]'
-                  className="font-mono text-xs"
-                  rows={6}
-                />
+                
+                {/* File Input Zone */}
+                <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setIgMasterFile(file);
+                    }}
+                    className="hidden"
+                    id="ig-master-file-input"
+                  />
+                  <label 
+                    htmlFor="ig-master-file-input" 
+                    className="cursor-pointer block"
+                  >
+                    {igMasterFile ? (
+                      <div className="space-y-2">
+                        <p className="font-medium">{igMasterFile.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {(igMasterFile.size / 1024).toFixed(1)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <p>Click to select JSON file</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+                
                 <div className="flex gap-2">
                   <Button
                     onClick={async () => {
-                      const textarea = document.getElementById('ig-import-json') as HTMLTextAreaElement;
-                      if (!textarea?.value.trim()) {
-                        toast({ title: "No data", description: "Paste JSON data first.", variant: "destructive" });
+                      if (!igMasterFile) {
+                        toast({ title: "No file selected", variant: "destructive" });
                         return;
                       }
                       
                       try {
-                        const contacts = JSON.parse(textarea.value);
-                        if (!Array.isArray(contacts)) throw new Error("Must be an array");
-                        
                         setIgMasterImporting(true);
+                        
+                        // Read file content
+                        const text = await igMasterFile.text();
+                        const contacts = JSON.parse(text);
+                        
+                        if (!Array.isArray(contacts)) throw new Error("JSON must be an array");
+                        
                         const { data, error } = await supabase.functions.invoke('import-ig-master-list', {
-                          body: { contacts, source: 'admin_import' }
+                          body: { contacts, source: 'admin_file_import' }
                         });
                         
                         if (error) throw error;
@@ -3738,7 +3769,10 @@ export default function Admin() {
                           description: `Imported: ${data.imported}, Updated: ${data.updated}, Skipped: ${data.skipped}`,
                         });
                         
-                        textarea.value = '';
+                        // Reset file input
+                        setIgMasterFile(null);
+                        const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
+                        if (fileInput) fileInput.value = '';
                         
                         // Refresh stats
                         const { count } = await supabase
@@ -3749,14 +3783,14 @@ export default function Admin() {
                       } catch (err: any) {
                         toast({
                           title: "Import Failed",
-                          description: err.message || "Invalid JSON or import error",
+                          description: err.message || "Invalid JSON file",
                           variant: "destructive"
                         });
                       } finally {
                         setIgMasterImporting(false);
                       }
                     }}
-                    disabled={igMasterImporting}
+                    disabled={!igMasterFile || igMasterImporting}
                   >
                     {igMasterImporting ? (
                       <>
@@ -3764,9 +3798,22 @@ export default function Admin() {
                         Importing...
                       </>
                     ) : (
-                      'Import JSON'
+                      'Import File'
                     )}
                   </Button>
+                  {igMasterFile && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setIgMasterFile(null);
+                        const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
+                        if (fileInput) fileInput.value = '';
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
