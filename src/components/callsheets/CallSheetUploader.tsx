@@ -121,10 +121,10 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
           user_label: file.name
         });
 
-      // Step 6: Trigger parse
-      await supabase.functions.invoke('parse-call-sheet', {
+      // Step 6: Trigger parse (fire-and-forget - parsing happens in background)
+      supabase.functions.invoke('parse-call-sheet', {
         body: { call_sheet_id: newSheet.id }
-      });
+      }).catch(err => console.warn('[BulkUploader] Background parse trigger failed:', err));
 
       updateFileStatus(index, { 
         status: 'queued', 
