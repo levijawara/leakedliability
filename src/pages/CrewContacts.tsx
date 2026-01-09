@@ -4,8 +4,9 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ContactsTable } from "@/components/contacts/ContactsTable";
-import { ContactsGrid } from "@/components/contacts/ContactsGrid";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { VirtualizedContactsTable } from "@/components/contacts/VirtualizedContactsTable";
+import { VirtualizedContactsGrid } from "@/components/contacts/VirtualizedContactsGrid";
 import { ContactsToolbar } from "@/components/contacts/ContactsToolbar";
 import { FilterModal, ContactFilters } from "@/components/contacts/FilterModal";
 import { BulkActionsBar } from "@/components/contacts/BulkActionsBar";
@@ -48,8 +49,8 @@ export default function CrewContacts() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<CrewContact[]>([]);
-  const [filteredContacts, setFilteredContacts] = useState<CrewContact[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 200);
   const [view, setView] = useState<'list' | 'cards'>(() => {
     const stored = localStorage.getItem(VIEW_STORAGE_KEY);
     return (stored === 'cards' || stored === 'list') ? stored : 'list';
@@ -150,7 +151,6 @@ export default function CrewContacts() {
 
       console.log(`[CrewContacts] Total contacts loaded: ${allContacts.length}`);
       setContacts(allContacts);
-      setFilteredContacts(allContacts);
       
       fetchCallSheetCounts(allContacts.map(c => c.id));
     } catch (error: any) {
@@ -261,8 +261,8 @@ export default function CrewContacts() {
     );
   }, [filters]);
 
-  // Apply all filters
-  useEffect(() => {
+  // OPTIMIZED: Use useMemo instead of useEffect + setState for filtered contacts
+  const filteredContacts = useMemo(() => {
     let result = [...contacts];
 
     // Recently Added filter
@@ -271,9 +271,9 @@ export default function CrewContacts() {
       result = result.filter(c => recentIds.has(c.id));
     }
 
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+    // Search filter - use debounced value
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase();
       result = result.filter(c =>
         c.name.toLowerCase().includes(query) ||
         c.emails?.some(e => e.toLowerCase().includes(query)) ||
@@ -334,8 +334,8 @@ export default function CrewContacts() {
       });
     }
 
-    setFilteredContacts(result);
-  }, [contacts, searchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts]);
+    return result;
+  }, [contacts, debouncedSearchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts]);
 
   // Clear selection when exiting select mode
   useEffect(() => {
@@ -344,35 +344,35 @@ export default function CrewContacts() {
     }
   }, [selectMode]);
 
-  const handleContactUpdate = (updatedContact: CrewContact) => {
+  const handleContactUpdate = useCallback((updatedContact: CrewContact) => {
     setContacts(prev =>
       prev.map(c => c.id === updatedContact.id ? updatedContact : c)
     );
-  };
+  }, []);
 
-  const handleContactDelete = (contactId: string) => {
+  const handleContactDelete = useCallback((contactId: string) => {
     setContacts(prev => prev.filter(c => c.id !== contactId));
     setSelectedIds(prev => {
       const next = new Set(prev);
       next.delete(contactId);
       return next;
     });
-  };
+  }, []);
 
-  const handleBulkDelete = (ids: string[]) => {
+  const handleBulkDelete = useCallback((ids: string[]) => {
     setContacts(prev => prev.filter(c => !ids.includes(c.id)));
     setSelectedIds(new Set());
-  };
+  }, []);
 
-  const handleBulkFavorite = () => {
+  const handleBulkFavorite = useCallback(() => {
     setContacts(prev =>
       prev.map(c => selectedIds.has(c.id) ? { ...c, is_favorite: true } : c)
     );
-  };
+  }, [selectedIds]);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     setSelectedIds(new Set(filteredContacts.map(c => c.id)));
-  };
+  }, [filteredContacts]);
 
   // Find duplicates handler
   const handleFindDuplicates = useCallback(() => {
@@ -472,11 +472,11 @@ export default function CrewContacts() {
     setDuplicateModalOpen(true);
   }, [contacts, selectedIds, toast]);
 
-  const handleDeselectAll = () => {
+  const handleDeselectAll = useCallback(() => {
     setSelectedIds(new Set());
-  };
+  }, []);
 
-  const handleRunBackfill = async () => {
+  const handleRunBackfill = useCallback(async () => {
     if (!user || !isAdmin) return;
     
     setBackfillRunning(true);
@@ -505,9 +505,9 @@ export default function CrewContacts() {
     } finally {
       setBackfillRunning(false);
     }
-  };
+  }, [user, isAdmin, contacts, toast]);
 
-  const handleAutoMatchIG = async () => {
+  const handleAutoMatchIG = useCallback(async () => {
     if (!user) return;
     
     setAutoMatchRunning(true);
@@ -536,9 +536,9 @@ export default function CrewContacts() {
     } finally {
       setAutoMatchRunning(false);
     }
-  };
+  }, [user, toast]);
 
-  const handleToggleSelect = (id: string) => {
+  const handleToggleSelect = useCallback((id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -548,7 +548,7 @@ export default function CrewContacts() {
       }
       return next;
     });
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -663,9 +663,9 @@ export default function CrewContacts() {
             />
           )}
 
-          {/* Contacts Display */}
+          {/* Contacts Display - Now Virtualized */}
           {view === 'list' ? (
-            <ContactsTable
+            <VirtualizedContactsTable
               contacts={filteredContacts}
               userId={user?.id}
               onContactUpdate={handleContactUpdate}
@@ -676,7 +676,7 @@ export default function CrewContacts() {
               onToggleSelect={handleToggleSelect}
             />
           ) : (
-            <ContactsGrid
+            <VirtualizedContactsGrid
               contacts={filteredContacts}
               callSheetCounts={callSheetCounts}
               userId={user?.id}
