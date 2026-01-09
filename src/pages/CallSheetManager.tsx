@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
@@ -12,39 +11,10 @@ import { FileSpreadsheet, Users } from "lucide-react";
 
 export default function CallSheetManager() {
   const [searchParams] = useSearchParams();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  
   const contactIdFilter = searchParams.get('contact_id');
 
-  useEffect(() => {
-    const loadUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      // Session and beta access are guaranteed by RequireAuth wrapper
-      if (session) {
-        setUser(session.user);
-      }
-      setLoading(false);
-    };
-
-    loadUser();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setUser(session.user);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  // No need for local user state - RequireAuth wrapper guarantees authentication
+  // Components get userId from session directly to prevent RLS race conditions
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -87,7 +57,7 @@ export default function CallSheetManager() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CallSheetUploader userId={user?.id} />
+                  <CallSheetUploader />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -101,7 +71,7 @@ export default function CallSheetManager() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CallSheetList userId={user?.id} />
+                  <CallSheetList />
                 </CardContent>
               </Card>
             </TabsContent>

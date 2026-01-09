@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface CallSheetUploaderProps {
-  userId: string;
   onUploadComplete?: () => void;
 }
 
@@ -29,7 +28,7 @@ async function computeFileHash(file: File): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploaderProps) {
+export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadQueue, setUploadQueue] = useState<FileUploadState[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -45,6 +44,13 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
 
   const processFile = async (file: File, index: number): Promise<void> => {
     try {
+      // Get authenticated user ID from live session - prevents RLS violations
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session?.user?.id) {
+        throw new Error('Authentication required to upload call sheets');
+      }
+      const userId = session.user.id;
+
       // Step 1: Hash
       updateFileStatus(index, { status: 'hashing' });
       const clientHash = await computeFileHash(file);
@@ -226,7 +232,7 @@ export function CallSheetUploader({ userId, onUploadComplete }: CallSheetUploade
     if (files.length > 0) {
       handleBulkUpload(files);
     }
-  }, [userId, isProcessing]);
+  }, [isProcessing]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
