@@ -71,9 +71,7 @@ interface UserCallSheetLink {
   payment_status_locked: boolean;
 }
 
-interface CallSheetListProps {
-  userId: string;
-}
+interface CallSheetListProps {}
 
 // Custom hook for debounced value
 function useDebounce<T>(value: T, delay: number): T {
@@ -90,10 +88,13 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export function CallSheetList({ userId }: CallSheetListProps) {
+export function CallSheetList({}: CallSheetListProps) {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const contactIdFilter = searchParams.get('contact_id');
+  
+  // Get userId from session to prevent RLS race conditions
+  const [userId, setUserId] = useState<string | null>(null);
   
   const [userLinks, setUserLinks] = useState<UserCallSheetLink[]>([]);
   const [loading, setLoading] = useState(true);
@@ -208,8 +209,21 @@ export function CallSheetList({ userId }: CallSheetListProps) {
     }
   };
 
-  // Initial fetch and realtime subscription
+  // Get userId from session on mount
   useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+      }
+    };
+    getUser();
+  }, []);
+
+  // Initial fetch and realtime subscription - wait for userId
+  useEffect(() => {
+    if (!userId) return;
+    
     fetchUserCallSheets();
     
     // Check if user is admin
