@@ -248,7 +248,7 @@ export function IgnoreErrorsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -260,15 +260,92 @@ export function IgnoreErrorsModal({
           Group {currentGroupIndex + 1} of {groups.length}: Choose who should <strong>keep</strong> each shared value.
         </p>
 
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-          <div className="text-center flex-1">
-            <p className="font-medium">{contact1.name}</p>
-            <p className="text-xs text-muted-foreground">Contact A</p>
+        {/* Full Contact Cards */}
+        <div className="grid grid-cols-2 gap-4 p-3 bg-muted/50 rounded-lg">
+          {/* Contact A Card */}
+          <div className="space-y-2 border-r border-border pr-4">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="shrink-0">A</Badge>
+              <span className="font-medium truncate">{contact1.name}</span>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1 pl-6">
+              {fullContact1?.phones && fullContact1.phones.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Phone className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact1.phones.join(', ')}</span>
+                </div>
+              )}
+              {fullContact1?.emails && fullContact1.emails.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Mail className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact1.emails.join(', ')}</span>
+                </div>
+              )}
+              {fullContact1?.ig_handle && (
+                <div className="flex items-center gap-1.5">
+                  <AtSign className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact1.ig_handle}</span>
+                </div>
+              )}
+              {fullContact1?.roles && fullContact1.roles.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Briefcase className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact1.roles.join(', ')}</span>
+                </div>
+              )}
+              {fullContact1?.departments && fullContact1.departments.length > 0 && (
+                <div className="text-muted-foreground/70 pl-4 truncate">
+                  {fullContact1.departments.join(', ')}
+                </div>
+              )}
+              {!fullContact1?.phones?.length && !fullContact1?.emails?.length && 
+               !fullContact1?.ig_handle && !fullContact1?.roles?.length && (
+                <p className="text-muted-foreground/50 italic">No additional details</p>
+              )}
+            </div>
           </div>
-          <div className="text-muted-foreground text-sm px-4">vs</div>
-          <div className="text-center flex-1">
-            <p className="font-medium">{contact2.name}</p>
-            <p className="text-xs text-muted-foreground">Contact B</p>
+
+          {/* Contact B Card */}
+          <div className="space-y-2 pl-4">
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="shrink-0">B</Badge>
+              <span className="font-medium truncate">{contact2.name}</span>
+            </div>
+            <div className="text-xs text-muted-foreground space-y-1 pl-6">
+              {fullContact2?.phones && fullContact2.phones.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Phone className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact2.phones.join(', ')}</span>
+                </div>
+              )}
+              {fullContact2?.emails && fullContact2.emails.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Mail className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact2.emails.join(', ')}</span>
+                </div>
+              )}
+              {fullContact2?.ig_handle && (
+                <div className="flex items-center gap-1.5">
+                  <AtSign className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact2.ig_handle}</span>
+                </div>
+              )}
+              {fullContact2?.roles && fullContact2.roles.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Briefcase className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{fullContact2.roles.join(', ')}</span>
+                </div>
+              )}
+              {fullContact2?.departments && fullContact2.departments.length > 0 && (
+                <div className="text-muted-foreground/70 pl-4 truncate">
+                  {fullContact2.departments.join(', ')}
+                </div>
+              )}
+              {!fullContact2?.phones?.length && !fullContact2?.emails?.length && 
+               !fullContact2?.ig_handle && !fullContact2?.roles?.length && (
+                <p className="text-muted-foreground/50 italic">No additional details</p>
+              )}
+            </div>
           </div>
         </div>
 
