@@ -38,7 +38,7 @@ import type { CrewContact } from "@/pages/CrewContacts";
 
 interface VirtualizedContactsTableProps {
   contacts: CrewContact[];
-  userId: string;
+  userId: string | undefined;
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
   showContactInfo: boolean;
@@ -75,14 +75,15 @@ export function VirtualizedContactsTable({
   });
 
   const handleDelete = useCallback(async () => {
-    if (!deleteContact) return;
+    if (!deleteContact || !userId) return;
     
     setDeleting(true);
     try {
       const { error } = await supabase
         .from('crew_contacts')
         .delete()
-        .eq('id', deleteContact.id);
+        .eq('id', deleteContact.id)
+        .eq('user_id', userId);
 
       if (error) throw error;
 
@@ -102,16 +103,19 @@ export function VirtualizedContactsTable({
     } finally {
       setDeleting(false);
     }
-  }, [deleteContact, onContactDelete, toast]);
+  }, [deleteContact, onContactDelete, toast, userId]);
 
   const handleToggleFavorite = useCallback(async (contact: CrewContact) => {
+    if (!userId) return;
+    
     setTogglingFavorite(contact.id);
     try {
       const newValue = !contact.is_favorite;
       const { error } = await supabase
         .from('crew_contacts')
         .update({ is_favorite: newValue })
-        .eq('id', contact.id);
+        .eq('id', contact.id)
+        .eq('user_id', userId);
 
       if (error) throw error;
 
@@ -126,7 +130,7 @@ export function VirtualizedContactsTable({
     } finally {
       setTogglingFavorite(null);
     }
-  }, [onContactUpdate, toast]);
+  }, [onContactUpdate, toast, userId]);
 
   if (contacts.length === 0) {
     return (

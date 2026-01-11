@@ -37,7 +37,7 @@ import type { CrewContact } from "@/pages/CrewContacts";
 
 interface ContactsTableProps {
   contacts: CrewContact[];
-  userId: string;
+  userId: string | undefined;
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
   showContactInfo: boolean;
@@ -63,14 +63,15 @@ export function ContactsTable({
   const { toast } = useToast();
 
   const handleDelete = async () => {
-    if (!deleteContact) return;
+    if (!deleteContact || !userId) return;
     
     setDeleting(true);
     try {
       const { error } = await supabase
         .from('crew_contacts')
         .delete()
-        .eq('id', deleteContact.id);
+        .eq('id', deleteContact.id)
+        .eq('user_id', userId);
 
       if (error) throw error;
 
@@ -93,13 +94,16 @@ export function ContactsTable({
   };
 
   const handleToggleFavorite = async (contact: CrewContact) => {
+    if (!userId) return;
+    
     setTogglingFavorite(contact.id);
     try {
       const newValue = !contact.is_favorite;
       const { error } = await supabase
         .from('crew_contacts')
         .update({ is_favorite: newValue })
-        .eq('id', contact.id);
+        .eq('id', contact.id)
+        .eq('user_id', userId);
 
       if (error) throw error;
 

@@ -120,6 +120,35 @@ export default function CrewContacts() {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Bug #2 Fix: Realtime subscription for crew_contacts updates
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel('crew_contacts_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'crew_contacts',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('[CrewContacts] Contact update detected:', payload.eventType);
+          // Debounce refetch to handle rapid updates (e.g., multiple merges)
+          setTimeout(() => {
+            fetchContacts(user.id);
+          }, 500);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
   const fetchContacts = async (userId: string) => {
     const PAGE_SIZE = 1000;
     const MAX_CONTACTS = 100000;
