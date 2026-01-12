@@ -493,6 +493,10 @@ export function ParseSummaryPanel({
     let created = 0;
     let attributed = 0;
     let skippedAlreadyLinked = 0;
+    
+    // Bug #4: Track individual failures
+    let failed = 0;
+    const errors: string[] = [];
 
     try {
       // Fetch contacts already linked to THIS call sheet to prevent duplicates
@@ -516,83 +520,141 @@ export function ParseSummaryPanel({
           skippedAlreadyLinked++;
           continue;
         }
-        const override = overrides[contact.originalIndex] || {};
-        const finalContact = {
-          ...contact,
-          ...override
-        };
+        
+        // Bug #4: Wrap each contact in try/catch to continue on failure
+        try {
+          const override = overrides[contact.originalIndex] || {};
+          const finalContact = {
+            ...contact,
+            ...override
+          };
 
-        let contactId: string;
+          let contactId: string;
 
-        if (contact.decision === 'merge' && contact.potentialDuplicate) {
-          // Merge with existing contact
-          const existing = existingContacts.find(e => e.id === contact.potentialDuplicate!.existingId);
-          if (!existing) continue;
+          if (contact.decision === 'merge' && contact.potentialDuplicate) {
+            // Merge with existing contact
+            const existing = existingContacts.find(e => e.id === contact.potentialDuplicate!.existingId);
+            if (!existing) {
+              throw new Error('Existing contact not found for merge');
+            }
 
-          contactId = existing.id;
+            contactId = existing.id;
 
-          const mergedRoles = [...new Set([...existing.roles, ...(finalContact.roles || [])])];
-          const mergedDepartments = [...new Set([...existing.departments, ...(finalContact.departments || [])])];
-          const mergedEmails = [...new Set([...existing.emails, ...(finalContact.emails || [])])];
-          const mergedPhones = [...new Set([...existing.phones, ...(finalContact.phones || [])])];
+            const mergedRoles = [...new Set([...existing.roles, ...(finalContact.roles || [])])];
+            const mergedDepartments = [...new Set([...existing.departments, ...(finalContact.departments || [])])];
+            const mergedEmails = [...new Set([...existing.emails, ...(finalContact.emails || [])])];
+            const mergedPhones = [...new Set([...existing.phones, ...(finalContact.phones || [])])];
 
-          await supabase
-            .from('crew_contacts')
-            .update({
-              roles: mergedRoles,
-              departments: mergedDepartments,
-              emails: mergedEmails,
-              phones: mergedPhones,
-              ig_handle: finalContact.ig_handle || existing.ig_handle
-            })
-            .eq('id', contactId);
+            const { error: updateError } = await supabase
+              .from('crew_contacts')
+              .update({
+                roles: mergedRoles,
+                departments: mergedDepartments,
+                emails: mergedEmails,
+                phones: mergedPhones,
+                ig_handle: finalContact.ig_handle || existing.ig_handle
+              })
+              .eq('id', contactId);
 
-          merged++;
-        } else {
-          // Create new contact
-          const { data: newContact, error: insertError } = await supabase
-            .from('crew_contacts')
-            .insert({
-              user_id: userId,
-              name: finalContact.name,
-              roles: finalContact.roles,
-              departments: finalContact.departments,
-              phones: finalContact.phones,
-              emails: finalContact.emails,
-              ig_handle: finalContact.ig_handle,
-              confidence: finalContact.confidence,
-              source_files: [fileName],
-              needs_review: finalContact.confidence < 0.8
-            })
-            .select('id')
-            .single();
+            // Bug #4: Check for update errors
+            if (updateError) {
+              throw new Error(`Merge failed: ${updateError.message}`);
+            }
 
-          if (insertError) {
-            console.error('[ParseSummaryPanel] Insert error:', insertError);
-            continue;
+            merged++;
+          } else {
+            // Create new contact
+            const { data: newContact, error: insertError } = await supabase
+              .from('crew_contacts')
+              .insert({
+                user_id: userId,
+                name: finalContact.name,
+                roles: finalContact.roles,
+                departments: finalContact.departments,
+                phones: finalContact.phones,
+                emails: finalContact.emails,
+                ig_handle: finalContact.ig_handle,
+                confidence: finalContact.confidence,
+                source_files: [fileName],
+                needs_review: finalContact.confidence < 0.8
+              })
+              .select('id')
+              .single();
+
+            if (insertError) {
+              throw new Error(`Insert failed: ${insertError.message}`);
+            }
+
+            contactId = newContact.id;
+            created++;
           }
 
-          contactId = newContact.id;
-          created++;
+          // Create attribution link
+          const { error: linkError } = await supabase
+            .from('contact_call_sheets')
+            .upsert({
+              contact_id: contactId,
+              call_sheet_id: callSheetId
+            }, { onConflict: 'contact_id,call_sheet_id' });
+
+          if (!linkError) attributed++;
+        } catch (contactError: any) {
+          // Bug #4: Log and track per-contact failures, continue with others
+          console.error(`[ParseSummaryPanel] Error processing "${contact.name}":`, contactError);
+          errors.push(`"${contact.name}": ${contactError.message}`);
+          failed++;
+          continue;
         }
-
-        // Create attribution link
-        const { error: linkError } = await supabase
-          .from('contact_call_sheets')
-          .upsert({
-            contact_id: contactId,
-            call_sheet_id: callSheetId
-          }, { onConflict: 'contact_id,call_sheet_id' });
-
-        if (!linkError) attributed++;
       }
 
-      toast({
-        title: "Contacts saved",
-        description: `Merged ${merged}, created ${created} contacts. ${attributed} attributions added.`
-      });
+      // Bug #4: Show partial success if some failed
+      if (failed > 0) {
+        toast({
+          title: "Partial success",
+          description: `Merged ${merged}, created ${created}, ${failed} failed. See console for details.`,
+          variant: "destructive"
+        });
+        console.error('[ParseSummaryPanel] Failed operations:', errors);
+      } else {
+        toast({
+          title: "Contacts saved",
+          description: `Merged ${merged}, created ${created} contacts. ${attributed} attributions added.`
+        });
+      }
 
-      onComplete();
+      // Bug #5: Refresh existingContacts after merges to prevent stale duplicate detection
+      if (merged > 0) {
+        try {
+          const { data: refreshedContacts } = await supabase
+            .from('crew_contacts')
+            .select('id, name, phones, emails, roles, departments, ig_handle')
+            .eq('user_id', userId)
+            .limit(10000);
+          
+          if (refreshedContacts) {
+            const updated = refreshedContacts.map(c => ({
+              id: c.id,
+              name: c.name,
+              roles: c.roles || [],
+              departments: c.departments || [],
+              phones: c.phones || [],
+              emails: c.emails || [],
+              ig_handle: c.ig_handle
+            })) as ExistingContact[];
+            
+            setExistingContacts(updated);
+            console.log('[ParseSummaryPanel] Refreshed existingContacts after merge');
+          }
+        } catch (err) {
+          console.warn('[ParseSummaryPanel] Failed to refresh existingContacts:', err);
+          // Non-fatal - continue anyway
+        }
+      }
+
+      // Only call onComplete if at least some succeeded
+      if (merged > 0 || created > 0) {
+        onComplete();
+      }
     } catch (error: any) {
       console.error('[ParseSummaryPanel] Save error:', error);
       toast({
