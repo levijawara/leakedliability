@@ -54,14 +54,11 @@ export function CrewContactCard({
   const phones = contact.phones || [];
   
   const primaryRole = roles[0];
-  const primaryDepartment = departments[0];
   const primaryEmail = emails[0];
   const primaryPhone = phones[0];
   
-  // Count extras for "+N more" indicators
+  // Count extras for "+N more" indicators (roles only, departments hidden)
   const extraRoles = roles.length > 1 ? roles.length - 1 : 0;
-  const extraDepts = departments.length > 1 ? departments.length - 1 : 0;
-  const totalExtras = extraRoles + extraDepts;
   const extraEmails = emails.length > 1 ? emails.length - 1 : 0;
   const extraPhones = phones.length > 1 ? phones.length - 1 : 0;
   const totalContactExtras = extraEmails + extraPhones;
@@ -127,28 +124,22 @@ export function CrewContactCard({
               )}
             </div>
 
-            {/* Row 2: Role, Department - share one flex row, wrap allowed */}
+            {/* Row 2: Role only */}
             <div className="flex items-center flex-wrap gap-1.5">
               {primaryRole && (
                 <Badge variant="secondary" className="text-xs">
                   {primaryRole}
                 </Badge>
               )}
-              {primaryDepartment && (
-                <span className="text-xs text-muted-foreground">{primaryDepartment}</span>
-              )}
-              {totalExtras > 0 && (
+              {extraRoles > 0 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Badge variant="outline" className="text-xs cursor-help">
-                      +{totalExtras}
+                      +{extraRoles}
                     </Badge>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <div className="space-y-1 text-xs">
-                      {roles.length > 1 && <p>Roles: {roles.join(', ')}</p>}
-                      {departments.length > 1 && <p>Depts: {departments.join(', ')}</p>}
-                    </div>
+                    <p className="text-xs">Roles: {roles.join(', ')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}

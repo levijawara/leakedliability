@@ -142,7 +142,7 @@ export function ContactsTable({
               <TableHead className="w-[40px]"></TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Contact Info</TableHead>
-              <TableHead>Role / Department</TableHead>
+              <TableHead>Role</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -228,11 +228,6 @@ export function ContactsTable({
                       </Badge>
                     )}
                   </div>
-                  {contact.departments?.[0] && (
-                    <span className="text-xs text-muted-foreground block mt-1">
-                      {contact.departments[0]}
-                    </span>
-                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
