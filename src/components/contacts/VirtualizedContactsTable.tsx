@@ -150,10 +150,10 @@ export function VirtualizedContactsTable({
     );
   }
 
-  // Increased column widths for better spacing
+  // Column widths (no project column)
   const colWidths = selectMode 
-    ? ['40px', '40px', '200px', '200px', '200px', '1fr', '100px']
-    : ['40px', '200px', '200px', '200px', '1fr', '100px'];
+    ? ['40px', '40px', '220px', '220px', '1fr', '100px']
+    : ['40px', '220px', '220px', '1fr', '100px'];
 
   const ColGroup = () => (
     <colgroup>
@@ -185,7 +185,6 @@ export function VirtualizedContactsTable({
                 <TableHead>Name</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Project</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -362,25 +361,6 @@ export function VirtualizedContactsTable({
                         </div>
                       </TableCell>
                       
-                      {/* Project column with truncation */}
-                      <TableCell className="text-muted-foreground text-sm">
-                        {contact.project_title ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="truncate block max-w-[150px] cursor-default">
-                                {contact.project_title}
-                              </span>
-                            </TooltipTrigger>
-                            {contact.project_title.length > 20 && (
-                              <TooltipContent side="top">
-                                <p className="text-xs">{contact.project_title}</p>
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                        ) : (
-                          '—'
-                        )}
-                      </TableCell>
                       
                       <TableCell style={{ width: '100px' }} className="text-right">
                         <div className="flex items-center justify-end gap-1">
