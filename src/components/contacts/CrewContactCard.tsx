@@ -76,7 +76,7 @@ export function CrewContactCard({
         )}
         onClick={handleCardClick}
       >
-        <CardContent className="p-4">
+        <CardContent className="p-3">
           {/* Select mode checkbox */}
           {selectMode && (
             <div className="absolute top-3 right-3 z-10">
@@ -88,75 +88,59 @@ export function CrewContactCard({
             </div>
           )}
 
-          {/* 2-column mini-table layout */}
-          <div className="grid grid-cols-1 sm:grid-cols-[1.6fr_1fr] gap-x-4 gap-y-2">
+          {/* Horizontal-first flexbox layout */}
+          <div className="flex flex-col gap-2">
             
-            {/* Row 1: Name + star | IG handle */}
-            <div className="flex items-center gap-2 min-w-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFavorite(contact);
-                }}
-                disabled={isTogglingFavorite}
-              >
-                <Star 
-                  className={cn(
-                    "h-4 w-4",
-                    contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-                  )} 
-                />
-              </Button>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <h3 className="font-semibold truncate text-sm">{contact.name}</h3>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{contact.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <div className="flex items-center justify-end">
+            {/* Row 1: Name + star | IG handle - share the row */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleFavorite(contact);
+                  }}
+                  disabled={isTogglingFavorite}
+                >
+                  <Star 
+                    className={cn(
+                      "h-4 w-4",
+                      contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                    )} 
+                  />
+                </Button>
+                <h3 className="font-semibold text-sm truncate">{contact.name}</h3>
+              </div>
               {contact.ig_handle && (
                 <a
                   href={`https://instagram.com/${contact.ig_handle}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <Instagram className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate max-w-[80px]">@{contact.ig_handle}</span>
+                  <Instagram className="h-3.5 w-3.5" />
+                  <span className="max-w-[160px] truncate">@{contact.ig_handle}</span>
                 </a>
               )}
             </div>
 
-            {/* Row 2: Role/Department | Project tag */}
-            <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+            {/* Row 2: Role, Department, Project - all share one flex row, wrap allowed */}
+            <div className="flex items-center flex-wrap gap-1.5">
               {primaryRole && (
-                <Badge variant="secondary" className="text-xs shrink-0">
+                <Badge variant="secondary" className="text-xs">
                   {primaryRole}
                 </Badge>
               )}
               {primaryDepartment && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="text-xs text-muted-foreground truncate max-w-[100px]">
-                      {primaryDepartment}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{departments.join(', ')}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <span className="text-xs text-muted-foreground">{primaryDepartment}</span>
               )}
               {totalExtras > 0 && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-xs shrink-0 cursor-help">
+                    <Badge variant="outline" className="text-xs cursor-help">
                       +{totalExtras}
                     </Badge>
                   </TooltipTrigger>
@@ -168,89 +152,63 @@ export function CrewContactCard({
                   </TooltipContent>
                 </Tooltip>
               )}
-            </div>
-            <div className="flex items-center justify-end">
               {contact.project_title && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="outline" className="text-xs truncate max-w-[100px]">
-                      {contact.project_title}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{contact.project_title}</p>
-                  </TooltipContent>
-                </Tooltip>
+                <Badge variant="outline" className="text-xs">
+                  {contact.project_title}
+                </Badge>
               )}
             </div>
 
-            {/* Row 3: Email | Phone (only if showContactInfo or has data) */}
+            {/* Row 3: Email + Phone share one flex row, wrap allowed */}
             {(primaryEmail || primaryPhone) && (
-              <>
-                <div className="flex items-center gap-1.5 min-w-0">
-                  {primaryEmail && (
-                    <>
-                      <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-xs text-muted-foreground truncate">
-                            {showContactInfo ? primaryEmail : censorEmail(primaryEmail)}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{showContactInfo ? emails.join(', ') : emails.map(censorEmail).join(', ')}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 justify-end min-w-0">
-                  {primaryPhone && (
-                    <>
-                      <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground truncate">
-                        {showContactInfo ? primaryPhone : censorPhone(primaryPhone)}
-                      </span>
-                    </>
-                  )}
-                  {totalContactExtras > 0 && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-xs text-muted-foreground shrink-0 cursor-help">
-                          +{totalContactExtras}
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <div className="space-y-1 text-xs">
-                          {emails.length > 0 && <p>Emails: {showContactInfo ? emails.join(', ') : emails.map(censorEmail).join(', ')}</p>}
-                          {phones.length > 0 && <p>Phones: {showContactInfo ? phones.join(', ') : phones.map(censorPhone).join(', ')}</p>}
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
-              </>
+              <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                {primaryEmail && (
+                  <span className="flex items-center gap-1">
+                    <Mail className="h-3.5 w-3.5 shrink-0" />
+                    <span className="break-all">
+                      {showContactInfo ? primaryEmail : censorEmail(primaryEmail)}
+                    </span>
+                  </span>
+                )}
+                {primaryPhone && (
+                  <span className="flex items-center gap-1 shrink-0">
+                    <Phone className="h-3.5 w-3.5" />
+                    <span>{showContactInfo ? primaryPhone : censorPhone(primaryPhone)}</span>
+                  </span>
+                )}
+                {totalContactExtras > 0 && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help">+{totalContactExtras}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <div className="space-y-1 text-xs">
+                        {emails.length > 0 && <p>Emails: {showContactInfo ? emails.join(', ') : emails.map(censorEmail).join(', ')}</p>}
+                        {phones.length > 0 && <p>Phones: {showContactInfo ? phones.join(', ') : phones.map(censorPhone).join(', ')}</p>}
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
             )}
 
             {/* Row 4: Call sheet button - full width */}
-            <div className="col-span-1 sm:col-span-2 mt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  "w-full text-xs h-8",
-                  callSheetCount === 0 && "opacity-50 cursor-default"
-                )}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleCallSheetClick();
-                }}
-                disabled={callSheetCount === 0}
-              >
-                <FileText className="h-3.5 w-3.5 mr-1.5" />
-                Appears on {callSheetCount} call sheet{callSheetCount !== 1 ? 's' : ''}
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                "w-full text-xs h-8 mt-1",
+                callSheetCount === 0 && "opacity-50 cursor-default"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCallSheetClick();
+              }}
+              disabled={callSheetCount === 0}
+            >
+              <FileText className="h-3.5 w-3.5 mr-1.5" />
+              Appears on {callSheetCount} call sheet{callSheetCount !== 1 ? 's' : ''}
+            </Button>
           </div>
 
           {/* Action buttons - visible on hover (non-select mode) */}

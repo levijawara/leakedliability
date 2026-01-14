@@ -107,7 +107,7 @@ export function VirtualizedContactsGrid({
         className="overflow-auto"
         style={{ maxHeight: '70vh' }}
       >
-        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(340px,1fr))] p-1">
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(360px,1fr))] p-1">
           {contacts.map((contact) => (
             <CrewContactCard
               key={contact.id}
