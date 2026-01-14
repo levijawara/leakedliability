@@ -13,6 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   TableBody,
   TableCell,
   TableHead,
@@ -46,7 +52,8 @@ interface VirtualizedContactsTableProps {
   onToggleSelect?: (id: string) => void;
 }
 
-const ROW_HEIGHT = 64;
+// Increased for more breathing room
+const ROW_HEIGHT = 72;
 
 export function VirtualizedContactsTable({ 
   contacts, 
@@ -143,10 +150,10 @@ export function VirtualizedContactsTable({
     );
   }
 
-  // Column widths for consistent header/body alignment
+  // Increased column widths for better spacing
   const colWidths = selectMode 
-    ? ['40px', '40px', '180px', '180px', '200px', '1fr', '100px']
-    : ['40px', '180px', '180px', '200px', '1fr', '100px'];
+    ? ['40px', '40px', '200px', '200px', '200px', '1fr', '100px']
+    : ['40px', '200px', '200px', '200px', '1fr', '100px'];
 
   const ColGroup = () => (
     <colgroup>
@@ -156,8 +163,16 @@ export function VirtualizedContactsTable({
     </colgroup>
   );
 
+  // Helper to build full contact tooltip
+  const buildContactTooltip = (contact: CrewContact) => {
+    const items: { type: 'email' | 'phone'; value: string }[] = [];
+    contact.emails?.forEach(e => items.push({ type: 'email', value: e }));
+    contact.phones?.forEach(p => items.push({ type: 'phone', value: p }));
+    return items;
+  };
+
   return (
-    <>
+    <TooltipProvider>
       <div className="rounded-md border">
         {/* Fixed header table */}
         <div className="w-full overflow-hidden">
@@ -168,8 +183,8 @@ export function VirtualizedContactsTable({
                 {selectMode && <TableHead></TableHead>}
                 <TableHead></TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Contact Info</TableHead>
-                <TableHead>Role / Department</TableHead>
+                <TableHead>Contact</TableHead>
+                <TableHead>Role</TableHead>
                 <TableHead>Project</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -195,6 +210,19 @@ export function VirtualizedContactsTable({
               <TableBody>
                 {virtualizer.getVirtualItems().map((virtualRow) => {
                   const contact = contacts[virtualRow.index];
+                  const allContactInfo = buildContactTooltip(contact);
+                  const hasMultipleContacts = allContactInfo.length > 1;
+                  
+                  // Show only primary contact (email preferred, then phone)
+                  const primaryEmail = contact.emails?.[0];
+                  const primaryPhone = contact.phones?.[0];
+                  const primaryContact = primaryEmail || primaryPhone;
+                  const primaryType = primaryEmail ? 'email' : 'phone';
+                  
+                  // Show only 1 role badge
+                  const primaryRole = contact.roles?.[0];
+                  const extraRolesCount = (contact.roles?.length || 0) - 1;
+                  
                   return (
                     <TableRow
                       key={contact.id}
@@ -234,7 +262,7 @@ export function VirtualizedContactsTable({
                           />
                         </Button>
                       </TableCell>
-                      <TableCell style={{ width: '180px' }} className="font-medium">
+                      <TableCell style={{ width: '200px' }} className="font-medium">
                         <div className="flex flex-col">
                           <span className="truncate">{contact.name}</span>
                           {contact.ig_handle && (
@@ -242,61 +270,118 @@ export function VirtualizedContactsTable({
                               href={`https://instagram.com/${contact.ig_handle}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate"
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors truncate"
                             >
                               @{contact.ig_handle}
                             </a>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell style={{ width: '180px' }}>
-                        <div className="flex flex-col gap-1 text-sm">
-                          {contact.emails?.[0] && (
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <Mail className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">
-                                {showContactInfo ? contact.emails[0] : censorEmail(contact.emails[0])}
-                              </span>
-                              {contact.emails.length > 1 && (
-                                <Badge variant="outline" className="text-xs flex-shrink-0">+{contact.emails.length - 1}</Badge>
-                              )}
-                            </div>
-                          )}
-                          {contact.phones?.[0] && (
-                            <div className="flex items-center gap-1 text-muted-foreground">
-                              <Phone className="h-3 w-3 flex-shrink-0" />
-                              <span>
-                                {showContactInfo ? contact.phones[0] : censorPhone(contact.phones[0])}
-                              </span>
-                              {contact.phones.length > 1 && (
-                                <Badge variant="outline" className="text-xs flex-shrink-0">+{contact.phones.length - 1}</Badge>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </TableCell>
+                      
+                      {/* Simplified contact column - show only primary with tooltip for more */}
                       <TableCell style={{ width: '200px' }}>
-                        <div className="flex flex-wrap gap-1">
-                          {contact.roles?.slice(0, 2).map((role, i) => (
-                            <Badge key={i} variant="secondary" className="text-xs">
-                              {role}
-                            </Badge>
-                          ))}
-                          {(contact.roles?.length || 0) > 2 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{contact.roles!.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-                        {contact.departments?.[0] && (
-                          <span className="text-xs text-muted-foreground block mt-1">
-                            {contact.departments[0]}
-                          </span>
+                        {primaryContact ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-default">
+                                {primaryType === 'email' ? (
+                                  <Mail className="h-3.5 w-3.5 flex-shrink-0" />
+                                ) : (
+                                  <Phone className="h-3.5 w-3.5 flex-shrink-0" />
+                                )}
+                                <span className="truncate">
+                                  {showContactInfo 
+                                    ? primaryContact 
+                                    : primaryType === 'email' 
+                                      ? censorEmail(primaryContact) 
+                                      : censorPhone(primaryContact)
+                                  }
+                                </span>
+                                {hasMultipleContacts && (
+                                  <Badge variant="outline" className="text-xs flex-shrink-0 ml-1">
+                                    +{allContactInfo.length - 1}
+                                  </Badge>
+                                )}
+                              </div>
+                            </TooltipTrigger>
+                            {hasMultipleContacts && (
+                              <TooltipContent side="top" className="max-w-[280px]">
+                                <div className="space-y-1 text-xs">
+                                  {allContactInfo.map((info, idx) => (
+                                    <p key={idx} className="flex items-center gap-1.5">
+                                      {info.type === 'email' ? (
+                                        <Mail className="h-3 w-3" />
+                                      ) : (
+                                        <Phone className="h-3 w-3" />
+                                      )}
+                                      {showContactInfo 
+                                        ? info.value 
+                                        : info.type === 'email' 
+                                          ? censorEmail(info.value) 
+                                          : censorPhone(info.value)
+                                      }
+                                    </p>
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        ) : (
+                          <span className="text-muted-foreground text-sm">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm">
-                        {contact.project_title || '—'}
+                      
+                      {/* Simplified role column - show only 1 with tooltip */}
+                      <TableCell style={{ width: '200px' }}>
+                        <div className="space-y-1">
+                          {primaryRole ? (
+                            <div className="flex items-center gap-1">
+                              <Badge variant="secondary" className="text-xs truncate max-w-[120px]">
+                                {primaryRole}
+                              </Badge>
+                              {extraRolesCount > 0 && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge variant="outline" className="text-xs cursor-help">
+                                      +{extraRolesCount}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[200px]">
+                                    <p className="text-xs">{contact.roles?.slice(1).join(", ")}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
+                            </div>
+                          ) : null}
+                          {contact.departments?.[0] && (
+                            <span className="text-xs text-muted-foreground block truncate">
+                              {contact.departments[0]}
+                              {(contact.departments.length || 0) > 1 && ` +${contact.departments.length - 1}`}
+                            </span>
+                          )}
+                        </div>
                       </TableCell>
+                      
+                      {/* Project column with truncation */}
+                      <TableCell className="text-muted-foreground text-sm">
+                        {contact.project_title ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="truncate block max-w-[150px] cursor-default">
+                                {contact.project_title}
+                              </span>
+                            </TooltipTrigger>
+                            {contact.project_title.length > 20 && (
+                              <TooltipContent side="top">
+                                <p className="text-xs">{contact.project_title}</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        ) : (
+                          '—'
+                        )}
+                      </TableCell>
+                      
                       <TableCell style={{ width: '100px' }} className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
@@ -366,6 +451,6 @@ export function VirtualizedContactsTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </TooltipProvider>
   );
 }
