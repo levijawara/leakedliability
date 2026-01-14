@@ -20,8 +20,8 @@ interface VirtualizedContactsGridProps {
   onToggleSelect?: (id: string) => void;
 }
 
-const CARD_HEIGHT = 220;
-const COLUMNS = 3;
+const CARD_HEIGHT = 240; // Increased for breathing room
+const COLUMNS = 2; // Reduced from 3 to prevent cramping
 
 export function VirtualizedContactsGrid({
   contacts,
@@ -137,7 +137,7 @@ export function VirtualizedContactsGrid({
             return (
               <div
                 key={virtualRow.index}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 absolute left-0 w-full px-1"
+                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 absolute left-0 w-full px-1"
                 style={{
                   top: 0,
                   transform: `translateY(${virtualRow.start}px)`,
