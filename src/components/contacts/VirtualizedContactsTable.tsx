@@ -330,35 +330,27 @@ export function VirtualizedContactsTable({
                         )}
                       </TableCell>
                       
-                      {/* Simplified role column - show only 1 with tooltip */}
+                      {/* Role column - no departments */}
                       <TableCell style={{ width: '200px' }}>
-                        <div className="space-y-1">
-                          {primaryRole ? (
-                            <div className="flex items-center gap-1">
-                              <Badge variant="secondary" className="text-xs truncate max-w-[120px]">
-                                {primaryRole}
-                              </Badge>
-                              {extraRolesCount > 0 && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge variant="outline" className="text-xs cursor-help">
-                                      +{extraRolesCount}
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top" className="max-w-[200px]">
-                                    <p className="text-xs">{contact.roles?.slice(1).join(", ")}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          ) : null}
-                          {contact.departments?.[0] && (
-                            <span className="text-xs text-muted-foreground block truncate">
-                              {contact.departments[0]}
-                              {(contact.departments.length || 0) > 1 && ` +${contact.departments.length - 1}`}
-                            </span>
-                          )}
-                        </div>
+                        {primaryRole ? (
+                          <div className="flex items-center gap-1">
+                            <Badge variant="secondary" className="text-xs truncate max-w-[120px]">
+                              {primaryRole}
+                            </Badge>
+                            {extraRolesCount > 0 && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge variant="outline" className="text-xs cursor-help">
+                                    +{extraRolesCount}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="max-w-[200px]">
+                                  <p className="text-xs">{contact.roles?.slice(1).join(", ")}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        ) : null}
                       </TableCell>
                       
                       
