@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -144,23 +143,41 @@ export function VirtualizedContactsTable({
     );
   }
 
+  // Column widths for consistent header/body alignment
+  const colWidths = selectMode 
+    ? ['40px', '40px', '180px', '180px', '200px', '1fr', '100px']
+    : ['40px', '180px', '180px', '200px', '1fr', '100px'];
+
+  const ColGroup = () => (
+    <colgroup>
+      {colWidths.map((w, i) => (
+        <col key={i} style={{ width: w }} />
+      ))}
+    </colgroup>
+  );
+
   return (
     <>
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {selectMode && <TableHead className="w-[40px]"></TableHead>}
-              <TableHead className="w-[40px]"></TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Contact Info</TableHead>
-              <TableHead>Role / Department</TableHead>
-              <TableHead>Project</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-        </Table>
+        {/* Fixed header table */}
+        <div className="w-full overflow-hidden">
+          <table className="w-full caption-bottom text-sm table-fixed">
+            <ColGroup />
+            <TableHeader>
+              <TableRow>
+                {selectMode && <TableHead></TableHead>}
+                <TableHead></TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Contact Info</TableHead>
+                <TableHead>Role / Department</TableHead>
+                <TableHead>Project</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+          </table>
+        </div>
         
+        {/* Scrollable virtualized body */}
         <div 
           ref={parentRef}
           className="overflow-auto"
@@ -173,7 +190,8 @@ export function VirtualizedContactsTable({
               position: 'relative',
             }}
           >
-            <Table>
+            <table className="w-full caption-bottom text-sm table-fixed">
+              <ColGroup />
               <TableBody>
                 {virtualizer.getVirtualItems().map((virtualRow) => {
                   const contact = contacts[virtualRow.index];
@@ -187,17 +205,19 @@ export function VirtualizedContactsTable({
                         width: '100%',
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,
+                        display: 'table',
+                        tableLayout: 'fixed',
                       }}
                     >
                       {selectMode && (
-                        <TableCell className="w-[40px]">
+                        <TableCell style={{ width: '40px' }}>
                           <Checkbox
                             checked={selectedIds.has(contact.id)}
                             onCheckedChange={() => onToggleSelect?.(contact.id)}
                           />
                         </TableCell>
                       )}
-                      <TableCell className="w-[40px]">
+                      <TableCell style={{ width: '40px' }}>
                         <Button
                           variant="ghost"
                           size="sm"
@@ -214,27 +234,27 @@ export function VirtualizedContactsTable({
                           />
                         </Button>
                       </TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell style={{ width: '180px' }} className="font-medium">
                         <div className="flex flex-col">
-                          <span className="truncate max-w-[180px]">{contact.name}</span>
+                          <span className="truncate">{contact.name}</span>
                           {contact.ig_handle && (
                             <a 
                               href={`https://instagram.com/${contact.ig_handle}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[180px]"
+                              className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate"
                             >
                               @{contact.ig_handle}
                             </a>
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ width: '180px' }}>
                         <div className="flex flex-col gap-1 text-sm">
                           {contact.emails?.[0] && (
                             <div className="flex items-center gap-1 text-muted-foreground">
                               <Mail className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate max-w-[150px]">
+                              <span className="truncate">
                                 {showContactInfo ? contact.emails[0] : censorEmail(contact.emails[0])}
                               </span>
                               {contact.emails.length > 1 && (
@@ -255,7 +275,7 @@ export function VirtualizedContactsTable({
                           )}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell style={{ width: '200px' }}>
                         <div className="flex flex-wrap gap-1">
                           {contact.roles?.slice(0, 2).map((role, i) => (
                             <Badge key={i} variant="secondary" className="text-xs">
@@ -277,7 +297,7 @@ export function VirtualizedContactsTable({
                       <TableCell className="text-muted-foreground text-sm">
                         {contact.project_title || '—'}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell style={{ width: '100px' }} className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
@@ -302,7 +322,7 @@ export function VirtualizedContactsTable({
                   );
                 })}
               </TableBody>
-            </Table>
+            </table>
           </div>
         </div>
       </div>
