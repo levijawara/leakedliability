@@ -127,7 +127,7 @@ export function CrewContactCard({
               )}
             </div>
 
-            {/* Row 2: Role, Department, Project - all share one flex row, wrap allowed */}
+            {/* Row 2: Role, Department - share one flex row, wrap allowed */}
             <div className="flex items-center flex-wrap gap-1.5">
               {primaryRole && (
                 <Badge variant="secondary" className="text-xs">
@@ -151,11 +151,6 @@ export function CrewContactCard({
                     </div>
                   </TooltipContent>
                 </Tooltip>
-              )}
-              {contact.project_title && (
-                <Badge variant="outline" className="text-xs">
-                  {contact.project_title}
-                </Badge>
               )}
             </div>
 
