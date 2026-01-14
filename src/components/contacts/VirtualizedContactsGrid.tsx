@@ -1,5 +1,4 @@
-import { useState, useRef, useCallback } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { useState, useCallback } from "react";
 import { Users } from "lucide-react";
 import { CrewContactCard } from "./CrewContactCard";
 import { ContactEditDialog } from "./ContactEditDialog";
@@ -20,9 +19,6 @@ interface VirtualizedContactsGridProps {
   onToggleSelect?: (id: string) => void;
 }
 
-const CARD_HEIGHT = 240; // Increased for breathing room
-const COLUMNS = 2; // Reduced from 3 to prevent cramping
-
 export function VirtualizedContactsGrid({
   contacts,
   callSheetCounts,
@@ -39,18 +35,6 @@ export function VirtualizedContactsGrid({
   const [deleteContact, setDeleteContact] = useState<CrewContact | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [togglingFavoriteId, setTogglingFavoriteId] = useState<string | null>(null);
-  
-  const parentRef = useRef<HTMLDivElement>(null);
-  
-  // Group contacts into rows
-  const rowCount = Math.ceil(contacts.length / COLUMNS);
-
-  const virtualizer = useVirtualizer({
-    count: rowCount,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => CARD_HEIGHT,
-    overscan: 3,
-  });
 
   const handleToggleFavorite = useCallback(async (contact: CrewContact) => {
     setTogglingFavoriteId(contact.id);
@@ -118,50 +102,27 @@ export function VirtualizedContactsGrid({
 
   return (
     <>
+      {/* Auto-fill grid: 3+ columns on large, 2 on medium, 1 on mobile */}
       <div 
-        ref={parentRef}
         className="overflow-auto"
-        style={{ height: `min(${rowCount * CARD_HEIGHT}px, 70vh)` }}
+        style={{ maxHeight: '70vh' }}
       >
-        <div
-          style={{
-            height: `${virtualizer.getTotalSize()}px`,
-            width: '100%',
-            position: 'relative',
-          }}
-        >
-          {virtualizer.getVirtualItems().map((virtualRow) => {
-            const startIndex = virtualRow.index * COLUMNS;
-            const rowContacts = contacts.slice(startIndex, startIndex + COLUMNS);
-            
-            return (
-              <div
-                key={virtualRow.index}
-                className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 absolute left-0 w-full px-1"
-                style={{
-                  top: 0,
-                  transform: `translateY(${virtualRow.start}px)`,
-                  height: `${virtualRow.size}px`,
-                }}
-              >
-                {rowContacts.map((contact) => (
-                  <CrewContactCard
-                    key={contact.id}
-                    contact={contact}
-                    callSheetCount={callSheetCounts[contact.id] || 0}
-                    onToggleFavorite={handleToggleFavorite}
-                    onEdit={setEditContact}
-                    onDelete={setDeleteContact}
-                    isTogglingFavorite={togglingFavoriteId === contact.id}
-                    showContactInfo={showContactInfo}
-                    selectMode={selectMode}
-                    isSelected={selectedIds.has(contact.id)}
-                    onToggleSelect={() => onToggleSelect?.(contact.id)}
-                  />
-                ))}
-              </div>
-            );
-          })}
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(340px,1fr))] p-1">
+          {contacts.map((contact) => (
+            <CrewContactCard
+              key={contact.id}
+              contact={contact}
+              callSheetCount={callSheetCounts[contact.id] || 0}
+              onToggleFavorite={handleToggleFavorite}
+              onEdit={setEditContact}
+              onDelete={setDeleteContact}
+              isTogglingFavorite={togglingFavoriteId === contact.id}
+              showContactInfo={showContactInfo}
+              selectMode={selectMode}
+              isSelected={selectedIds.has(contact.id)}
+              onToggleSelect={() => onToggleSelect?.(contact.id)}
+            />
+          ))}
         </div>
       </div>
 
