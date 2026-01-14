@@ -89,7 +89,10 @@ export function CrewContactCard({
           <div className="flex flex-col gap-2">
             
             {/* Row 1: Name + star | IG handle - share the row */}
-            <div className="flex items-center justify-between gap-2">
+            <div className={cn(
+              "flex items-center justify-between gap-2",
+              selectMode && "pr-8"
+            )}>
               <div className="flex items-center gap-2 min-w-0">
                 <Button
                   variant="ghost"
@@ -199,7 +202,7 @@ export function CrewContactCard({
 
           {/* Action buttons - visible on hover (non-select mode) */}
           {!selectMode && (
-            <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button
                 variant="ghost"
                 size="icon"
