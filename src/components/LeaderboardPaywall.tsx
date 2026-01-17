@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Award, CreditCard, RefreshCw, Instagram, Menu, User, Home } from "lucide-react";
+import { Lock, Unlock, Award, CreditCard, RefreshCw, Instagram, Menu, User, Home } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -101,13 +101,28 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
   };
 
   const getPaywallContent = () => {
+    // Check if we're in a free access period (works for both logged-in and non-logged-in users)
+    const isFreeAccessPeriod = accessState?.reason === 'free_access_period';
+    
     if (!user) {
+      if (isFreeAccessPeriod) {
+        return {
+          title: "Free Leaderboard Access",
+          description: "Free for a limited time!",
+          message: "Create a free account to access the full leaderboard.\nNo subscription required during this promotional period.",
+          showCrewOption: false,
+          showSignupPrompt: true,
+          isFreeAccess: true,
+        };
+      }
+      
       return {
         title: "Leaderboard Access",
         description: "Sign in to subscribe.",
         message: "Subscribe for $5.99/month to access the full leaderboard.",
         showCrewOption: false,
         showSignupPrompt: true,
+        isFreeAccess: false,
       };
     }
 
@@ -117,6 +132,7 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
       message: "Subscribe for $5.99/month to unlock full access.",
       showCrewOption: false,
       showSignupPrompt: false,
+      isFreeAccess: false,
     };
   };
 
@@ -297,7 +313,11 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
         <Card className="border-2">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <Lock className="h-16 w-16 text-muted-foreground" />
+            {content.isFreeAccess ? (
+              <Unlock className="h-16 w-16 text-primary" />
+            ) : (
+              <Lock className="h-16 w-16 text-muted-foreground" />
+            )}
           </div>
           <CardTitle className="text-3xl">{content.title}</CardTitle>
           <CardDescription className="text-lg">{content.description}</CardDescription>
@@ -389,19 +409,23 @@ export const LeaderboardPaywall = ({ accessState, onAccessGranted, refreshAccess
                 size="lg"
                 onClick={() => navigate("/auth")}
               >
-                Sign Up / Login to Continue
+                {content.isFreeAccess ? "Create Account / Login to Access" : "Sign Up / Login to Continue"}
               </Button>
               <p className="text-sm text-muted-foreground">
-                Already have an account? Sign in to access your subscription or submit a crew report.
+                {content.isFreeAccess 
+                  ? "Already have an account? Sign in to access the leaderboard for free."
+                  : "Already have an account? Sign in to access your subscription or submit a crew report."}
               </p>
             </div>
           )}
 
-          <Alert className="bg-muted">
-            <AlertDescription className="text-center text-sm">
-              Your subscription helps support the platform and maintain the integrity of the Leaked Liability™ system.
-            </AlertDescription>
-          </Alert>
+          {!content.isFreeAccess && (
+            <Alert className="bg-muted">
+              <AlertDescription className="text-center text-sm">
+                Your subscription helps support the platform and maintain the integrity of the Leaked Liability™ system.
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
       </div>
