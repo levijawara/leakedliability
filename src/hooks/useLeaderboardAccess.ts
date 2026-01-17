@@ -41,11 +41,26 @@ export const useLeaderboardAccess = (shouldCheck = true) => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        setAccessState({
-          hasAccess: false,
-          canPurchase: false,
-          reason: 'no_access',
-        });
+        // Check if global free access is enabled (no auth required for this check)
+        const { data: config } = await supabase
+          .from('leaderboard_config')
+          .select('free_access_enabled')
+          .maybeSingle();
+        
+        if (config?.free_access_enabled) {
+          // Free access is on - they just need to create an account
+          setAccessState({
+            hasAccess: false,
+            canPurchase: false,
+            reason: 'free_access_period',
+          });
+        } else {
+          setAccessState({
+            hasAccess: false,
+            canPurchase: false,
+            reason: 'no_access',
+          });
+        }
         setLoading(false);
         return;
       }
