@@ -46,6 +46,7 @@ import { Footer } from "@/components/Footer";
 import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
 import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
 import { BetaAccessPanel } from "@/components/admin/BetaAccessPanel";
+import { BroadcastEmailSender } from "@/components/admin/BroadcastEmailSender";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -1950,12 +1951,13 @@ export default function Admin() {
       </Card>
 
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9 gap-1 h-auto p-1">
+        <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1 h-auto p-1">
           <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">Payments Due</TabsTrigger>
           <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">Paid</TabsTrigger>
           <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">Settings</TabsTrigger>
           <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">Users</TabsTrigger>
           <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">Notifications</TabsTrigger>
+          <TabsTrigger value="broadcast" className="text-xs sm:text-sm px-2 py-1.5">Broadcast</TabsTrigger>
           <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">All Submissions</TabsTrigger>
           <TabsTrigger value="identity_claims" className="text-xs sm:text-sm px-2 py-1.5">
             Identity Claims
@@ -3801,6 +3803,19 @@ export default function Admin() {
                 </div>
               </div>
             </div>
+          </Card>
+        </TabsContent>
+
+        {/* Broadcast Email Tab */}
+        <TabsContent value="broadcast">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-1">Broadcast Email</h2>
+              <p className="text-sm text-muted-foreground">
+                Send a custom email to multiple recipients
+              </p>
+            </div>
+            <BroadcastEmailSender />
           </Card>
         </TabsContent>
 

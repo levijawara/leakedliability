@@ -1,0 +1,9 @@
+{
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.74.0",
+    "react": "npm:react@18.3.1",
+    "resend": "npm:resend@4.0.0",
+    "@react-email/components": "npm:@react-email/components@0.0.22"
+  }
+}
