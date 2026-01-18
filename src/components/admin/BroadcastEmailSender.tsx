@@ -260,16 +260,16 @@ export function BroadcastEmailSender() {
           {/* Email Preview */}
           <Card className="bg-[#f6f9fc]">
             <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-mono">{subject}</CardTitle>
+              <CardTitle className="text-lg font-mono text-gray-900">{subject}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 font-mono text-sm">
+            <CardContent className="space-y-4 font-mono text-sm text-gray-800">
               <div className="whitespace-pre-wrap">{bodyText}</div>
               <div>
                 Best regards,<br />
                 {senderName}
               </div>
-              <hr className="border-muted" />
-              <div className="text-xs text-muted-foreground">
+              <hr className="border-gray-300" />
+              <div className="text-xs text-gray-500">
                 {footerText}<br />
                 {footerContactText}
               </div>
