@@ -10,6 +10,7 @@ import {
   Heading,
   Html,
   Hr,
+  Link,
   Preview,
   Text,
 } from '@react-email/components';
@@ -55,6 +56,30 @@ const hr = {
   margin: '32px 0',
 };
 
+const linkStyle = {
+  color: '#2754C5',
+  textDecoration: 'underline',
+};
+
+// Regex to detect URLs (http/https)
+const URL_REGEX = /(https?:\/\/[^\s<>]+)/g;
+
+// Function to convert text with URLs into React elements with clickable links
+const renderTextWithLinks = (inputText: string): React.ReactNode[] => {
+  const parts = inputText.split(URL_REGEX);
+  return parts.map((part, i) => {
+    // Check if this part is a URL
+    if (/^https?:\/\//.test(part)) {
+      return React.createElement(Link, { 
+        key: i, 
+        href: part, 
+        style: linkStyle,
+      }, part);
+    }
+    return part;
+  });
+};
+
 interface CustomBroadcastProps {
   subject: string;
   bodyText: string;
@@ -70,13 +95,17 @@ const CustomBroadcastEmail = ({
   footerText = "You're receiving this email because you have an account on Leaked Liability.",
   footerContactText = 'Questions? Visit leakedliability.com/faq or reply to this email.',
 }: CustomBroadcastProps) => {
-  // Convert newlines to <br /> tags for proper rendering
+  // Convert newlines to <br /> tags AND auto-link URLs
   const formattedBody = bodyText.split('\n').map((line: string, index: number, array: string[]) => (
     React.createElement(React.Fragment, { key: index },
-      line,
+      ...renderTextWithLinks(line),
       index < array.length - 1 && React.createElement('br')
     )
   ));
+
+  // Also auto-link footer text
+  const formattedFooter = renderTextWithLinks(footerText);
+  const formattedFooterContact = renderTextWithLinks(footerContactText);
 
   return React.createElement(Html, null,
     React.createElement(Head),
@@ -92,9 +121,9 @@ const CustomBroadcastEmail = ({
         ),
         React.createElement(Hr, { style: hr }),
         React.createElement(Text, { style: footer },
-          footerText,
+          ...formattedFooter,
           React.createElement('br'),
-          footerContactText
+          ...formattedFooterContact
         )
       )
     )
