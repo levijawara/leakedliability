@@ -3,7 +3,103 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "resend";
 import { renderAsync } from '@react-email/components';
 import React from 'react';
-import { CustomBroadcastEmail } from '../send-email/_templates/custom-broadcast.tsx';
+import {
+  Body,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Hr,
+  Preview,
+  Text,
+} from '@react-email/components';
+
+// Shared email styles (matching other templates)
+const main = {
+  backgroundColor: '#f6f9fc',
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+
+const container = {
+  paddingLeft: '12px',
+  paddingRight: '12px',
+  margin: '0 auto',
+  paddingTop: '40px',
+  paddingBottom: '40px',
+};
+
+const h1 = {
+  color: '#333',
+  fontSize: '24px',
+  fontWeight: 'bold' as const,
+  margin: '40px 0 20px',
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+
+const text = {
+  color: '#333',
+  fontSize: '14px',
+  lineHeight: '24px',
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+
+const footer = {
+  color: '#8898aa',
+  fontSize: '12px',
+  marginTop: '30px',
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+
+const hr = {
+  borderColor: '#e1e8ed',
+  margin: '32px 0',
+};
+
+interface CustomBroadcastProps {
+  subject: string;
+  bodyText: string;
+  senderName?: string;
+  footerText?: string;
+  footerContactText?: string;
+}
+
+const CustomBroadcastEmail = ({
+  subject,
+  bodyText,
+  senderName = 'The Leaked Liability Team',
+  footerText = "You're receiving this email because you have an account on Leaked Liability.",
+  footerContactText = 'Questions? Visit leakedliability.com/faq or reply to this email.',
+}: CustomBroadcastProps) => {
+  // Convert newlines to <br /> tags for proper rendering
+  const formattedBody = bodyText.split('\n').map((line: string, index: number, array: string[]) => (
+    React.createElement(React.Fragment, { key: index },
+      line,
+      index < array.length - 1 && React.createElement('br')
+    )
+  ));
+
+  return React.createElement(Html, null,
+    React.createElement(Head),
+    React.createElement(Preview, null, subject),
+    React.createElement(Body, { style: main },
+      React.createElement(Container, { style: container },
+        React.createElement(Heading, { style: h1 }, subject),
+        React.createElement(Text, { style: text }, formattedBody),
+        React.createElement(Text, { style: text },
+          'Best regards,',
+          React.createElement('br'),
+          senderName
+        ),
+        React.createElement(Hr, { style: hr }),
+        React.createElement(Text, { style: footer },
+          footerText,
+          React.createElement('br'),
+          footerContactText
+        )
+      )
+    )
+  );
+};
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
