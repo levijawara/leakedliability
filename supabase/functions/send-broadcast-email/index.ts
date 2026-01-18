@@ -300,8 +300,8 @@ serve(async (req) => {
           },
         });
 
-        // Small delay between sends (100ms) to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Delay between sends (550ms) to respect Resend's 2 requests/second rate limit
+        await new Promise(resolve => setTimeout(resolve, 550));
       } catch (err: any) {
         console.error(`[send-broadcast-email] Error sending to ${recipient}:`, err);
         errors.push(`${recipient}: ${err.message || 'Unknown error'}`);
