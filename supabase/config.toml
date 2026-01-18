@@ -107,3 +107,6 @@ verify_jwt = true
 
 [functions.queue-firecrawl-priority]
 verify_jwt = true
+
+[functions.send-broadcast-email]
+verify_jwt = true
