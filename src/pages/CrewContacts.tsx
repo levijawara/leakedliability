@@ -651,7 +651,11 @@ export default function CrewContacts() {
                   )}
                 </Button>
               )}
-              <ExportButton contacts={filteredContacts} />
+              <ExportButton 
+                filteredContacts={filteredContacts} 
+                allContacts={contacts}
+                hasActiveFilters={activeFilterCount > 0 || !!debouncedSearchQuery.trim() || recentlyAddedActive}
+              />
             </div>
           </div>
 
