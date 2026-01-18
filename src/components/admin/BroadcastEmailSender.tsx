@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Send, Eye, AlertCircle, CheckCircle2, Mail } from "lucide-react";
 
 // Email validation regex
-const EMAIL_REGEX = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ParsedRecipients {
   valid: string[];
