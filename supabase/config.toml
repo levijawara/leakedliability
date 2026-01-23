@@ -113,3 +113,6 @@ verify_jwt = true
 
 [functions.enrich-ig-from-json]
 verify_jwt = true
+
+[functions.enrich-nova-profiles]
+verify_jwt = true

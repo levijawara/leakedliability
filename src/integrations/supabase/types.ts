@@ -489,6 +489,7 @@ export type Database = {
           is_favorite: boolean | null
           name: string
           needs_review: boolean | null
+          nova_profile_url: string | null
           phones: string[] | null
           project_title: string | null
           roles: string[] | null
@@ -512,6 +513,7 @@ export type Database = {
           is_favorite?: boolean | null
           name: string
           needs_review?: boolean | null
+          nova_profile_url?: string | null
           phones?: string[] | null
           project_title?: string | null
           roles?: string[] | null
@@ -535,6 +537,7 @@ export type Database = {
           is_favorite?: boolean | null
           name?: string
           needs_review?: boolean | null
+          nova_profile_url?: string | null
           phones?: string[] | null
           project_title?: string | null
           roles?: string[] | null
