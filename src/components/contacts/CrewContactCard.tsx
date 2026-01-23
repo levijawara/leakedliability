@@ -110,7 +110,7 @@ export function CrewContactCard({
                   )} 
                 />
               </Button>
-              <div className="flex flex-col min-w-0">
+              <div className="flex flex-col min-w-0 flex-1">
                 <h3 className="font-semibold text-sm truncate">{contact.name}</h3>
                 {contact.ig_handle && (
                   <a
@@ -125,6 +125,22 @@ export function CrewContactCard({
                   </a>
                 )}
               </div>
+              {contact.nova_profile_url && (
+                <a
+                  href={contact.nova_profile_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                  title="View NOVA Profile"
+                >
+                  <img 
+                    src="/images/nova-icon.png" 
+                    alt="NOVA" 
+                    className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
+                  />
+                </a>
+              )}
             </div>
 
             {/* Row 2: Role only */}

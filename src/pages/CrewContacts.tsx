@@ -24,6 +24,7 @@ export interface CrewContact {
   roles: string[] | null;
   departments: string[] | null;
   ig_handle: string | null;
+  nova_profile_url: string | null;
   project_title: string | null;
   source_files: string[] | null;
   confidence: number | null;
@@ -336,11 +337,13 @@ export default function CrewContacts() {
         const hasPhone = c.phones && c.phones.length > 0;
         const hasEmail = c.emails && c.emails.length > 0;
         const hasIg = !!c.ig_handle;
+        const hasNova = !!c.nova_profile_url;
         
         switch (filters.contactInfoFilter) {
           case 'phone': return hasPhone;
           case 'email': return hasEmail;
           case 'ig': return hasIg;
+          case 'nova': return hasNova;
           case 'none': return !hasPhone && !hasEmail && !hasIg;
           default: return true;
         }
