@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 export interface ContactFilters {
   selectedRoles: string[];
   selectedDepartments: string[];
-  contactInfoFilter: 'all' | 'phone' | 'email' | 'ig' | 'none';
+  contactInfoFilter: 'all' | 'phone' | 'email' | 'ig' | 'nova' | 'none';
   favoritesOnly: boolean;
   sortByAppearances: 'asc' | 'desc' | null;
 }
@@ -202,6 +202,7 @@ export function FilterModal({
                 { key: 'phone' as const, label: 'Has Phone' },
                 { key: 'email' as const, label: 'Has Email' },
                 { key: 'ig' as const, label: 'Has Instagram' },
+                { key: 'nova' as const, label: 'Has NOVA' },
                 { key: 'none' as const, label: 'No Contact Info' },
               ].map(({ key, label }) => (
                 <Button
