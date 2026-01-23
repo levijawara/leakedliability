@@ -28,8 +28,9 @@ export function RequireAuth({
 }: RequireAuthProps) {
   const location = useLocation();
   const { toast } = useToast();
-  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthenticated' | 'unauthorized'>('loading');
+  const [authState, setAuthState] = useState<'loading' | 'authenticated' | 'unauthenticated' | 'unauthorized' | 'banned'>('loading');
   const [session, setSession] = useState<Session | null>(null);
+  const [banId, setBanId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -37,6 +38,47 @@ export function RequireAuth({
     const checkAccess = async (currentSession: Session | null) => {
       if (!currentSession) {
         if (mounted) setAuthState('unauthenticated');
+        return;
+      }
+
+      // Check if user is banned/suspended FIRST (before any other access checks)
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("account_status")
+        .eq("user_id", currentSession.user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('[RequireAuth] Profile fetch error:', profileError);
+        if (mounted) setAuthState('unauthorized');
+        return;
+      }
+
+      // Handle missing profile as unauthorized
+      if (!profile) {
+        console.error('[RequireAuth] No profile found for user:', currentSession.user.id);
+        if (mounted) setAuthState('unauthorized');
+        return;
+      }
+
+      // Block banned or suspended accounts
+      if (profile.account_status === 'banned' || profile.account_status === 'suspended') {
+        console.log('[RequireAuth] User is blocked, status:', profile.account_status);
+        
+        // Fetch the active ban record to get the ban ID for redirect
+        const { data: banRecord } = await supabase
+          .from("account_bans")
+          .select("id")
+          .eq("target_user_id", currentSession.user.id)
+          .is("revoked_at", null)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (mounted) {
+          setBanId(banRecord?.id || null);
+          setAuthState('banned');
+        }
         return;
       }
 
@@ -155,6 +197,12 @@ export function RequireAuth({
   if (authState === 'unauthorized') {
     // For admin pages, redirect home; for beta pages, redirect to profile
     const destination = requireAdmin ? "/" : "/profile";
+    return <Navigate to={destination} replace />;
+  }
+
+  // Banned/suspended - redirect to ban page (no sign-out here; BanPage handles it)
+  if (authState === 'banned') {
+    const destination = banId ? `/ban/${banId}` : "/";
     return <Navigate to={destination} replace />;
   }
 
