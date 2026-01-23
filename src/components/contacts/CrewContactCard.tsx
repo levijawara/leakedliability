@@ -88,28 +88,30 @@ export function CrewContactCard({
           {/* Horizontal-first flexbox layout */}
           <div className="flex flex-col gap-2">
             
-            {/* Row 1: Star + Name + IG handle (stacked) */}
+            {/* Row 1: NOVA icon + Name + IG handle (stacked) */}
             <div className={cn(
               "flex items-center gap-2",
               selectMode && "pr-8"
             )}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFavorite(contact);
-                }}
-                disabled={isTogglingFavorite}
-              >
-                <Star 
-                  className={cn(
-                    "h-4 w-4",
-                    contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-                  )} 
-                />
-              </Button>
+              {/* NOVA icon on the left (where star used to be) */}
+              {contact.nova_profile_url ? (
+                <a
+                  href={contact.nova_profile_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                  title="View NOVA Profile"
+                >
+                  <img 
+                    src="/images/nova-icon.png" 
+                    alt="NOVA" 
+                    className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
+                  />
+                </a>
+              ) : (
+                <div className="w-5 h-5 shrink-0" /> 
+              )}
               <div className="flex flex-col min-w-0 flex-1">
                 <h3 className="font-semibold text-sm truncate">{contact.name}</h3>
                 {contact.ig_handle && (
@@ -125,22 +127,6 @@ export function CrewContactCard({
                   </a>
                 )}
               </div>
-              {contact.nova_profile_url && (
-                <a
-                  href={contact.nova_profile_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                  title="View NOVA Profile"
-                >
-                  <img 
-                    src="/images/nova-icon.png" 
-                    alt="NOVA" 
-                    className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
-                  />
-                </a>
-              )}
             </div>
 
             {/* Row 2: Role only */}
@@ -219,6 +205,23 @@ export function CrewContactCard({
           {/* Action buttons - visible on hover (non-select mode) */}
           {!selectMode && (
             <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(contact);
+                }}
+                disabled={isTogglingFavorite}
+              >
+                <Star 
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                  )} 
+                />
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"
