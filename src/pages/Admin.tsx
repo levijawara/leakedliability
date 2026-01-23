@@ -47,6 +47,7 @@ import { ProducerNotificationSelector } from "@/components/admin/ProducerNotific
 import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
 import { BetaAccessPanel } from "@/components/admin/BetaAccessPanel";
 import { BroadcastEmailSender } from "@/components/admin/BroadcastEmailSender";
+import { DatabaseExportPanel } from "@/components/admin/DatabaseExportPanel";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -1818,9 +1819,14 @@ export default function Admin() {
                   Processing...
                 </>
               ) : (
-                `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
+              `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
               )}
             </Button>
+          </div>
+
+          {/* Database Export */}
+          <div className="pt-4 border-t">
+            <DatabaseExportPanel />
           </div>
         </div>
       </Card>
