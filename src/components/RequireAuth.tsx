@@ -121,13 +121,19 @@ export function RequireAuth({
           });
 
           if (!isAdmin) {
-            const { data: profile } = await supabase
+            const { data: betaProfile, error: betaError } = await supabase
               .from("profiles")
               .select("beta_access")
               .eq("user_id", currentSession.user.id)
-              .single();
+              .maybeSingle();
 
-            if (!profile?.beta_access) {
+            if (betaError) {
+              console.error('[RequireAuth] Beta access check failed:', betaError);
+              // Fail closed - no beta access if we can't verify
+            }
+
+            // No profile or no beta access = denied
+            if (!betaProfile?.beta_access) {
               if (mounted) {
                 toast({
                   title: "Beta Access Required",
