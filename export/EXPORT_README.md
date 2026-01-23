@@ -1,77 +1,68 @@
-# Supabase Database Export Package
-**Exported: 2026-01-23**
-**Project: Leaked Liability™**
+# Leaked Liability™ — Database Migration Export Package
 
-## Export Contents
-
-### ✅ INCLUDED IN THIS EXPORT
-
-| File | Description | Status |
-|------|-------------|--------|
-| `schema.sql` | Complete schema (tables, views, functions, triggers, RLS, indexes) | ✅ Complete |
-| `data/core_tables.sql` | Core business data (producers, profiles, payment_reports, submissions) | ✅ Complete |
-| `data/config_tables.sql` | Configuration data (pscs_config, leaderboard_config, site_settings) | ✅ Complete |
-| `data/contacts_data.sql` | Crew contacts, identity groups, IG master identities | ✅ Complete |
-| `data/call_sheets.sql` | Global call sheets, user call sheets | ✅ Complete |
-| `data/entitlements.sql` | User roles, entitlements, beta access | ✅ Complete |
-| `data/financial.sql` | Payment confirmations, escrow, confirmation pool | ✅ Complete |
-| `policies.sql` | All RLS policies extracted separately | ✅ Complete |
-| `storage_buckets.json` | Storage bucket definitions | ✅ Complete |
-| `supabase/functions/` | Edge functions (already in codebase) | ✅ Already in repo |
-
-### ⚠️ REQUIRES MANUAL EXPORT (NOT ACCESSIBLE VIA SQL)
-
-The following tables are in the `auth` schema and cannot be exported via SQL queries.
-You must export these via **Supabase CLI** or **Dashboard**:
-
-| Table | Command |
-|-------|---------|
-| `auth.users` | `supabase db dump --data-only --table auth.users` |
-| `auth.identities` | `supabase db dump --data-only --table auth.identities` |
-| `auth.sessions` | `supabase db dump --data-only --table auth.sessions` |
-| `auth.refresh_tokens` | `supabase db dump --data-only --table auth.refresh_tokens` |
-
-### Manual Auth Export Instructions
-
-1. Install Supabase CLI:
-```bash
-npm install -g supabase
-```
-
-2. Link to your project:
-```bash
-supabase login
-supabase link --project-ref blpbeopmdfahiosglomx
-```
-
-3. Export auth data:
-```bash
-supabase db dump --data-only --schema auth -f export/auth_data.sql
-```
+> **Generated**: 2026-01-23  
+> **Status**: Lossless export for backend migration
 
 ---
 
-## Database Statistics
+## ⚠️ CRITICAL: Lovable Cloud Limitation
 
-| Table | Row Count |
-|-------|-----------|
-| producers | 301 |
-| profiles | 20 |
-| payment_reports | 12 |
-| crew_contacts | 3,592 |
-| submissions | 14 |
-| user_roles | 1 |
-| user_entitlements | 7 |
-| global_call_sheets | 439 |
-| ig_master_identities | 821 |
-| identity_groups | 147 |
-| audit_logs | 27,670 |
-| email_logs | 350 |
-| search_logs | 66 |
-| analytics_daily_visitors | 311 |
-| past_debts | 9 |
-| escrow_payments | 1 |
-| ig_usernames | 24 |
+**Supabase CLI commands (`supabase link`, `supabase db dump`) will NOT work** because this project runs on Lovable Cloud, which manages the backend internally. The error you saw:
+
+```
+Your account does not have the necessary privileges to access this endpoint
+Cannot find project ref. Have you run supabase link?
+```
+
+This is expected — Lovable Cloud does not expose direct Supabase CLI access.
+
+### ✅ Alternative: I Can Export Everything
+
+I have full SQL query access to:
+- All `public` schema tables
+- `auth.users` table (including raw_user_meta_data)
+- All storage bucket definitions
+
+Ask me to export any table and I'll generate SQL INSERT statements.
+
+---
+
+## Current Export Status
+
+### ✅ Already Exported
+
+| File | Contents |
+|------|----------|
+| `../schema.sql` (root) | Full schema: tables, views, functions, triggers, indexes |
+| `policies.sql` | All RLS policies for tables and storage |
+| `storage_buckets.json` | Storage bucket definitions |
+| `data/config_tables.sql` | pscs_config, site_settings, leaderboard_config |
+| `data/entitlements.sql` | user_roles, user_entitlements, beta_access_* |
+| `data/financial.sql` | past_debts, escrow_payments, confirmation_pool |
+| `data/core_tables.sql` | Partial profiles data |
+
+### 📊 Tables Needing Export (by row count)
+
+| Table | Rows | Status |
+|-------|------|--------|
+| `auth.users` | 20 | ✅ **Accessible** — ask me to export |
+| `producers` | 301 | ⏳ Pending — ask me to export |
+| `profiles` | 20 | ⏳ Pending (full export) |
+| `payment_reports` | 12 | ⏳ Pending |
+| `submissions` | 14 | ⏳ Pending |
+| `crew_contacts` | 3,592 | ⏳ Needs batch export (500/batch) |
+| `ig_master_identities` | 821 | ⏳ Pending |
+| `global_call_sheets` | 439 | ⏳ Pending |
+| `contact_call_sheets` | 7,744 | ⏳ Needs batch export |
+| `audit_logs` | 27,670 | ⚠️ Very large — consider skipping |
+
+### 🔐 Auth Data Status
+
+I CAN access `auth.users` (20 users) with full data:
+- `id`, `email`, `created_at`, `last_sign_in_at`
+- `raw_user_meta_data` (account_type, legal names, phone_verified, etc.)
+
+To export: Ask me **"Export auth.users to SQL"**
 
 ---
 
@@ -85,40 +76,37 @@ supabase db dump --data-only --schema auth -f export/auth_data.sql
 ]
 ```
 
----
-
-## Import Order (for new Supabase project)
-
-Execute in this order to respect foreign key constraints:
-
-1. `schema.sql` - Creates all tables, views, functions, triggers, indexes
-2. `policies.sql` - Creates RLS policies (may already be in schema.sql)
-3. `data/config_tables.sql` - Config tables first (no dependencies)
-4. `data/core_tables.sql` - Producers, profiles (needed by other tables)
-5. `auth_data.sql` - Auth users (manually exported)
-6. `data/entitlements.sql` - User roles, entitlements
-7. `data/contacts_data.sql` - Crew contacts, identity groups
-8. `data/call_sheets.sql` - Call sheet data
-9. `data/financial.sql` - Payment confirmations, escrow
+**Note:** Storage FILE CONTENTS must be downloaded separately from each bucket.
 
 ---
 
-## Notes
+## Import Order (new Supabase project)
 
-- All UUIDs and IDs are preserved exactly as they exist in production
-- All timestamps are preserved
-- Foreign key relationships are maintained
-- Edge functions are in `supabase/functions/` directory (will auto-deploy)
-- Storage bucket policies are included in `policies.sql`
+1. Create new Supabase project
+2. Run `schema.sql` — creates all tables, views, functions, triggers
+3. Run `policies.sql` — applies RLS (if not already in schema.sql)
+4. Import data in order:
+   - `auth.users` (requires service_role key)
+   - `producers` (no dependencies)
+   - `profiles` (references auth.users via user_id)
+   - `payment_reports` (references producers)
+   - `submissions` (references payment_reports)
+   - `crew_contacts` (references users)
+   - Remaining tables...
+5. Create storage buckets from `storage_buckets.json`
+6. Upload storage files manually
 
 ---
 
-## Verification Checklist
+## How to Request Data Export
 
-After import, verify:
-- [ ] All tables created
-- [ ] Row counts match expected
-- [ ] Auth users can log in
-- [ ] RLS policies working correctly
-- [ ] Edge functions deployed
-- [ ] Storage buckets accessible
+Tell me which tables you need:
+
+```
+"Export auth.users to SQL"
+"Export producers table"
+"Export crew_contacts in 500-row batches"
+"Export all remaining tables"
+```
+
+I'll generate INSERT statements you can run in the new project.
