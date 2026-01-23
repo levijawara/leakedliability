@@ -116,7 +116,7 @@ export function Navigation() {
         .from('profiles')
         .select('beta_access')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.debug('[Navigation] Beta access check failed:', error);
@@ -124,7 +124,14 @@ export function Navigation() {
         return;
       }
       
-      setHasBetaAccess(data?.beta_access ?? false);
+      // Handle missing profile gracefully
+      if (!data) {
+        console.debug('[Navigation] No profile found for beta check, user_id:', userId);
+        setHasBetaAccess(false);
+        return;
+      }
+      
+      setHasBetaAccess(data.beta_access ?? false);
     } catch (e) {
       console.debug('[Navigation] Beta access check exception:', e);
       setHasBetaAccess(false);

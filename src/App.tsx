@@ -249,17 +249,22 @@ const AppContent = () => {
       const { data, error } = await supabase
         .from("site_settings")
         .select("maintenance_mode, maintenance_message")
-        .single();
+        .maybeSingle();
       
       if (error) {
         // Don't block rendering if maintenance mode check fails
         // Static pages should still work
         console.debug('[App] Maintenance mode check failed (non-critical):', error);
-        setLoading(false);
-        return;
-      }
-      
-      if (data) {
+        // Default to non-maintenance mode and continue init
+        setMaintenanceMode(false);
+        setMaintenanceMessage("");
+      } else if (!data) {
+        // No site_settings row exists - default to normal operation
+        console.debug('[App] No site_settings row found, defaulting to non-maintenance mode');
+        setMaintenanceMode(false);
+        setMaintenanceMessage("");
+      } else {
+        // Valid data - use it
         setMaintenanceMode(data.maintenance_mode);
         setMaintenanceMessage(data.maintenance_message || "");
       }
