@@ -1,0 +1,25 @@
+{
+  "buckets": [
+    {
+      "id": "submission-documents",
+      "name": "submission-documents",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "fafo-results",
+      "name": "fafo-results",
+      "public": true,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    },
+    {
+      "id": "call_sheets",
+      "name": "call_sheets",
+      "public": false,
+      "file_size_limit": null,
+      "allowed_mime_types": null
+    }
+  ]
+}
