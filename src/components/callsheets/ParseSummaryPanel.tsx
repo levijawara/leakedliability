@@ -17,7 +17,8 @@ import {
   Merge,
   Plus,
   X,
-  AtSign
+  AtSign,
+  List
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1098,7 +1099,7 @@ export function ParseSummaryPanel({
         {/* NEW CONTACTS SECTION */}
         {newContacts.length > 0 && (
           <div>
-            {/* Section Header with Select All */}
+            {/* Section Header with Select All + Skip All */}
             <div className="px-4 py-2 bg-muted/30 flex items-center gap-3 border-b sticky top-0 z-10">
               <Checkbox 
                 checked={selectedNewContacts.size === newContacts.length && newContacts.length > 0}
@@ -1110,6 +1111,22 @@ export function ParseSummaryPanel({
               <span className="text-xs text-muted-foreground">
                 ({selectedNewContacts.size} selected)
               </span>
+              <div className="flex-1" />
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  toggleSelectAllNew(false);
+                  toast({
+                    title: "All new contacts deselected",
+                    description: "Credits are still preserved in the system."
+                  });
+                }}
+                className="text-xs h-7"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Skip All New
+              </Button>
             </div>
             
             {/* New contact rows with checkboxes */}
@@ -1170,6 +1187,14 @@ export function ParseSummaryPanel({
 
       {/* Footer */}
       <div className="p-4 border-t bg-background">
+        {/* Credits preserved notice */}
+        <div className="bg-muted/40 rounded-md px-3 py-2 mb-3 flex items-center gap-2 text-xs text-muted-foreground">
+          <List className="h-3.5 w-3.5 flex-shrink-0" />
+          <span>
+            <strong>Credits are always preserved</strong> — even contacts you skip here will remain available in the Credits system for this call sheet.
+          </span>
+        </div>
+        
         <div className="flex items-center justify-between mb-2">
           {pendingDuplicates.length > 0 && (
             <span className="text-yellow-500 text-sm">
@@ -1178,7 +1203,7 @@ export function ParseSummaryPanel({
           )}
           {pendingDuplicates.length === 0 && totalToSave === 0 && (
             <span className="text-muted-foreground text-sm">
-              No contacts selected
+              No contacts selected — they'll still appear in Credits
             </span>
           )}
         </div>
