@@ -114,55 +114,67 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Validate auth
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-
-    // Auth client to verify user
-    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
-    if (claimsError || !claimsData?.user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const userId = claimsData.user.id;
-
-    // Check admin role
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: isAdmin } = await adminClient.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-
-    if (!isAdmin) {
-      return new Response(
-        JSON.stringify({ error: "Admin access required" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Parse request body
+    
+    // Parse request body first to check for cron trigger
     const body = await req.json().catch(() => ({}));
-    const { callSheetIds, syncAll = false } = body as {
+    const { callSheetIds, syncAll = false, cronTrigger = false } = body as {
       callSheetIds?: string[];
       syncAll?: boolean;
+      cronTrigger?: boolean;
     };
+
+    let userId: string | null = null;
+
+    // Allow unauthenticated cron-triggered syncs
+    if (cronTrigger && syncAll) {
+      console.log("[sync-youtube-views] Cron-triggered sync (no auth required)");
+      userId = "cron-service";
+    } else {
+      // Validate auth for manual triggers
+      const authHeader = req.headers.get("Authorization");
+      if (!authHeader?.startsWith("Bearer ")) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Auth client to verify user
+      const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+
+      const token = authHeader.replace("Bearer ", "");
+      const { data: claimsData, error: claimsError } = await authClient.auth.getUser(token);
+      if (claimsError || !claimsData?.user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      userId = claimsData.user.id;
+
+      // Check admin role for manual triggers
+      const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: isAdmin } = await adminClient.rpc("has_role", {
+        _user_id: userId,
+        _role: "admin",
+      });
+
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Admin access required" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Create admin client for database operations
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
 
     console.log(`[sync-youtube-views] start { userId: ${userId}, syncAll: ${syncAll}, callSheetIds: ${callSheetIds?.length || 0} }`);
 
