@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,7 @@ export function InteractivePdfViewer({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const pageRef = useRef<HTMLDivElement>(null);
-  const contactSpanMap = useRef<Map<string, HTMLSpanElement[]>>(new Map());
+  const [textLayerReady, setTextLayerReady] = useState(false);
 
   useEffect(() => {
     async function fetchPdf() {
@@ -71,65 +71,85 @@ export function InteractivePdfViewer({
     }
   }, [filePath]);
 
-  // After page renders, find and highlight contact names in text layer
+  // Reset text layer ready state when page changes
   useEffect(() => {
+    setTextLayerReady(false);
+  }, [pageNumber]);
+
+  // Attach click handlers when text layer is ready
+  const attachClickHandlers = useCallback(() => {
     if (!pageRef.current || !parsedContacts.length) return;
 
-    // Wait for text layer to render
-    const timeout = setTimeout(() => {
-      const textLayer = pageRef.current?.querySelector('.react-pdf__Page__textContent');
-      if (!textLayer) return;
+    const textLayer = pageRef.current.querySelector('.react-pdf__Page__textContent');
+    if (!textLayer) {
+      console.log('[PDF] No text layer found');
+      return;
+    }
 
-      const spans = Array.from(textLayer.querySelectorAll('span')) as HTMLSpanElement[];
-      contactSpanMap.current.clear();
+    const spans = Array.from(textLayer.querySelectorAll('span')) as HTMLSpanElement[];
+    console.log('[PDF] Found spans:', spans.length);
+    console.log('[PDF] Searching for contacts:', parsedContacts.map(c => c.name));
 
-      parsedContacts.forEach((contact, originalIndex) => {
-        const matchingSpans: HTMLSpanElement[] = [];
+    // First, remove any existing handlers/classes to avoid duplicates
+    spans.forEach(span => {
+      span.classList.remove('clickable-contact', 'saved', 'skipped');
+      span.onclick = null;
+    });
 
-        spans.forEach((span) => {
-          const spanText = span.textContent?.trim() || '';
-          const contactName = contact.name.trim();
+    parsedContacts.forEach((contact, originalIndex) => {
+      // Split name into words and search for FIRST word only
+      const nameParts = contact.name.trim().split(/\s+/);
+      const firstName = nameParts[0];
 
-          // Exact match (case-insensitive)
-          if (spanText.toLowerCase() === contactName.toLowerCase()) {
-            matchingSpans.push(span);
-          }
-          // Partial match (name appears in span)
-          else if (spanText.toLowerCase().includes(contactName.toLowerCase()) && 
-                   contactName.length > 3) {
-            matchingSpans.push(span);
-          }
-        });
+      if (firstName.length < 2) return; // Skip very short names
 
-        if (matchingSpans.length > 0) {
-          contactSpanMap.current.set(`${originalIndex}`, matchingSpans);
+      // Escape special regex characters in the name
+      const escapedFirstName = firstName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-          matchingSpans.forEach((span) => {
-            // Determine state
-            const isSaved = savedContactIndices.has(originalIndex);
-            const isSkipped = skippedContactIndices.has(originalIndex);
+      spans.forEach((span) => {
+        const spanText = span.textContent?.trim() || '';
 
-            // Add classes
-            span.classList.add('clickable-contact');
-            if (isSaved) {
-              span.classList.add('saved');
-            } else if (isSkipped) {
-              span.classList.add('skipped');
-            }
+        // Match if span contains the first name (case-insensitive, word boundary)
+        const regex = new RegExp(`\\b${escapedFirstName}\\b`, 'i');
 
-            // Add click handler
-            span.style.cursor = 'pointer';
-            span.onclick = (e) => {
-              e.stopPropagation();
-              onContactClick(contact, originalIndex);
-            };
-          });
+        if (regex.test(spanText)) {
+          // Check if already processed (avoid duplicate handlers)
+          if (span.classList.contains('clickable-contact')) return;
+
+          console.log('[PDF] Match found:', spanText, '→', contact.name);
+
+          // Determine state
+          const isSaved = savedContactIndices.has(originalIndex);
+          const isSkipped = skippedContactIndices.has(originalIndex);
+
+          // Add classes
+          span.classList.add('clickable-contact');
+          if (isSaved) span.classList.add('saved');
+          if (isSkipped) span.classList.add('skipped');
+
+          // Add click handler
+          span.style.cursor = 'pointer';
+          span.onclick = (e) => {
+            e.stopPropagation();
+            console.log('[PDF] Clicked:', contact.name);
+            onContactClick(contact, originalIndex);
+          };
         }
       });
-    }, 500); // Give text layer time to render
+    });
+  }, [parsedContacts, savedContactIndices, skippedContactIndices, onContactClick]);
 
-    return () => clearTimeout(timeout);
-  }, [pageNumber, parsedContacts, savedContactIndices, skippedContactIndices, onContactClick]);
+  // Run attachment when text layer becomes ready
+  useEffect(() => {
+    if (textLayerReady) {
+      attachClickHandlers();
+    }
+  }, [textLayerReady, attachClickHandlers]);
+
+  const handleTextLayerSuccess = useCallback(() => {
+    console.log('[PDF] Text layer rendered successfully');
+    setTextLayerReady(true);
+  }, []);
 
   function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
     setNumPages(numPages);
@@ -216,6 +236,7 @@ export function InteractivePdfViewer({
                 scale={scale}
                 className="shadow-lg"
                 renderTextLayer={true}
+                onRenderTextLayerSuccess={handleTextLayerSuccess}
                 renderAnnotationLayer={true}
               />
             </Document>
