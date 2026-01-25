@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFullViewCount } from "@/lib/youtubeHelpers";
 import { formatDistanceToNow } from "date-fns";
-import { YouTubePlayerModal } from "@/components/contacts/YouTubePlayerModal";
+import { YouTubePlayerModal, VideoWithCredits } from "@/components/contacts/YouTubePlayerModal";
 
 interface ContactData {
   id: string;
@@ -28,12 +28,9 @@ interface YouTubeVideo {
   last_synced_at: string | null;
 }
 
-interface CallSheetWithVideo {
-  id: string;
-  project_title: string | null;
-  youtube_url: string | null;
-  youtube_view_count: number | null;
-  youtube_videos: YouTubeVideo | null;
+interface CreditEntry {
+  role: string | null;
+  name: string;
 }
 
 /**
@@ -84,10 +81,10 @@ export default function ContactYouTubePortfolio() {
   const navigate = useNavigate();
   
   const [contact, setContact] = useState<ContactData | null>(null);
-  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
+  const [videos, setVideos] = useState<VideoWithCredits[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<VideoWithCredits | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   useEffect(() => {
@@ -130,7 +127,7 @@ export default function ContactYouTubePortfolio() {
         
         const callSheetIds = links.map(l => l.call_sheet_id);
         
-        // Get call sheets with their linked videos (using the new FK)
+        // Get call sheets with their linked videos AND parsed_contacts for credits
         const { data: sheetsData, error: sheetsError } = await supabase
           .from("global_call_sheets")
           .select(`
@@ -138,12 +135,38 @@ export default function ContactYouTubePortfolio() {
             project_title,
             youtube_url,
             youtube_view_count,
-            youtube_video_id
+            youtube_video_id,
+            parsed_contacts
           `)
           .in("id", callSheetIds)
           .not("youtube_url", "is", null);
         
         if (sheetsError) throw sheetsError;
+        
+        // Build a map from youtube_video_id to credits
+        const videoCreditsMap = new Map<string, { credits: CreditEntry[]; title: string | null }>();
+        
+        sheetsData?.forEach(sheet => {
+          if (!sheet.youtube_video_id) return;
+          
+          // Parse credits from parsed_contacts JSONB
+          const credits: CreditEntry[] = [];
+          if (Array.isArray(sheet.parsed_contacts)) {
+            sheet.parsed_contacts.forEach((c: any) => {
+              if (c?.name) {
+                credits.push({
+                  name: c.name,
+                  role: c.roles?.[0] || c.role || null,
+                });
+              }
+            });
+          }
+          
+          videoCreditsMap.set(sheet.youtube_video_id, {
+            credits,
+            title: sheet.project_title,
+          });
+        });
         
         // Get unique video IDs and fetch video metadata
         const videoIds = [...new Set(
@@ -153,7 +176,6 @@ export default function ContactYouTubePortfolio() {
         )];
         
         if (videoIds.length === 0) {
-          // Fallback: show legacy data without full metadata
           setVideos([]);
           setLoading(false);
           return;
@@ -166,11 +188,16 @@ export default function ContactYouTubePortfolio() {
         
         if (videosError) throw videosError;
         
-        // Dedupe by video_id and sort by view_count
-        const uniqueVideos = new Map<string, YouTubeVideo>();
+        // Dedupe by video_id, attach credits, and sort by view_count
+        const uniqueVideos = new Map<string, VideoWithCredits>();
         (videosData || []).forEach(video => {
           if (!uniqueVideos.has(video.video_id)) {
-            uniqueVideos.set(video.video_id, video);
+            const creditsData = videoCreditsMap.get(video.id);
+            uniqueVideos.set(video.video_id, {
+              ...video,
+              credits: creditsData?.credits || [],
+              projectTitle: creditsData?.title || null,
+            });
           }
         });
         
