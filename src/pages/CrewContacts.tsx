@@ -80,6 +80,9 @@ export default function CrewContacts() {
   
   // IG auto-match state
   const [autoMatchRunning, setAutoMatchRunning] = useState(false);
+  
+  // YouTube views aggregation
+  const [youtubeViewCounts, setYoutubeViewCounts] = useState<Record<string, number>>({});
 
   // Persist view preference
   useEffect(() => {
@@ -182,7 +185,9 @@ export default function CrewContacts() {
       console.log(`[CrewContacts] Total contacts loaded: ${allContacts.length}`);
       setContacts(allContacts);
       
-      fetchCallSheetCounts(allContacts.map(c => c.id));
+      const contactIds = allContacts.map(c => c.id);
+      fetchCallSheetCounts(contactIds);
+      fetchYouTubeViewCounts(contactIds);
     } catch (error: any) {
       console.error('[CrewContacts] Fetch error:', error);
       toast({
@@ -233,6 +238,64 @@ export default function CrewContacts() {
       setCallSheetCounts(counts);
     } catch (error: any) {
       console.error('[CrewContacts] Failed to fetch call sheet counts:', error);
+    }
+  };
+
+  // Fetch aggregated YouTube view counts per contact
+  const fetchYouTubeViewCounts = async (contactIds: string[]) => {
+    if (contactIds.length === 0) return;
+    
+    console.log(`[CrewContacts] Fetching YouTube view aggregates for ${contactIds.length} contacts...`);
+    
+    try {
+      // Get all contact-to-callsheet links with youtube view counts
+      const PAGE_SIZE = 1000;
+      let allRows: { contact_id: string; youtube_view_count: number | null }[] = [];
+      let from = 0;
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('contact_call_sheets')
+          .select(`
+            contact_id,
+            global_call_sheets!inner (
+              youtube_view_count
+            )
+          `)
+          .not('global_call_sheets.youtube_view_count', 'is', null)
+          .range(from, from + PAGE_SIZE - 1);
+
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+
+        // Flatten the nested structure
+        const rows = data.map(row => ({
+          contact_id: row.contact_id,
+          youtube_view_count: (row.global_call_sheets as any)?.youtube_view_count || null
+        }));
+        
+        allRows = [...allRows, ...rows];
+
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+
+      console.log(`[CrewContacts] Found ${allRows.length} contact-sheet links with YouTube views`);
+
+      // Aggregate views per contact
+      const viewTotals: Record<string, number> = {};
+      allRows.forEach(row => {
+        if (row.youtube_view_count) {
+          viewTotals[row.contact_id] = (viewTotals[row.contact_id] || 0) + row.youtube_view_count;
+        }
+      });
+
+      const contactsWithViews = Object.keys(viewTotals).length;
+      console.log(`[CrewContacts] Contacts with YouTube views: ${contactsWithViews}`);
+
+      setYoutubeViewCounts(viewTotals);
+    } catch (error: any) {
+      console.error('[CrewContacts] Failed to fetch YouTube view counts:', error);
     }
   };
 
@@ -715,6 +778,7 @@ export default function CrewContacts() {
             <VirtualizedContactsGrid
               contacts={filteredContacts}
               callSheetCounts={callSheetCounts}
+              youtubeViewCounts={youtubeViewCounts}
               userId={user?.id}
               onContactUpdate={handleContactUpdate}
               onContactDelete={handleContactDelete}

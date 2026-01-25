@@ -61,6 +61,9 @@ interface GlobalCallSheet {
   created_at: string;
   parsed_contacts: unknown;
   parsed_date: string | null;
+  youtube_url: string | null;
+  youtube_view_count: number | null;
+  youtube_last_synced: string | null;
 }
 
 interface UserCallSheetLink {
@@ -160,7 +163,10 @@ export function CallSheetList({}: CallSheetListProps) {
             error_message,
             created_at,
             parsed_contacts,
-            parsed_date
+            parsed_date,
+            youtube_url,
+            youtube_view_count,
+            youtube_last_synced
           )
         `)
         .eq('user_id', userId)

@@ -116,3 +116,6 @@ verify_jwt = true
 
 [functions.enrich-nova-profiles]
 verify_jwt = true
+
+[functions.sync-youtube-views]
+verify_jwt = false
