@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -6,10 +6,19 @@ import {
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Youtube, Eye, Calendar } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Youtube, Eye, Calendar, Copy, Check } from "lucide-react";
 import { formatFullViewCount } from "@/lib/youtubeHelpers";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface CreditEntry {
   role: string | null;
@@ -70,6 +79,62 @@ function abbreviateRole(role: string): string {
   return ROLE_ABBREVIATIONS[role] || role;
 }
 
+// Copy Credits Dropdown Component
+function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyCredits = async (options: {
+    abbreviated: boolean;
+  }) => {
+    const text = credits
+      .map((c) => {
+        const role = c.role
+          ? options.abbreviated
+            ? abbreviateRole(c.role)
+            : c.role
+          : null;
+        return role ? `${role}: ${c.name}` : c.name;
+      })
+      .join("\n");
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      toast.success("Credits copied to clipboard");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy credits");
+    }
+  };
+
+  if (!credits || credits.length === 0) return null;
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-6 px-2 gap-1">
+          {copied ? (
+            <Check className="h-3 w-3 text-green-500" />
+          ) : (
+            <Copy className="h-3 w-3" />
+          )}
+          <span className="text-xs">Copy</span>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="bg-popover">
+        <DropdownMenuLabel className="text-xs">Copy Credits</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true })}>
+          Abbreviated Roles
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false })}>
+          Full Role Names
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 export function YouTubePlayerModal({
   open,
   onOpenChange,
@@ -99,9 +164,6 @@ export function YouTubePlayerModal({
 
   const embedUrl = `https://www.youtube.com/embed/${video.video_id}?rel=0&modestbranding=1&playsinline=1`;
 
-  const hasPrev = currentIndex > 0;
-  const hasNext = currentIndex < allVideos.length - 1;
-
   // Get other videos for bottom strip (exclude current)
   const otherVideos = allVideos.filter((_, i) => i !== currentIndex);
 
@@ -115,65 +177,76 @@ export function YouTubePlayerModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl w-[95vw] p-0 gap-0 overflow-hidden max-h-[90vh]">
-        <div className="flex flex-col">
+        <div className="flex flex-col h-full">
           {/* TOP: Video + Metadata/Credits */}
-          <div className="flex flex-col lg:flex-row">
+          <div className="flex flex-col lg:flex-row flex-1 min-h-0">
             {/* Video Player - Left Side */}
-            <div className="flex-1 bg-black">
-              <AspectRatio ratio={16 / 9}>
-                <iframe
-                  src={embedUrl}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={video.title || "Video player"}
-                />
-              </AspectRatio>
+            <div className="flex-1 bg-black flex items-center">
+              <div className="w-full">
+                <AspectRatio ratio={16 / 9}>
+                  <iframe
+                    src={embedUrl}
+                    className="w-full h-full"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title={video.title || "Video player"}
+                  />
+                </AspectRatio>
+              </div>
             </div>
 
-            {/* Metadata + Credits Panel - Right Side */}
-            <div className="w-full lg:w-80 p-4 lg:p-5 space-y-3 bg-background border-l flex flex-col max-h-[40vh] lg:max-h-none">
-              {/* Title */}
-              <div>
-                <h2 className="font-semibold text-lg leading-tight line-clamp-2">
-                  {video.title || "Untitled Video"}
-                </h2>
-                {video.channel_title && (
-                  <p className="text-sm text-muted-foreground mt-0.5">
-                    {video.channel_title}
-                  </p>
-                )}
+            {/* Metadata + Credits Panel - Right Side (Full Height) */}
+            <div className="w-full lg:w-80 bg-background border-l flex flex-col max-h-[40vh] lg:max-h-full">
+              {/* Title & Stats - Fixed at top */}
+              <div className="p-4 lg:p-5 space-y-3 shrink-0 border-b">
+                {/* Title */}
+                <div>
+                  <h2 className="font-semibold text-lg leading-tight line-clamp-2">
+                    {video.title || "Untitled Video"}
+                  </h2>
+                  {video.channel_title && (
+                    <p className="text-sm text-muted-foreground mt-0.5">
+                      {video.channel_title}
+                    </p>
+                  )}
+                </div>
+
+                {/* Stats */}
+                <div className="flex flex-wrap gap-3 text-sm">
+                  {video.view_count !== null && (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Eye className="h-4 w-4" />
+                      <span className="font-mono font-medium text-foreground">
+                        {formatFullViewCount(video.view_count)}
+                      </span>
+                      <span>views</span>
+                    </div>
+                  )}
+                  {video.published_at && (
+                    <div className="flex items-center gap-1.5 text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap gap-3 text-sm pb-2 border-b">
-                {video.view_count !== null && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Eye className="h-4 w-4" />
-                    <span className="font-mono font-medium text-foreground">
-                      {formatFullViewCount(video.view_count)}
-                    </span>
-                    <span>views</span>
-                  </div>
-                )}
-                {video.published_at && (
-                  <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* PROJECT CREDITS */}
+              {/* PROJECT CREDITS - Fills remaining space */}
               {video.credits && video.credits.length > 0 && (
-                <div className="flex-1 min-h-0 space-y-2">
-                  <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                    Project Credits
-                  </h3>
-                  <ScrollArea className="h-32 lg:h-48">
-                    <div className="space-y-1 font-mono text-sm pr-3">
+                <div className="flex-1 min-h-0 flex flex-col px-4 lg:px-5 py-3">
+                  {/* Header with Copy button */}
+                  <div className="flex items-center justify-between mb-2 shrink-0">
+                    <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                      Project Credits
+                    </h3>
+                    <CopyCreditsDropdown credits={video.credits} />
+                  </div>
+                  
+                  {/* Scrollable credits list */}
+                  <ScrollArea className="flex-1">
+                    <div className="space-y-1 font-mono text-sm pr-3 pb-2">
                       {video.credits.map((credit, i) => {
                         const isMe = isContactMatch(credit.name);
                         return (
@@ -197,49 +270,12 @@ export function YouTubePlayerModal({
                   </ScrollArea>
                 </div>
               )}
-
-              {/* Navigation */}
-              <div className="flex items-center justify-between pt-2 border-t">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onNavigate(currentIndex - 1)}
-                  disabled={!hasPrev}
-                  className="gap-1"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Prev
-                </Button>
-                <span className="text-xs text-muted-foreground">
-                  {currentIndex + 1} of {allVideos.length}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onNavigate(currentIndex + 1)}
-                  disabled={!hasNext}
-                  className="gap-1"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* External link */}
-              <a
-                href={`https://www.youtube.com/watch?v=${video.video_id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Open on YouTube →
-              </a>
             </div>
           </div>
 
           {/* BOTTOM: Horizontal "More From" Strip - Gallery Style */}
           {otherVideos.length > 0 && (
-            <div className="border-t bg-muted/30 p-3">
+            <div className="border-t bg-muted/30 p-3 shrink-0">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium flex items-center gap-2">
                   <Youtube className="h-4 w-4 text-destructive" />
