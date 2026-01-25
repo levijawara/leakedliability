@@ -32,7 +32,7 @@ export function ContactEditDialog({ contact, isOpen, onClose, onSave }: ContactE
     role: contact.roles?.join(", ") || "",
     department: contact.departments?.join(", ") || "",
     ig_handle: contact.ig_handle || "",
-    project_title: contact.project_title || "",
+    nova_profile_url: contact.nova_profile_url || "",
   });
 
   const handleChange = (field: string, value: string) => {
@@ -61,8 +61,8 @@ export function ContactEditDialog({ contact, isOpen, onClose, onSave }: ContactE
         departments: formData.department.trim() 
           ? formData.department.split(",").map(d => d.trim()).filter(Boolean) 
           : null,
-        ig_handle: formData.ig_handle.trim() || null,
-        project_title: formData.project_title.trim() || null,
+        ig_handle: formData.ig_handle.trim().replace(/^@/, '') || null,
+        nova_profile_url: formData.nova_profile_url.trim() || null,
       };
 
       const { error } = await supabase
@@ -169,12 +169,13 @@ export function ContactEditDialog({ contact, isOpen, onClose, onSave }: ContactE
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="project_title">Project</Label>
+              <Label htmlFor="nova_profile_url">NOVA Profile URL</Label>
               <Input
-                id="project_title"
-                value={formData.project_title}
-                onChange={(e) => handleChange("project_title", e.target.value)}
-                placeholder="Project name"
+                id="nova_profile_url"
+                type="url"
+                value={formData.nova_profile_url}
+                onChange={(e) => handleChange("nova_profile_url", e.target.value)}
+                placeholder="https://itsnova.com/username"
               />
             </div>
           </div>

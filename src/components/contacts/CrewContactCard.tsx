@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Star, Mail, Phone, Instagram, FileText, Pencil, Trash2, Youtube } from "lucide-react";
+import { Star, Mail, Phone, FileText, Pencil, Trash2, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
 import { formatViewCount } from "@/lib/youtubeHelpers";
@@ -115,20 +115,27 @@ export function CrewContactCard({
               ) : (
                 <div className="w-5 h-5 shrink-0" /> 
               )}
+              {/* Instagram icon */}
+              {contact.ig_handle ? (
+                <a
+                  href={`https://instagram.com/${contact.ig_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                  title={`@${contact.ig_handle}`}
+                >
+                  <img 
+                    src="/images/instagram.png" 
+                    alt="Instagram" 
+                    className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
+                  />
+                </a>
+              ) : (
+                <div className="w-5 h-5 shrink-0" />
+              )}
               <div className="flex flex-col min-w-0 flex-1">
                 <h3 className="font-semibold text-sm truncate">{contact.name}</h3>
-                {contact.ig_handle && (
-                  <a
-                    href={`https://instagram.com/${contact.ig_handle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Instagram className="h-3 w-3" />
-                    <span className="truncate">@{contact.ig_handle}</span>
-                  </a>
-                )}
               </div>
             </div>
 
