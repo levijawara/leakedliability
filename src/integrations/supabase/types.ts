@@ -916,6 +916,10 @@ export type Database = {
           retry_count: number | null
           status: string | null
           updated_at: string | null
+          youtube_last_synced: string | null
+          youtube_url: string | null
+          youtube_video_id: string | null
+          youtube_view_count: number | null
         }
         Insert: {
           canonical_producers?: Json | null
@@ -938,6 +942,10 @@ export type Database = {
           retry_count?: number | null
           status?: string | null
           updated_at?: string | null
+          youtube_last_synced?: string | null
+          youtube_url?: string | null
+          youtube_video_id?: string | null
+          youtube_view_count?: number | null
         }
         Update: {
           canonical_producers?: Json | null
@@ -960,8 +968,20 @@ export type Database = {
           retry_count?: number | null
           status?: string | null
           updated_at?: string | null
+          youtube_last_synced?: string | null
+          youtube_url?: string | null
+          youtube_video_id?: string | null
+          youtube_view_count?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "global_call_sheets_youtube_video_id_fkey"
+            columns: ["youtube_video_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_videos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       identity_claim_history: {
         Row: {
@@ -1063,6 +1083,36 @@ export type Database = {
           project_count?: number | null
           roles?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ig_enrichment_staging: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: number
+          instagram: string | null
+          name: string | null
+          phone: string | null
+          processed: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          instagram?: string | null
+          name?: string | null
+          phone?: string | null
+          processed?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          instagram?: string | null
+          name?: string | null
+          phone?: string | null
+          processed?: boolean | null
         }
         Relationships: []
       }
@@ -2788,6 +2838,54 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      youtube_videos: {
+        Row: {
+          channel_id: string | null
+          channel_title: string | null
+          comment_count: number | null
+          created_at: string | null
+          duration_seconds: number | null
+          id: string
+          last_synced_at: string | null
+          like_count: number | null
+          published_at: string | null
+          thumbnail_url: string | null
+          title: string | null
+          video_id: string
+          view_count: number | null
+        }
+        Insert: {
+          channel_id?: string | null
+          channel_title?: string | null
+          comment_count?: number | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          id?: string
+          last_synced_at?: string | null
+          like_count?: number | null
+          published_at?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_id: string
+          view_count?: number | null
+        }
+        Update: {
+          channel_id?: string | null
+          channel_title?: string | null
+          comment_count?: number | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          id?: string
+          last_synced_at?: string | null
+          like_count?: number | null
+          published_at?: string | null
+          thumbnail_url?: string | null
+          title?: string | null
+          video_id?: string
+          view_count?: number | null
         }
         Relationships: []
       }

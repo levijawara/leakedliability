@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload, Youtube, RefreshCw } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -117,6 +117,7 @@ export default function Admin() {
   const [callSheetConfigId, setCallSheetConfigId] = useState<string | null>(null);
   const [processingQueue, setProcessingQueue] = useState(false);
   const [queuedCallSheetsCount, setQueuedCallSheetsCount] = useState(0);
+  const [syncingYouTube, setSyncingYouTube] = useState(false);
   
   // IG Master List state
   const [igMasterImporting, setIgMasterImporting] = useState(false);
@@ -1299,6 +1300,43 @@ export default function Admin() {
     }
   };
 
+  const triggerYouTubeSync = async () => {
+    setSyncingYouTube(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-youtube-views`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({ syncAll: true, staleOnly: false }),
+        }
+      );
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "YouTube Sync Complete",
+          description: `Synced ${result.videosUpserted || 0} videos, linked ${result.sheetsLinked || 0} call sheets`,
+        });
+      } else {
+        throw new Error(result.error || "Sync failed");
+      }
+    } catch (error: any) {
+      toast({
+        title: "Sync Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSyncingYouTube(false);
+    }
+  };
+
   const handleGenerateEscrowLink = async (reportId: string) => {
     setGeneratingEscrowLink(reportId);
     try {
@@ -1661,173 +1699,205 @@ export default function Admin() {
 
       {/* Maintenance Mode Control */}
       <Card className="mb-6 p-6">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label htmlFor="maintenance-mode" className="text-lg font-semibold flex items-center gap-2">
-                {maintenanceMode ? <PowerOff className="h-5 w-5 text-destructive" /> : <Power className="h-5 w-5 text-primary" />}
-                Maintenance Mode
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {maintenanceMode 
-                  ? "Site is currently in maintenance mode. Only admins can access it." 
-                  : "Site is accessible to everyone."}
-              </p>
-            </div>
-            <Switch
-              id="maintenance-mode"
-              checked={maintenanceMode}
-              onCheckedChange={toggleMaintenanceMode}
-              variant="status-inverted"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="maintenance-message">Maintenance Message</Label>
-            <Textarea
-              id="maintenance-message"
-              placeholder="We're making improvements! Check back soon 🛠️"
-              value={maintenanceMessage}
-              onChange={(e) => setMaintenanceMessage(e.target.value)}
-              rows={2}
-            />
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={toggleMaintenanceMode}
-              disabled={!maintenanceMessage.trim()}
-            >
-              Update Message & Save
-            </Button>
-          </div>
-
-          <div className="pt-4 border-t">
-            <div 
-              className="flex items-start justify-between cursor-pointer"
-              onClick={() => setNotificationPanelExpanded(!notificationPanelExpanded)}
-            >
-              <div className="space-y-0.5">
-                <Label className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
-                  <Bell className="h-5 w-5 text-muted-foreground" />
-                  Producer Notification Emails
-                  <ChevronDown 
-                    className={cn(
-                      "h-4 w-4 text-muted-foreground transition-transform",
-                      notificationPanelExpanded && "rotate-180"
-                    )} 
-                  />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* LEFT COLUMN */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="maintenance-mode" className="text-lg font-semibold flex items-center gap-2">
+                  {maintenanceMode ? <PowerOff className="h-5 w-5 text-destructive" /> : <Power className="h-5 w-5 text-primary" />}
+                  Maintenance Mode
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  {queuedNotifications.length} queued notification{queuedNotifications.length !== 1 ? 's' : ''} • Manual send only
+                  {maintenanceMode 
+                    ? "Site is currently in maintenance mode. Only admins can access it." 
+                    : "Site is accessible to everyone."}
                 </p>
               </div>
+              <Switch
+                id="maintenance-mode"
+                checked={maintenanceMode}
+                onCheckedChange={toggleMaintenanceMode}
+                variant="status-inverted"
+              />
             </div>
             
-            {notificationPanelExpanded && (
-              <div className="mt-4 pt-4 border-t space-y-4">
-                {/* Manual Email Sender - NEW */}
-                <ManualEmailSender 
-                  producers={producers}
-                  onEmailSent={loadAdminData}
-                />
+            <div className="space-y-2">
+              <Label htmlFor="maintenance-message">Maintenance Message</Label>
+              <Textarea
+                id="maintenance-message"
+                placeholder="We're making improvements! Check back soon 🛠️"
+                value={maintenanceMessage}
+                onChange={(e) => setMaintenanceMessage(e.target.value)}
+                rows={2}
+              />
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={toggleMaintenanceMode}
+                disabled={!maintenanceMessage.trim()}
+              >
+                Update Message & Save
+              </Button>
+            </div>
 
-                {/* Existing Queued Notification Sender */}
-                <ProducerNotificationSelector 
-                  queuedNotifications={queuedNotifications}
-                  onEmailsSent={loadAdminData}
-                />
+            <div className="pt-4 border-t">
+              <div 
+                className="flex items-start justify-between cursor-pointer"
+                onClick={() => setNotificationPanelExpanded(!notificationPanelExpanded)}
+              >
+                <div className="space-y-0.5">
+                  <Label className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
+                    <Bell className="h-5 w-5 text-muted-foreground" />
+                    Producer Notification Emails
+                    <ChevronDown 
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        notificationPanelExpanded && "rotate-180"
+                      )} 
+                    />
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {queuedNotifications.length} queued notification{queuedNotifications.length !== 1 ? 's' : ''} • Manual send only
+                  </p>
+                </div>
               </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="space-y-1">
-              <Label htmlFor="free-access" className="text-lg font-semibold flex items-center gap-2">
-                <Unlock className="h-5 w-5 text-muted-foreground" />
-                Global Free Leaderboard Access
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {freeAccessEnabled 
-                  ? "All users currently have free leaderboard access (for testing/launch)" 
-                  : "Normal access rules apply (subscriptions, report unlocks, etc.)"}
-              </p>
-            </div>
-            <Switch
-              id="free-access"
-              checked={freeAccessEnabled}
-              onCheckedChange={toggleFreeAccess}
-              variant="status"
-            />
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="space-y-1">
-              <Label htmlFor="rate-limit" className="text-lg font-semibold flex items-center gap-2">
-                <Shield className="h-5 w-5 text-muted-foreground" />
-                Call Sheet Upload Rate Limiting
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {callSheetRateLimitEnabled 
-                  ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
-                  : "No upload limits — seeding mode active"}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {callSheetRateLimitEnabled && (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={callSheetRateLimitPerHour}
-                    onChange={(e) => setCallSheetRateLimitPerHour(parseInt(e.target.value) || 20)}
-                    onBlur={(e) => updateCallSheetRateLimit(parseInt(e.target.value) || 20)}
-                    className="w-20 h-8 text-center"
+              
+              {notificationPanelExpanded && (
+                <div className="mt-4 pt-4 border-t space-y-4">
+                  <ManualEmailSender 
+                    producers={producers}
+                    onEmailSent={loadAdminData}
                   />
-                  <span className="text-sm text-muted-foreground">/hr</span>
+                  <ProducerNotificationSelector 
+                    queuedNotifications={queuedNotifications}
+                    onEmailsSent={loadAdminData}
+                  />
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="free-access" className="text-lg font-semibold flex items-center gap-2">
+                  <Unlock className="h-5 w-5 text-muted-foreground" />
+                  Global Free Leaderboard Access
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {freeAccessEnabled 
+                    ? "All users currently have free leaderboard access (for testing/launch)" 
+                    : "Normal access rules apply (subscriptions, report unlocks, etc.)"}
+                </p>
+              </div>
               <Switch
-                id="rate-limit"
-                checked={callSheetRateLimitEnabled}
-                onCheckedChange={toggleCallSheetRateLimit}
+                id="free-access"
+                checked={freeAccessEnabled}
+                onCheckedChange={toggleFreeAccess}
                 variant="status"
               />
             </div>
-          </div>
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="space-y-1">
-              <Label className="text-lg font-semibold flex items-center gap-2">
-                <Loader2 className={`h-5 w-5 text-muted-foreground ${processingQueue ? 'animate-spin' : ''}`} />
-                Call Sheet Parse Queue
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                {queuedCallSheetsCount > 0 
-                  ? `${queuedCallSheetsCount} call sheets waiting to be parsed` 
-                  : "No call sheets in queue"}
-              </p>
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="space-y-1">
+                <Label htmlFor="rate-limit" className="text-lg font-semibold flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-muted-foreground" />
+                  Call Sheet Upload Rate Limiting
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {callSheetRateLimitEnabled 
+                    ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
+                    : "No upload limits — seeding mode active"}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                {callSheetRateLimitEnabled && (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={callSheetRateLimitPerHour}
+                      onChange={(e) => setCallSheetRateLimitPerHour(parseInt(e.target.value) || 20)}
+                      onBlur={(e) => updateCallSheetRateLimit(parseInt(e.target.value) || 20)}
+                      className="w-20 h-8 text-center"
+                    />
+                    <span className="text-sm text-muted-foreground">/hr</span>
+                  </div>
+                )}
+                <Switch
+                  id="rate-limit"
+                  checked={callSheetRateLimitEnabled}
+                  onCheckedChange={toggleCallSheetRateLimit}
+                  variant="status"
+                />
+              </div>
             </div>
-            <Button
-              onClick={triggerQueueProcessor}
-              disabled={processingQueue || queuedCallSheetsCount === 0}
-              variant={queuedCallSheetsCount > 0 ? "default" : "outline"}
-            >
-              {processingQueue ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-              `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
-              )}
-            </Button>
-          </div>
 
-          {/* Database Export */}
-          <div className="pt-4 border-t">
-            <DatabaseExportPanel />
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="space-y-1">
+                <Label className="text-lg font-semibold flex items-center gap-2">
+                  <Youtube className="h-5 w-5 text-destructive" />
+                  YouTube Data Sync
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Refresh view counts and metadata for all linked videos
+                </p>
+              </div>
+              <Button
+                onClick={triggerYouTubeSync}
+                disabled={syncingYouTube}
+                variant="outline"
+              >
+                {syncingYouTube ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Sync Now
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="space-y-1">
+                <Label className="text-lg font-semibold flex items-center gap-2">
+                  <Loader2 className={`h-5 w-5 text-muted-foreground ${processingQueue ? 'animate-spin' : ''}`} />
+                  Call Sheet Parse Queue
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {queuedCallSheetsCount > 0 
+                    ? `${queuedCallSheetsCount} call sheets waiting to be parsed` 
+                    : "No call sheets in queue"}
+                </p>
+              </div>
+              <Button
+                onClick={triggerQueueProcessor}
+                disabled={processingQueue || queuedCallSheetsCount === 0}
+                variant={queuedCallSheetsCount > 0 ? "default" : "outline"}
+              >
+                {processingQueue ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
+                )}
+              </Button>
+            </div>
           </div>
+        </div>
+
+        {/* Database Export - Full Width */}
+        <div className="pt-6 mt-6 border-t">
+          <DatabaseExportPanel />
         </div>
       </Card>
 

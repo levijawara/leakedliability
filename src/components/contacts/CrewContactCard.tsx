@@ -3,14 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Star, Mail, Phone, Instagram, FileText, Pencil, Trash2 } from "lucide-react";
+import { Star, Mail, Phone, FileText, Pencil, Trash2, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
+import { formatFullViewCount } from "@/lib/youtubeHelpers";
 import type { CrewContact } from "@/pages/CrewContacts";
 
 interface CrewContactCardProps {
   contact: CrewContact;
   callSheetCount: number;
+  youtubeViewCount?: number;
   onToggleFavorite: (contact: CrewContact) => void;
   onEdit: (contact: CrewContact) => void;
   onDelete: (contact: CrewContact) => void;
@@ -24,6 +26,7 @@ interface CrewContactCardProps {
 export function CrewContactCard({
   contact,
   callSheetCount,
+  youtubeViewCount = 0,
   onToggleFavorite,
   onEdit,
   onDelete,
@@ -112,20 +115,27 @@ export function CrewContactCard({
               ) : (
                 <div className="w-5 h-5 shrink-0" /> 
               )}
+              {/* Instagram icon */}
+              {contact.ig_handle ? (
+                <a
+                  href={`https://instagram.com/${contact.ig_handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                  onClick={(e) => e.stopPropagation()}
+                  title={`@${contact.ig_handle}`}
+                >
+                  <img 
+                    src="/images/instagram.png" 
+                    alt="Instagram" 
+                    className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
+                  />
+                </a>
+              ) : (
+                <div className="w-5 h-5 shrink-0" />
+              )}
               <div className="flex flex-col min-w-0 flex-1">
                 <h3 className="font-semibold text-sm truncate">{contact.name}</h3>
-                {contact.ig_handle && (
-                  <a
-                    href={`https://instagram.com/${contact.ig_handle}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Instagram className="h-3 w-3" />
-                    <span className="truncate">@{contact.ig_handle}</span>
-                  </a>
-                )}
               </div>
             </div>
 
@@ -183,7 +193,34 @@ export function CrewContactCard({
               </div>
             )}
 
-            {/* Row 4: Call sheet button - full width */}
+            {/* Row 4: YouTube views button (if any) */}
+            {youtubeViewCount > 0 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs h-8 hover:bg-muted px-2 -mx-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/crew-contacts/${contact.id}/youtube`);
+                    }}
+                    aria-label={`View ${contact.name}'s YouTube portfolio`}
+                  >
+                    <Youtube className="h-3.5 w-3.5 text-destructive mr-1.5" />
+                    <span className="font-mono font-medium">
+                      {formatFullViewCount(youtubeViewCount)}
+                    </span>
+                    <span className="ml-1 text-muted-foreground">total views</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View all linked YouTube projects</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            {/* Row 5: Call sheet button - full width */}
             <Button
               variant="outline"
               size="sm"

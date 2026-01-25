@@ -13,7 +13,8 @@ import {
   Search,
   X,
   FileType,
-  List
+  List,
+  PlayCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ import { PDFViewerModal } from "./PDFViewerModal";
 import { CreditsModal } from "./CreditsModal";
 import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
 import { PaymentStatusRadio } from "./PaymentStatusRadio";
+import { ReparseControlPanel } from "./ReparseControlPanel";
 
 interface GlobalCallSheet {
   id: string;
@@ -59,6 +61,9 @@ interface GlobalCallSheet {
   created_at: string;
   parsed_contacts: unknown;
   parsed_date: string | null;
+  youtube_url: string | null;
+  youtube_view_count: number | null;
+  youtube_last_synced: string | null;
 }
 
 interface UserCallSheetLink {
@@ -108,8 +113,8 @@ export function CallSheetList({}: CallSheetListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
   
-  // View mode state
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  // View mode state - default to cards view
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('cards');
   
   // PDF viewer modal state
   const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
@@ -158,7 +163,10 @@ export function CallSheetList({}: CallSheetListProps) {
             error_message,
             created_at,
             parsed_contacts,
-            parsed_date
+            parsed_date,
+            youtube_url,
+            youtube_view_count,
+            youtube_last_synced
           )
         `)
         .eq('user_id', userId)
@@ -362,6 +370,13 @@ export function CallSheetList({}: CallSheetListProps) {
   // Status badge renderer
   const getStatusBadge = (status: string) => {
     switch (status) {
+      case 'pending':
+        return (
+          <Badge variant="outline" className="gap-1 border-amber-500 text-amber-600">
+            <Clock className="h-3 w-3" />
+            Pending
+          </Badge>
+        );
       case 'queued':
         return (
           <Badge variant="outline" className="gap-1">
@@ -505,6 +520,31 @@ export function CallSheetList({}: CallSheetListProps) {
       .map(link => link.global_call_sheet_id);
   }, [filteredSheets, selectedIds]);
 
+  // Calculate status counts for reparse panel
+  const statusCounts = useMemo(() => {
+    const counts = { pending: 0, queued: 0, parsing: 0, parsed: 0, error: 0 };
+    userLinks.forEach(link => {
+      const status = link.global_call_sheets.status;
+      if (status in counts) {
+        counts[status as keyof typeof counts]++;
+      }
+    });
+    return counts;
+  }, [userLinks]);
+
+  // Get pending and error sheet IDs for reparse panel
+  const pendingSheetIds = useMemo(() => {
+    return userLinks
+      .filter(link => link.global_call_sheets.status === 'pending')
+      .map(link => link.global_call_sheet_id);
+  }, [userLinks]);
+
+  const errorSheetIds = useMemo(() => {
+    return userLinks
+      .filter(link => link.global_call_sheets.status === 'error')
+      .map(link => link.global_call_sheet_id);
+  }, [userLinks]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -543,6 +583,14 @@ export function CallSheetList({}: CallSheetListProps) {
           </p>
         </div>
       )}
+
+      {/* Reparse Control Panel - shows when pending/error sheets exist */}
+      <ReparseControlPanel
+        statusCounts={statusCounts}
+        pendingSheetIds={pendingSheetIds}
+        errorSheetIds={errorSheetIds}
+        onQueueComplete={fetchUserCallSheets}
+      />
 
       {/* Search and Sort Controls */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
