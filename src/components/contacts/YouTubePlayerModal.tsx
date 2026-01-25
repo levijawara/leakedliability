@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -176,7 +178,13 @@ export function YouTubePlayerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[90vh] w-[95vw] max-w-7xl p-0 overflow-hidden">
+      <DialogContent 
+        className="h-[90vh] w-[95vw] max-w-7xl p-0 overflow-hidden"
+        aria-describedby={undefined}
+      >
+        <VisuallyHidden>
+          <DialogTitle>{video?.title || "YouTube Video Player"}</DialogTitle>
+        </VisuallyHidden>
         <div className="flex flex-col h-full">
           {/* Top bar - fixed height */}
           <div className="shrink-0 border-b px-5 py-4">
