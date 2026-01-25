@@ -1,8 +1,6 @@
+```tsx
 import { useEffect, useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -83,9 +81,7 @@ function abbreviateRole(role: string): string {
 function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
   const [copied, setCopied] = useState(false);
 
-  const copyCredits = async (options: {
-    abbreviated: boolean;
-  }) => {
+  const copyCredits = async (options: { abbreviated: boolean }) => {
     const text = credits
       .map((c) => {
         const role = c.role
@@ -202,19 +198,21 @@ export function YouTubePlayerModal({
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(video.published_at), {
+                      addSuffix: true,
+                    })}
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Main row - fills remaining height */}
-          <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
+          {/* Main row - flex, fills remaining height */}
+          <div className="flex flex-1 min-h-0">
             {/* Player - left side */}
-            <div className="flex-1 min-w-0 bg-black flex items-center justify-center p-0">
-              <div className="w-full h-full">
-                <AspectRatio ratio={16 / 9}>
+            <div className="flex-1 min-w-0 bg-black flex items-center justify-center p-3">
+              <div className="w-full h-full rounded-xl overflow-hidden">
+                <AspectRatio ratio={16 / 9} className="h-full">
                   <iframe
                     src={embedUrl}
                     className="w-full h-full"
@@ -227,7 +225,7 @@ export function YouTubePlayerModal({
             </div>
 
             {/* Credits - right side, scrolls internally */}
-            <div className="w-full lg:w-[320px] shrink-0 border-l flex flex-col min-h-0 max-h-[30vh] lg:max-h-none">
+            <div className="w-[360px] shrink-0 border-l flex flex-col min-h-0">
               {/* Credits header - pinned */}
               <div className="shrink-0 px-4 py-3 border-b flex items-center justify-between">
                 <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
@@ -235,10 +233,10 @@ export function YouTubePlayerModal({
                 </h3>
                 <CopyCreditsDropdown credits={video.credits} />
               </div>
-              
+
               {/* Credits list - scrollable */}
               <div className="flex-1 min-h-0">
-                <ScrollArea className="h-full">
+                <ScrollArea className="h-full w-full">
                   {video.credits && video.credits.length > 0 ? (
                     <div className="space-y-1 font-mono text-sm p-4">
                       {video.credits.map((credit, i) => {
@@ -273,21 +271,25 @@ export function YouTubePlayerModal({
 
           {/* Bottom strip - fixed height, never scrolls */}
           {otherVideos.length > 0 && (
-            <div className="shrink-0 border-t bg-muted/30 p-3">
+            <div className="shrink-0 border-t bg-muted/30 p-3 h-[140px]">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium flex items-center gap-2">
                   <Youtube className="h-4 w-4 text-destructive" />
                   More from {contactName}
                 </h3>
                 <span className="text-xs text-muted-foreground">
-                  {otherVideos.length} other project{otherVideos.length !== 1 ? "s" : ""}
+                  {otherVideos.length} other project
+                  {otherVideos.length !== 1 ? "s" : ""}
                 </span>
               </div>
 
               {/* Horizontal carousel - scrolls sideways only */}
-              <div className="flex gap-2 overflow-x-auto pb-2">
+              <div
+                className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2"
+                style={{ scrollbarWidth: "thin" }}
+              >
                 {otherVideos.map((v) => {
-                  const originalIndex = allVideos.findIndex(av => av.id === v.id);
+                  const originalIndex = allVideos.findIndex((av) => av.id === v.id);
                   return (
                     <button
                       key={v.id}
@@ -318,3 +320,4 @@ export function YouTubePlayerModal({
     </Dialog>
   );
 }
+```
