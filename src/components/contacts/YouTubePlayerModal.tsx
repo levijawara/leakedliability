@@ -176,18 +176,16 @@ export function YouTubePlayerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[90vh] max-w-6xl w-[95vw] overflow-hidden p-0">
-        {/* 3-row layout: header / main / footer */}
-        <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_140px]">
+      <DialogContent className="h-[90vh] max-w-6xl w-[95vw] overflow-hidden p-0 gap-0">
+        {/* 3-row grid: top / main / bottom */}
+        <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
           {/* Top bar */}
           <div className="border-b p-4 lg:p-5">
             <h2 className="font-semibold text-lg leading-tight line-clamp-2">
               {video.title || "Untitled Video"}
             </h2>
             {video.channel_title && (
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {video.channel_title}
-              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">{video.channel_title}</p>
             )}
             <div className="flex flex-wrap gap-3 text-sm mt-2">
               {video.view_count !== null && (
@@ -203,127 +201,109 @@ export function YouTubePlayerModal({
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {formatDistanceToNow(new Date(video.published_at), {
-                      addSuffix: true,
-                    })}
+                    {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Main row: player + credits */}
-          <div className="min-h-0">
-            <div
-              className="
-                grid h-full min-h-0
-                grid-rows-[minmax(0,1fr)_240px]
-                lg:grid-rows-1 lg:grid-cols-[minmax(0,1fr)_360px]
-              "
-            >
-              {/* Player */}
-              <div className="min-h-0 bg-black flex items-center justify-center">
-                <div className="w-full h-full">
-                  <AspectRatio ratio={16 / 9} className="h-full w-full">
-                    <iframe
-                      src={embedUrl}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      title={video.title || "Video player"}
-                    />
-                  </AspectRatio>
-                </div>
+          {/* Main row: must be shrinkable */}
+          <div className="min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+            {/* Player */}
+            <div className="min-h-0 bg-black flex items-center justify-center p-3">
+              {/* aspect-video keeps 16:9 without forcing the whole row to overflow */}
+              <div className="w-full h-auto max-h-full aspect-video overflow-hidden rounded-xl">
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={video.title || "Video player"}
+                />
+              </div>
+            </div>
+
+            {/* Credits: min-h-0 is the difference between scroll and sadness */}
+            <div className="min-h-0 border-l flex flex-col">
+              <div className="shrink-0 px-4 py-3 border-b flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                  Project Credits
+                </h3>
+                <CopyCreditsDropdown credits={video.credits} />
               </div>
 
-              {/* Credits */}
-              <div className="min-h-0 border-l flex flex-col">
-                <div className="shrink-0 px-4 py-3 border-b flex items-center justify-between">
-                  <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                    Project Credits
-                  </h3>
-                  <CopyCreditsDropdown credits={video.credits} />
-                </div>
-
-                {/* IMPORTANT: min-h-0 on this wrapper makes ScrollArea actually scroll */}
-                <div className="min-h-0 flex-1">
-                  <ScrollArea className="h-full w-full">
-                    {video.credits && video.credits.length > 0 ? (
-                      <div className="space-y-1 font-mono text-sm p-4">
-                        {video.credits.map((credit, i) => {
-                          const isMe = isContactMatch(credit.name);
-                          return (
-                            <div
-                              key={i}
-                              className={cn(
-                                "flex gap-2 py-0.5 px-1 -mx-1 rounded",
-                                isMe && "text-primary font-bold bg-primary/10"
-                              )}
-                            >
-                              {credit.role && (
-                                <span className="text-muted-foreground shrink-0">
-                                  {abbreviateRole(credit.role)}:
-                                </span>
-                              )}
-                              <span className="truncate">{credit.name}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="p-4 text-sm text-muted-foreground">
-                        No credits available
-                      </div>
-                    )}
-                  </ScrollArea>
-                </div>
-              </div>
+              <ScrollArea className="flex-1 min-h-0">
+                {video.credits && video.credits.length > 0 ? (
+                  <div className="space-y-1 font-mono text-sm p-4">
+                    {video.credits.map((credit, i) => {
+                      const isMe = isContactMatch(credit.name);
+                      return (
+                        <div
+                          key={i}
+                          className={cn(
+                            "flex gap-2 py-0.5 px-1 -mx-1 rounded",
+                            isMe && "text-primary font-bold bg-primary/10"
+                          )}
+                        >
+                          {credit.role && (
+                            <span className="text-muted-foreground shrink-0">
+                              {abbreviateRole(credit.role)}:
+                            </span>
+                          )}
+                          <span className="truncate">{credit.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-4 text-sm text-muted-foreground">No credits available</div>
+                )}
+              </ScrollArea>
             </div>
           </div>
 
-          {/* Bottom strip (always has its own guaranteed 140px) */}
-          <div className="border-t bg-muted/30 p-3 overflow-hidden">
-            {otherVideos.length > 0 && (
-              <>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium flex items-center gap-2">
-                    <Youtube className="h-4 w-4 text-destructive" />
-                    More from {contactName}
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    {otherVideos.length} other project{otherVideos.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
+          {/* Bottom strip: explicit height so it never disappears */}
+          {otherVideos.length > 0 && (
+            <div className="border-t bg-muted/30 h-[140px] p-3 overflow-hidden">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium flex items-center gap-2">
+                  <Youtube className="h-4 w-4 text-destructive" />
+                  More from {contactName}
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  {otherVideos.length} other project{otherVideos.length !== 1 ? "s" : ""}
+                </span>
+              </div>
 
-                <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2">
-                  {otherVideos.map((v) => {
-                    const originalIndex = allVideos.findIndex((av) => av.id === v.id);
-                    return (
-                      <button
-                        key={v.id}
-                        onClick={() => onNavigate(originalIndex)}
-                        className="flex-shrink-0 w-28 rounded overflow-hidden hover:ring-2 ring-primary transition-all group"
-                      >
-                        <AspectRatio ratio={16 / 9}>
-                          {v.thumbnail_url ? (
-                            <img
-                              src={v.thumbnail_url}
-                              alt={v.title || "Thumbnail"}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-muted flex items-center justify-center">
-                              <Youtube className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          )}
-                        </AspectRatio>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+              <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2">
+                {otherVideos.map((v) => {
+                  const originalIndex = allVideos.findIndex((av) => av.id === v.id);
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => onNavigate(originalIndex)}
+                      className="flex-shrink-0 w-28 rounded overflow-hidden hover:ring-2 ring-primary transition-all group"
+                    >
+                      <div className="aspect-video">
+                        {v.thumbnail_url ? (
+                          <img
+                            src={v.thumbnail_url}
+                            alt={v.title || "Thumbnail"}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <Youtube className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
