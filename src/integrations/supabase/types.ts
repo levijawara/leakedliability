@@ -1066,6 +1066,36 @@ export type Database = {
         }
         Relationships: []
       }
+      ig_enrichment_staging: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: number
+          instagram: string | null
+          name: string | null
+          phone: string | null
+          processed: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          instagram?: string | null
+          name?: string | null
+          phone?: string | null
+          processed?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: number
+          instagram?: string | null
+          name?: string | null
+          phone?: string | null
+          processed?: boolean | null
+        }
+        Relationships: []
+      }
       ig_master_identities: {
         Row: {
           created_at: string | null
