@@ -1,22 +1,81 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Youtube, Loader2 } from "lucide-react";
+import { ArrowLeft, Youtube, Loader2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFullViewCount } from "@/lib/youtubeHelpers";
+import { formatDistanceToNow } from "date-fns";
 
 interface ContactData {
   id: string;
   name: string;
 }
 
-interface CallSheetWithViews {
+interface YouTubeVideo {
+  id: string;
+  video_id: string;
+  title: string | null;
+  thumbnail_url: string | null;
+  channel_title: string | null;
+  published_at: string | null;
+  duration_seconds: number | null;
+  view_count: number | null;
+  last_synced_at: string | null;
+}
+
+interface CallSheetWithVideo {
   id: string;
   project_title: string | null;
   youtube_url: string | null;
   youtube_view_count: number | null;
+  youtube_videos: YouTubeVideo | null;
+}
+
+/**
+ * Format duration in seconds to human-readable (4:23 or 1:02:15)
+ */
+function formatDuration(seconds: number | null): string {
+  if (!seconds || seconds <= 0) return "";
+  
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  }
+  return `${minutes}:${secs.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Format relative time (e.g., "2 years ago" -> "2y")
+ */
+function formatRelativeTime(dateString: string | null): string {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    const distance = formatDistanceToNow(date, { addSuffix: false });
+    // Shorten for display
+    return distance
+      .replace(" years", "y")
+      .replace(" year", "y")
+      .replace(" months", "mo")
+      .replace(" month", "mo")
+      .replace(" weeks", "w")
+      .replace(" week", "w")
+      .replace(" days", "d")
+      .replace(" day", "d")
+      .replace(" hours", "h")
+      .replace(" hour", "h")
+      .replace("about ", "")
+      .replace("over ", "");
+  } catch {
+    return "";
+  }
 }
 
 export default function ContactYouTubePortfolio() {
@@ -24,7 +83,7 @@ export default function ContactYouTubePortfolio() {
   const navigate = useNavigate();
   
   const [contact, setContact] = useState<ContactData | null>(null);
-  const [callSheets, setCallSheets] = useState<CallSheetWithViews[]>([]);
+  const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +111,7 @@ export default function ContactYouTubePortfolio() {
         
         setContact(contactData);
         
-        // Fetch linked call sheets with YouTube data
+        // Fetch linked call sheets with YouTube video data
         const { data: links, error: linksError } = await supabase
           .from("contact_call_sheets")
           .select("call_sheet_id")
@@ -61,22 +120,61 @@ export default function ContactYouTubePortfolio() {
         if (linksError) throw linksError;
         
         if (!links || links.length === 0) {
-          setCallSheets([]);
+          setVideos([]);
           setLoading(false);
           return;
         }
         
         const callSheetIds = links.map(l => l.call_sheet_id);
         
+        // Get call sheets with their linked videos (using the new FK)
         const { data: sheetsData, error: sheetsError } = await supabase
           .from("global_call_sheets")
-          .select("id, project_title, youtube_url, youtube_view_count")
+          .select(`
+            id,
+            project_title,
+            youtube_url,
+            youtube_view_count,
+            youtube_video_id
+          `)
           .in("id", callSheetIds)
           .not("youtube_url", "is", null);
         
         if (sheetsError) throw sheetsError;
         
-        setCallSheets(sheetsData || []);
+        // Get unique video IDs and fetch video metadata
+        const videoIds = [...new Set(
+          (sheetsData || [])
+            .map(s => s.youtube_video_id)
+            .filter((id): id is string => !!id)
+        )];
+        
+        if (videoIds.length === 0) {
+          // Fallback: show legacy data without full metadata
+          setVideos([]);
+          setLoading(false);
+          return;
+        }
+        
+        const { data: videosData, error: videosError } = await supabase
+          .from("youtube_videos")
+          .select("*")
+          .in("id", videoIds);
+        
+        if (videosError) throw videosError;
+        
+        // Dedupe by video_id and sort by view_count
+        const uniqueVideos = new Map<string, YouTubeVideo>();
+        (videosData || []).forEach(video => {
+          if (!uniqueVideos.has(video.video_id)) {
+            uniqueVideos.set(video.video_id, video);
+          }
+        });
+        
+        const sortedVideos = Array.from(uniqueVideos.values())
+          .sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+        
+        setVideos(sortedVideos);
       } catch (err) {
         console.error("[ContactYouTubePortfolio] Error:", err);
         setError("Failed to load portfolio data");
@@ -88,7 +186,14 @@ export default function ContactYouTubePortfolio() {
     fetchData();
   }, [contactId]);
 
-  const totalViews = callSheets.reduce((sum, sheet) => sum + (sheet.youtube_view_count || 0), 0);
+  const totalViews = videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+  const oldestSync = videos.length > 0
+    ? videos.reduce((oldest, v) => {
+        if (!v.last_synced_at) return oldest;
+        if (!oldest) return v.last_synced_at;
+        return new Date(v.last_synced_at) < new Date(oldest) ? v.last_synced_at : oldest;
+      }, null as string | null)
+    : null;
 
   return (
     <>
@@ -116,12 +221,17 @@ export default function ContactYouTubePortfolio() {
           ) : contact ? (
             <div className="space-y-2">
               <h1 className="text-3xl font-bold">{contact.name}</h1>
-              <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex items-center gap-3 text-muted-foreground flex-wrap">
                 <Youtube className="h-5 w-5 text-destructive" />
                 <span className="text-2xl font-mono font-semibold text-foreground">
                   {formatFullViewCount(totalViews)}
                 </span>
-                <span>total views across {callSheets.length} project{callSheets.length !== 1 ? "s" : ""}</span>
+                <span>total views across {videos.length} project{videos.length !== 1 ? "s" : ""}</span>
+                {oldestSync && (
+                  <span className="text-xs">
+                    • Last synced {formatDistanceToNow(new Date(oldestSync), { addSuffix: true })}
+                  </span>
+                )}
               </div>
             </div>
           ) : null}
@@ -130,14 +240,14 @@ export default function ContactYouTubePortfolio() {
         {/* Content */}
         {!loading && !error && (
           <>
-            {callSheets.length === 0 ? (
+            {videos.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
                   <Youtube className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">No YouTube Projects Yet</h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    This contact doesn't have any call sheets with linked YouTube videos.
-                    Add YouTube URLs to call sheets in the Call Sheet Manager.
+                    This contact doesn't have any call sheets with synced YouTube videos.
+                    Add YouTube URLs to call sheets and run a sync to see their portfolio.
                   </p>
                   <Button
                     variant="outline"
@@ -149,52 +259,69 @@ export default function ContactYouTubePortfolio() {
                 </CardContent>
               </Card>
             ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Youtube className="h-5 w-5 text-destructive" />
-                    Linked Projects
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground mb-6">
-                    Full YouTube-style grid coming soon! For now, here's a summary of linked projects.
-                  </p>
-                  <div className="space-y-3">
-                    {callSheets
-                      .sort((a, b) => (b.youtube_view_count || 0) - (a.youtube_view_count || 0))
-                      .map((sheet) => (
-                        <div
-                          key={sheet.id}
-                          className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors"
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {videos.map((video) => (
+                  <a
+                    key={video.id}
+                    href={`https://www.youtube.com/watch?v=${video.video_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block rounded-lg overflow-hidden border bg-card hover:bg-accent/50 transition-colors"
+                  >
+                    {/* Thumbnail with duration badge */}
+                    <div className="relative">
+                      <AspectRatio ratio={16 / 9}>
+                        {video.thumbnail_url ? (
+                          <img
+                            src={video.thumbnail_url}
+                            alt={video.title || "Video thumbnail"}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-muted flex items-center justify-center">
+                            <Youtube className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+                      </AspectRatio>
+                      {video.duration_seconds && video.duration_seconds > 0 && (
+                        <Badge
+                          variant="secondary"
+                          className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-mono px-1.5 py-0.5"
                         >
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate">
-                              {sheet.project_title || "Untitled Project"}
-                            </p>
-                            {sheet.youtube_url && (
-                              <a
-                                href={sheet.youtube_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-primary hover:underline truncate block"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {sheet.youtube_url}
-                              </a>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 ml-4">
-                            <Youtube className="h-4 w-4 text-destructive" />
-                            <span className="font-mono font-medium">
-                              {formatFullViewCount(sheet.youtube_view_count)}
-                            </span>
-                          </div>
-                        </div>
-                      ))}
-                  </div>
-                </CardContent>
-              </Card>
+                          {formatDuration(video.duration_seconds)}
+                        </Badge>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                        <ExternalLink className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </div>
+                    
+                    {/* Video info */}
+                    <div className="p-3 space-y-1">
+                      <h3 className="font-medium text-sm line-clamp-2 leading-tight">
+                        {video.title || "Untitled Video"}
+                      </h3>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <span className="font-mono font-medium text-foreground">
+                          {formatFullViewCount(video.view_count)}
+                        </span>
+                        <span>views</span>
+                        {video.published_at && (
+                          <>
+                            <span className="mx-1">•</span>
+                            <span>{formatRelativeTime(video.published_at)} ago</span>
+                          </>
+                        )}
+                      </div>
+                      {video.channel_title && (
+                        <p className="text-xs text-muted-foreground truncate">
+                          {video.channel_title}
+                        </p>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
             )}
           </>
         )}
