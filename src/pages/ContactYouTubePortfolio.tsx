@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Youtube, Loader2, ExternalLink } from "lucide-react";
+import { ArrowLeft, Youtube, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { formatFullViewCount } from "@/lib/youtubeHelpers";
 import { formatDistanceToNow } from "date-fns";
+import { YouTubePlayerModal } from "@/components/contacts/YouTubePlayerModal";
 
 interface ContactData {
   id: string;
@@ -86,6 +87,8 @@ export default function ContactYouTubePortfolio() {
   const [videos, setVideos] = useState<YouTubeVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   useEffect(() => {
     if (!contactId) return;
@@ -259,69 +262,91 @@ export default function ContactYouTubePortfolio() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {videos.map((video) => (
-                  <a
-                    key={video.id}
-                    href={`https://www.youtube.com/watch?v=${video.video_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group block rounded-lg overflow-hidden border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    {/* Thumbnail with duration badge */}
-                    <div className="relative">
-                      <AspectRatio ratio={16 / 9}>
-                        {video.thumbnail_url ? (
-                          <img
-                            src={video.thumbnail_url}
-                            alt={video.title || "Video thumbnail"}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-muted flex items-center justify-center">
-                            <Youtube className="h-8 w-8 text-muted-foreground" />
-                          </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {videos.map((video, index) => (
+                    <button
+                      key={video.id}
+                      onClick={() => {
+                        setSelectedVideo(video);
+                        setSelectedIndex(index);
+                      }}
+                      className="group block rounded-lg overflow-hidden border bg-card hover:bg-accent/50 transition-colors text-left w-full"
+                    >
+                      {/* Thumbnail with duration badge */}
+                      <div className="relative">
+                        <AspectRatio ratio={16 / 9}>
+                          {video.thumbnail_url ? (
+                            <img
+                              src={video.thumbnail_url}
+                              alt={video.title || "Video thumbnail"}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-muted flex items-center justify-center">
+                              <Youtube className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                        </AspectRatio>
+                        {video.duration_seconds && video.duration_seconds > 0 && (
+                          <Badge
+                            variant="secondary"
+                            className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-mono px-1.5 py-0.5"
+                          >
+                            {formatDuration(video.duration_seconds)}
+                          </Badge>
                         )}
-                      </AspectRatio>
-                      {video.duration_seconds && video.duration_seconds > 0 && (
-                        <Badge
-                          variant="secondary"
-                          className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-mono px-1.5 py-0.5"
-                        >
-                          {formatDuration(video.duration_seconds)}
-                        </Badge>
-                      )}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                        <ExternalLink className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <Play className="h-12 w-12 text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg" fill="white" />
+                        </div>
                       </div>
-                    </div>
-                    
-                    {/* Video info */}
-                    <div className="p-3 space-y-1">
-                      <h3 className="font-medium text-sm line-clamp-2 leading-tight">
-                        {video.title || "Untitled Video"}
-                      </h3>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <span className="font-mono font-medium text-foreground">
-                          {formatFullViewCount(video.view_count)}
-                        </span>
-                        <span>views</span>
-                        {video.published_at && (
-                          <>
-                            <span className="mx-1">•</span>
-                            <span>{formatRelativeTime(video.published_at)} ago</span>
-                          </>
+                      
+                      {/* Video info */}
+                      <div className="p-3 space-y-1">
+                        <h3 className="font-medium text-sm line-clamp-2 leading-tight">
+                          {video.title || "Untitled Video"}
+                        </h3>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <span className="font-mono font-medium text-foreground">
+                            {formatFullViewCount(video.view_count)}
+                          </span>
+                          <span>views</span>
+                          {video.published_at && (
+                            <>
+                              <span className="mx-1">•</span>
+                              <span>{formatRelativeTime(video.published_at)} ago</span>
+                            </>
+                          )}
+                        </div>
+                        {video.channel_title && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            {video.channel_title}
+                          </p>
                         )}
                       </div>
-                      {video.channel_title && (
-                        <p className="text-xs text-muted-foreground truncate">
-                          {video.channel_title}
-                        </p>
-                      )}
-                    </div>
-                  </a>
-                ))}
-              </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Player Modal */}
+                <YouTubePlayerModal
+                  open={!!selectedVideo}
+                  onOpenChange={(open) => {
+                    if (!open) {
+                      setSelectedVideo(null);
+                      setSelectedIndex(-1);
+                    }
+                  }}
+                  video={selectedVideo}
+                  allVideos={videos}
+                  currentIndex={selectedIndex}
+                  onNavigate={(index) => {
+                    setSelectedVideo(videos[index]);
+                    setSelectedIndex(index);
+                  }}
+                  contactName={contact?.name || ""}
+                />
+              </>
             )}
           </>
         )}
