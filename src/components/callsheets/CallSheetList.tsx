@@ -64,6 +64,16 @@ interface GlobalCallSheet {
   youtube_url: string | null;
   youtube_view_count: number | null;
   youtube_last_synced: string | null;
+  youtube_video_id?: string | null;
+}
+
+interface YouTubeVideo {
+  id: string;
+  video_id: string | null;
+  title: string | null;
+  // canonical_title exists in DB but not yet in types - will be available at runtime
+  canonical_title?: string | null;
+  source_count?: number | null;
 }
 
 interface UserCallSheetLink {
@@ -74,6 +84,8 @@ interface UserCallSheetLink {
   global_call_sheets: GlobalCallSheet;
   payment_status: string;
   payment_status_locked: boolean;
+  // Joined project data
+  project?: YouTubeVideo | null;
 }
 
 interface CallSheetListProps {}
@@ -142,9 +154,10 @@ export function CallSheetList({}: CallSheetListProps) {
     setSortDirection(direction);
   }, []);
 
-  // Fetch user's call sheet links with global call sheet data
+  // Fetch user's call sheet links with global call sheet data and joined project
   const fetchUserCallSheets = async () => {
     try {
+      // Step 1: Fetch user call sheets with global data
       let query = supabase
         .from('user_call_sheets')
         .select(`
@@ -166,7 +179,8 @@ export function CallSheetList({}: CallSheetListProps) {
             parsed_date,
             youtube_url,
             youtube_view_count,
-            youtube_last_synced
+            youtube_last_synced,
+            youtube_video_id
           )
         `)
         .eq('user_id', userId)
@@ -196,14 +210,40 @@ export function CallSheetList({}: CallSheetListProps) {
 
       if (error) throw error;
       
-      // Filter out any links where global_call_sheets is null, and ensure defaults for payment fields
-      const validLinks = (data || [])
-        .filter(link => link.global_call_sheets)
-        .map(link => ({
-          ...link,
-          payment_status: link.payment_status || 'unanswered',
-          payment_status_locked: link.payment_status_locked ?? false
-        })) as UserCallSheetLink[];
+      // Filter out any links where global_call_sheets is null
+      const validData = (data || []).filter(link => link.global_call_sheets);
+      
+      // Step 2: Fetch project data for all linked projects
+      const projectIds = validData
+        .map(link => link.global_call_sheets?.youtube_video_id)
+        .filter((id): id is string => !!id);
+      
+      let projectMap = new Map<string, YouTubeVideo>();
+      
+      if (projectIds.length > 0) {
+        // Note: canonical_title added via migration but may not be in types yet
+        const { data: projects } = await supabase
+          .from('youtube_videos')
+          .select('id, video_id, title')
+          .in('id', projectIds);
+        
+        if (projects) {
+          for (const p of projects) {
+            projectMap.set(p.id, p);
+          }
+        }
+      }
+      
+      // Step 3: Merge project data into links
+      const validLinks = validData.map(link => ({
+        ...link,
+        payment_status: link.payment_status || 'unanswered',
+        payment_status_locked: link.payment_status_locked ?? false,
+        project: link.global_call_sheets?.youtube_video_id 
+          ? projectMap.get(link.global_call_sheets.youtube_video_id) || null
+          : null
+      })) as UserCallSheetLink[];
+      
       setUserLinks(validLinks);
     } catch (error: any) {
       console.error('[CallSheetList] Fetch error:', error);

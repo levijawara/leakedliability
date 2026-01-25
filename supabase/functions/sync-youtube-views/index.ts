@@ -189,7 +189,7 @@ Deno.serve(async (req) => {
 
     console.log(`[sync-youtube-views] start { userId: ${userId}, syncAll: ${syncAll}, staleOnly: ${staleOnly}, callSheetIds: ${callSheetIds?.length || 0} }`);
 
-    // Fetch call sheets with YouTube URLs
+    // Fetch call sheets with YouTube URLs (skip placeholder projects with no video_id)
     let query = adminClient
       .from("global_call_sheets")
       .select("id, youtube_url, youtube_video_id")
