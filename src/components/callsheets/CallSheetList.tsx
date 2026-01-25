@@ -113,8 +113,8 @@ export function CallSheetList({}: CallSheetListProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery, 300);
   
-  // View mode state
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
+  // View mode state - default to cards view
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('cards');
   
   // PDF viewer modal state
   const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
