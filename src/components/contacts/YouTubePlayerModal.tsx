@@ -179,13 +179,12 @@ export function YouTubePlayerModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="h-[90vh] w-[95vw] max-w-7xl p-0 overflow-hidden"
+        className="h-[90vh] w-[95vw] max-w-7xl p-0 overflow-hidden flex flex-col"
         aria-describedby={undefined}
       >
         <VisuallyHidden>
           <DialogTitle>{video?.title || "YouTube Video Player"}</DialogTitle>
         </VisuallyHidden>
-        <div className="flex flex-col h-full">
           {/* Top bar - fixed height */}
           <div className="shrink-0 border-b px-5 py-4">
             <h2 className="text-lg font-semibold leading-tight line-clamp-2">
@@ -272,7 +271,7 @@ export function YouTubePlayerModal({
 
           {/* Bottom carousel - pinned, always visible */}
           {otherVideos.length > 0 && (
-            <div className="shrink-0 h-[140px] border-t bg-muted/30 px-4 py-3">
+            <div className="shrink-0 h-32 border-t bg-muted/30 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium flex items-center gap-2">
                   <Youtube className="h-4 w-4 text-destructive" />
@@ -311,7 +310,6 @@ export function YouTubePlayerModal({
               </div>
             </div>
           )}
-        </div>
       </DialogContent>
     </Dialog>
   );
