@@ -176,13 +176,44 @@ export function YouTubePlayerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl w-[95vw] p-0 gap-0 overflow-hidden max-h-[90vh]">
-        <div className="flex flex-col h-full">
-          {/* TOP: Video + Metadata/Credits */}
-          <div className="flex flex-col lg:flex-row flex-1 min-h-0">
-            {/* Video Player - Left Side */}
-            <div className="flex-1 bg-black flex items-center">
-              <div className="w-full">
+      <DialogContent className="h-[90vh] max-w-6xl w-[95vw] overflow-hidden p-0 gap-0">
+        <div className="flex h-full flex-col">
+          {/* Top bar - fixed height, never scrolls */}
+          <div className="shrink-0 border-b p-4 lg:p-5">
+            <h2 className="font-semibold text-lg leading-tight line-clamp-2">
+              {video.title || "Untitled Video"}
+            </h2>
+            {video.channel_title && (
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {video.channel_title}
+              </p>
+            )}
+            <div className="flex flex-wrap gap-3 text-sm mt-2">
+              {video.view_count !== null && (
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Eye className="h-4 w-4" />
+                  <span className="font-mono font-medium text-foreground">
+                    {formatFullViewCount(video.view_count)}
+                  </span>
+                  <span>views</span>
+                </div>
+              )}
+              {video.published_at && (
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Main row - fills remaining height */}
+          <div className="flex flex-1 min-h-0 flex-col lg:flex-row">
+            {/* Player - left side */}
+            <div className="flex-1 min-w-0 bg-black flex items-center justify-center p-0">
+              <div className="w-full h-full">
                 <AspectRatio ratio={16 / 9}>
                   <iframe
                     src={embedUrl}
@@ -195,58 +226,21 @@ export function YouTubePlayerModal({
               </div>
             </div>
 
-            {/* Metadata + Credits Panel - Right Side (Full Height) */}
-            <div className="w-full lg:w-80 bg-background border-l flex flex-col max-h-[40vh] lg:max-h-full">
-              {/* Title & Stats - Fixed at top */}
-              <div className="p-4 lg:p-5 space-y-3 shrink-0 border-b">
-                {/* Title */}
-                <div>
-                  <h2 className="font-semibold text-lg leading-tight line-clamp-2">
-                    {video.title || "Untitled Video"}
-                  </h2>
-                  {video.channel_title && (
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                      {video.channel_title}
-                    </p>
-                  )}
-                </div>
-
-                {/* Stats */}
-                <div className="flex flex-wrap gap-3 text-sm">
-                  {video.view_count !== null && (
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Eye className="h-4 w-4" />
-                      <span className="font-mono font-medium text-foreground">
-                        {formatFullViewCount(video.view_count)}
-                      </span>
-                      <span>views</span>
-                    </div>
-                  )}
-                  {video.published_at && (
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                  )}
-                </div>
+            {/* Credits - right side, scrolls internally */}
+            <div className="w-full lg:w-[320px] shrink-0 border-l flex flex-col min-h-0 max-h-[30vh] lg:max-h-none">
+              {/* Credits header - pinned */}
+              <div className="shrink-0 px-4 py-3 border-b flex items-center justify-between">
+                <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                  Project Credits
+                </h3>
+                <CopyCreditsDropdown credits={video.credits} />
               </div>
-
-              {/* PROJECT CREDITS - Fills remaining space */}
-              {video.credits && video.credits.length > 0 && (
-                <div className="flex-1 min-h-0 flex flex-col px-4 lg:px-5 py-3">
-                  {/* Header with Copy button */}
-                  <div className="flex items-center justify-between mb-2 shrink-0">
-                    <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
-                      Project Credits
-                    </h3>
-                    <CopyCreditsDropdown credits={video.credits} />
-                  </div>
-                  
-                  {/* Scrollable credits list */}
-                  <ScrollArea className="flex-1">
-                    <div className="space-y-1 font-mono text-sm pr-3 pb-2">
+              
+              {/* Credits list - scrollable */}
+              <div className="flex-1 min-h-0">
+                <ScrollArea className="h-full">
+                  {video.credits && video.credits.length > 0 ? (
+                    <div className="space-y-1 font-mono text-sm p-4">
                       {video.credits.map((credit, i) => {
                         const isMe = isContactMatch(credit.name);
                         return (
@@ -267,15 +261,19 @@ export function YouTubePlayerModal({
                         );
                       })}
                     </div>
-                  </ScrollArea>
-                </div>
-              )}
+                  ) : (
+                    <div className="p-4 text-sm text-muted-foreground">
+                      No credits available
+                    </div>
+                  )}
+                </ScrollArea>
+              </div>
             </div>
           </div>
 
-          {/* BOTTOM: Horizontal "More From" Strip - Gallery Style */}
+          {/* Bottom strip - fixed height, never scrolls */}
           {otherVideos.length > 0 && (
-            <div className="border-t bg-muted/30 p-3 shrink-0">
+            <div className="shrink-0 border-t bg-muted/30 p-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium flex items-center gap-2">
                   <Youtube className="h-4 w-4 text-destructive" />
@@ -286,7 +284,7 @@ export function YouTubePlayerModal({
                 </span>
               </div>
 
-              {/* Horizontal scrolling container */}
+              {/* Horizontal carousel - scrolls sideways only */}
               <div className="flex gap-2 overflow-x-auto pb-2">
                 {otherVideos.map((v) => {
                   const originalIndex = allVideos.findIndex(av => av.id === v.id);
