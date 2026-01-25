@@ -1,5 +1,6 @@
 /**
  * Format large numbers in a human-readable way (e.g., 1.2M, 45K)
+ * @deprecated Use formatFullViewCount for YouTube portfolio - we always show full numbers
  */
 export function formatViewCount(count: number | null | undefined): string {
   if (count === null || count === undefined) return "";
@@ -14,6 +15,15 @@ export function formatViewCount(count: number | null | undefined): string {
     return `${(count / 1_000).toFixed(1).replace(/\.0$/, "")}K`;
   }
   return count.toLocaleString();
+}
+
+/**
+ * Format view counts as full comma-separated numbers (e.g., 550,669)
+ * Never abbreviates - numbers are meant to flex as they grow!
+ */
+export function formatFullViewCount(count: number | null | undefined): string {
+  if (count === null || count === undefined) return "";
+  return count.toLocaleString("en-US");
 }
 
 /**

@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Star, Mail, Phone, FileText, Pencil, Trash2, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
-import { formatViewCount } from "@/lib/youtubeHelpers";
+import { formatFullViewCount } from "@/lib/youtubeHelpers";
 import type { CrewContact } from "@/pages/CrewContacts";
 
 interface CrewContactCardProps {
@@ -193,13 +193,31 @@ export function CrewContactCard({
               </div>
             )}
 
-            {/* Row 4: YouTube views (if any) */}
+            {/* Row 4: YouTube views button (if any) */}
             {youtubeViewCount > 0 && (
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Youtube className="h-3.5 w-3.5 text-destructive" />
-                <span className="font-medium">{formatViewCount(youtubeViewCount)}</span>
-                <span>total views</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-xs h-8 hover:bg-muted px-2 -mx-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/crew-contacts/${contact.id}/youtube`);
+                    }}
+                    aria-label={`View ${contact.name}'s YouTube portfolio`}
+                  >
+                    <Youtube className="h-3.5 w-3.5 text-destructive mr-1.5" />
+                    <span className="font-mono font-medium">
+                      {formatFullViewCount(youtubeViewCount)}
+                    </span>
+                    <span className="ml-1 text-muted-foreground">total views</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>View all linked YouTube projects</p>
+                </TooltipContent>
+              </Tooltip>
             )}
 
             {/* Row 5: Call sheet button - full width */}
