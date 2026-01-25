@@ -70,6 +70,180 @@ interface ParseResult {
 }
 
 // ============================================================================
+// PROJECT FINGERPRINT SYSTEM - For auto-grouping call sheets into projects
+// ============================================================================
+
+interface ProjectFingerprint {
+  normalized_title: string | null;
+  producer_names: string[];
+  director_name: string | null;
+  production_company: string | null;
+  date_range: {
+    earliest: string | null;
+    latest: string | null;
+  };
+  key_crew_hash: string;
+}
+
+/**
+ * Normalize a title for fuzzy comparison
+ * - Lowercase, strip punctuation, collapse whitespace
+ */
+function normalizeTitle(title: string | null): string | null {
+  if (!title) return null;
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Normalize a name for comparison (lowercase, trim, collapse spaces)
+ */
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+/**
+ * Find the Director from parsed contacts
+ */
+function findDirector(contacts: ParsedContact[]): string | null {
+  const directorRoles = ['director', 'director of photography', 'dp', 'cinematographer'];
+  for (const contact of contacts) {
+    const hasDirectorRole = (contact.roles || []).some(role => 
+      directorRoles.includes(role.toLowerCase().trim())
+    );
+    if (hasDirectorRole) {
+      return normalizeName(contact.name);
+    }
+  }
+  return null;
+}
+
+/**
+ * Create a hash of top crew for fingerprinting
+ * Uses first 5 crew members (by name) sorted alphabetically
+ */
+function hashTopCrew(contacts: ParsedContact[]): string {
+  const names = contacts
+    .map(c => normalizeName(c.name))
+    .filter(n => n && !n.includes('tbd'))
+    .sort()
+    .slice(0, 5);
+  // Simple hash: join and take substring
+  return names.join('|').slice(0, 64);
+}
+
+/**
+ * Generate a project fingerprint from parsed call sheet data
+ */
+function generateFingerprint(
+  projectTitle: string | null,
+  canonicalProducers: CanonicalProducer[],
+  contacts: ParsedContact[],
+  parsedDate: string | null
+): ProjectFingerprint {
+  return {
+    normalized_title: normalizeTitle(projectTitle),
+    producer_names: canonicalProducers.map(p => normalizeName(p.name)),
+    director_name: findDirector(contacts),
+    production_company: null, // Future: extract from contacts
+    date_range: {
+      earliest: parsedDate,
+      latest: parsedDate
+    },
+    key_crew_hash: hashTopCrew(contacts)
+  };
+}
+
+/**
+ * Fuzzy match two normalized titles
+ * Returns score 0-1
+ */
+function fuzzyTitleMatch(t1: string | null, t2: string | null): number {
+  if (!t1 || !t2) return 0;
+  if (t1 === t2) return 1;
+  
+  // Check if one contains the other
+  if (t1.includes(t2) || t2.includes(t1)) return 0.85;
+  
+  // Word overlap scoring
+  const words1 = new Set(t1.split(' ').filter(w => w.length > 2));
+  const words2 = new Set(t2.split(' ').filter(w => w.length > 2));
+  if (words1.size === 0 || words2.size === 0) return 0;
+  
+  let overlap = 0;
+  for (const w of words1) {
+    if (words2.has(w)) overlap++;
+  }
+  
+  return overlap / Math.max(words1.size, words2.size);
+}
+
+/**
+ * Compute similarity between two project fingerprints
+ * Weighted scoring:
+ * - Producers: 40% (strongest signal)
+ * - Title: 30%
+ * - Director: 20%
+ * - Temporal proximity: 10%
+ */
+function computeFingerprintSimilarity(fp1: ProjectFingerprint, fp2: ProjectFingerprint): number {
+  let score = 0;
+  let weights = 0;
+
+  // Title similarity (weight: 30)
+  if (fp1.normalized_title || fp2.normalized_title) {
+    const titleSim = fuzzyTitleMatch(fp1.normalized_title, fp2.normalized_title);
+    score += titleSim * 30;
+    weights += 30;
+  }
+
+  // Producer overlap (weight: 40) - STRONGEST SIGNAL
+  if (fp1.producer_names.length > 0 && fp2.producer_names.length > 0) {
+    const set1 = new Set(fp1.producer_names);
+    const set2 = new Set(fp2.producer_names);
+    let overlap = 0;
+    for (const name of set1) {
+      if (set2.has(name)) overlap++;
+    }
+    const maxPossible = Math.max(set1.size, set2.size);
+    score += (overlap / maxPossible) * 40;
+    weights += 40;
+  }
+
+  // Director match (weight: 20)
+  if (fp1.director_name && fp2.director_name) {
+    if (fp1.director_name === fp2.director_name) {
+      score += 20;
+    } else if (fp1.director_name.includes(fp2.director_name) || fp2.director_name.includes(fp1.director_name)) {
+      score += 15;
+    }
+    weights += 20;
+  }
+
+  // Temporal proximity (weight: 10)
+  if (fp1.date_range.earliest && fp2.date_range.earliest) {
+    try {
+      const d1 = new Date(fp1.date_range.earliest).getTime();
+      const d2 = new Date(fp2.date_range.earliest).getTime();
+      const daysDiff = Math.abs((d1 - d2) / (1000 * 60 * 60 * 24));
+      if (daysDiff <= 5) {
+        score += 10;
+      } else if (daysDiff <= 14) {
+        score += 5;
+      }
+    } catch { /* ignore date parse errors */ }
+    weights += 10;
+  }
+
+  return weights > 0 ? score / weights : 0;
+}
+
+const FINGERPRINT_MATCH_THRESHOLD = 0.65;
+
+// ============================================================================
 // EXTRACTION QUALITY SCORING - Gate before Gemini to prevent hallucinations
 // ============================================================================
 
@@ -811,6 +985,111 @@ serve(async (req) => {
     console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${validatedContacts.length}`);
 
     // ============================================================================
+    // PROJECT FINGERPRINT MATCHING - Auto-group call sheets into projects
+    // ============================================================================
+    
+    // Get canonical producers for fingerprint (use existing or newly extracted)
+    const fingerprintProducers = callSheet.canonical_producers 
+      ? callSheet.canonical_producers as CanonicalProducer[]
+      : extractCanonicalProducers(validatedContacts);
+    
+    const fingerprint = generateFingerprint(
+      parseResult.project_title,
+      fingerprintProducers,
+      validatedContacts,
+      parseResult.parsed_date
+    );
+    
+    console.log(`[parse-call-sheet] Generated fingerprint: title="${fingerprint.normalized_title}", producers=${fingerprint.producer_names.length}, director="${fingerprint.director_name}"`);
+    
+    // Search for matching projects (skip if call sheet already has a project linked)
+    let projectId: string | null = null;
+    
+    if (!callSheet.youtube_video_id) {
+      // Fetch existing projects with fingerprints
+      const { data: existingProjects } = await supabase
+        .from("youtube_videos")
+        .select("id, project_fingerprint, canonical_title, title, source_count, shoot_start_date, shoot_end_date")
+        .not("project_fingerprint", "is", null);
+      
+      // Find best match
+      let bestMatch: { id: string; canonical_title: string | null; title: string | null; source_count: number; shoot_end_date: string | null } | null = null;
+      let bestScore = 0;
+      
+      for (const project of existingProjects || []) {
+        if (!project.project_fingerprint) continue;
+        const score = computeFingerprintSimilarity(fingerprint, project.project_fingerprint as ProjectFingerprint);
+        if (score > bestScore && score >= FINGERPRINT_MATCH_THRESHOLD) {
+          bestScore = score;
+          bestMatch = project;
+        }
+      }
+      
+      if (bestMatch) {
+        // Link to existing project
+        projectId = bestMatch.id;
+        
+        const { error: linkError } = await supabase
+          .from("global_call_sheets")
+          .update({ youtube_video_id: bestMatch.id })
+          .eq("id", call_sheet_id);
+        
+        if (linkError) {
+          console.error(`[parse-call-sheet] Failed to link to existing project:`, linkError);
+        } else {
+          // Update project's date range and source count
+          const newEndDate = parseResult.parsed_date && bestMatch.shoot_end_date
+            ? (parseResult.parsed_date > bestMatch.shoot_end_date ? parseResult.parsed_date : bestMatch.shoot_end_date)
+            : parseResult.parsed_date || bestMatch.shoot_end_date;
+          
+          await supabase
+            .from("youtube_videos")
+            .update({
+              shoot_end_date: newEndDate,
+              source_count: (bestMatch.source_count || 1) + 1
+            })
+            .eq("id", bestMatch.id);
+          
+          console.log(`[parse-call-sheet] MATCHED to existing project: "${bestMatch.canonical_title || bestMatch.title}" (score: ${(bestScore * 100).toFixed(1)}%, source_count: ${(bestMatch.source_count || 1) + 1})`);
+        }
+      } else {
+        // Create new placeholder project (no YouTube link yet)
+        const { data: newProject, error: createError } = await supabase
+          .from("youtube_videos")
+          .insert({
+            video_id: null, // Placeholder - no YouTube link
+            title: parseResult.project_title,
+            canonical_title: parseResult.project_title,
+            project_fingerprint: fingerprint,
+            shoot_start_date: parseResult.parsed_date,
+            shoot_end_date: parseResult.parsed_date,
+            verified: false,
+            source_count: 1,
+            project_type: 'music_video' // Default
+          })
+          .select("id")
+          .single();
+        
+        if (createError) {
+          console.error(`[parse-call-sheet] Failed to create placeholder project:`, createError);
+        } else if (newProject) {
+          projectId = newProject.id;
+          
+          // Link call sheet to new project
+          await supabase
+            .from("global_call_sheets")
+            .update({ youtube_video_id: newProject.id })
+            .eq("id", call_sheet_id);
+          
+          console.log(`[parse-call-sheet] CREATED new placeholder project: "${parseResult.project_title}" (id: ${newProject.id})`);
+        }
+      }
+    } else {
+      console.log(`[parse-call-sheet] Call sheet already linked to project: ${callSheet.youtube_video_id}`);
+      projectId = callSheet.youtube_video_id;
+    }
+
+    // ============================================================================
     // MANUAL SORTING WORKFLOW (Replaces old auto-add pipeline)
     // Contacts are now saved to parsed_contacts JSON only.
     // User must manually review and add contacts via ParseSummaryPanel.
@@ -823,6 +1102,7 @@ serve(async (req) => {
         success: true,
         contacts_count: validatedContacts.length,
         project_title: parseResult.project_title,
+        project_id: projectId,
         unassigned_emails: parseResult.unassigned_emails?.length || 0,
         unassigned_phones: parseResult.unassigned_phones?.length || 0,
       }),

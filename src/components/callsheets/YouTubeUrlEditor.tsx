@@ -9,33 +9,45 @@ import { useToast } from "@/hooks/use-toast";
 interface YouTubeUrlEditorProps {
   callSheetId: string;
   currentUrl: string | null;
+  projectId?: string | null; // The youtube_video_id (placeholder project)
   onUpdate: (newUrl: string | null) => void;
 }
 
 /**
- * Extract YouTube video ID to validate URL format
+ * Extract YouTube video ID from URL
  */
-function isValidYouTubeUrl(url: string): boolean {
-  if (!url.trim()) return false;
+function extractYouTubeVideoId(url: string): string | null {
+  if (!url.trim()) return null;
   
   try {
     const parsed = new URL(url);
     
     if (parsed.hostname.includes("youtube.com")) {
-      return !!parsed.searchParams.get("v") || /\/(embed|v)\/[^/?]+/.test(parsed.pathname);
+      const videoId = parsed.searchParams.get("v");
+      if (videoId) return videoId;
+      
+      const pathMatch = parsed.pathname.match(/\/(embed|v)\/([^/?]+)/);
+      if (pathMatch) return pathMatch[2];
     }
     
     if (parsed.hostname === "youtu.be") {
-      return parsed.pathname.length > 1;
+      return parsed.pathname.slice(1).split("?")[0];
     }
     
-    return false;
+    return null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-export function YouTubeUrlEditor({ callSheetId, currentUrl, onUpdate }: YouTubeUrlEditorProps) {
+/**
+ * Validate YouTube URL format
+ */
+function isValidYouTubeUrl(url: string): boolean {
+  return extractYouTubeVideoId(url) !== null;
+}
+
+export function YouTubeUrlEditor({ callSheetId, currentUrl, projectId, onUpdate }: YouTubeUrlEditorProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [url, setUrl] = useState(currentUrl || "");
@@ -53,18 +65,65 @@ export function YouTubeUrlEditor({ callSheetId, currentUrl, onUpdate }: YouTubeU
       return;
     }
 
+    const videoId = trimmedUrl ? extractYouTubeVideoId(trimmedUrl) : null;
+
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("global_call_sheets")
-        .update({ youtube_url: trimmedUrl || null })
-        .eq("id", callSheetId);
+      // Case 1: This call sheet has a placeholder project (projectId exists, no video_id on it yet)
+      if (projectId && videoId) {
+        // Check if the video_id already exists in another project
+        const { data: existingVideo } = await supabase
+          .from("youtube_videos")
+          .select("id, title")
+          .eq("video_id", videoId)
+          .maybeSingle();
+        
+        if (existingVideo && existingVideo.id !== projectId) {
+          // Video exists elsewhere - link this call sheet to that project instead
+          const { error: linkError } = await supabase
+            .from("global_call_sheets")
+            .update({ youtube_video_id: existingVideo.id, youtube_url: trimmedUrl })
+            .eq("id", callSheetId);
+          
+          if (linkError) throw linkError;
+          
+          toast({ 
+            title: "Linked to existing project",
+            description: `This call sheet has been linked to "${existingVideo.title}"`
+          });
+        } else {
+          // Update the placeholder project with the YouTube video_id
+          const { error: updateProjectError } = await supabase
+            .from("youtube_videos")
+            .update({ video_id: videoId })
+            .eq("id", projectId);
+          
+          if (updateProjectError) throw updateProjectError;
+          
+          // Also save URL to call sheet
+          const { error: updateSheetError } = await supabase
+            .from("global_call_sheets")
+            .update({ youtube_url: trimmedUrl })
+            .eq("id", callSheetId);
+          
+          if (updateSheetError) throw updateSheetError;
+          
+          toast({ title: "YouTube link saved - project will sync metadata soon" });
+        }
+      } 
+      // Case 2: No existing project - just save the URL (sync will handle project creation)
+      else {
+        const { error } = await supabase
+          .from("global_call_sheets")
+          .update({ youtube_url: trimmedUrl || null })
+          .eq("id", callSheetId);
 
-      if (error) throw error;
+        if (error) throw error;
+        toast({ title: trimmedUrl ? "YouTube link saved" : "YouTube link removed" });
+      }
 
       onUpdate(trimmedUrl || null);
       setIsEditing(false);
-      toast({ title: trimmedUrl ? "YouTube link saved" : "YouTube link removed" });
     } catch (error: any) {
       console.error("[YouTubeUrlEditor] Save error:", error);
       toast({

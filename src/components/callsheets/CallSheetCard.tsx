@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, Users, Eye, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle, FileType, List, Youtube } from "lucide-react";
+import { FileText, Users, Eye, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle, FileType, List, Youtube, Layers } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +23,15 @@ interface GlobalCallSheet {
   youtube_url: string | null;
   youtube_view_count: number | null;
   youtube_last_synced: string | null;
+  youtube_video_id?: string | null;
+}
+
+interface YouTubeVideo {
+  id: string;
+  video_id: string | null;
+  title: string | null;
+  canonical_title?: string | null;
+  source_count?: number | null;
 }
 
 interface UserCallSheetLink {
@@ -33,6 +42,7 @@ interface UserCallSheetLink {
   global_call_sheets: GlobalCallSheet;
   payment_status: string;
   payment_status_locked: boolean;
+  project?: YouTubeVideo | null;
 }
 
 interface CallSheetCardProps {
@@ -47,6 +57,37 @@ interface CallSheetCardProps {
   onRetry: (sheet: GlobalCallSheet) => void;
   onDelete: (link: UserCallSheetLink) => void;
   onPaymentStatusChange?: (linkId: string, status: string, locked: boolean) => void;
+}
+
+/**
+ * Get the display name for a call sheet using priority:
+ * 1. Project canonical_title (admin override)
+ * 2. Project title (YouTube API)
+ * 3. User label (custom name)
+ * 4. Original filename (upload fallback)
+ */
+function getDisplayName(
+  project: YouTubeVideo | null | undefined,
+  userLabel: string | null,
+  originalFileName: string
+): { displayName: string; isProjectTitle: boolean } {
+  // Priority 1: Project canonical title
+  if (project?.canonical_title) {
+    return { displayName: project.canonical_title, isProjectTitle: true };
+  }
+  
+  // Priority 2: Project title from YouTube
+  if (project?.title) {
+    return { displayName: project.title, isProjectTitle: true };
+  }
+  
+  // Priority 3: User custom label
+  if (userLabel) {
+    return { displayName: userLabel, isProjectTitle: false };
+  }
+  
+  // Priority 4: Original filename
+  return { displayName: originalFileName, isProjectTitle: false };
 }
 
 export function CallSheetCard({ 
@@ -66,10 +107,14 @@ export function CallSheetCard({
   const [youtubeViewCount, setYoutubeViewCount] = useState(link.global_call_sheets.youtube_view_count);
   
   const sheet = link.global_call_sheets;
-  const displayName = link.user_label || sheet.original_file_name;
+  const { displayName, isProjectTitle } = getDisplayName(link.project, link.user_label, sheet.original_file_name);
   
   const paymentStatus = link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor';
   const paymentLocked = link.payment_status_locked;
+  
+  // Check if this is a grouped project (placeholder without YouTube)
+  const isGroupedProject = sheet.youtube_video_id && !link.project?.video_id;
+  const sourceCount = link.project?.source_count || 1;
 
   const handleYoutubeUrlUpdate = (newUrl: string | null) => {
     setYoutubeUrl(newUrl);
@@ -117,7 +162,7 @@ export function CallSheetCard({
   return (
     <Card className={`hover:border-primary/50 transition-colors ${isSelected ? 'border-primary ring-1 ring-primary' : ''}`}>
       <CardContent className="p-4 space-y-3">
-        {/* Header: Checkbox + Status + Contact Count */}
+        {/* Header: Checkbox + Status + Contact Count + Grouped Badge */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {onSelect && (
@@ -128,6 +173,20 @@ export function CallSheetCard({
               />
             )}
             {getStatusBadge(sheet.status)}
+            {/* Show grouped badge for multi-sheet projects */}
+            {sourceCount > 1 && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="gap-1 text-xs">
+                    <Layers className="h-3 w-3" />
+                    {sourceCount}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {sourceCount} call sheets linked to this project
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
           {sheet.status === 'parsed' && sheet.contacts_extracted !== null && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -137,12 +196,20 @@ export function CallSheetCard({
           )}
         </div>
 
-        {/* Filename */}
+        {/* Display Name (project title or filename) */}
         <div className="flex items-start gap-2">
           <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-          <p className="text-sm font-medium truncate" title={displayName}>
-            {displayName}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate" title={displayName}>
+              {displayName}
+            </p>
+            {/* Show original filename when displaying project title */}
+            {isProjectTitle && (
+              <p className="text-xs text-muted-foreground truncate" title={sheet.original_file_name}>
+                from: {sheet.original_file_name}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Dates */}
@@ -168,6 +235,7 @@ export function CallSheetCard({
           <YouTubeUrlEditor
             callSheetId={sheet.id}
             currentUrl={youtubeUrl}
+            projectId={sheet.youtube_video_id}
             onUpdate={handleYoutubeUrlUpdate}
           />
           {youtubeViewCount !== null && (
