@@ -176,20 +176,19 @@ export function YouTubePlayerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[90vh] max-w-6xl w-[95vw] overflow-hidden p-0 gap-0">
-        {/* 3-row grid: top / main / bottom */}
-        <div className="grid h-full grid-rows-[auto_minmax(0,1fr)_auto]">
-          {/* Top bar */}
-          <div className="border-b p-4 lg:p-5">
-            <h2 className="font-semibold text-lg leading-tight line-clamp-2">
+      <DialogContent className="h-[90vh] w-[95vw] max-w-7xl p-0 overflow-hidden">
+        <div className="flex flex-col h-full">
+          {/* Top bar - fixed height */}
+          <div className="shrink-0 border-b px-5 py-4">
+            <h2 className="text-lg font-semibold leading-tight line-clamp-2">
               {video.title || "Untitled Video"}
             </h2>
             {video.channel_title && (
               <p className="text-sm text-muted-foreground mt-0.5">{video.channel_title}</p>
             )}
-            <div className="flex flex-wrap gap-3 text-sm mt-2">
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-2">
               {video.view_count !== null && (
-                <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex items-center gap-1.5">
                   <Eye className="h-4 w-4" />
                   <span className="font-mono font-medium text-foreground">
                     {formatFullViewCount(video.view_count)}
@@ -198,7 +197,7 @@ export function YouTubePlayerModal({
                 </div>
               )}
               {video.published_at && (
-                <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
                   <span>
                     {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
@@ -208,15 +207,15 @@ export function YouTubePlayerModal({
             </div>
           </div>
 
-          {/* Main row: must be shrinkable */}
-          <div className="min-h-0 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px]">
-            {/* Player */}
-            <div className="min-h-0 bg-black flex items-center justify-center p-3">
-              {/* aspect-video keeps 16:9 without forcing the whole row to overflow */}
-              <div className="w-full h-auto max-h-full aspect-video overflow-hidden rounded-xl">
+          {/* Main area - flex row, can shrink */}
+          <div className="flex flex-1 min-h-0">
+            {/* Player - left side, letterboxes naturally */}
+            <div className="flex-1 bg-black flex items-center justify-center">
+              <div className="w-full h-full max-w-[1100px] max-h-full flex items-center justify-center p-3">
                 <iframe
                   src={embedUrl}
-                  className="w-full h-full"
+                  className="w-full h-full rounded-lg"
+                  style={{ aspectRatio: "16 / 9" }}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                   title={video.title || "Video player"}
@@ -224,8 +223,8 @@ export function YouTubePlayerModal({
               </div>
             </div>
 
-            {/* Credits: min-h-0 is the difference between scroll and sadness */}
-            <div className="min-h-0 border-l flex flex-col">
+            {/* Credits - right side, fixed width, scrolls internally */}
+            <div className="w-[320px] border-l flex flex-col min-h-0">
               <div className="shrink-0 px-4 py-3 border-b flex items-center justify-between">
                 <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                   Project Credits
@@ -233,7 +232,7 @@ export function YouTubePlayerModal({
                 <CopyCreditsDropdown credits={video.credits} />
               </div>
 
-              <ScrollArea className="flex-1 min-h-0">
+              <div className="flex-1 min-h-0 overflow-y-auto">
                 {video.credits && video.credits.length > 0 ? (
                   <div className="space-y-1 font-mono text-sm p-4">
                     {video.credits.map((credit, i) => {
@@ -259,13 +258,13 @@ export function YouTubePlayerModal({
                 ) : (
                   <div className="p-4 text-sm text-muted-foreground">No credits available</div>
                 )}
-              </ScrollArea>
+              </div>
             </div>
           </div>
 
-          {/* Bottom strip: explicit height so it never disappears */}
+          {/* Bottom carousel - pinned, always visible */}
           {otherVideos.length > 0 && (
-            <div className="border-t bg-muted/30 h-[140px] p-3 overflow-hidden">
+            <div className="shrink-0 h-[140px] border-t bg-muted/30 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium flex items-center gap-2">
                   <Youtube className="h-4 w-4 text-destructive" />
@@ -276,14 +275,14 @@ export function YouTubePlayerModal({
                 </span>
               </div>
 
-              <div className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2">
+              <div className="flex gap-3 overflow-x-auto overflow-y-hidden">
                 {otherVideos.map((v) => {
                   const originalIndex = allVideos.findIndex((av) => av.id === v.id);
                   return (
                     <button
                       key={v.id}
                       onClick={() => onNavigate(originalIndex)}
-                      className="flex-shrink-0 w-28 rounded overflow-hidden hover:ring-2 ring-primary transition-all group"
+                      className="flex-shrink-0 w-28 rounded-lg overflow-hidden hover:ring-2 ring-primary transition-all group"
                     >
                       <div className="aspect-video">
                         {v.thumbnail_url ? (
