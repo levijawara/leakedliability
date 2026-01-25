@@ -916,6 +916,9 @@ export type Database = {
           retry_count: number | null
           status: string | null
           updated_at: string | null
+          youtube_last_synced: string | null
+          youtube_url: string | null
+          youtube_view_count: number | null
         }
         Insert: {
           canonical_producers?: Json | null
@@ -938,6 +941,9 @@ export type Database = {
           retry_count?: number | null
           status?: string | null
           updated_at?: string | null
+          youtube_last_synced?: string | null
+          youtube_url?: string | null
+          youtube_view_count?: number | null
         }
         Update: {
           canonical_producers?: Json | null
@@ -960,6 +966,9 @@ export type Database = {
           retry_count?: number | null
           status?: string | null
           updated_at?: string | null
+          youtube_last_synced?: string | null
+          youtube_url?: string | null
+          youtube_view_count?: number | null
         }
         Relationships: []
       }
