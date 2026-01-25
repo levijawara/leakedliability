@@ -10,6 +10,7 @@ import type { CrewContact } from "@/pages/CrewContacts";
 interface VirtualizedContactsGridProps {
   contacts: CrewContact[];
   callSheetCounts: Record<string, number>;
+  youtubeViewCounts?: Record<string, number>;
   userId: string;
   onContactUpdate: (contact: CrewContact) => void;
   onContactDelete: (contactId: string) => void;
@@ -22,6 +23,7 @@ interface VirtualizedContactsGridProps {
 export function VirtualizedContactsGrid({
   contacts,
   callSheetCounts,
+  youtubeViewCounts = {},
   userId,
   onContactUpdate,
   onContactDelete,
@@ -113,6 +115,7 @@ export function VirtualizedContactsGrid({
               key={contact.id}
               contact={contact}
               callSheetCount={callSheetCounts[contact.id] || 0}
+              youtubeViewCount={youtubeViewCounts[contact.id] || 0}
               onToggleFavorite={handleToggleFavorite}
               onEdit={setEditContact}
               onDelete={setDeleteContact}

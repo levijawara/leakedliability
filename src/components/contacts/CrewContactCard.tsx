@@ -3,14 +3,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Star, Mail, Phone, Instagram, FileText, Pencil, Trash2 } from "lucide-react";
+import { Star, Mail, Phone, Instagram, FileText, Pencil, Trash2, Youtube } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
+import { formatViewCount } from "@/lib/youtubeHelpers";
 import type { CrewContact } from "@/pages/CrewContacts";
 
 interface CrewContactCardProps {
   contact: CrewContact;
   callSheetCount: number;
+  youtubeViewCount?: number;
   onToggleFavorite: (contact: CrewContact) => void;
   onEdit: (contact: CrewContact) => void;
   onDelete: (contact: CrewContact) => void;
@@ -24,6 +26,7 @@ interface CrewContactCardProps {
 export function CrewContactCard({
   contact,
   callSheetCount,
+  youtubeViewCount = 0,
   onToggleFavorite,
   onEdit,
   onDelete,
@@ -183,7 +186,16 @@ export function CrewContactCard({
               </div>
             )}
 
-            {/* Row 4: Call sheet button - full width */}
+            {/* Row 4: YouTube views (if any) */}
+            {youtubeViewCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Youtube className="h-3.5 w-3.5 text-destructive" />
+                <span className="font-medium">{formatViewCount(youtubeViewCount)}</span>
+                <span>total views</span>
+              </div>
+            )}
+
+            {/* Row 5: Call sheet button - full width */}
             <Button
               variant="outline"
               size="sm"

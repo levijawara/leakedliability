@@ -1,4 +1,5 @@
-import { FileText, Users, Eye, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle, FileType, List } from "lucide-react";
+import { useState } from "react";
+import { FileText, Users, Eye, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle, FileType, List, Youtube } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PaymentStatusRadio } from "./PaymentStatusRadio";
+import { YouTubeUrlEditor } from "./YouTubeUrlEditor";
+import { formatViewCount } from "@/lib/youtubeHelpers";
 
 interface GlobalCallSheet {
   id: string;
@@ -17,6 +20,9 @@ interface GlobalCallSheet {
   created_at: string;
   parsed_contacts: unknown;
   parsed_date: string | null;
+  youtube_url: string | null;
+  youtube_view_count: number | null;
+  youtube_last_synced: string | null;
 }
 
 interface UserCallSheetLink {
@@ -56,11 +62,22 @@ export function CallSheetCard({
   onDelete,
   onPaymentStatusChange
 }: CallSheetCardProps) {
+  const [youtubeUrl, setYoutubeUrl] = useState(link.global_call_sheets.youtube_url);
+  const [youtubeViewCount, setYoutubeViewCount] = useState(link.global_call_sheets.youtube_view_count);
+  
   const sheet = link.global_call_sheets;
   const displayName = link.user_label || sheet.original_file_name;
   
   const paymentStatus = link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor';
   const paymentLocked = link.payment_status_locked;
+
+  const handleYoutubeUrlUpdate = (newUrl: string | null) => {
+    setYoutubeUrl(newUrl);
+    // Clear view count when URL changes (will be re-synced)
+    if (newUrl !== sheet.youtube_url) {
+      setYoutubeViewCount(null);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -145,6 +162,21 @@ export function CallSheetCard({
             {sheet.error_message}
           </p>
         )}
+
+        {/* YouTube Link */}
+        <div className="flex items-center justify-between pt-2 border-t">
+          <YouTubeUrlEditor
+            callSheetId={sheet.id}
+            currentUrl={youtubeUrl}
+            onUpdate={handleYoutubeUrlUpdate}
+          />
+          {youtubeViewCount !== null && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Youtube className="h-3 w-3 text-destructive" />
+              {formatViewCount(youtubeViewCount)} views
+            </span>
+          )}
+        </div>
 
         {/* Payment Status - show for everyone, hide when locked */}
         {!paymentLocked && (
