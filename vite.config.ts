@@ -8,21 +8,25 @@ export default defineConfig(({ mode }) => {
   // Load env file to access VITE_ variables at config time
   const env = loadEnv(mode, process.cwd(), '');
   
-  // STRIPE GUARDRAIL: Warn if publishable key is missing, but don't block build
-  // Runtime validation in src/config/env.ts handles actual enforcement
+  // STRIPE GUARDRAIL: Fail build if publishable key is missing
   const stripeKey = env.VITE_STRIPE_PUBLISHABLE_KEY;
-  if (stripeKey && stripeKey !== "pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE") {
-    // Validate key format if provided
-    if (!stripeKey.startsWith("pk_test_") && !stripeKey.startsWith("pk_live_")) {
-      console.warn("\n⚠️ STRIPE CONFIGURATION WARNING ⚠️");
-      console.warn("VITE_STRIPE_PUBLISHABLE_KEY does not appear to be a valid Stripe key.");
-      console.warn("Key should start with 'pk_test_' (test mode) or 'pk_live_' (production mode).\n");
-    } else {
-      console.log("✅ Stripe publishable key validated at build time");
-    }
-  } else {
-    console.warn("\n⚠️ STRIPE KEY NOTE: VITE_STRIPE_PUBLISHABLE_KEY not found in .env - will use runtime injection\n");
+  if (!stripeKey || stripeKey === "pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE") {
+    console.error("\n❌ STRIPE CONFIGURATION ERROR ❌");
+    console.error("VITE_STRIPE_PUBLISHABLE_KEY is missing or contains placeholder value.");
+    console.error("Build cannot proceed without a valid Stripe publishable key.");
+    console.error("Please set VITE_STRIPE_PUBLISHABLE_KEY in your environment variables.\n");
+    process.exit(1);
   }
+
+  // Validate key format
+  if (!stripeKey.startsWith("pk_test_") && !stripeKey.startsWith("pk_live_")) {
+    console.error("\n❌ STRIPE CONFIGURATION ERROR ❌");
+    console.error("VITE_STRIPE_PUBLISHABLE_KEY does not appear to be a valid Stripe key.");
+    console.error("Key must start with 'pk_test_' (test mode) or 'pk_live_' (production mode).\n");
+    process.exit(1);
+  }
+
+  console.log("✅ Stripe publishable key validated at build time");
 
   return {
     server: {

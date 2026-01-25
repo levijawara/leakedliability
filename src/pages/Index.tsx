@@ -18,7 +18,7 @@ const Index = () => {
       <div className="container mx-auto px-4 pt-20 pb-0">
         <div className="max-w-[1600px] mx-auto text-center space-y-6">
           <div className="inline-block mb-4">
-            <div className="inline-flex items-center gap-2 bg-status-critical/10 border border-status-critical/20 rounded-sm px-4 py-2 animate-banner-glow-pulse">
+            <div className="inline-flex items-center gap-2 bg-status-critical/10 border border-status-critical/20 rounded-sm px-4 py-2">
               <AlertTriangle className="h-4 w-4 text-status-critical" />
               <span className="text-sm font-semibold text-status-critical">Public Accountability Platform</span>
             </div>
