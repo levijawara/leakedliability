@@ -144,25 +144,53 @@ export default function ContactYouTubePortfolio() {
         
         if (sheetsError) throw sheetsError;
         
+        // Fetch crew_contacts linked to these call sheets (for IG handles)
+        const { data: contactLinks } = await supabase
+          .from("contact_call_sheets")
+          .select(`
+            call_sheet_id,
+            crew_contacts!inner (
+              id,
+              name,
+              ig_handle,
+              roles
+            )
+          `)
+          .in("call_sheet_id", callSheetIds);
+
+        // Build a map: call_sheet_id -> array of contacts with IG handles
+        const sheetContactsMap = new Map<string, Array<{
+          name: string;
+          ig_handle: string | null;
+          role: string | null;
+        }>>();
+
+        contactLinks?.forEach(link => {
+          const contact = (link as any).crew_contacts;
+          if (!contact) return;
+          
+          const existing = sheetContactsMap.get(link.call_sheet_id) || [];
+          existing.push({
+            name: contact.name,
+            ig_handle: contact.ig_handle || null,
+            role: contact.roles?.[0] || null,
+          });
+          sheetContactsMap.set(link.call_sheet_id, existing);
+        });
+
         // Build a map from youtube_video_id to credits
         const videoCreditsMap = new Map<string, { credits: CreditEntry[]; title: string | null }>();
         
         sheetsData?.forEach(sheet => {
           if (!sheet.youtube_video_id) return;
           
-          // Parse credits from parsed_contacts JSONB
-          const credits: CreditEntry[] = [];
-          if (Array.isArray(sheet.parsed_contacts)) {
-            sheet.parsed_contacts.forEach((c: any) => {
-              if (c?.name) {
-                credits.push({
-                  name: c.name,
-                  role: c.roles?.[0] || c.role || null,
-                  ig_handle: c.ig_handle || null,
-                });
-              }
-            });
-          }
+          // Get credits from linked crew_contacts (with actual IG handles)
+          const linkedContacts = sheetContactsMap.get(sheet.id) || [];
+          const credits: CreditEntry[] = linkedContacts.map(c => ({
+            name: c.name,
+            role: c.role,
+            ig_handle: c.ig_handle,
+          }));
           
           videoCreditsMap.set(sheet.youtube_video_id, {
             credits,
