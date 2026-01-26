@@ -340,8 +340,8 @@ export function CrewContactCard({
               }}
             >
               <div className="flex flex-col gap-3 pr-8">
-                {/* Name header */}
-                <h3 className="font-semibold text-base leading-tight truncate">
+                {/* Name header - 150% larger */}
+                <h3 className="font-semibold text-2xl leading-tight truncate">
                   {contact.name}
                 </h3>
 
@@ -351,11 +351,11 @@ export function CrewContactCard({
                   {emails.length === 1 ? (
                     // Single email - inline row
                     <div className="flex items-center justify-between gap-2 group/row">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Mail className="h-5 w-5 shrink-0 text-muted-foreground" />
                         <a
                           href={`mailto:${emails[0]}`}
-                          className="text-xs truncate hover:underline"
+                          className="text-base truncate hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {showContactInfo ? emails[0] : censorEmail(emails[0])}
@@ -382,12 +382,12 @@ export function CrewContactCard({
                     <Popover>
                       <PopoverTrigger asChild>
                         <div className="flex items-center justify-between gap-2 cursor-pointer group/row hover:bg-muted/30 rounded-md p-1 -m-1">
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            <span className="text-xs truncate">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <Mail className="h-5 w-5 shrink-0 text-muted-foreground" />
+                            <span className="text-base truncate">
                               {showContactInfo ? emails[0] : censorEmail(emails[0])}
                             </span>
-                            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
                           </div>
                           <Button
                             variant="ghost"
@@ -454,11 +454,11 @@ export function CrewContactCard({
                   {phones.length === 1 ? (
                     // Single phone - inline row
                     <div className="flex items-center justify-between gap-2 group/row">
-                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                        <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <Phone className="h-5 w-5 shrink-0 text-muted-foreground" />
                         <a
                           href={`tel:${phones[0]}`}
-                          className="text-xs truncate hover:underline"
+                          className="text-base truncate hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {showContactInfo ? phones[0] : censorPhone(phones[0])}
@@ -485,12 +485,12 @@ export function CrewContactCard({
                     <Popover>
                       <PopoverTrigger asChild>
                         <div className="flex items-center justify-between gap-2 cursor-pointer group/row hover:bg-muted/30 rounded-md p-1 -m-1">
-                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                            <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            <span className="text-xs truncate">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <Phone className="h-5 w-5 shrink-0 text-muted-foreground" />
+                            <span className="text-base truncate">
                               {showContactInfo ? phones[0] : censorPhone(phones[0])}
                             </span>
-                            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
+                            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
                           </div>
                           <Button
                             variant="ghost"
