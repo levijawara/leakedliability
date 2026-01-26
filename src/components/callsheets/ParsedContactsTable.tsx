@@ -234,8 +234,10 @@ export function ParsedContactsTable({
                 <TableCell className="px-2 py-2">
                   <Checkbox
                     checked={!isExcluded}
-                    onCheckedChange={() => handleCheckboxChange(originalIndex)}
-                    onClick={(e) => handleCheckboxChange(originalIndex, e as unknown as React.MouseEvent)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleCheckboxChange(originalIndex, e as unknown as React.MouseEvent);
+                    }}
                     aria-label={`Include ${contact.name}`}
                   />
                 </TableCell>
