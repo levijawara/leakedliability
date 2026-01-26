@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, MutableRefObject, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Mail, Phone, AlertTriangle, Edit2 } from "lucide-react";
+import { Mail, Phone, AlertTriangle, Edit2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { fuzzyNameMatch, normalizeEmail, normalizePhone } from "@/lib/duplicateDetection";
@@ -41,6 +41,8 @@ interface ParsedContactsTableProps {
   onEditContact: (contact: ParsedContact, index: number) => void;
   existingContacts: ExistingContact[];
   onShiftSelect?: (fromIndex: number, toIndex: number) => void;
+  activeFilter: string | null;
+  rowRefs: MutableRefObject<Map<number, HTMLTableRowElement>>;
 }
 
 // Check if a parsed contact has a potential duplicate in existing contacts
@@ -107,8 +109,45 @@ export function ParsedContactsTable({
   onToggleExclude,
   onEditContact,
   existingContacts,
+  activeFilter,
+  rowRefs,
 }: ParsedContactsTableProps) {
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
+
+  // Clear refs on contacts change
+  useEffect(() => {
+    rowRefs.current.clear();
+  }, [contacts, rowRefs]);
+
+  // Filter contacts based on activeFilter
+  const getFilteredContacts = () => {
+    if (!activeFilter) return contacts.map((c, i) => ({ contact: c, originalIndex: i }));
+    
+    return contacts
+      .map((contact, originalIndex) => ({ contact, originalIndex }))
+      .filter(({ contact, originalIndex }) => {
+        const isExcluded = excludedIndices.has(originalIndex);
+        
+        switch (activeFilter) {
+          case 'excluded':
+            return isExcluded;
+          case 'included':
+            return !isExcluded;
+          case 'missing_email':
+            return !isExcluded && contact.emails.length === 0;
+          case 'missing_phone':
+            return !isExcluded && contact.phones.length === 0;
+          case 'duplicates':
+            return !isExcluded && hasPotentialDuplicate(contact, existingContacts);
+          case 'low_confidence':
+            return !isExcluded && contact.confidence < 0.8;
+          default:
+            return true;
+        }
+      });
+  };
+
+  const filteredContacts = getFilteredContacts();
 
   const handleCheckboxChange = (index: number, event?: React.MouseEvent) => {
     // Handle shift+click for range selection
@@ -132,16 +171,25 @@ export function ParsedContactsTable({
     setLastClickedIndex(index);
   };
 
-  if (contacts.length === 0) {
+  if (filteredContacts.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        No contacts parsed from this call sheet.
+      <div className="text-center py-8 text-muted-foreground border rounded-lg max-w-5xl mx-auto">
+        {activeFilter 
+          ? `No contacts match the "${activeFilter.replace(/_/g, ' ')}" filter.`
+          : 'No contacts parsed from this call sheet.'}
       </div>
     );
   }
 
   return (
     <div className="border rounded-lg overflow-hidden max-w-5xl mx-auto">
+      {activeFilter && (
+        <div className="bg-muted/50 px-3 py-2 text-sm flex items-center justify-between border-b">
+          <span>
+            Showing: <strong>{activeFilter.replace(/_/g, ' ')}</strong> ({filteredContacts.length} contacts)
+          </span>
+        </div>
+      )}
       <Table>
         <TableHeader>
           <TableRow>
@@ -168,28 +216,31 @@ export function ParsedContactsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {contacts.map((contact, index) => {
-            const isExcluded = excludedIndices.has(index);
+          {filteredContacts.map(({ contact, originalIndex }) => {
+            const isExcluded = excludedIndices.has(originalIndex);
             const isDuplicate = hasPotentialDuplicate(contact, existingContacts);
 
             return (
               <TableRow
-                key={index}
+                key={originalIndex}
+                ref={(el) => {
+                  if (el) rowRefs.current.set(originalIndex, el);
+                }}
                 className={cn(
-                  "transition-colors",
+                  "transition-all",
                   isExcluded && "bg-muted/50 opacity-60"
                 )}
               >
                 <TableCell className="px-2 py-2">
                   <Checkbox
                     checked={!isExcluded}
-                    onCheckedChange={() => handleCheckboxChange(index)}
-                    onClick={(e) => handleCheckboxChange(index, e as unknown as React.MouseEvent)}
+                    onCheckedChange={() => handleCheckboxChange(originalIndex)}
+                    onClick={(e) => handleCheckboxChange(originalIndex, e as unknown as React.MouseEvent)}
                     aria-label={`Include ${contact.name}`}
                   />
                 </TableCell>
                 <TableCell className="px-2 py-2 font-mono text-muted-foreground text-xs">
-                  {index + 1}
+                  {originalIndex + 1}
                 </TableCell>
                 <TableCell className="px-2 py-2">
                   <span className={cn(
@@ -272,7 +323,7 @@ export function ParsedContactsTable({
                     variant="ghost"
                     size="icon"
                     className="h-7 w-7"
-                    onClick={() => onEditContact(contact, index)}
+                    onClick={() => onEditContact(contact, originalIndex)}
                     title="Edit contact details"
                   >
                     <Edit2 className="h-3.5 w-3.5" />
