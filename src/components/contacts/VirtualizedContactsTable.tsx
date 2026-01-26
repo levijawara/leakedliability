@@ -49,7 +49,7 @@ interface VirtualizedContactsTableProps {
   showContactInfo: boolean;
   selectMode?: boolean;
   selectedIds?: Set<string>;
-  onToggleSelect?: (id: string) => void;
+  onToggleSelect?: (id: string, event?: React.MouseEvent) => void;
 }
 
 // Increased for more breathing room
@@ -240,7 +240,11 @@ export function VirtualizedContactsTable({
                         <TableCell style={{ width: '40px' }}>
                           <Checkbox
                             checked={selectedIds.has(contact.id)}
-                            onCheckedChange={() => onToggleSelect?.(contact.id)}
+                            onCheckedChange={() => {}}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onToggleSelect?.(contact.id, e as unknown as React.MouseEvent);
+                            }}
                           />
                         </TableCell>
                       )}

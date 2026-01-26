@@ -17,7 +17,7 @@ interface VirtualizedContactsGridProps {
   showContactInfo: boolean;
   selectMode?: boolean;
   selectedIds?: Set<string>;
-  onToggleSelect?: (id: string) => void;
+  onToggleSelect?: (id: string, event?: React.MouseEvent) => void;
 }
 
 export function VirtualizedContactsGrid({
@@ -123,7 +123,7 @@ export function VirtualizedContactsGrid({
               showContactInfo={showContactInfo}
               selectMode={selectMode}
               isSelected={selectedIds.has(contact.id)}
-              onToggleSelect={() => onToggleSelect?.(contact.id)}
+              onToggleSelect={(e) => onToggleSelect?.(contact.id, e)}
             />
           ))}
         </div>

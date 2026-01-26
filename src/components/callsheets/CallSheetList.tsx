@@ -138,6 +138,7 @@ export function CallSheetList({}: CallSheetListProps) {
 
   // Selection state for bulk operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   
   // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
@@ -554,8 +555,33 @@ export function CallSheetList({}: CallSheetListProps) {
     });
   }, [sortedSheets, debouncedSearch]);
 
-  // Selection helpers
-  const handleSelectOne = useCallback((linkId: string, selected: boolean) => {
+  // Selection helpers with Shift-click range support
+  const handleSelectOne = useCallback((linkId: string, selected: boolean, event?: React.MouseEvent) => {
+    // Get ordered list of IDs in current filtered view
+    const orderedIds = filteredSheets.map(link => link.id);
+    const currentIndex = orderedIds.indexOf(linkId);
+    
+    // SHIFT-CLICK: Range selection
+    if (event?.shiftKey && lastClickedId !== null) {
+      const lastIndex = orderedIds.indexOf(lastClickedId);
+      if (lastIndex !== -1 && currentIndex !== -1) {
+        const start = Math.min(lastIndex, currentIndex);
+        const end = Math.max(lastIndex, currentIndex);
+        
+        // Add all items in range to selection
+        setSelectedIds(prev => {
+          const next = new Set(prev);
+          for (let i = start; i <= end; i++) {
+            next.add(orderedIds[i]);
+          }
+          return next;
+        });
+        setLastClickedId(linkId);
+        return;
+      }
+    }
+    
+    // REGULAR CLICK / CMD-CTRL-CLICK: Toggle single item
     setSelectedIds(prev => {
       const next = new Set(prev);
       if (selected) {
@@ -565,7 +591,9 @@ export function CallSheetList({}: CallSheetListProps) {
       }
       return next;
     });
-  }, []);
+    
+    setLastClickedId(linkId);
+  }, [filteredSheets, lastClickedId]);
 
   const handleSelectAll = useCallback(() => {
     setSelectedIds(new Set(filteredSheets.map(link => link.id)));
@@ -786,7 +814,11 @@ export function CallSheetList({}: CallSheetListProps) {
                   <TableCell>
                     <Checkbox
                       checked={selectedIds.has(link.id)}
-                      onCheckedChange={(checked) => handleSelectOne(link.id, !!checked)}
+                      onCheckedChange={() => {}}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelectOne(link.id, !selectedIds.has(link.id), e as unknown as React.MouseEvent);
+                      }}
                     />
                   </TableCell>
                   <TableCell className="font-medium">
