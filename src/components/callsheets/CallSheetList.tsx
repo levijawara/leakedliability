@@ -86,6 +86,8 @@ interface UserCallSheetLink {
   payment_status_locked: boolean;
   // Joined project data
   project?: YouTubeVideo | null;
+  // Computed: has saved contacts?
+  savedContactCount?: number;
 }
 
 interface CallSheetListProps {}
@@ -240,14 +242,32 @@ export function CallSheetList({}: CallSheetListProps) {
         }
       }
       
-      // Step 3: Merge project data into links
+      // Step 3: Fetch saved contact counts per call sheet
+      const callSheetIds = validData.map(link => link.global_call_sheet_id);
+      const savedCountMap = new Map<string, number>();
+      
+      if (callSheetIds.length > 0) {
+        const { data: savedLinks } = await supabase
+          .from('contact_call_sheets')
+          .select('call_sheet_id')
+          .in('call_sheet_id', callSheetIds);
+        
+        if (savedLinks) {
+          for (const row of savedLinks) {
+            savedCountMap.set(row.call_sheet_id, (savedCountMap.get(row.call_sheet_id) || 0) + 1);
+          }
+        }
+      }
+      
+      // Step 4: Merge project data and saved counts into links
       const validLinks = validData.map(link => ({
         ...link,
         payment_status: link.payment_status || 'unanswered',
         payment_status_locked: link.payment_status_locked ?? false,
         project: link.global_call_sheets?.youtube_video_id 
           ? projectMap.get(link.global_call_sheets.youtube_video_id) || null
-          : null
+          : null,
+        savedContactCount: savedCountMap.get(link.global_call_sheet_id) || 0
       })) as UserCallSheetLink[];
       
       setUserLinks(validLinks);
@@ -413,8 +433,18 @@ export function CallSheetList({}: CallSheetListProps) {
     }
   };
 
-  // Status badge renderer
-  const getStatusBadge = (status: string) => {
+  // Status badge renderer - includes "Needs Review" logic
+  const getStatusBadge = (status: string, needsReview: boolean) => {
+    // Check for "Needs Review" first - parsed but unsaved
+    if (status === 'parsed' && needsReview) {
+      return (
+        <Badge variant="outline" className="gap-1 border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400">
+          <AlertCircle className="h-3 w-3" />
+          Needs Review
+        </Badge>
+      );
+    }
+    
     switch (status) {
       case 'pending':
         return (
@@ -692,28 +722,35 @@ export function CallSheetList({}: CallSheetListProps) {
 
       {filteredSheets.length > 0 && viewMode === 'cards' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredSheets.map((link) => (
-            <CallSheetCard
-              key={link.id}
-              link={link}
-              sortField={sortField}
-              isSelected={selectedIds.has(link.id)}
-              isAdmin={isAdmin}
-              onSelect={handleSelectOne}
-              onView={(sheet) => navigate(`/call-sheets/${sheet.id}/review`)}
-              onViewPdf={(sheet) => setViewingPdf({ 
-                filePath: sheet.master_file_path, 
-                fileName: sheet.original_file_name 
-              })}
-              onCredits={(sheet) => setCreditsSheet({ 
-                id: sheet.id, 
-                fileName: sheet.original_file_name 
-              })}
-              onRetry={handleRetry}
-              onDelete={(link) => setDeleteLink(link)}
-              onPaymentStatusChange={handlePaymentStatusChange}
-            />
-          ))}
+          {filteredSheets.map((link) => {
+            // Needs review if parsed but no contacts saved yet
+            const needsReview = link.global_call_sheets.status === 'parsed' && 
+              (link.savedContactCount === undefined || link.savedContactCount === 0);
+            
+            return (
+              <CallSheetCard
+                key={link.id}
+                link={link}
+                sortField={sortField}
+                isSelected={selectedIds.has(link.id)}
+                isAdmin={isAdmin}
+                needsReview={needsReview}
+                onSelect={handleSelectOne}
+                onView={(sheet) => navigate(`/call-sheets/${sheet.id}/review`)}
+                onViewPdf={(sheet) => setViewingPdf({ 
+                  filePath: sheet.master_file_path, 
+                  fileName: sheet.original_file_name 
+                })}
+                onCredits={(sheet) => setCreditsSheet({ 
+                  id: sheet.id, 
+                  fileName: sheet.original_file_name 
+                })}
+                onRetry={handleRetry}
+                onDelete={(link) => setDeleteLink(link)}
+                onPaymentStatusChange={handlePaymentStatusChange}
+              />
+            );
+          })}
         </div>
       )}
 
@@ -740,6 +777,9 @@ export function CallSheetList({}: CallSheetListProps) {
               {filteredSheets.map((link) => {
                 const sheet = link.global_call_sheets;
                 const displayName = link.user_label || sheet.original_file_name;
+                // Needs review if parsed but no contacts saved yet
+                const needsReview = sheet.status === 'parsed' && 
+                  (link.savedContactCount === undefined || link.savedContactCount === 0);
               
               return (
                 <TableRow key={link.id} className={selectedIds.has(link.id) ? 'bg-muted/50' : ''}>
@@ -757,7 +797,7 @@ export function CallSheetList({}: CallSheetListProps) {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      {getStatusBadge(sheet.status)}
+                      {getStatusBadge(sheet.status, needsReview)}
                       {sheet.status === 'error' && sheet.error_message && (
                         <p className="text-xs text-destructive truncate max-w-[200px]" title={sheet.error_message}>
                           {sheet.error_message}
