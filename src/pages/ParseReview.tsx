@@ -6,8 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { InteractivePdfViewer } from "@/components/callsheets/InteractivePdfViewer";
 import { SaveContactModal } from "@/components/callsheets/SaveContactModal";
-import { ParseToolbar } from "@/components/callsheets/ParseToolbar";
+import { ParseReviewHeader } from "@/components/callsheets/ParseReviewHeader";
+import { ParsedContactsTable } from "@/components/callsheets/ParsedContactsTable";
+import { ParseChatAssistant } from "@/components/callsheets/ParseChatAssistant";
 import { Navigation } from "@/components/Navigation";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface ParsedContact {
   name: string;
@@ -19,18 +22,6 @@ interface ParsedContact {
   confidence: number;
 }
 
-interface ParseTiming {
-  total_elapsed_ms: number;
-  total_elapsed_formatted: string;
-  model_used: string;
-}
-
-interface ActionLogEntry {
-  action: string;
-  timestamp: string;
-  duration_ms?: number;
-}
-
 interface CallSheetData {
   id: string;
   original_file_name: string;
@@ -38,8 +29,6 @@ interface CallSheetData {
   status: string;
   parsed_contacts: ParsedContact[] | null;
   parsed_date: string | null;
-  parse_timing: ParseTiming | null;
-  parse_action_log: ActionLogEntry[] | null;
 }
 
 interface ExistingContact {
@@ -60,15 +49,17 @@ export default function ParseReview() {
   const [callSheet, setCallSheet] = useState<CallSheetData | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [existingContacts, setExistingContacts] = useState<ExistingContact[]>([]);
   const [selectedContact, setSelectedContact] = useState<{ contact: ParsedContact; index: number } | null>(null);
-  const [savedIndices, setSavedIndices] = useState<Set<number>>(new Set());
-  const [skippedIndices, setSkippedIndices] = useState<Set<number>>(new Set());
+  
+  // Opt-out model: track excluded indices (all included by default)
+  const [excludedIndices, setExcludedIndices] = useState<Set<number>>(new Set());
+  const [showPdf, setShowPdf] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
           navigate('/auth');
@@ -76,30 +67,22 @@ export default function ParseReview() {
         }
         setUserId(user.id);
 
-        // Fetch call sheet data including timing
         const { data, error } = await supabase
           .from('global_call_sheets')
-          .select('id, original_file_name, master_file_path, status, parsed_contacts, parsed_date, parse_timing, parse_action_log')
+          .select('id, original_file_name, master_file_path, status, parsed_contacts, parsed_date')
           .eq('id', id)
           .single();
 
         if (error) throw error;
         if (!data) throw new Error('Call sheet not found');
 
-        // Parse the contacts if needed
         const parsedContacts = Array.isArray(data.parsed_contacts) 
           ? (data.parsed_contacts as unknown as ParsedContact[])
           : null;
 
-        // Parse timing data
-        const parseTiming = data.parse_timing as unknown as ParseTiming | null;
-        const parseActionLog = data.parse_action_log as unknown as ActionLogEntry[] | null;
-
         setCallSheet({
           ...data,
           parsed_contacts: parsedContacts,
-          parse_timing: parseTiming,
-          parse_action_log: parseActionLog
         });
 
         // Fetch existing contacts for duplicate detection
@@ -141,45 +124,167 @@ export default function ParseReview() {
     }
   }, [id, navigate, toast]);
 
-  const handleContactClick = (contact: ParsedContact, originalIndex: number) => {
-    setSelectedContact({ contact, index: originalIndex });
+  const handleToggleExclude = (index: number) => {
+    setExcludedIndices(prev => {
+      const next = new Set(prev);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  };
+
+  const handleExcludeMultiple = (indices: number[]) => {
+    setExcludedIndices(prev => {
+      const next = new Set(prev);
+      indices.forEach(i => next.add(i));
+      return next;
+    });
+  };
+
+  const handleIncludeMultiple = (indices: number[]) => {
+    setExcludedIndices(prev => {
+      const next = new Set(prev);
+      indices.forEach(i => next.delete(i));
+      return next;
+    });
+  };
+
+  const handleEditContact = (contact: ParsedContact, index: number) => {
+    setSelectedContact({ contact, index });
   };
 
   const handleSaveComplete = () => {
-    if (selectedContact) {
-      setSavedIndices(prev => new Set(prev).add(selectedContact.index));
-      setSelectedContact(null);
-    }
+    // After editing a single contact, just close the modal
+    // The contact is already saved
+    setSelectedContact(null);
   };
 
-  const handleSkip = () => {
-    if (selectedContact) {
-      setSkippedIndices(prev => new Set(prev).add(selectedContact.index));
-      setSelectedContact(null);
+  const handleSaveAll = async () => {
+    if (!callSheet?.parsed_contacts || !userId || !id) return;
+
+    const includedContacts = callSheet.parsed_contacts
+      .map((contact, idx) => ({ contact, idx }))
+      .filter(({ idx }) => !excludedIndices.has(idx));
+
+    if (includedContacts.length === 0) {
+      toast({
+        title: "No contacts to save",
+        description: "All contacts have been excluded.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSaving(true);
+    let savedCount = 0;
+    let mergedCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const { contact } of includedContacts) {
+        // Check for existing match
+        const match = findSimpleMatch(contact, existingContacts);
+
+        if (match) {
+          // Merge with existing
+          const { error } = await supabase
+            .from('crew_contacts')
+            .update({
+              roles: [...new Set([...match.roles, ...contact.roles])],
+              departments: [...new Set([...match.departments, ...contact.departments])],
+              phones: [...new Set([...match.phones, ...contact.phones])],
+              emails: [...new Set([...match.emails, ...contact.emails])],
+              ig_handle: contact.ig_handle || match.ig_handle,
+            })
+            .eq('id', match.id);
+
+          if (error) {
+            console.error('[SaveAll] Merge error:', error);
+            errorCount++;
+          } else {
+            // Link to call sheet
+            await supabase
+              .from('contact_call_sheets')
+              .upsert({
+                contact_id: match.id,
+                call_sheet_id: id,
+              }, { onConflict: 'contact_id,call_sheet_id' });
+            mergedCount++;
+          }
+        } else {
+          // Insert new
+          const { data: newContact, error } = await supabase
+            .from('crew_contacts')
+            .insert({
+              user_id: userId,
+              name: contact.name,
+              roles: contact.roles,
+              departments: contact.departments,
+              phones: contact.phones,
+              emails: contact.emails,
+              ig_handle: contact.ig_handle?.replace(/^@/, '') || null,
+              confidence: contact.confidence,
+              needs_review: contact.confidence < 0.8,
+            })
+            .select('id')
+            .single();
+
+          if (error) {
+            console.error('[SaveAll] Insert error:', error);
+            errorCount++;
+          } else if (newContact) {
+            // Link to call sheet
+            await supabase
+              .from('contact_call_sheets')
+              .upsert({
+                contact_id: newContact.id,
+                call_sheet_id: id,
+              }, { onConflict: 'contact_id,call_sheet_id' });
+            savedCount++;
+          }
+        }
+      }
+
+      const parts = [];
+      if (savedCount > 0) parts.push(`${savedCount} saved`);
+      if (mergedCount > 0) parts.push(`${mergedCount} merged`);
+      if (errorCount > 0) parts.push(`${errorCount} failed`);
+
+      toast({
+        title: "Contacts saved",
+        description: parts.join(', ') || 'Done.',
+      });
+
+      // Navigate to IG matching
+      navigate(`/call-sheets/${id}/ig-matching`);
+    } catch (error: any) {
+      console.error('[SaveAll] Error:', error);
+      toast({
+        title: "Save failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleExportJSON = () => {
     if (!callSheet?.parsed_contacts) return;
     
+    const includedContacts = callSheet.parsed_contacts
+      .filter((_, idx) => !excludedIndices.has(idx));
+    
     const report = {
       source_file: callSheet.original_file_name,
       parsed_at: callSheet.parsed_date || new Date().toISOString(),
-      timing: callSheet.parse_timing || {
-        total_elapsed_ms: 0,
-        total_elapsed_formatted: "N/A",
-        model_used: "google/gemini-2.5-flash"
-      },
-      action_log: callSheet.parse_action_log || [],
-      contacts: callSheet.parsed_contacts.map(c => ({
-        name: c.name,
-        roles: c.roles,
-        departments: c.departments,
-        phones: c.phones,
-        emails: c.emails,
-        ig_handle: c.ig_handle,
-        confidence: c.confidence,
-      }))
+      total_contacts: callSheet.parsed_contacts.length,
+      included_contacts: includedContacts.length,
+      excluded_contacts: excludedIndices.size,
+      contacts: includedContacts,
     };
     
     const safeName = callSheet.original_file_name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -198,8 +303,11 @@ export default function ParseReview() {
   const handleExportCSV = () => {
     if (!callSheet?.parsed_contacts) return;
     
+    const includedContacts = callSheet.parsed_contacts
+      .filter((_, idx) => !excludedIndices.has(idx));
+    
     const headers = ['Name', 'Roles', 'Departments', 'Phones', 'Emails', 'IG Handle', 'Confidence'];
-    const rows = callSheet.parsed_contacts.map(c => [
+    const rows = includedContacts.map(c => [
       c.name,
       c.roles.join('; '),
       c.departments.join('; '),
@@ -216,38 +324,6 @@ export default function ParseReview() {
     a.download = `parse-report-${id}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-  };
-
-  const handleSaveAll = async () => {
-    if (!callSheet?.parsed_contacts || !userId || !id) return;
-
-    const remaining = callSheet.parsed_contacts
-      .map((_, idx) => idx)
-      .filter(idx => !savedIndices.has(idx) && !skippedIndices.has(idx));
-
-    if (remaining.length === 0) {
-      toast({
-        title: "All contacts processed",
-        description: "No remaining contacts to save.",
-      });
-      return;
-    }
-
-    toast({
-      title: "Saving all contacts...",
-      description: `Processing ${remaining.length} contacts.`,
-    });
-
-    // TODO: Implement bulk save logic
-    // For now, just show a message
-    toast({
-      title: "Bulk save coming soon",
-      description: "This feature will save all remaining contacts automatically.",
-    });
-  };
-
-  const handleComplete = () => {
-    navigate(`/call-sheets/${id}/ig-matching`);
   };
 
   if (loading) {
@@ -272,6 +348,8 @@ export default function ParseReview() {
     );
   }
 
+  const contacts = callSheet.parsed_contacts || [];
+
   return (
     <>
       <Navigation />
@@ -294,44 +372,106 @@ export default function ParseReview() {
           </div>
         </div>
 
-        {/* Main Content - PDF Only */}
-        <div className="relative h-[calc(100vh-140px)]">
-          <InteractivePdfViewer
-            filePath={callSheet.master_file_path}
-            parsedContacts={callSheet.parsed_contacts || []}
-            onContactClick={handleContactClick}
-            savedContactIndices={savedIndices}
-            skippedContactIndices={skippedIndices}
+        {/* Main Content */}
+        <div className="container mx-auto px-4 py-6 space-y-4">
+          {/* Status Header */}
+          <ParseReviewHeader
+            totalContacts={contacts.length}
+            excludedCount={excludedIndices.size}
+            onSaveAll={handleSaveAll}
+            onExportJSON={handleExportJSON}
+            onExportCSV={handleExportCSV}
+            onTogglePdf={() => setShowPdf(!showPdf)}
+            showPdf={showPdf}
+            saving={saving}
           />
 
-          {/* Floating Toolbar */}
-          {callSheet.parsed_contacts && callSheet.parsed_contacts.length > 0 && (
-            <ParseToolbar
-              totalContacts={callSheet.parsed_contacts.length}
-              savedCount={savedIndices.size}
-              skippedCount={skippedIndices.size}
-              onExportJSON={handleExportJSON}
-              onExportCSV={handleExportCSV}
-              onSaveAll={handleSaveAll}
-              onComplete={handleComplete}
-            />
-          )}
+          {/* PDF Viewer (Collapsible) */}
+          <Collapsible open={showPdf} onOpenChange={setShowPdf}>
+            <CollapsibleContent>
+              <div className="border rounded-lg overflow-hidden h-[400px]">
+                <InteractivePdfViewer
+                  filePath={callSheet.master_file_path}
+                  parsedContacts={contacts}
+                  onContactClick={handleEditContact}
+                  readOnly={true}
+                />
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Save Contact Modal */}
-          {selectedContact && userId && (
-            <SaveContactModal
-              open={!!selectedContact}
-              onOpenChange={(open) => !open && setSelectedContact(null)}
-              contact={selectedContact.contact}
-              callSheetId={callSheet.id}
-              userId={userId}
-              existingContacts={existingContacts}
-              onSave={handleSaveComplete}
-              onSkip={handleSkip}
-            />
-          )}
+          {/* Contact Table (Opt-out model) */}
+          <ParsedContactsTable
+            contacts={contacts}
+            excludedIndices={excludedIndices}
+            onToggleExclude={handleToggleExclude}
+            onEditContact={handleEditContact}
+            existingContacts={existingContacts}
+          />
         </div>
+
+        {/* AI Chat Assistant */}
+        {contacts.length > 0 && (
+          <ParseChatAssistant
+            callSheetId={callSheet.id}
+            fileName={callSheet.original_file_name}
+            parsedContacts={contacts}
+            excludedIndices={excludedIndices}
+            existingContacts={existingContacts}
+            onExclude={handleExcludeMultiple}
+            onInclude={handleIncludeMultiple}
+            onSaveAll={handleSaveAll}
+          />
+        )}
+
+        {/* Edit Contact Modal */}
+        {selectedContact && userId && (
+          <SaveContactModal
+            open={!!selectedContact}
+            onOpenChange={(open) => !open && setSelectedContact(null)}
+            contact={selectedContact.contact}
+            callSheetId={callSheet.id}
+            userId={userId}
+            existingContacts={existingContacts}
+            onSave={handleSaveComplete}
+          />
+        )}
       </div>
     </>
   );
+}
+
+// Simple matching for bulk save (less strict than SaveContactModal)
+function findSimpleMatch(
+  parsed: { name: string; phones: string[]; emails: string[]; ig_handle: string | null },
+  existing: ExistingContact[]
+): ExistingContact | null {
+  const normalizePhone = (p: string) => p.replace(/\D/g, '');
+  const normalizeEmail = (e: string) => e.toLowerCase().trim();
+  
+  const parsedPhones = parsed.phones.map(normalizePhone);
+  const parsedEmails = parsed.emails.map(normalizeEmail);
+  const parsedIg = parsed.ig_handle?.toLowerCase().replace('@', '');
+
+  for (const contact of existing) {
+    // Email match
+    const existingEmails = (contact.emails || []).map(normalizeEmail);
+    if (parsedEmails.some(e => existingEmails.includes(e))) {
+      return contact;
+    }
+
+    // Phone match
+    const existingPhones = (contact.phones || []).map(normalizePhone);
+    if (parsedPhones.some(p => p.length >= 10 && existingPhones.includes(p))) {
+      return contact;
+    }
+
+    // IG match
+    const existingIg = contact.ig_handle?.toLowerCase().replace('@', '');
+    if (parsedIg && existingIg && parsedIg === existingIg) {
+      return contact;
+    }
+  }
+
+  return null;
 }

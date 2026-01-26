@@ -26,6 +26,7 @@ interface InteractivePdfViewerProps {
   onContactClick: (contact: ParsedContact, originalIndex: number) => void;
   savedContactIndices?: Set<number>;
   skippedContactIndices?: Set<number>;
+  readOnly?: boolean;
 }
 
 export function InteractivePdfViewer({
@@ -34,6 +35,7 @@ export function InteractivePdfViewer({
   onContactClick,
   savedContactIndices = new Set(),
   skippedContactIndices = new Set(),
+  readOnly = false,
 }: InteractivePdfViewerProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
@@ -76,9 +78,9 @@ export function InteractivePdfViewer({
     setTextLayerReady(false);
   }, [pageNumber]);
 
-  // Attach click handlers when text layer is ready
+  // Attach click handlers when text layer is ready (skip in readOnly mode)
   const attachClickHandlers = useCallback(() => {
-    if (!pageRef.current || !parsedContacts.length) return;
+    if (!pageRef.current || !parsedContacts.length || readOnly) return;
 
     const textLayer = pageRef.current.querySelector('.react-pdf__Page__textContent');
     if (!textLayer) {
@@ -137,7 +139,7 @@ export function InteractivePdfViewer({
         }
       });
     });
-  }, [parsedContacts, savedContactIndices, skippedContactIndices, onContactClick]);
+  }, [parsedContacts, savedContactIndices, skippedContactIndices, onContactClick, readOnly]);
 
   // Run attachment when text layer becomes ready
   useEffect(() => {
