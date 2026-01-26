@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { SaveContactModal } from "@/components/callsheets/SaveContactModal";
 import { ParseReviewHeader } from "@/components/callsheets/ParseReviewHeader";
 import { ParsedContactsTable } from "@/components/callsheets/ParsedContactsTable";
 import { ParseChatAssistant } from "@/components/callsheets/ParseChatAssistant";
+import { SaveSuccessBar } from "@/components/callsheets/SaveSuccessBar";
 import { Navigation } from "@/components/Navigation";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
@@ -56,6 +57,14 @@ export default function ParseReview() {
   // Opt-out model: track excluded indices (all included by default)
   const [excludedIndices, setExcludedIndices] = useState<Set<number>>(new Set());
   const [showPdf, setShowPdf] = useState(false);
+  
+  // Navigation consent after save
+  const [saveResult, setSaveResult] = useState<{ savedCount: number; mergedCount: number } | null>(null);
+  
+  // Table filter and scroll
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const tableContainerRef = useRef<HTMLDivElement>(null);
+  const rowRefs = useRef<Map<number, HTMLTableRowElement>>(new Map());
 
   useEffect(() => {
     async function fetchData() {
@@ -258,8 +267,8 @@ export default function ParseReview() {
         description: parts.join(', ') || 'Done.',
       });
 
-      // Navigate to IG matching
-      navigate(`/call-sheets/${id}/ig-matching`);
+      // Show navigation prompt instead of auto-navigating
+      setSaveResult({ savedCount, mergedCount: mergedCount });
     } catch (error: any) {
       console.error('[SaveAll] Error:', error);
       toast({
@@ -401,13 +410,17 @@ export default function ParseReview() {
           </Collapsible>
 
           {/* Contact Table (Opt-out model) */}
-          <ParsedContactsTable
-            contacts={contacts}
-            excludedIndices={excludedIndices}
-            onToggleExclude={handleToggleExclude}
-            onEditContact={handleEditContact}
-            existingContacts={existingContacts}
-          />
+          <div ref={tableContainerRef}>
+            <ParsedContactsTable
+              contacts={contacts}
+              excludedIndices={excludedIndices}
+              onToggleExclude={handleToggleExclude}
+              onEditContact={handleEditContact}
+              existingContacts={existingContacts}
+              activeFilter={activeFilter}
+              rowRefs={rowRefs}
+            />
+          </div>
         </div>
 
         {/* AI Chat Assistant */}
@@ -421,6 +434,19 @@ export default function ParseReview() {
             onExclude={handleExcludeMultiple}
             onInclude={handleIncludeMultiple}
             onSaveAll={handleSaveAll}
+            onTogglePdf={() => setShowPdf(prev => !prev)}
+            showPdf={showPdf}
+            onFilterView={setActiveFilter}
+            activeFilter={activeFilter}
+            onJumpToContact={(index) => {
+              const row = rowRefs.current.get(index);
+              if (row) {
+                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                row.classList.add('ring-2', 'ring-primary');
+                setTimeout(() => row.classList.remove('ring-2', 'ring-primary'), 2000);
+              }
+            }}
+            onNavigateToMatching={() => navigate(`/call-sheets/${id}/ig-matching`)}
           />
         )}
 
@@ -434,6 +460,16 @@ export default function ParseReview() {
             userId={userId}
             existingContacts={existingContacts}
             onSave={handleSaveComplete}
+          />
+        )}
+
+        {/* Navigation consent bar */}
+        {saveResult && (
+          <SaveSuccessBar
+            savedCount={saveResult.savedCount}
+            mergedCount={saveResult.mergedCount}
+            onGoToMatching={() => navigate(`/call-sheets/${id}/ig-matching`)}
+            onDismiss={() => setSaveResult(null)}
           />
         )}
       </div>

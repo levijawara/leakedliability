@@ -21,6 +21,13 @@ interface ExistingContact {
   phones: string[];
 }
 
+interface ReviewStats {
+  missingEmails: number;
+  missingPhones: number;
+  lowConfidence: number;
+  potentialDupes: string[];
+}
+
 interface RequestPayload {
   call_sheet_id: string;
   original_file_name: string;
@@ -28,6 +35,9 @@ interface RequestPayload {
   excluded_indices: number[];
   existing_contacts: ExistingContact[];
   user_message: string;
+  review_stats?: ReviewStats;
+  pdf_visible?: boolean;
+  active_filter?: string | null;
 }
 
 serve(async (req) => {
@@ -47,7 +57,10 @@ serve(async (req) => {
       parsed_contacts, 
       excluded_indices, 
       existing_contacts, 
-      user_message 
+      user_message,
+      review_stats,
+      pdf_visible,
+      active_filter,
     } = payload;
 
     // Build context for the AI
@@ -56,12 +69,30 @@ serve(async (req) => {
     
     const contactSummary = parsed_contacts.map((c, i) => {
       const isExcluded = excluded_indices.includes(i);
-      return `${i + 1}. ${c.name} (${c.roles.join(', ') || 'no role'}) ${isExcluded ? '[EXCLUDED]' : ''}`;
+      const missingInfo = [];
+      if (c.emails.length === 0) missingInfo.push('no email');
+      if (c.phones.length === 0) missingInfo.push('no phone');
+      const infoStr = missingInfo.length > 0 ? ` (${missingInfo.join(', ')})` : '';
+      return `${i}. ${c.name} [${c.roles.join(', ') || 'no role'}]${infoStr}${isExcluded ? ' [EXCLUDED]' : ''}`;
     }).join('\n');
 
     const existingSummary = existing_contacts.length > 0
-      ? `User's existing contacts (for duplicate detection):\n${existing_contacts.map(c => `- ${c.name}`).join('\n')}`
+      ? `User's existing contacts (for duplicate detection):\n${existing_contacts.slice(0, 20).map(c => `- ${c.name}`).join('\n')}${existing_contacts.length > 20 ? `\n... and ${existing_contacts.length - 20} more` : ''}`
       : 'User has no existing contacts yet.';
+
+    // Build review status section
+    let statusSection = '';
+    if (review_stats) {
+      statusSection = `
+REVIEW STATUS:
+- Missing email: ${review_stats.missingEmails} contacts
+- Missing phone: ${review_stats.missingPhones} contacts
+- Low confidence (<80%): ${review_stats.lowConfidence} contacts
+- Potential duplicates: ${review_stats.potentialDupes.length > 0 ? review_stats.potentialDupes.join(', ') : 'None detected'}
+- PDF viewer: ${pdf_visible ? 'visible' : 'hidden'}
+- Active filter: ${active_filter || 'none'}
+`;
+    }
 
     const systemPrompt = `You are LL Chat, an assistant helping finalize contacts from a parsed call sheet.
 
@@ -69,28 +100,59 @@ FILE: ${original_file_name}
 TOTAL CONTACTS: ${parsed_contacts.length}
 INCLUDED: ${includedCount}
 EXCLUDED: ${excludedCount}
-
-PARSED CONTACTS:
+${statusSection}
+PARSED CONTACTS (index. name [roles] notes):
 ${contactSummary}
 
 ${existingSummary}
 
-All contacts are INCLUDED by default. Help users EXCLUDE contacts they don't want before bulk saving.
+All contacts are INCLUDED by default. Help users review, filter, and finalize before saving.
 
-You can perform these actions by including them in your response:
-- To exclude contacts: Include JSON like {"action": "exclude", "indices": [0, 5]} with 0-based indices
-- To include (re-add) contacts: Include JSON like {"action": "include", "indices": [3]}
-- To trigger save all: Include JSON like {"action": "save_all"}
+## AVAILABLE ACTIONS
+Return JSON on its own line to execute actions:
 
-When the user says things like:
-- "Exclude Blake" → Find Blake's index and return exclude action
-- "Exclude the stylists" → Find all contacts with stylist roles and exclude them
-- "Save everyone" → Return save_all action
-- "Who's a duplicate?" → List contacts that might match existing ones
+### Contact Management
+- Exclude contacts: {"action": "exclude", "indices": [0, 5]}
+- Include contacts: {"action": "include", "indices": [3]}
 
-Be direct. Be efficient. Slightly sarcastic. You have other call sheets to process.
+### Saving (SEPARATED from navigation)
+- Save all included: {"action": "save_all"} — saves and STAYS on page
+- Save and prompt for navigation: {"action": "save_and_go"} — saves, then asks if user wants to navigate
+- Navigate to IG matching: {"action": "go_to_ig_matching"} — only use when user explicitly asks to leave
 
-IMPORTANT: Always respond with a brief message AND any action JSON on separate lines. The action JSON must be valid JSON on its own line.`;
+### Page Controls
+- Toggle PDF viewer: {"action": "toggle_pdf"}
+- Jump to contact row: {"action": "jump_to_contact", "index": 5}
+- Filter table view: {"action": "filter_view", "filter": "missing_email"} 
+  Valid filters: "excluded", "included", "missing_email", "missing_phone", "duplicates", "low_confidence", null (clear)
+
+## CRITICAL RULES
+1. "Save everyone" or "Save all" = save_all (stays on page, does NOT navigate)
+2. "Save and go to IG matching" = save_and_go (saves, then confirms before navigating)
+3. "Take me to IG matching" or "I'm done" = go_to_ig_matching (explicit navigation request)
+4. NEVER auto-navigate. Navigation requires explicit user intent.
+5. When user asks "what's missing?" — describe the review_stats and offer to filter
+
+## EXAMPLES
+User: "Exclude the stylists"
+→ Find contacts with stylist roles, return exclude action
+
+User: "Show me people without emails"
+→ Return filter_view with "missing_email"
+
+User: "Save everyone"
+→ Return save_all (NO navigation)
+
+User: "I'm done, take me to IG matching"
+→ Return go_to_ig_matching
+
+User: "Save and go to IG matching"
+→ Return save_and_go
+
+User: "What's left to review?"
+→ Summarize the review stats, suggest filters
+
+Be direct. Be efficient. Slightly sarcastic. You have other call sheets to process.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -105,7 +167,7 @@ IMPORTANT: Always respond with a brief message AND any action JSON on separate l
           { role: 'user', content: user_message },
         ],
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 600,
       }),
     });
 
@@ -119,7 +181,12 @@ IMPORTANT: Always respond with a brief message AND any action JSON on separate l
     const content = aiResponse.choices?.[0]?.message?.content || '';
 
     // Parse actions from response
-    const actions: Array<{ type: string; indices?: number[] }> = [];
+    const actions: Array<{ 
+      type: string; 
+      indices?: number[]; 
+      index?: number;
+      filter?: string | null;
+    }> = [];
     const lines = content.split('\n');
     let textResponse = '';
 
@@ -134,6 +201,16 @@ IMPORTANT: Always respond with a brief message AND any action JSON on separate l
             actions.push({ type: 'include', indices: actionData.indices });
           } else if (actionData.action === 'save_all') {
             actions.push({ type: 'save_all' });
+          } else if (actionData.action === 'save_and_go') {
+            actions.push({ type: 'save_and_go' });
+          } else if (actionData.action === 'go_to_ig_matching') {
+            actions.push({ type: 'go_to_ig_matching' });
+          } else if (actionData.action === 'toggle_pdf') {
+            actions.push({ type: 'toggle_pdf' });
+          } else if (actionData.action === 'jump_to_contact' && typeof actionData.index === 'number') {
+            actions.push({ type: 'jump_to_contact', index: actionData.index });
+          } else if (actionData.action === 'filter_view') {
+            actions.push({ type: 'filter_view', filter: actionData.filter ?? null });
           }
         } catch {
           // Not valid JSON, treat as text

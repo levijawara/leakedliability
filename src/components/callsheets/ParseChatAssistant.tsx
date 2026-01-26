@@ -40,6 +40,13 @@ interface ParseChatAssistantProps {
   onExclude: (indices: number[]) => void;
   onInclude: (indices: number[]) => void;
   onSaveAll: () => void;
+  // Page control callbacks
+  onTogglePdf: () => void;
+  showPdf: boolean;
+  onFilterView: (filter: string | null) => void;
+  activeFilter: string | null;
+  onJumpToContact: (index: number) => void;
+  onNavigateToMatching: () => void;
 }
 
 export function ParseChatAssistant({
@@ -51,11 +58,18 @@ export function ParseChatAssistant({
   onExclude,
   onInclude,
   onSaveAll,
+  onTogglePdf,
+  showPdf,
+  onFilterView,
+  activeFilter,
+  onJumpToContact,
+  onNavigateToMatching,
 }: ParseChatAssistantProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [awaitingNavConfirm, setAwaitingNavConfirm] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -73,6 +87,31 @@ export function ParseChatAssistant({
     }
   }, [isOpen]);
 
+  // Compute review stats for context
+  const computeReviewStats = () => {
+    const missingEmails = parsedContacts.filter((c, i) => !excludedIndices.has(i) && c.emails.length === 0).length;
+    const missingPhones = parsedContacts.filter((c, i) => !excludedIndices.has(i) && c.phones.length === 0).length;
+    const lowConfidence = parsedContacts.filter((c, i) => !excludedIndices.has(i) && c.confidence < 0.8).length;
+    
+    // Find potential duplicates by matching emails/phones with existing contacts
+    const potentialDupes: string[] = [];
+    parsedContacts.forEach((c, i) => {
+      if (excludedIndices.has(i)) return;
+      for (const existing of existingContacts) {
+        const emailMatch = c.emails.some(e => existing.emails.includes(e.toLowerCase()));
+        const phoneMatch = c.phones.some(p => existing.phones.some(ep => 
+          p.replace(/\D/g, '') === ep.replace(/\D/g, '') && p.replace(/\D/g, '').length >= 10
+        ));
+        if (emailMatch || phoneMatch) {
+          potentialDupes.push(c.name);
+          break;
+        }
+      }
+    });
+
+    return { missingEmails, missingPhones, lowConfidence, potentialDupes };
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
@@ -80,9 +119,27 @@ export function ParseChatAssistant({
     const userMessage = input.trim();
     setInput('');
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+
+    // Check for navigation confirmation response
+    if (awaitingNavConfirm) {
+      const lower = userMessage.toLowerCase();
+      if (lower.includes('yes') || lower.includes('go') || lower.includes('sure') || lower.includes('ok')) {
+        setAwaitingNavConfirm(false);
+        onNavigateToMatching();
+        return;
+      } else if (lower.includes('no') || lower.includes('stay') || lower.includes('wait')) {
+        setAwaitingNavConfirm(false);
+        setMessages(prev => [...prev, { role: 'assistant', content: "Got it. Keep reviewing—I'm here when you need me." }]);
+        return;
+      }
+      setAwaitingNavConfirm(false);
+    }
+
     setIsLoading(true);
 
     try {
+      const stats = computeReviewStats();
+      
       const { data, error } = await supabase.functions.invoke('parse-chat-assistant', {
         body: {
           call_sheet_id: callSheetId,
@@ -95,6 +152,9 @@ export function ParseChatAssistant({
             phones: c.phones,
           })),
           user_message: userMessage,
+          review_stats: stats,
+          pdf_visible: showPdf,
+          active_filter: activeFilter,
         },
       });
 
@@ -104,15 +164,48 @@ export function ParseChatAssistant({
       const response = data?.response || "I couldn't process that request.";
       setMessages(prev => [...prev, { role: 'assistant', content: response }]);
 
-      // Handle tool calls (exclusions/inclusions)
+      // Handle actions
       if (data?.actions) {
         for (const action of data.actions) {
-          if (action.type === 'exclude' && action.indices) {
-            onExclude(action.indices);
-          } else if (action.type === 'include' && action.indices) {
-            onInclude(action.indices);
-          } else if (action.type === 'save_all') {
-            onSaveAll();
+          switch (action.type) {
+            case 'exclude':
+              if (action.indices) onExclude(action.indices);
+              break;
+            case 'include':
+              if (action.indices) onInclude(action.indices);
+              break;
+            case 'save_all':
+              onSaveAll();
+              break;
+            case 'save_and_go':
+              onSaveAll();
+              // After save, ask for navigation confirmation
+              setTimeout(() => {
+                setMessages(prev => [...prev, { 
+                  role: 'assistant', 
+                  content: "Saved! Ready to go to IG matching? (yes/no)" 
+                }]);
+                setAwaitingNavConfirm(true);
+              }, 500);
+              break;
+            case 'go_to_ig_matching':
+              setMessages(prev => [...prev, { 
+                role: 'assistant', 
+                content: "Taking you to IG matching now..." 
+              }]);
+              setTimeout(() => onNavigateToMatching(), 500);
+              break;
+            case 'toggle_pdf':
+              onTogglePdf();
+              break;
+            case 'jump_to_contact':
+              if (typeof action.index === 'number') {
+                onJumpToContact(action.index);
+              }
+              break;
+            case 'filter_view':
+              onFilterView(action.filter || null);
+              break;
           }
         }
       }
@@ -128,9 +221,10 @@ export function ParseChatAssistant({
   };
 
   const quickActions = [
-    { label: 'Check duplicates', message: 'Who matches my existing contacts?' },
-    { label: 'Missing emails?', message: 'Which contacts are missing email addresses?' },
+    { label: 'Show duplicates', message: 'Who matches my existing contacts?' },
+    { label: 'Missing info?', message: 'What contacts are missing emails or phones?' },
     { label: 'Save all', message: 'Save everyone' },
+    { label: showPdf ? 'Hide PDF' : 'Show PDF', message: showPdf ? 'Hide the PDF' : 'Show me the PDF' },
   ];
 
   const handleQuickAction = (message: string) => {
