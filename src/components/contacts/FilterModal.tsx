@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search, Star, ArrowUpDown } from "lucide-react";
+import { Search, Star, ArrowUpDown, Youtube } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ContactFilters {
@@ -21,6 +21,7 @@ export interface ContactFilters {
   contactInfoFilter: 'all' | 'phone' | 'email' | 'ig' | 'nova' | 'none';
   favoritesOnly: boolean;
   sortByAppearances: 'asc' | 'desc' | null;
+  sortByYouTubeViews: 'asc' | 'desc' | null;
 }
 
 interface FilterModalProps {
@@ -116,6 +117,15 @@ export function FilterModal({
     }));
   };
 
+  const toggleSortByYouTubeViews = () => {
+    setLocalFilters(prev => ({
+      ...prev,
+      sortByYouTubeViews: 
+        prev.sortByYouTubeViews === null ? 'desc' :
+        prev.sortByYouTubeViews === 'desc' ? 'asc' : null
+    }));
+  };
+
   const clearAll = () => {
     setLocalFilters({
       selectedRoles: [],
@@ -123,6 +133,7 @@ export function FilterModal({
       contactInfoFilter: 'all',
       favoritesOnly: false,
       sortByAppearances: null,
+      sortByYouTubeViews: null,
     });
   };
 
@@ -176,6 +187,18 @@ export function FilterModal({
               Sort by Appearances
               {localFilters.sortByAppearances && (
                 <span className="ml-1">({localFilters.sortByAppearances})</span>
+              )}
+            </Button>
+
+            <Button
+              variant={localFilters.sortByYouTubeViews ? 'default' : 'outline'}
+              size="sm"
+              onClick={toggleSortByYouTubeViews}
+            >
+              <Youtube className="h-4 w-4 mr-2" />
+              Sort by YouTube Views
+              {localFilters.sortByYouTubeViews && (
+                <span className="ml-1">({localFilters.sortByYouTubeViews})</span>
               )}
             </Button>
 

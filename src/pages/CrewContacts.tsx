@@ -43,6 +43,7 @@ const defaultFilters: ContactFilters = {
   contactInfoFilter: 'all',
   favoritesOnly: false,
   sortByAppearances: null,
+  sortByYouTubeViews: null,
 };
 
 export default function CrewContacts() {
@@ -430,8 +431,19 @@ export default function CrewContacts() {
       });
     }
 
+    // Sort by YouTube views if enabled
+    if (filters.sortByYouTubeViews) {
+      result.sort((a, b) => {
+        const aViews = youtubeViewCounts[a.id] || 0;
+        const bViews = youtubeViewCounts[b.id] || 0;
+        return filters.sortByYouTubeViews === 'desc' 
+          ? bViews - aViews 
+          : aViews - bViews;
+      });
+    }
+
     return result;
-  }, [contacts, debouncedSearchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts]);
+  }, [contacts, debouncedSearchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts, youtubeViewCounts]);
 
   // Clear selection when exiting select mode
   useEffect(() => {
