@@ -70,8 +70,62 @@ export function ParseChatAssistant({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [awaitingNavConfirm, setAwaitingNavConfirm] = useState(false);
+  const [hasShownInitialSummary, setHasShownInitialSummary] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Generate initial parsing summary when chat opens for the first time
+  useEffect(() => {
+    if (isOpen && !hasShownInitialSummary && parsedContacts.length > 0) {
+      const totalContacts = parsedContacts.length;
+      const includedCount = totalContacts - excludedIndices.size;
+      
+      // Calculate average confidence
+      const avgConfidence = parsedContacts.reduce((sum, c) => sum + (c.confidence || 0), 0) / totalContacts;
+      const avgConfidencePercent = Math.round(avgConfidence * 100);
+      
+      // Find low confidence contacts (< 80%)
+      const lowConfidenceContacts = parsedContacts
+        .map((c, i) => ({ ...c, index: i }))
+        .filter(c => !excludedIndices.has(c.index) && c.confidence < 0.8)
+        .sort((a, b) => a.confidence - b.confidence);
+      
+      // Find missing info
+      const missingEmails = parsedContacts.filter((c, i) => !excludedIndices.has(i) && c.emails.length === 0).length;
+      const missingPhones = parsedContacts.filter((c, i) => !excludedIndices.has(i) && c.phones.length === 0).length;
+      
+      // Build summary message
+      let summary = `📊 **Parsing Complete!**\n\n`;
+      summary += `• **${includedCount} contacts** extracted\n`;
+      summary += `• **${avgConfidencePercent}% average confidence**\n`;
+      
+      if (missingEmails > 0 || missingPhones > 0) {
+        summary += `\n⚠️ **Missing info:**\n`;
+        if (missingEmails > 0) summary += `• ${missingEmails} without email\n`;
+        if (missingPhones > 0) summary += `• ${missingPhones} without phone\n`;
+      }
+      
+      if (lowConfidenceContacts.length > 0) {
+        summary += `\n🔍 **Double-check these** (low confidence):\n`;
+        lowConfidenceContacts.slice(0, 5).forEach(c => {
+          const pct = Math.round(c.confidence * 100);
+          summary += `• ${c.name} (${pct}%)\n`;
+        });
+        if (lowConfidenceContacts.length > 5) {
+          summary += `• ...and ${lowConfidenceContacts.length - 5} more\n`;
+        }
+      }
+      
+      if (lowConfidenceContacts.length === 0 && missingEmails === 0 && missingPhones === 0) {
+        summary += `\n✅ All contacts look good! Ready to save.`;
+      } else {
+        summary += `\nAsk me to "show low confidence" or "show missing emails" to filter the list.`;
+      }
+      
+      setMessages([{ role: 'assistant', content: summary }]);
+      setHasShownInitialSummary(true);
+    }
+  }, [isOpen, hasShownInitialSummary, parsedContacts, excludedIndices]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -274,21 +328,8 @@ export function ParseChatAssistant({
             {messages.length === 0 ? (
               <div className="text-center py-6 space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  Tell me who to exclude, or ask about the parsed contacts.
+                  Loading parsing summary...
                 </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {quickActions.map((action) => (
-                    <Button
-                      key={action.label}
-                      variant="outline"
-                      size="sm"
-                      className="text-xs"
-                      onClick={() => handleQuickAction(action.message)}
-                    >
-                      {action.label}
-                    </Button>
-                  ))}
-                </div>
               </div>
             ) : (
               <div className="space-y-3">
@@ -302,7 +343,7 @@ export function ParseChatAssistant({
                   >
                     <div
                       className={cn(
-                        "max-w-[85%] px-3 py-2 rounded-lg text-sm",
+                        "max-w-[85%] px-3 py-2 rounded-lg text-sm whitespace-pre-line",
                         msg.role === 'user'
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted'
@@ -317,6 +358,22 @@ export function ParseChatAssistant({
                     <div className="bg-muted px-3 py-2 rounded-lg">
                       <Loader2 className="h-4 w-4 animate-spin" />
                     </div>
+                  </div>
+                )}
+                {/* Quick actions below messages */}
+                {messages.length > 0 && !isLoading && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {quickActions.map((action) => (
+                      <Button
+                        key={action.label}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => handleQuickAction(action.message)}
+                      >
+                        {action.label}
+                      </Button>
+                    ))}
                   </div>
                 )}
               </div>
