@@ -26,6 +26,15 @@ interface CrewContactCardProps {
   onToggleSelect?: () => void;
 }
 
+// Dynamic font sizing based on name length - names must ALWAYS be single line
+const getNameClasses = (name: string) => {
+  const len = name.length;
+  if (len <= 12) return "text-2xl font-bold";      // Short: full size
+  if (len <= 18) return "text-xl font-bold";       // Medium: slightly smaller  
+  if (len <= 25) return "text-lg font-semibold";   // Long: compact
+  return "text-base font-semibold";                // Very long: minimum
+};
+
 export function CrewContactCard({
   contact,
   callSheetCount,
@@ -88,11 +97,11 @@ export function CrewContactCard({
   const primaryRole = roles[0];
   const primaryDepartment = departments[0];
   
-  // Format call sheet count (cap at 999+)
-  const displayCallSheetCount = callSheetCount > 999 ? '999+' : callSheetCount.toString();
-  
   // Format YouTube views (compact)
   const displayViews = youtubeViewCount > 0 ? formatFullViewCount(youtubeViewCount) : null;
+
+  // Check if any icons exist
+  const hasIcons = contact.nova_profile_url || contact.ig_handle;
 
   return (
     <TooltipProvider>
@@ -105,15 +114,69 @@ export function CrewContactCard({
         onClick={handleCardClick}
         style={{ perspective: '1000px' }}
       >
-        <CardContent className="p-4 relative" style={{ minHeight: '180px' }}>
+        <CardContent className="p-3 relative">
           {/* Select mode checkbox */}
           {selectMode && (
-            <div className="absolute top-3 right-3 z-20">
+            <div className="absolute top-2 right-2 z-20">
               <Checkbox
                 checked={isSelected}
                 onCheckedChange={() => onToggleSelect?.()}
                 onClick={(e) => e.stopPropagation()}
               />
+            </div>
+          )}
+
+          {/* Vertical Action Buttons - Right Rail */}
+          {!selectMode && (
+            <div className="absolute top-2 right-2 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFavorite(contact);
+                }}
+                disabled={isTogglingFavorite}
+              >
+                <Star 
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
+                  )} 
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(contact);
+                }}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 text-destructive hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(contact);
+                }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={handleFlip}
+                title="Flip to see contact info"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
             </div>
           )}
 
@@ -138,124 +201,69 @@ export function CrewContactCard({
                 transform: 'rotateY(0deg)',
               }}
             >
-              <div className="flex flex-col gap-3 h-full">
-                {/* Top Row: Name + Action Buttons */}
-                <div className={cn(
-                  "flex items-start justify-between gap-2",
-                  selectMode && "pr-8"
-                )}>
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    {/* NOVA icon - only if exists */}
-                    {contact.nova_profile_url && (
-                      <a
-                        href={contact.nova_profile_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                        title="View NOVA Profile"
-                      >
-                        <img 
-                          src="/images/nova-icon.png" 
-                          alt="NOVA" 
-                          className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
-                        />
-                      </a>
-                    )}
-                    {/* Instagram icon - only if exists */}
-                    {contact.ig_handle && (
-                      <a
-                        href={`https://instagram.com/${contact.ig_handle}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="shrink-0"
-                        onClick={(e) => e.stopPropagation()}
-                        title={`@${contact.ig_handle}`}
-                      >
-                        <img 
-                          src="/images/instagram.png" 
-                          alt="Instagram" 
-                          className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
-                        />
-                      </a>
-                    )}
-                    {/* Name - LARGE and prominent */}
-                    <h3 className="font-semibold text-lg leading-tight truncate min-w-0 flex-1">
-                      {contact.name}
-                    </h3>
-                  </div>
-
-                  {/* Action buttons - visible on hover */}
-                  {!selectMode && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(contact);
-                        }}
-                        disabled={isTogglingFavorite}
-                      >
-                        <Star 
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-                          )} 
-                        />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(contact);
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onDelete(contact);
-                        }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={handleFlip}
-                        title="Flip to see contact info"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                      </Button>
+              <div className="flex flex-col gap-1 pr-8">
+                {/* Top Row: Icons (if any) + Name */}
+                <div className="flex items-center gap-2">
+                  {/* Only render icon container if icons exist */}
+                  {hasIcons && (
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {contact.nova_profile_url && (
+                        <a
+                          href={contact.nova_profile_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title="View NOVA Profile"
+                        >
+                          <img 
+                            src="/images/nova-icon.png" 
+                            alt="NOVA" 
+                            className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
+                          />
+                        </a>
+                      )}
+                      {contact.ig_handle && (
+                        <a
+                          href={`https://instagram.com/${contact.ig_handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          title={`@${contact.ig_handle}`}
+                        >
+                          <img 
+                            src="/images/instagram.png" 
+                            alt="Instagram" 
+                            className="h-5 w-5 rounded hover:opacity-80 transition-opacity"
+                          />
+                        </a>
+                      )}
                     </div>
                   )}
+                  {/* Name - LARGE and prominent, always single line */}
+                  <h3 className={cn(
+                    "leading-tight whitespace-nowrap overflow-hidden text-ellipsis",
+                    getNameClasses(contact.name)
+                  )}>
+                    {contact.name}
+                  </h3>
                 </div>
 
-                {/* Role + Department Pills */}
-                <div className="flex items-center flex-wrap gap-1.5">
+                {/* Role + Department Pills - tight to name */}
+                <div className="flex items-center flex-wrap gap-1 mt-0.5">
                   {primaryRole && (
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge variant="secondary" className="text-xs py-0">
                       {primaryRole}
                     </Badge>
                   )}
                   {primaryDepartment && (
-                    <Badge variant="outline" className="text-xs text-muted-foreground">
+                    <Badge variant="outline" className="text-xs py-0 text-muted-foreground">
                       {primaryDepartment}
                     </Badge>
                   )}
                   {roles.length > 1 && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="outline" className="text-xs cursor-help">
+                        <Badge variant="outline" className="text-xs py-0 cursor-help">
                           +{roles.length - 1}
                         </Badge>
                       </TooltipTrigger>
@@ -266,51 +274,59 @@ export function CrewContactCard({
                   )}
                 </div>
 
-                {/* Metrics Row - Compact chips */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {displayViews && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs hover:bg-muted"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            navigate(`/crew-contacts/${contact.id}/youtube`);
-                          }}
-                        >
-                          <Youtube className="h-3.5 w-3.5 text-destructive mr-1" />
-                          <span className="font-mono font-medium">{displayViews}</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>View all linked YouTube projects</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                  {callSheetCount > 0 && (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-xs hover:bg-muted"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCallSheetClick();
-                          }}
-                        >
-                          <FileText className="h-3.5 w-3.5 mr-1" />
-                          <span>{displayCallSheetCount}</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Appears on {callSheetCount} call sheet{callSheetCount !== 1 ? 's' : ''}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  )}
-                </div>
+                {/* Separator - like menu dropdown */}
+                {(callSheetCount > 0 || displayViews) && (
+                  <div className="border-t border-border/50 mt-2 pt-2">
+                    {/* Metrics Zone - Left aligned, stacked vertically */}
+                    <div className="flex flex-col gap-0.5">
+                      {/* Call Sheet Count - FIRST, full label */}
+                      {callSheetCount > 0 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-0 text-xs hover:bg-transparent hover:underline justify-start"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleCallSheetClick();
+                              }}
+                            >
+                              <FileText className="h-3.5 w-3.5 mr-1.5 shrink-0" />
+                              <span>Appears on {callSheetCount} call sheet{callSheetCount !== 1 ? 's' : ''}</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View all call sheets featuring {contact.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                      
+                      {/* YouTube Views - SECOND */}
+                      {displayViews && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-0 text-xs hover:bg-transparent hover:underline justify-start"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/crew-contacts/${contact.id}/youtube`);
+                              }}
+                            >
+                              <Youtube className="h-3.5 w-3.5 text-destructive mr-1.5 shrink-0" />
+                              <span className="font-mono">{displayViews} views</span>
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>View all linked YouTube projects</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -323,74 +339,29 @@ export function CrewContactCard({
                 transform: 'rotateY(180deg)',
               }}
             >
-              <div className="flex flex-col gap-3 h-full">
-                {/* Top Row: Name + Action Buttons */}
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="font-semibold text-base leading-tight truncate min-w-0 flex-1">
-                    {contact.name}
-                  </h3>
-
-                  {/* Action buttons */}
-                  {!selectMode && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleFavorite(contact);
-                        }}
-                        disabled={isTogglingFavorite}
-                      >
-                        <Star 
-                          className={cn(
-                            "h-3.5 w-3.5",
-                            contact.is_favorite ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground"
-                          )} 
-                        />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(contact);
-                        }}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7"
-                        onClick={handleFlip}
-                        title="Flip back to front"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
+              <div className="flex flex-col gap-2 pr-8">
+                {/* Name header */}
+                <h3 className="font-semibold text-base leading-tight truncate">
+                  {contact.name}
+                </h3>
 
                 {/* Emails */}
                 {emails.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">
                       Emails
                     </Label>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       {emails.map((email, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
+                          className="flex items-center justify-between gap-2 p-1.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
                         >
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <Mail className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                             <a
                               href={`mailto:${email}`}
-                              className="text-sm truncate hover:underline"
+                              className="text-xs truncate hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {showContactInfo ? email : censorEmail(email)}
@@ -399,16 +370,16 @@ export function CrewContactCard({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 shrink-0"
+                            className="h-6 w-6 shrink-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCopy(email, `email-${idx}`);
                             }}
                           >
                             {copiedField === `email-${idx}` ? (
-                              <Check className="h-3.5 w-3.5 text-green-500" />
+                              <Check className="h-3 w-3 text-green-500" />
                             ) : (
-                              <Copy className="h-3.5 w-3.5" />
+                              <Copy className="h-3 w-3" />
                             )}
                           </Button>
                         </div>
@@ -419,21 +390,21 @@ export function CrewContactCard({
 
                 {/* Phones */}
                 {phones.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">
                       Phones
                     </Label>
-                    <div className="space-y-1.5">
+                    <div className="space-y-1">
                       {phones.map((phone, idx) => (
                         <div
                           key={idx}
-                          className="flex items-center justify-between gap-2 p-2 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
+                          className="flex items-center justify-between gap-2 p-1.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
                         >
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                             <a
                               href={`tel:${phone}`}
-                              className="text-sm truncate hover:underline"
+                              className="text-xs truncate hover:underline"
                               onClick={(e) => e.stopPropagation()}
                             >
                               {showContactInfo ? phone : censorPhone(phone)}
@@ -442,7 +413,7 @@ export function CrewContactCard({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 shrink-0"
+                            className="h-6 w-6 shrink-0"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleCopy(phone, 'Phone');
@@ -450,9 +421,9 @@ export function CrewContactCard({
                             }}
                           >
                             {copiedField === `phone-${idx}` ? (
-                              <Check className="h-3.5 w-3.5 text-green-500" />
+                              <Check className="h-3 w-3 text-green-500" />
                             ) : (
-                              <Copy className="h-3.5 w-3.5" />
+                              <Copy className="h-3 w-3" />
                             )}
                           </Button>
                         </div>
@@ -463,7 +434,7 @@ export function CrewContactCard({
 
                 {/* Empty state */}
                 {emails.length === 0 && phones.length === 0 && (
-                  <div className="text-sm text-muted-foreground text-center py-4">
+                  <div className="text-xs text-muted-foreground text-center py-2">
                     No contact information available
                   </div>
                 )}
