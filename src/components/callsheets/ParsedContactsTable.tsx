@@ -141,24 +141,30 @@ export function ParsedContactsTable({
   }
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="border rounded-lg overflow-hidden max-w-5xl mx-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[50px]">
+            <TableHead className="w-[40px] px-2">
               <span className="sr-only">Include</span>
             </TableHead>
-            <TableHead className="w-[50px]">#</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead className="w-[60px]">
-              <Mail className="h-4 w-4" />
+            <TableHead className="w-[40px] px-2">#</TableHead>
+            <TableHead className="px-2">Name</TableHead>
+            <TableHead className="px-2">Role</TableHead>
+            <TableHead className="px-2">
+              <div className="flex items-center gap-1">
+                <Mail className="h-3.5 w-3.5" />
+                <span>Email</span>
+              </div>
             </TableHead>
-            <TableHead className="w-[60px]">
-              <Phone className="h-4 w-4" />
+            <TableHead className="px-2">
+              <div className="flex items-center gap-1">
+                <Phone className="h-3.5 w-3.5" />
+                <span>Phone</span>
+              </div>
             </TableHead>
-            <TableHead className="w-[80px]">Status</TableHead>
-            <TableHead className="w-[60px]"></TableHead>
+            <TableHead className="w-[60px] px-2">Status</TableHead>
+            <TableHead className="w-[40px] px-2"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -174,7 +180,7 @@ export function ParsedContactsTable({
                   isExcluded && "bg-muted/50 opacity-60"
                 )}
               >
-                <TableCell>
+                <TableCell className="px-2 py-2">
                   <Checkbox
                     checked={!isExcluded}
                     onCheckedChange={() => handleCheckboxChange(index)}
@@ -182,66 +188,94 @@ export function ParsedContactsTable({
                     aria-label={`Include ${contact.name}`}
                   />
                 </TableCell>
-                <TableCell className="font-mono text-muted-foreground text-sm">
+                <TableCell className="px-2 py-2 font-mono text-muted-foreground text-xs">
                   {index + 1}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-2 py-2">
                   <span className={cn(
-                    "font-medium",
+                    "font-medium text-sm",
                     isExcluded && "line-through text-muted-foreground"
                   )}>
                     {contact.name}
                   </span>
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-2 py-2">
                   <div className="flex flex-wrap gap-1">
                     {contact.roles.slice(0, 2).map((role, i) => (
                       <Badge 
                         key={i} 
                         variant="secondary" 
-                        className={cn("text-xs", isExcluded && "opacity-50")}
+                        className={cn("text-xs py-0", isExcluded && "opacity-50")}
                       >
                         {role}
                       </Badge>
                     ))}
                     {contact.roles.length > 2 && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs py-0">
                         +{contact.roles.length - 2}
                       </Badge>
                     )}
                   </div>
                 </TableCell>
-                <TableCell>
-                  {contact.emails.length > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      {contact.emails.length}
-                    </Badge>
+                <TableCell className="px-2 py-2 text-sm">
+                  {contact.emails.length > 0 ? (
+                    <div className="flex flex-col gap-0.5">
+                      {contact.emails.slice(0, 2).map((email, i) => (
+                        <span key={i} className={cn(
+                          "text-muted-foreground truncate max-w-[180px]",
+                          isExcluded && "opacity-50"
+                        )}>
+                          {email}
+                        </span>
+                      ))}
+                      {contact.emails.length > 2 && (
+                        <span className="text-xs text-muted-foreground/70">
+                          +{contact.emails.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground/40">—</span>
                   )}
                 </TableCell>
-                <TableCell>
-                  {contact.phones.length > 0 && (
-                    <Badge variant="outline" className="text-xs">
-                      {contact.phones.length}
-                    </Badge>
+                <TableCell className="px-2 py-2 text-sm font-mono">
+                  {contact.phones.length > 0 ? (
+                    <div className="flex flex-col gap-0.5">
+                      {contact.phones.slice(0, 2).map((phone, i) => (
+                        <span key={i} className={cn(
+                          "text-muted-foreground",
+                          isExcluded && "opacity-50"
+                        )}>
+                          {phone}
+                        </span>
+                      ))}
+                      {contact.phones.length > 2 && (
+                        <span className="text-xs text-muted-foreground/70">
+                          +{contact.phones.length - 2} more
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground/40">—</span>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-2 py-2">
                   {isDuplicate && !isExcluded && (
-                    <Badge variant="outline" className="text-xs border-destructive/50 text-destructive">
+                    <Badge variant="outline" className="text-xs py-0 border-destructive/50 text-destructive">
                       <AlertTriangle className="h-3 w-3 mr-1" />
                       Dup?
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell className="px-2 py-2">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8"
+                    className="h-7 w-7"
                     onClick={() => onEditContact(contact, index)}
                     title="Edit contact details"
                   >
-                    <Edit2 className="h-4 w-4" />
+                    <Edit2 className="h-3.5 w-3.5" />
                   </Button>
                 </TableCell>
               </TableRow>
