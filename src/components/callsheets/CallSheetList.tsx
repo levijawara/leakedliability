@@ -156,6 +156,12 @@ export function CallSheetList({}: CallSheetListProps) {
 
   // Fetch user's call sheet links with global call sheet data and joined project
   const fetchUserCallSheets = async () => {
+    // GUARD: Abort if userId is not yet available (prevents stale closure errors)
+    if (!userId) {
+      console.warn('[CallSheetList] fetchUserCallSheets called without userId, skipping');
+      return;
+    }
+    
     try {
       // Step 1: Fetch user call sheets with global data
       let query = supabase
