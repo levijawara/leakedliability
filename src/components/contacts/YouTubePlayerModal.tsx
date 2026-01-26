@@ -25,6 +25,7 @@ import { toast } from "sonner";
 interface CreditEntry {
   role: string | null;
   name: string;
+  ig_handle: string | null;
 }
 
 interface YouTubeVideo {
@@ -87,6 +88,7 @@ function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
 
   const copyCredits = async (options: {
     abbreviated: boolean;
+    useHandles: boolean;
   }) => {
     const text = credits
       .map((c) => {
@@ -95,7 +97,13 @@ function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
             ? abbreviateRole(c.role)
             : c.role
           : null;
-        return role ? `${role}: ${c.name}` : c.name;
+        
+        // Choose name or IG handle (fallback to name if no handle)
+        const identifier = options.useHandles && c.ig_handle
+          ? `@${c.ig_handle.replace(/^@/, '')}`
+          : c.name;
+        
+        return role ? `${role}: ${identifier}` : identifier;
       })
       .join("\n");
 
@@ -126,10 +134,24 @@ function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
       <DropdownMenuContent align="end" className="bg-popover">
         <DropdownMenuLabel className="text-xs">Copy Credits</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true })}>
+        
+        {/* By Name */}
+        <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider pt-1">By Name</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true, useHandles: false })}>
           Abbreviated Roles
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false })}>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false, useHandles: false })}>
+          Full Role Names
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
+        
+        {/* By IG Handle */}
+        <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider pt-1">By IG Handle</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true, useHandles: true })}>
+          Abbreviated Roles
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false, useHandles: true })}>
           Full Role Names
         </DropdownMenuItem>
       </DropdownMenuContent>
