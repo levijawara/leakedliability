@@ -263,7 +263,6 @@ Deno.serve(async (req) => {
     const now = new Date().toISOString();
 
     for (const [videoId, item] of videoMetadata) {
-      // Upsert into youtube_videos table
       const thumbnailUrl = 
         item.snippet.thumbnails.maxres?.url ||
         item.snippet.thumbnails.standard?.url ||
@@ -271,27 +270,63 @@ Deno.serve(async (req) => {
         item.snippet.thumbnails.medium?.url ||
         item.snippet.thumbnails.default?.url;
 
-      const { data: videoRecord, error: upsertError } = await adminClient
+      // Check if video already exists (can't use upsert with partial unique index)
+      const { data: existingVideo } = await adminClient
         .from("youtube_videos")
-        .upsert({
-          video_id: videoId,
-          title: item.snippet.title,
-          thumbnail_url: thumbnailUrl,
-          channel_title: item.snippet.channelTitle,
-          channel_id: item.snippet.channelId,
-          published_at: item.snippet.publishedAt,
-          duration_seconds: parseDuration(item.contentDetails.duration),
-          view_count: parseInt(item.statistics.viewCount || "0", 10),
-          like_count: parseInt(item.statistics.likeCount || "0", 10),
-          comment_count: parseInt(item.statistics.commentCount || "0", 10),
-          last_synced_at: now,
-        }, { onConflict: "video_id" })
         .select("id")
-        .single();
+        .eq("video_id", videoId)
+        .maybeSingle();
 
-      if (upsertError) {
-        console.error(`[sync-youtube-views] Failed to upsert video ${videoId}:`, upsertError);
-        continue;
+      let videoRecordId: string;
+
+      if (existingVideo) {
+        // Update existing record
+        const { error: updateError } = await adminClient
+          .from("youtube_videos")
+          .update({
+            title: item.snippet.title,
+            thumbnail_url: thumbnailUrl,
+            channel_title: item.snippet.channelTitle,
+            channel_id: item.snippet.channelId,
+            published_at: item.snippet.publishedAt,
+            duration_seconds: parseDuration(item.contentDetails.duration),
+            view_count: parseInt(item.statistics.viewCount || "0", 10),
+            like_count: parseInt(item.statistics.likeCount || "0", 10),
+            comment_count: parseInt(item.statistics.commentCount || "0", 10),
+            last_synced_at: now,
+          })
+          .eq("id", existingVideo.id);
+
+        if (updateError) {
+          console.error(`[sync-youtube-views] Failed to update video ${videoId}:`, updateError);
+          continue;
+        }
+        videoRecordId = existingVideo.id;
+      } else {
+        // Insert new record
+        const { data: newVideo, error: insertError } = await adminClient
+          .from("youtube_videos")
+          .insert({
+            video_id: videoId,
+            title: item.snippet.title,
+            thumbnail_url: thumbnailUrl,
+            channel_title: item.snippet.channelTitle,
+            channel_id: item.snippet.channelId,
+            published_at: item.snippet.publishedAt,
+            duration_seconds: parseDuration(item.contentDetails.duration),
+            view_count: parseInt(item.statistics.viewCount || "0", 10),
+            like_count: parseInt(item.statistics.likeCount || "0", 10),
+            comment_count: parseInt(item.statistics.commentCount || "0", 10),
+            last_synced_at: now,
+          })
+          .select("id")
+          .single();
+
+        if (insertError) {
+          console.error(`[sync-youtube-views] Failed to insert video ${videoId}:`, insertError);
+          continue;
+        }
+        videoRecordId = newVideo.id;
       }
 
       upsertedCount++;
@@ -304,7 +339,7 @@ Deno.serve(async (req) => {
         const { error: updateError } = await adminClient
           .from("global_call_sheets")
           .update({
-            youtube_video_id: videoRecord.id,
+            youtube_video_id: videoRecordId,
             youtube_view_count: viewCount,
             youtube_last_synced: now,
           })
