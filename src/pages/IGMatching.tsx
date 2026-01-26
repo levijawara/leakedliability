@@ -24,7 +24,8 @@ export default function IGMatching() {
 
   const [contacts, setContacts] = useState<ContactToMatch[]>([]);
   const [matchedCount, setMatchedCount] = useState(0);
-  const [skippedIds, setSkippedIds] = useState<Set<string>>(new Set());
+  const [skippedCount, setSkippedCount] = useState(0);
+  const [totalOriginal, setTotalOriginal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -75,6 +76,7 @@ export default function IGMatching() {
         }
 
         setContacts(contactsWithoutIG);
+        setTotalOriginal(contactsWithoutIG.length);
       } catch (error: any) {
         console.error('[IGMatching] Fetch error:', error);
         toast({
@@ -96,12 +98,13 @@ export default function IGMatching() {
     if (igHandle) {
       setMatchedCount(prev => prev + 1);
     }
-    // Remove from list
+    // Remove from queue - next contact will appear
     setContacts(prev => prev.filter(c => c.id !== contactId));
   };
 
   const handleSkip = (contactId: string) => {
-    setSkippedIds(prev => new Set(prev).add(contactId));
+    setSkippedCount(prev => prev + 1);
+    // Remove from queue - next contact will appear
     setContacts(prev => prev.filter(c => c.id !== contactId));
   };
 
@@ -117,10 +120,14 @@ export default function IGMatching() {
     navigate('/crew-contacts');
   };
 
-  const totalOriginal = contacts.length + matchedCount + skippedIds.size;
+  const processedCount = matchedCount + skippedCount;
   const progressPercent = totalOriginal > 0 
-    ? ((matchedCount + skippedIds.size) / totalOriginal) * 100 
+    ? (processedCount / totalOriginal) * 100 
     : 0;
+  
+  // Current contact is always the first one in the queue
+  const currentContact = contacts[0];
+  const currentPosition = processedCount + 1;
 
   if (loading) {
     return (
@@ -144,6 +151,7 @@ export default function IGMatching() {
             <h1 className="text-2xl font-bold">All Done!</h1>
             <p className="text-muted-foreground">
               Matched {matchedCount} Instagram handles
+              {skippedCount > 0 && ` (${skippedCount} skipped)`}
             </p>
             <Button onClick={() => navigate('/crew-contacts')}>
               Go to Crew Contacts
@@ -194,8 +202,8 @@ export default function IGMatching() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
-                <span className="text-sm text-muted-foreground">
-                  {matchedCount} / {totalOriginal}
+                <span className="text-sm font-medium">
+                  {currentPosition} of {totalOriginal}
                 </span>
                 <Button variant="outline" size="sm" onClick={handleSkipAll}>
                   Skip All
@@ -214,26 +222,26 @@ export default function IGMatching() {
         {/* Subtitle */}
         <div className="container mx-auto px-4 py-4">
           <p className="text-muted-foreground text-center">
-            Link crew contacts to their Instagram accounts
+            Cross-referencing against {833} verified identities • One at a time
           </p>
         </div>
 
-        {/* Contact Cards */}
+        {/* Current Contact Card - ONE at a time */}
         <div className="container mx-auto px-4 pb-8">
-          <div className="max-w-2xl mx-auto space-y-4">
-            {contacts.map((contact) => (
+          <div className="max-w-2xl mx-auto">
+            {currentContact && (
               <IGContactCard
-                key={contact.id}
-                contactId={contact.id}
-                contactName={contact.name}
-                contactPhones={contact.phones}
-                contactEmails={contact.emails}
-                role={contact.roles[0] || ""}
+                key={currentContact.id}
+                contactId={currentContact.id}
+                contactName={currentContact.name}
+                contactPhones={currentContact.phones}
+                contactEmails={currentContact.emails}
+                role={currentContact.roles[0] || ""}
                 callSheetId={id!}
-                onMatch={(igHandle) => handleMatch(contact.id, igHandle)}
-                onSkip={() => handleSkip(contact.id)}
+                onMatch={(igHandle) => handleMatch(currentContact.id, igHandle)}
+                onSkip={() => handleSkip(currentContact.id)}
               />
-            ))}
+            )}
           </div>
         </div>
       </div>

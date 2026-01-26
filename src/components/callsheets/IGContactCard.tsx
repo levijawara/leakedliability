@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Instagram, X, Check, Loader2, Users, Sparkles } from "lucide-react";
+import { Instagram, Check, Loader2, Users, Sparkles, Phone, Mail, User } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,8 @@ interface Coworker {
 interface SeedSuggestion {
   handle: string;
   confidence: 'high' | 'medium';
+  matchReason: 'phone' | 'email' | 'name';
+  matchedName?: string;
 }
 
 interface IGContactCardProps {
@@ -47,13 +49,13 @@ export function IGContactCard({
   // Seed suggestion state
   const [seedSuggestion, setSeedSuggestion] = useState<SeedSuggestion | null>(null);
   const [loadingSeed, setLoadingSeed] = useState(true);
-  const [seedDismissed, setSeedDismissed] = useState(false);
 
-  // Fetch seed suggestion from admin contacts
+  // Fetch seed suggestion from ig_master_identities
   useEffect(() => {
     async function fetchSeedSuggestion() {
       try {
         setLoadingSeed(true);
+        setSeedSuggestion(null);
         
         const { data, error } = await supabase.functions.invoke('get-seed-ig-suggestion', {
           body: {
@@ -71,7 +73,9 @@ export function IGContactCard({
         if (data?.seedSuggestion) {
           setSeedSuggestion({
             handle: data.seedSuggestion,
-            confidence: data.confidence || 'medium'
+            confidence: data.confidence || 'medium',
+            matchReason: data.matchReason || 'name',
+            matchedName: data.matchedName
           });
         }
       } catch (error) {
@@ -267,64 +271,181 @@ export function IGContactCard({
     }
   };
 
-  const handleDismissSeedSuggestion = () => {
-    setSeedDismissed(true);
+  const getMatchReasonLabel = (reason: string) => {
+    switch (reason) {
+      case 'phone': return 'Matched by phone';
+      case 'email': return 'Matched by email';
+      case 'name': return 'Matched by name';
+      default: return 'Match found';
+    }
+  };
+
+  const getMatchReasonIcon = (reason: string) => {
+    switch (reason) {
+      case 'phone': return <Phone className="h-3 w-3" />;
+      case 'email': return <Mail className="h-3 w-3" />;
+      case 'name': return <User className="h-3 w-3" />;
+      default: return null;
+    }
   };
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        {/* Contact Info */}
-        <div className="mb-4">
-          <h3 className="font-semibold text-lg">{contactName}</h3>
-          <p className="text-sm text-muted-foreground">{role || "No role specified"}</p>
+    <Card className="border-2">
+      <CardContent className="p-6">
+        {/* Contact Identity - Prominent */}
+        <div className="mb-6 text-center">
+          <h2 className="text-2xl font-bold mb-1">{contactName}</h2>
+          <p className="text-muted-foreground">{role || "No role specified"}</p>
+          
+          {/* Show contact's phone/email for context */}
+          <div className="flex flex-wrap gap-3 justify-center mt-3 text-sm text-muted-foreground">
+            {contactPhones && contactPhones.length > 0 && (
+              <span className="flex items-center gap-1">
+                <Phone className="h-3 w-3" />
+                {contactPhones[0]}
+              </span>
+            )}
+            {contactEmails && contactEmails.length > 0 && (
+              <span className="flex items-center gap-1">
+                <Mail className="h-3 w-3" />
+                {contactEmails[0]}
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Seed Suggestion Section */}
-        {!loadingSeed && seedSuggestion && !seedDismissed && (
-          <div className="mb-4 p-3 rounded-lg border border-primary/30 bg-primary/5">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Platform Verified</span>
-              {seedSuggestion.confidence === 'high' && (
-                <Badge variant="secondary" className="text-xs">High Match</Badge>
+        {/* Seed Suggestion Section - The main feature */}
+        {loadingSeed && (
+          <div className="mb-6 p-4 rounded-lg border bg-muted/30 flex items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Cross-referencing against 833 verified identities...</span>
+          </div>
+        )}
+
+        {!loadingSeed && seedSuggestion && (
+          <div className="mb-6 p-4 rounded-lg border-2 border-primary/50 bg-primary/5">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <span className="font-semibold text-lg">Suggested Match</span>
+              <Badge 
+                variant={seedSuggestion.confidence === 'high' ? 'default' : 'secondary'}
+                className="ml-auto"
+              >
+                {seedSuggestion.confidence === 'high' ? 'High Confidence' : 'Medium Confidence'}
+              </Badge>
+            </div>
+            
+            <div className="flex items-center gap-3 mb-3">
+              <Instagram className="h-6 w-6 text-muted-foreground" />
+              <span className="text-xl font-bold">@{seedSuggestion.handle}</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+              {getMatchReasonIcon(seedSuggestion.matchReason)}
+              <span>{getMatchReasonLabel(seedSuggestion.matchReason)}</span>
+              {seedSuggestion.matchedName && seedSuggestion.matchedName !== contactName && (
+                <span className="text-xs">• Listed as "{seedSuggestion.matchedName}"</span>
               )}
             </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Instagram className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">@{seedSuggestion.handle}</span>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  variant="default"
-                  onClick={handleUseSeedSuggestion}
-                >
-                  Use This
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost"
-                  onClick={handleDismissSeedSuggestion}
-                >
-                  Ignore
-                </Button>
-              </div>
+            
+            <div className="flex gap-3">
+              <Button 
+                className="flex-1"
+                size="lg"
+                onClick={handleUseSeedSuggestion}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Use This
+              </Button>
+              <Button 
+                variant="outline"
+                size="lg"
+                className="flex-1"
+                onClick={onSkip}
+              >
+                Not a Match
+              </Button>
             </div>
           </div>
         )}
 
-        {loadingSeed && (
-          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Checking for verified matches...
+        {!loadingSeed && !seedSuggestion && (
+          <div className="mb-6 p-4 rounded-lg border bg-muted/30 text-center text-muted-foreground">
+            <p className="mb-1">No verified match found</p>
+            <p className="text-sm">Search manually below or skip this person</p>
           </div>
         )}
 
-        {/* Coworkers Section */}
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or enter manually</span>
+          </div>
+        </div>
+
+        {/* IG Search Input */}
+        <div className="space-y-3">
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+              <Instagram className="h-4 w-4" />
+            </div>
+            <Input
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Search or type username..."
+              className="pl-10 pr-24 h-12 text-lg"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+              {searchValue && (
+                <Button size="sm" onClick={handleManualSubmit}>
+                  <Check className="h-4 w-4 mr-1" />
+                  Save
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Suggestions Dropdown */}
+          {suggestions.length > 0 && (
+            <div className="border rounded-md bg-card shadow-sm">
+              {suggestions.map((s) => (
+                <button
+                  key={s.handle}
+                  onClick={() => handleSelectSuggestion(s.handle)}
+                  className="w-full px-4 py-3 text-left hover:bg-muted flex items-center justify-between"
+                >
+                  <span className="font-medium">@{s.handle}</span>
+                  {s.roles && s.roles.length > 0 && (
+                    <span className="text-sm text-muted-foreground truncate max-w-[150px]">
+                      {s.roles.slice(0, 2).join(', ')}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {searching && (
+            <div className="text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Searching...
+            </div>
+          )}
+        </div>
+
+        {/* Skip Button */}
+        <div className="mt-6 text-center">
+          <Button variant="ghost" size="lg" onClick={onSkip} className="text-muted-foreground">
+            Skip This Person
+          </Button>
+        </div>
+
+        {/* Coworkers Section - Collapsed at bottom */}
         {!loadingCoworkers && coworkers.length > 0 && (
-          <div className="mb-4">
+          <div className="mt-6 pt-4 border-t">
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm font-medium text-muted-foreground">
@@ -344,65 +465,6 @@ export function IGContactCard({
             </div>
           </div>
         )}
-
-        {loadingCoworkers && (
-          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading coworkers...
-          </div>
-        )}
-
-        {/* IG Search Input */}
-        <div className="space-y-2">
-          <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-              <Instagram className="h-4 w-4" />
-            </div>
-            <Input
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder="Search to find username, or manually add new..."
-              className="pl-10 pr-20"
-            />
-            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-              {searchValue && (
-                <Button size="sm" variant="ghost" onClick={handleManualSubmit}>
-                  <Check className="h-4 w-4" />
-                </Button>
-              )}
-              <Button size="sm" variant="ghost" onClick={onSkip}>
-                Skip
-              </Button>
-            </div>
-          </div>
-
-          {/* Suggestions Dropdown */}
-          {suggestions.length > 0 && (
-            <div className="border rounded-md bg-card shadow-sm">
-              {suggestions.map((s) => (
-                <button
-                  key={s.handle}
-                  onClick={() => handleSelectSuggestion(s.handle)}
-                  className="w-full px-3 py-2 text-left hover:bg-muted flex items-center justify-between text-sm"
-                >
-                  <span className="font-medium">@{s.handle}</span>
-                  {s.roles && s.roles.length > 0 && (
-                    <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                      {s.roles.slice(0, 2).join(', ')}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {searching && (
-            <div className="text-sm text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Searching...
-            </div>
-          )}
-        </div>
       </CardContent>
     </Card>
   );
