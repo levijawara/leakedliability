@@ -3,9 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Star, Mail, Phone, FileText, Pencil, Trash2, Youtube, RotateCcw, Copy, Check } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Star, Mail, Phone, FileText, Pencil, Trash2, Youtube, RotateCcw, Copy, Check, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
 import { formatFullViewCount } from "@/lib/youtubeHelpers";
@@ -339,98 +339,220 @@ export function CrewContactCard({
                 transform: 'rotateY(180deg)',
               }}
             >
-              <div className="flex flex-col gap-2 pr-8">
+              <div className="flex flex-col gap-3 pr-8">
                 {/* Name header */}
                 <h3 className="font-semibold text-base leading-tight truncate">
                   {contact.name}
                 </h3>
 
-                {/* Emails */}
-                {emails.length > 0 && (
-                  <div className="space-y-1">
-                    <Label className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">
-                      Emails
-                    </Label>
-                    <div className="space-y-1">
-                      {emails.map((email, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between gap-2 p-1.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
+                {/* Contact rows - no labels, just icons */}
+                <div className="flex flex-col gap-2">
+                  {/* Emails */}
+                  {emails.length === 1 ? (
+                    // Single email - inline row
+                    <div className="flex items-center justify-between gap-2 group/row">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <a
+                          href={`mailto:${emails[0]}`}
+                          className="text-xs truncate hover:underline"
+                          onClick={(e) => e.stopPropagation()}
                         >
+                          {showContactInfo ? emails[0] : censorEmail(emails[0])}
+                        </a>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0 opacity-50 group-hover/row:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopy(emails[0], 'email-0');
+                        }}
+                      >
+                        {copiedField === 'email-0' ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                  ) : emails.length > 1 ? (
+                    // Multiple emails - dropdown
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <div className="flex items-center justify-between gap-2 cursor-pointer group/row hover:bg-muted/30 rounded-md p-1 -m-1">
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
                             <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            <a
-                              href={`mailto:${email}`}
-                              className="text-xs truncate hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {showContactInfo ? email : censorEmail(email)}
-                            </a>
+                            <span className="text-xs truncate">
+                              {showContactInfo ? emails[0] : censorEmail(emails[0])}
+                            </span>
+                            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 shrink-0"
+                            className="h-6 w-6 shrink-0 opacity-50 group-hover/row:opacity-100 transition-opacity"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleCopy(email, `email-${idx}`);
+                              handleCopy(emails[0], 'email-0');
                             }}
                           >
-                            {copiedField === `email-${idx}` ? (
+                            {copiedField === 'email-0' ? (
                               <Check className="h-3 w-3 text-green-500" />
                             ) : (
                               <Copy className="h-3 w-3" />
                             )}
                           </Button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      </PopoverTrigger>
+                      <PopoverContent 
+                        className="w-auto min-w-[200px] p-1 bg-card border-border z-[100]" 
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
+                      >
+                        <div className="flex flex-col">
+                          {emails.map((email, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between gap-2 p-1.5 rounded-md hover:bg-muted/50 transition-colors group/item"
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <a
+                                  href={`mailto:${email}`}
+                                  className="text-xs truncate hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {showContactInfo ? email : censorEmail(email)}
+                                </a>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 shrink-0 opacity-50 group-hover/item:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(email, `email-${idx}`);
+                                }}
+                              >
+                                {copiedField === `email-${idx}` ? (
+                                  <Check className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ) : null}
 
-                {/* Phones */}
-                {phones.length > 0 && (
-                  <div className="space-y-1">
-                    <Label className="text-[10px] font-semibold uppercase text-muted-foreground tracking-wider">
-                      Phones
-                    </Label>
-                    <div className="space-y-1">
-                      {phones.map((phone, idx) => (
-                        <div
-                          key={idx}
-                          className="flex items-center justify-between gap-2 p-1.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
+                  {/* Phones */}
+                  {phones.length === 1 ? (
+                    // Single phone - inline row
+                    <div className="flex items-center justify-between gap-2 group/row">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                        <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <a
+                          href={`tel:${phones[0]}`}
+                          className="text-xs truncate hover:underline"
+                          onClick={(e) => e.stopPropagation()}
                         >
+                          {showContactInfo ? phones[0] : censorPhone(phones[0])}
+                        </a>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0 opacity-50 group-hover/row:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopy(phones[0], 'phone-0');
+                        }}
+                      >
+                        {copiedField === 'phone-0' ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
+                  ) : phones.length > 1 ? (
+                    // Multiple phones - dropdown
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <div className="flex items-center justify-between gap-2 cursor-pointer group/row hover:bg-muted/30 rounded-md p-1 -m-1">
                           <div className="flex items-center gap-1.5 min-w-0 flex-1">
                             <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            <a
-                              href={`tel:${phone}`}
-                              className="text-xs truncate hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {showContactInfo ? phone : censorPhone(phone)}
-                            </a>
+                            <span className="text-xs truncate">
+                              {showContactInfo ? phones[0] : censorPhone(phones[0])}
+                            </span>
+                            <ChevronDown className="h-3 w-3 text-muted-foreground shrink-0" />
                           </div>
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-6 w-6 shrink-0"
+                            className="h-6 w-6 shrink-0 opacity-50 group-hover/row:opacity-100 transition-opacity"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleCopy(phone, 'Phone');
-                              setCopiedField(`phone-${idx}`);
+                              handleCopy(phones[0], 'phone-0');
                             }}
                           >
-                            {copiedField === `phone-${idx}` ? (
+                            {copiedField === 'phone-0' ? (
                               <Check className="h-3 w-3 text-green-500" />
                             ) : (
                               <Copy className="h-3 w-3" />
                             )}
                           </Button>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                      </PopoverTrigger>
+                      <PopoverContent 
+                        className="w-auto min-w-[200px] p-1 bg-card border-border z-[100]" 
+                        align="start"
+                        side="bottom"
+                        sideOffset={4}
+                      >
+                        <div className="flex flex-col">
+                          {phones.map((phone, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between gap-2 p-1.5 rounded-md hover:bg-muted/50 transition-colors group/item"
+                            >
+                              <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                <Phone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <a
+                                  href={`tel:${phone}`}
+                                  className="text-xs truncate hover:underline"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  {showContactInfo ? phone : censorPhone(phone)}
+                                </a>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5 shrink-0 opacity-50 group-hover/item:opacity-100 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCopy(phone, `phone-${idx}`);
+                                }}
+                              >
+                                {copiedField === `phone-${idx}` ? (
+                                  <Check className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  ) : null}
+                </div>
 
                 {/* Empty state */}
                 {emails.length === 0 && phones.length === 0 && (
