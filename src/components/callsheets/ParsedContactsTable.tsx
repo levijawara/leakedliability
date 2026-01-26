@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Mail, Phone, AlertTriangle, Edit2, X } from "lucide-react";
+import { Mail, Phone, AlertTriangle, Edit2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { fuzzyNameMatch, normalizeEmail, normalizePhone } from "@/lib/duplicateDetection";
