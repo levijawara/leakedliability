@@ -188,9 +188,14 @@ export function SaveContactModal({
   const [selectedRoles, setSelectedRoles] = useState<Set<string>>(new Set(contact.roles || []));
   const [selectedEmails, setSelectedEmails] = useState<Set<string>>(new Set(contact.emails || []));
   const [selectedPhones, setSelectedPhones] = useState<Set<string>>(new Set(contact.phones || []));
+  const [selectedDepartments, setSelectedDepartments] = useState<Set<string>>(new Set(contact.departments || []));
   const [showExtraFields, setShowExtraFields] = useState(false);
   const [extraIgHandle, setExtraIgHandle] = useState(contact.ig_handle || '');
   const [extraNovaUrl, setExtraNovaUrl] = useState('');
+  const [editableName, setEditableName] = useState(contact.name);
+  const [newRole, setNewRole] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
 
   // Check for duplicates on open
   useEffect(() => {
@@ -211,7 +216,12 @@ export function SaveContactModal({
       setSelectedRoles(new Set(contact.roles || []));
       setSelectedEmails(new Set(contact.emails || []));
       setSelectedPhones(new Set(contact.phones || []));
+      setSelectedDepartments(new Set(contact.departments || []));
       setExtraIgHandle(contact.ig_handle || '');
+      setEditableName(contact.name);
+      setNewRole('');
+      setNewEmail('');
+      setNewPhone('');
       setShowExtraFields(false);
       setAction(null);
     }
@@ -251,6 +261,39 @@ export function SaveContactModal({
       }
       return next;
     });
+  };
+
+  const toggleDepartment = (dept: string) => {
+    setSelectedDepartments(prev => {
+      const next = new Set(prev);
+      if (next.has(dept)) {
+        next.delete(dept);
+      } else {
+        next.add(dept);
+      }
+      return next;
+    });
+  };
+
+  const addNewRole = () => {
+    if (newRole.trim()) {
+      setSelectedRoles(prev => new Set([...prev, newRole.trim()]));
+      setNewRole('');
+    }
+  };
+
+  const addNewEmail = () => {
+    if (newEmail.trim()) {
+      setSelectedEmails(prev => new Set([...prev, newEmail.trim()]));
+      setNewEmail('');
+    }
+  };
+
+  const addNewPhone = () => {
+    if (newPhone.trim()) {
+      setSelectedPhones(prev => new Set([...prev, newPhone.trim()]));
+      setNewPhone('');
+    }
   };
 
   const handleSave = async () => {
@@ -317,9 +360,9 @@ export function SaveContactModal({
           .from('crew_contacts')
           .insert({
             user_id: userId,
-            name: contact.name,
+            name: editableName.trim() || contact.name,
             roles: Array.from(selectedRoles),
-            departments: contact.departments || [],
+            departments: Array.from(selectedDepartments),
             phones: Array.from(selectedPhones),
             emails: Array.from(selectedEmails),
             ig_handle: extraIgHandle.replace(/^@/, '') || null,
@@ -403,82 +446,180 @@ export function SaveContactModal({
             </Alert>
           )}
 
-          {/* Name */}
+          {/* Name - Editable */}
           <div className="space-y-2">
             <Label htmlFor="name">Name *</Label>
             <Input
               id="name"
-              value={contact.name}
-              readOnly
-              className="bg-muted"
+              value={editableName}
+              onChange={(e) => setEditableName(e.target.value)}
+              placeholder="Contact name"
             />
           </div>
 
-          {/* Roles - Clickable Chips */}
-          {contact.roles && contact.roles.length > 0 && (
-            <div className="space-y-2">
-              <Label>Roles (click to select)</Label>
-              <div className="flex flex-wrap gap-2">
-                {contact.roles.map((role) => (
-                  <Badge
-                    key={role}
-                    variant={selectedRoles.has(role) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => toggleRole(role)}
-                  >
-                    {role}
-                    {selectedRoles.has(role) && <CheckCircle2 className="h-3 w-3 ml-1" />}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+          {/* IG Handle - Always visible */}
+          <div className="space-y-2">
+            <Label htmlFor="ig_handle">Instagram Handle</Label>
+            <Input
+              id="ig_handle"
+              value={extraIgHandle}
+              onChange={(e) => setExtraIgHandle(e.target.value)}
+              placeholder="@handle"
+            />
+          </div>
 
-          {/* Emails - Clickable Chips */}
-          {contact.emails && contact.emails.length > 0 && (
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Mail className="h-4 w-4" />
-                Emails (click to select)
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {contact.emails.map((email) => (
-                  <Badge
-                    key={email}
-                    variant={selectedEmails.has(email) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => toggleEmail(email)}
-                  >
-                    {email}
-                    {selectedEmails.has(email) && <CheckCircle2 className="h-3 w-3 ml-1" />}
-                  </Badge>
-                ))}
-              </div>
+          {/* Roles - Clickable Chips + Add New */}
+          <div className="space-y-2">
+            <Label>Roles (click to toggle)</Label>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(selectedRoles).map((role) => (
+                <Badge
+                  key={role}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => toggleRole(role)}
+                >
+                  {role}
+                  <X className="h-3 w-3 ml-1" />
+                </Badge>
+              ))}
+              {contact.roles?.filter(r => !selectedRoles.has(r)).map((role) => (
+                <Badge
+                  key={role}
+                  variant="outline"
+                  className="cursor-pointer opacity-50"
+                  onClick={() => toggleRole(role)}
+                >
+                  {role}
+                </Badge>
+              ))}
             </div>
-          )}
+            <div className="flex gap-2">
+              <Input
+                value={newRole}
+                onChange={(e) => setNewRole(e.target.value)}
+                placeholder="Add new role"
+                className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewRole())}
+              />
+              <Button type="button" variant="outline" size="sm" onClick={addNewRole}>Add</Button>
+            </div>
+          </div>
 
-          {/* Phones - Clickable Chips */}
-          {contact.phones && contact.phones.length > 0 && (
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Phone className="h-4 w-4" />
-                Phones (click to select)
-              </Label>
-              <div className="flex flex-wrap gap-2">
-                {contact.phones.map((phone) => (
-                  <Badge
-                    key={phone}
-                    variant={selectedPhones.has(phone) ? 'default' : 'outline'}
-                    className="cursor-pointer"
-                    onClick={() => togglePhone(phone)}
-                  >
-                    {phone}
-                    {selectedPhones.has(phone) && <CheckCircle2 className="h-3 w-3 ml-1" />}
-                  </Badge>
-                ))}
-              </div>
+          {/* Departments - Clickable Chips */}
+          <div className="space-y-2">
+            <Label>Departments (click to toggle)</Label>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(selectedDepartments).map((dept) => (
+                <Badge
+                  key={dept}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => toggleDepartment(dept)}
+                >
+                  {dept}
+                  <X className="h-3 w-3 ml-1" />
+                </Badge>
+              ))}
+              {contact.departments?.filter(d => !selectedDepartments.has(d)).map((dept) => (
+                <Badge
+                  key={dept}
+                  variant="outline"
+                  className="cursor-pointer opacity-50"
+                  onClick={() => toggleDepartment(dept)}
+                >
+                  {dept}
+                </Badge>
+              ))}
+              {(!contact.departments || contact.departments.length === 0) && selectedDepartments.size === 0 && (
+                <span className="text-muted-foreground text-sm">No departments</span>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* Emails - Clickable Chips + Add New */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Mail className="h-4 w-4" />
+              Emails (click to toggle)
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(selectedEmails).map((email) => (
+                <Badge
+                  key={email}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => toggleEmail(email)}
+                >
+                  {email}
+                  <X className="h-3 w-3 ml-1" />
+                </Badge>
+              ))}
+              {contact.emails?.filter(e => !selectedEmails.has(e)).map((email) => (
+                <Badge
+                  key={email}
+                  variant="outline"
+                  className="cursor-pointer opacity-50"
+                  onClick={() => toggleEmail(email)}
+                >
+                  {email}
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                placeholder="Add new email"
+                className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewEmail())}
+              />
+              <Button type="button" variant="outline" size="sm" onClick={addNewEmail}>Add</Button>
+            </div>
+          </div>
+
+          {/* Phones - Clickable Chips + Add New */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              Phones (click to toggle)
+            </Label>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(selectedPhones).map((phone) => (
+                <Badge
+                  key={phone}
+                  variant="default"
+                  className="cursor-pointer"
+                  onClick={() => togglePhone(phone)}
+                >
+                  {phone}
+                  <X className="h-3 w-3 ml-1" />
+                </Badge>
+              ))}
+              {contact.phones?.filter(p => !selectedPhones.has(p)).map((phone) => (
+                <Badge
+                  key={phone}
+                  variant="outline"
+                  className="cursor-pointer opacity-50"
+                  onClick={() => togglePhone(phone)}
+                >
+                  {phone}
+                </Badge>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                type="tel"
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
+                placeholder="Add new phone"
+                className="flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addNewPhone())}
+              />
+              <Button type="button" variant="outline" size="sm" onClick={addNewPhone}>Add</Button>
+            </div>
+          </div>
 
           {/* Extra Fields (Expandable) */}
           <div className="space-y-2">
@@ -488,20 +629,11 @@ export function SaveContactModal({
               onClick={() => setShowExtraFields(!showExtraFields)}
               className="w-full justify-start"
             >
-              {showExtraFields ? 'Hide' : 'Add'} extra info not on sheet
+              {showExtraFields ? 'Hide' : 'Add'} NOVA profile URL
             </Button>
 
             {showExtraFields && (
               <div className="space-y-4 pl-4 border-l-2">
-                <div className="space-y-2">
-                  <Label htmlFor="ig_handle">Instagram Handle</Label>
-                  <Input
-                    id="ig_handle"
-                    value={extraIgHandle}
-                    onChange={(e) => setExtraIgHandle(e.target.value)}
-                    placeholder="username"
-                  />
-                </div>
                 <div className="space-y-2">
                   <Label htmlFor="nova_url">NOVA Profile URL</Label>
                   <Input
