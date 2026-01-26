@@ -51,7 +51,7 @@ interface CallSheetCardProps {
   isSelected?: boolean;
   isAdmin?: boolean;
   needsReview?: boolean;
-  onSelect?: (linkId: string, selected: boolean) => void;
+  onSelect?: (linkId: string, selected: boolean, event?: React.MouseEvent) => void;
   onView: (sheet: GlobalCallSheet) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
   onCredits: (sheet: GlobalCallSheet) => void;
@@ -180,8 +180,11 @@ export function CallSheetCard({
             {onSelect && (
               <Checkbox
                 checked={isSelected}
-                onCheckedChange={(checked) => onSelect(link.id, !!checked)}
-                onClick={(e) => e.stopPropagation()}
+                onCheckedChange={() => {}}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(link.id, !isSelected, e as unknown as React.MouseEvent);
+                }}
               />
             )}
             {getStatusBadge(sheet.status, needsReview)}

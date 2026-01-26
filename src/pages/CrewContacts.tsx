@@ -65,6 +65,7 @@ export default function CrewContacts() {
   // New state for enhanced features
   const [recentlyAddedActive, setRecentlyAddedActive] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
+  const [lastClickedId, setLastClickedId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [filters, setFilters] = useState<ContactFilters>(defaultFilters);
@@ -633,7 +634,32 @@ export default function CrewContacts() {
     }
   }, [user, toast]);
 
-  const handleToggleSelect = useCallback((id: string) => {
+  const handleToggleSelect = useCallback((id: string, event?: React.MouseEvent) => {
+    // Get ordered list of IDs in current filtered view
+    const orderedIds = filteredContacts.map(c => c.id);
+    const currentIndex = orderedIds.indexOf(id);
+    
+    // SHIFT-CLICK: Range selection
+    if (event?.shiftKey && lastClickedId !== null) {
+      const lastIndex = orderedIds.indexOf(lastClickedId);
+      if (lastIndex !== -1 && currentIndex !== -1) {
+        const start = Math.min(lastIndex, currentIndex);
+        const end = Math.max(lastIndex, currentIndex);
+        
+        // Add all items in range to selection
+        setSelectedIds(prev => {
+          const next = new Set(prev);
+          for (let i = start; i <= end; i++) {
+            next.add(orderedIds[i]);
+          }
+          return next;
+        });
+        setLastClickedId(id);
+        return;
+      }
+    }
+    
+    // REGULAR CLICK / CMD-CTRL-CLICK: Toggle single item
     setSelectedIds(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
@@ -643,7 +669,9 @@ export default function CrewContacts() {
       }
       return next;
     });
-  }, []);
+    
+    setLastClickedId(id);
+  }, [filteredContacts, lastClickedId]);
 
   if (loading) {
     return (

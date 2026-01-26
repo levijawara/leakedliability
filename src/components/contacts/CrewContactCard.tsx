@@ -23,7 +23,7 @@ interface CrewContactCardProps {
   showContactInfo: boolean;
   selectMode?: boolean;
   isSelected?: boolean;
-  onToggleSelect?: () => void;
+  onToggleSelect?: (event?: React.MouseEvent) => void;
 }
 
 // Dynamic font sizing based on name length - names must ALWAYS be single line
@@ -59,9 +59,9 @@ export function CrewContactCard({
     }
   };
 
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
     if (selectMode && onToggleSelect) {
-      onToggleSelect();
+      onToggleSelect(e);
     }
   };
 
@@ -120,8 +120,11 @@ export function CrewContactCard({
             <div className="absolute top-2 right-2 z-20">
               <Checkbox
                 checked={isSelected}
-                onCheckedChange={() => onToggleSelect?.()}
-                onClick={(e) => e.stopPropagation()}
+                onCheckedChange={() => {}}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleSelect?.(e as unknown as React.MouseEvent);
+                }}
               />
             </div>
           )}
