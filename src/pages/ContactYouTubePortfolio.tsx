@@ -31,6 +31,7 @@ interface YouTubeVideo {
 interface CreditEntry {
   role: string | null;
   name: string;
+  ig_handle: string | null;
 }
 
 /**
@@ -157,6 +158,7 @@ export default function ContactYouTubePortfolio() {
                 credits.push({
                   name: c.name,
                   role: c.roles?.[0] || c.role || null,
+                  ig_handle: c.ig_handle || null,
                 });
               }
             });
