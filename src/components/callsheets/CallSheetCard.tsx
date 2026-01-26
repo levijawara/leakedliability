@@ -50,6 +50,7 @@ interface CallSheetCardProps {
   sortField: 'uploadDate' | 'shootDate';
   isSelected?: boolean;
   isAdmin?: boolean;
+  needsReview?: boolean;
   onSelect?: (linkId: string, selected: boolean) => void;
   onView: (sheet: GlobalCallSheet) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
@@ -95,6 +96,7 @@ export function CallSheetCard({
   sortField,
   isSelected = false,
   isAdmin = false,
+  needsReview = false,
   onSelect,
   onView, 
   onViewPdf, 
@@ -124,7 +126,17 @@ export function CallSheetCard({
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, showNeedsReview: boolean) => {
+    // Check for "Needs Review" first - parsed but unsaved
+    if (status === 'parsed' && showNeedsReview) {
+      return (
+        <Badge variant="outline" className="gap-1 border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400">
+          <AlertCircle className="h-3 w-3" />
+          Needs Review
+        </Badge>
+      );
+    }
+    
     switch (status) {
       case 'queued':
         return (
@@ -172,7 +184,7 @@ export function CallSheetCard({
                 onClick={(e) => e.stopPropagation()}
               />
             )}
-            {getStatusBadge(sheet.status)}
+            {getStatusBadge(sheet.status, needsReview)}
             {/* Show grouped badge for multi-sheet projects */}
             {sourceCount > 1 && (
               <Tooltip>
