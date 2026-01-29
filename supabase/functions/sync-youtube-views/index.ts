@@ -189,17 +189,25 @@ Deno.serve(async (req) => {
 
     console.log(`[sync-youtube-views] start { userId: ${userId}, syncAll: ${syncAll}, staleOnly: ${staleOnly}, callSheetIds: ${callSheetIds?.length || 0} }`);
 
-    // Fetch call sheets with YouTube URLs (skip placeholder projects with no video_id)
-    let query = adminClient
+    // Track which records need updating after sync
+    interface SyncTarget {
+      globalSheetIds: string[];
+      youtubeVideoRecordIds: string[]; // youtube_videos.id records to update (from project_videos)
+    }
+
+    const videoTargets = new Map<string, SyncTarget>();
+
+    // SOURCE 1: Fetch call sheets with YouTube URLs
+    let sheetsQuery = adminClient
       .from("global_call_sheets")
       .select("id, youtube_url, youtube_video_id")
       .not("youtube_url", "is", null);
 
     if (!syncAll && callSheetIds?.length) {
-      query = query.in("id", callSheetIds);
+      sheetsQuery = sheetsQuery.in("id", callSheetIds);
     }
 
-    const { data: sheets, error: sheetsError } = await query;
+    const { data: sheets, error: sheetsError } = await sheetsQuery;
 
     if (sheetsError) {
       console.error("[sync-youtube-views] Error fetching sheets:", sheetsError);
@@ -209,25 +217,56 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (!sheets?.length) {
+    // SOURCE 2: Fetch project videos with YouTube URLs
+    const { data: projectVideos, error: projectVideosError } = await adminClient
+      .from("project_videos")
+      .select("id, youtube_url, video_id")
+      .not("youtube_url", "is", null);
+
+    if (projectVideosError) {
+      console.error("[sync-youtube-views] Error fetching project videos:", projectVideosError);
+      // Non-fatal - continue with call sheets only
+    }
+
+    // Build unified video ID mapping from call sheets
+    for (const sheet of sheets || []) {
+      const videoId = extractVideoId(sheet.youtube_url);
+      if (videoId) {
+        const target = videoTargets.get(videoId) || { globalSheetIds: [], youtubeVideoRecordIds: [] };
+        target.globalSheetIds.push(sheet.id);
+        videoTargets.set(videoId, target);
+      }
+    }
+
+    // Add project video sources to the mapping
+    for (const pv of projectVideos || []) {
+      const videoId = extractVideoId(pv.youtube_url);
+      if (videoId && pv.video_id) {
+        const target = videoTargets.get(videoId) || { globalSheetIds: [], youtubeVideoRecordIds: [] };
+        // video_id in project_videos references youtube_videos.id
+        if (!target.youtubeVideoRecordIds.includes(pv.video_id)) {
+          target.youtubeVideoRecordIds.push(pv.video_id);
+        }
+        videoTargets.set(videoId, target);
+      }
+    }
+
+    console.log(`[sync-youtube-views] Found ${sheets?.length || 0} call sheets, ${projectVideos?.length || 0} project videos`);
+
+    if (videoTargets.size === 0) {
       return new Response(
-        JSON.stringify({ message: "No call sheets with YouTube URLs found", synced: 0 }),
+        JSON.stringify({ message: "No videos with YouTube URLs found", synced: 0 }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Build video ID to sheet ID mapping
+    // Build video ID to sheet ID mapping for legacy compatibility
     const videoToSheets = new Map<string, string[]>();
-    for (const sheet of sheets) {
-      const videoId = extractVideoId(sheet.youtube_url);
-      if (videoId) {
-        const existing = videoToSheets.get(videoId) || [];
-        existing.push(sheet.id);
-        videoToSheets.set(videoId, existing);
-      }
+    for (const [videoId, target] of videoTargets) {
+      videoToSheets.set(videoId, target.globalSheetIds);
     }
 
-    let videoIdsToSync = Array.from(videoToSheets.keys());
+    let videoIdsToSync = Array.from(videoTargets.keys());
     console.log(`[sync-youtube-views] Found ${videoIdsToSync.length} unique video IDs from ${sheets.length} sheets`);
 
     // Apply stale filter if enabled
