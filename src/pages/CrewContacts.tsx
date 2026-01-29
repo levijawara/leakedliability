@@ -243,57 +243,194 @@ export default function CrewContacts() {
     }
   };
 
-  // Fetch aggregated YouTube view counts per contact
+  // Fetch aggregated YouTube view counts per contact (dual-source: project videos + sheet-level)
   const fetchYouTubeViewCounts = async (contactIds: string[]) => {
     if (contactIds.length === 0) return;
     
     console.log(`[CrewContacts] Fetching YouTube view aggregates for ${contactIds.length} contacts...`);
     
     try {
-      // Get all contact-to-callsheet links with youtube view counts
       const PAGE_SIZE = 1000;
-      let allRows: { contact_id: string; youtube_view_count: number | null }[] = [];
+      
+      // ========== STEP 1: Get contact → global_call_sheet links ==========
+      let contactSheetLinks: { contact_id: string; call_sheet_id: string }[] = [];
       let from = 0;
-
       while (true) {
         const { data, error } = await supabase
           .from('contact_call_sheets')
-          .select(`
-            contact_id,
-            global_call_sheets!inner (
-              youtube_view_count
-            )
-          `)
-          .not('global_call_sheets.youtube_view_count', 'is', null)
+          .select('contact_id, call_sheet_id')
           .range(from, from + PAGE_SIZE - 1);
-
         if (error) throw error;
         if (!data || data.length === 0) break;
-
-        // Flatten the nested structure
-        const rows = data.map(row => ({
-          contact_id: row.contact_id,
-          youtube_view_count: (row.global_call_sheets as any)?.youtube_view_count || null
-        }));
-        
-        allRows = [...allRows, ...rows];
-
+        contactSheetLinks = [...contactSheetLinks, ...data];
         if (data.length < PAGE_SIZE) break;
         from += PAGE_SIZE;
       }
+      console.log(`[CrewContacts] Loaded ${contactSheetLinks.length} contact-sheet links`);
 
-      console.log(`[CrewContacts] Found ${allRows.length} contact-sheet links with YouTube views`);
+      // ========== STEP 2: Get user_call_sheets → project links ==========
+      let userSheetProjectLinks: { global_call_sheet_id: string; project_id: string }[] = [];
+      from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from('user_call_sheets')
+          .select(`
+            global_call_sheet_id,
+            project_call_sheets!inner (project_id)
+          `)
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        // Flatten: each user_call_sheet can have multiple project_call_sheets entries
+        data.forEach(row => {
+          const projectCallSheets = row.project_call_sheets as { project_id: string }[] | { project_id: string } | null;
+          if (Array.isArray(projectCallSheets)) {
+            projectCallSheets.forEach(pcs => {
+              userSheetProjectLinks.push({
+                global_call_sheet_id: row.global_call_sheet_id,
+                project_id: pcs.project_id
+              });
+            });
+          } else if (projectCallSheets) {
+            userSheetProjectLinks.push({
+              global_call_sheet_id: row.global_call_sheet_id,
+              project_id: projectCallSheets.project_id
+            });
+          }
+        });
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      console.log(`[CrewContacts] Loaded ${userSheetProjectLinks.length} sheet-to-project links`);
 
-      // Aggregate views per contact
-      const viewTotals: Record<string, number> = {};
-      allRows.forEach(row => {
-        if (row.youtube_view_count) {
-          viewTotals[row.contact_id] = (viewTotals[row.contact_id] || 0) + row.youtube_view_count;
+      // ========== STEP 3: Get project → video view counts ==========
+      let projectVideoViews: { project_id: string; video_id: string; view_count: number }[] = [];
+      from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from('project_videos')
+          .select(`
+            project_id,
+            video_id,
+            youtube_videos!inner (id, view_count)
+          `)
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        data.forEach(row => {
+          const ytVideo = row.youtube_videos as { id: string; view_count: number } | null;
+          if (ytVideo && ytVideo.view_count) {
+            projectVideoViews.push({
+              project_id: row.project_id,
+              video_id: ytVideo.id,
+              view_count: Number(ytVideo.view_count) || 0
+            });
+          }
+        });
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      console.log(`[CrewContacts] Loaded ${projectVideoViews.length} project-video records with views`);
+
+      // ========== STEP 4: Get legacy sheet-level views (non-project sheets) ==========
+      let sheetLevelViews: { id: string; youtube_view_count: number }[] = [];
+      from = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from('global_call_sheets')
+          .select('id, youtube_view_count')
+          .not('youtube_view_count', 'is', null)
+          .range(from, from + PAGE_SIZE - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        sheetLevelViews = [...sheetLevelViews, ...data.map(d => ({
+          id: d.id,
+          youtube_view_count: Number(d.youtube_view_count) || 0
+        }))];
+        if (data.length < PAGE_SIZE) break;
+        from += PAGE_SIZE;
+      }
+      console.log(`[CrewContacts] Loaded ${sheetLevelViews.length} sheets with direct YouTube views`);
+
+      // ========== CLIENT-SIDE AGGREGATION ==========
+      
+      // Build: global_call_sheet_id → project_id (for sheets that are in projects)
+      const sheetToProject = new Map<string, string>();
+      userSheetProjectLinks.forEach(link => {
+        sheetToProject.set(link.global_call_sheet_id, link.project_id);
+      });
+      
+      // Build: project_id → Map<video_id, view_count> (for deduplication)
+      const projectVideoMap = new Map<string, Map<string, number>>();
+      projectVideoViews.forEach(pv => {
+        if (!projectVideoMap.has(pv.project_id)) {
+          projectVideoMap.set(pv.project_id, new Map());
+        }
+        projectVideoMap.get(pv.project_id)!.set(pv.video_id, pv.view_count);
+      });
+
+      // Build: sheet_id → youtube_view_count (legacy)
+      const sheetViewMap = new Map<string, number>();
+      sheetLevelViews.forEach(sv => {
+        sheetViewMap.set(sv.id, sv.youtube_view_count);
+      });
+
+      // Aggregate per contact: deduplicate project videos across multiple sheets in same project
+      const contactProjectViews = new Map<string, Map<string, Map<string, number>>>(); // contact_id → project_id → video_id → views
+      const contactLegacyViews = new Map<string, number>(); // contact_id → sum of sheet-level views (non-project only)
+
+      contactSheetLinks.forEach(link => {
+        const projectId = sheetToProject.get(link.call_sheet_id);
+        
+        if (projectId) {
+          // This sheet is in a project - use project-level video views
+          const videos = projectVideoMap.get(projectId);
+          if (videos && videos.size > 0) {
+            if (!contactProjectViews.has(link.contact_id)) {
+              contactProjectViews.set(link.contact_id, new Map());
+            }
+            if (!contactProjectViews.get(link.contact_id)!.has(projectId)) {
+              contactProjectViews.get(link.contact_id)!.set(projectId, new Map());
+            }
+            // Copy all video views (Map auto-deduplicates by video_id)
+            videos.forEach((viewCount, videoId) => {
+              contactProjectViews.get(link.contact_id)!.get(projectId)!.set(videoId, viewCount);
+            });
+          }
+        } else {
+          // This sheet is NOT in a project - use legacy sheet-level views
+          const sheetViews = sheetViewMap.get(link.call_sheet_id);
+          if (sheetViews) {
+            contactLegacyViews.set(
+              link.contact_id, 
+              (contactLegacyViews.get(link.contact_id) || 0) + sheetViews
+            );
+          }
         }
       });
 
+      // Calculate final totals
+      const viewTotals: Record<string, number> = {};
+
+      // Add project-level views (deduplicated by video)
+      contactProjectViews.forEach((projectMap, contactId) => {
+        let total = 0;
+        projectMap.forEach(videoMap => {
+          videoMap.forEach(viewCount => {
+            total += viewCount;
+          });
+        });
+        viewTotals[contactId] = (viewTotals[contactId] || 0) + total;
+      });
+
+      // Add legacy sheet-level views
+      contactLegacyViews.forEach((views, contactId) => {
+        viewTotals[contactId] = (viewTotals[contactId] || 0) + views;
+      });
+
       const contactsWithViews = Object.keys(viewTotals).length;
-      console.log(`[CrewContacts] Contacts with YouTube views: ${contactsWithViews}`);
+      const totalViews = Object.values(viewTotals).reduce((a, b) => a + b, 0);
+      console.log(`[CrewContacts] YouTube aggregation complete: ${contactsWithViews} contacts with views, total: ${totalViews.toLocaleString()}`);
 
       setYoutubeViewCounts(viewTotals);
     } catch (error: any) {
