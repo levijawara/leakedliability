@@ -182,7 +182,47 @@ export function DuplicateMergeModal({
           throw new Error(`Failed to update primary contact ${primaryContact.name}. No rows affected.`);
         }
 
-        // DELETE with .select() to verify rows affected
+        // STEP: Transfer contact_call_sheets links from duplicates to primary BEFORE deletion
+        let transferredCount = 0;
+        for (const dupId of idsToDelete) {
+          const { data: dupLinks } = await supabase
+            .from('contact_call_sheets')
+            .select('call_sheet_id')
+            .eq('contact_id', dupId);
+
+          if (dupLinks && dupLinks.length > 0) {
+            for (const link of dupLinks) {
+              // Check if primary already has this link (avoid duplicates)
+              const { data: existingLink } = await supabase
+                .from('contact_call_sheets')
+                .select('id')
+                .eq('contact_id', primaryId)
+                .eq('call_sheet_id', link.call_sheet_id)
+                .maybeSingle();
+
+              // If primary doesn't have this link, create it
+              if (!existingLink) {
+                const { error: insertError } = await supabase
+                  .from('contact_call_sheets')
+                  .insert({
+                    contact_id: primaryId,
+                    call_sheet_id: link.call_sheet_id
+                  });
+                
+                if (!insertError) {
+                  transferredCount++;
+                }
+              }
+            }
+          }
+        }
+
+        if (transferredCount > 0) {
+          console.log('[DuplicateMergeModal] Transferred', transferredCount, 
+            'call sheet links from duplicates to primary:', primaryContact.name);
+        }
+
+        // DELETE with .select() to verify rows affected (links already transferred)
         const { data: deleteData, error: deleteError } = await supabase
           .from('crew_contacts')
           .delete()
