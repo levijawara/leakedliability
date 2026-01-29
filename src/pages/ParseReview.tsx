@@ -54,8 +54,9 @@ export default function ParseReview() {
   const [existingContacts, setExistingContacts] = useState<ExistingContact[]>([]);
   const [selectedContact, setSelectedContact] = useState<{ contact: ParsedContact; index: number } | null>(null);
   
-  // Opt-out model: track excluded indices (all included by default)
+  // Opt-out model: track excluded indices (contacts without email AND phone are excluded by default)
   const [excludedIndices, setExcludedIndices] = useState<Set<number>>(new Set());
+  const [hasInitializedExclusions, setHasInitializedExclusions] = useState(false);
   const [showPdf, setShowPdf] = useState(false);
   
   // Navigation consent after save
@@ -93,6 +94,20 @@ export default function ParseReview() {
           ...data,
           parsed_contacts: parsedContacts,
         });
+
+        // Auto-exclude contacts without email AND phone (they need manual review)
+        if (parsedContacts && !hasInitializedExclusions) {
+          const toExclude = new Set<number>();
+          parsedContacts.forEach((contact, idx) => {
+            const hasEmail = contact.emails && contact.emails.length > 0;
+            const hasPhone = contact.phones && contact.phones.length > 0;
+            if (!hasEmail && !hasPhone) {
+              toExclude.add(idx);
+            }
+          });
+          setExcludedIndices(toExclude);
+          setHasInitializedExclusions(true);
+        }
 
         // Fetch existing contacts for duplicate detection
         const { data: existingContactsRaw, error: contactsError } = await supabase
