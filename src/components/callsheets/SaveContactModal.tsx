@@ -225,6 +225,24 @@ export function SaveContactModal({
     }
   }, [open, contact, existingContacts]);
 
+  // Re-check duplicates when editable name changes
+  useEffect(() => {
+    if (open && editableName && existingContacts.length > 0) {
+      // Build a synthetic contact with the edited name
+      const editedContact: ParsedContact = {
+        ...contact,
+        name: editableName.trim(),
+      };
+      const match = findPotentialMatch(editedContact, existingContacts);
+      setDuplicateMatch(match);
+      // If no match, default to save_new; if match found, force user to choose
+      setAction(match ? null : 'save_new');
+    } else if (open && !duplicateMatch) {
+      // No existing contacts or empty name - allow save
+      setAction('save_new');
+    }
+  }, [editableName, open, contact, existingContacts]);
+
   const toggleRole = (role: string) => {
     setSelectedRoles(prev => {
       const next = new Set(prev);
