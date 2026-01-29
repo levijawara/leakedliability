@@ -112,7 +112,7 @@ export default function ContactYouTubePortfolio() {
         
         setContact(contactData);
         
-        // Fetch linked call sheets with YouTube video data
+        // Step 1: Fetch linked call sheets
         const { data: links, error: linksError } = await supabase
           .from("contact_call_sheets")
           .select("call_sheet_id")
@@ -128,7 +128,75 @@ export default function ContactYouTubePortfolio() {
         
         const callSheetIds = links.map(l => l.call_sheet_id);
         
-        // Get call sheets with their linked videos AND parsed_contacts for credits
+        // Step 2: Find which call sheets are in projects (NEW)
+        const { data: userCallSheets } = await supabase
+          .from("user_call_sheets")
+          .select(`
+            id,
+            global_call_sheet_id,
+            project_call_sheets (
+              project_id
+            )
+          `)
+          .in("global_call_sheet_id", callSheetIds);
+        
+        // Build set of unique project IDs and map global_sheet_id -> project_id
+        const projectIds = new Set<string>();
+        const sheetToProjectMap = new Map<string, string>();
+        
+        userCallSheets?.forEach(ucs => {
+          const projectCallSheets = ucs.project_call_sheets as Array<{ project_id: string }> | null;
+          if (projectCallSheets && projectCallSheets.length > 0) {
+            const projectId = projectCallSheets[0].project_id;
+            projectIds.add(projectId);
+            sheetToProjectMap.set(ucs.global_call_sheet_id, projectId);
+          }
+        });
+        
+        // Step 3: Get project videos (NEW)
+        let projectVideosMap = new Map<string, Array<{ video_id: string; youtube_video: any }>>();
+        const projectCallSheetIds = new Set<string>();
+        
+        if (projectIds.size > 0) {
+          const { data: projectVideosData } = await supabase
+            .from("project_videos")
+            .select(`
+              project_id,
+              video_id,
+              youtube_videos!inner (*)
+            `)
+            .in("project_id", Array.from(projectIds));
+          
+          // Group videos by project_id
+          projectVideosData?.forEach(pv => {
+            const existing = projectVideosMap.get(pv.project_id) || [];
+            existing.push({
+              video_id: pv.video_id,
+              youtube_video: pv.youtube_videos,
+            });
+            projectVideosMap.set(pv.project_id, existing);
+          });
+          
+          // Get all call sheet IDs that belong to these projects (for credits)
+          const { data: projectCallSheetsData } = await supabase
+            .from("project_call_sheets")
+            .select(`
+              project_id,
+              user_call_sheets!inner (
+                global_call_sheet_id
+              )
+            `)
+            .in("project_id", Array.from(projectIds));
+          
+          projectCallSheetsData?.forEach(pcs => {
+            const ucs = pcs.user_call_sheets as { global_call_sheet_id: string } | null;
+            if (ucs) {
+              projectCallSheetIds.add(ucs.global_call_sheet_id);
+            }
+          });
+        }
+        
+        // Step 4: Get legacy sheet-level videos
         const { data: sheetsData, error: sheetsError } = await supabase
           .from("global_call_sheets")
           .select(`
@@ -140,11 +208,13 @@ export default function ContactYouTubePortfolio() {
             parsed_contacts
           `)
           .in("id", callSheetIds)
-          .not("youtube_url", "is", null);
+          .not("youtube_video_id", "is", null);
         
         if (sheetsError) throw sheetsError;
         
-        // Fetch crew_contacts linked to these call sheets (for IG handles)
+        // Step 5: Fetch credits - from all call sheets in projects + direct sheets
+        const allSheetIdsForCredits = new Set([...callSheetIds, ...projectCallSheetIds]);
+        
         const { data: contactLinks } = await supabase
           .from("contact_call_sheets")
           .select(`
@@ -156,7 +226,7 @@ export default function ContactYouTubePortfolio() {
               roles
             )
           `)
-          .in("call_sheet_id", callSheetIds);
+          .in("call_sheet_id", Array.from(allSheetIdsForCredits));
 
         // Build a map: call_sheet_id -> array of contacts with IG handles
         const sheetContactsMap = new Map<string, Array<{
@@ -178,13 +248,57 @@ export default function ContactYouTubePortfolio() {
           sheetContactsMap.set(link.call_sheet_id, existing);
         });
 
-        // Build a map from youtube_video_id to credits
-        const videoCreditsMap = new Map<string, { credits: CreditEntry[]; title: string | null }>();
+        // Build credits for project videos (from ALL sheets in that project)
+        const projectCreditsMap = new Map<string, CreditEntry[]>();
+        
+        if (projectIds.size > 0) {
+          // Get all project_call_sheets to know which sheets belong to which project
+          const { data: allProjectCallSheets } = await supabase
+            .from("project_call_sheets")
+            .select(`
+              project_id,
+              user_call_sheets!inner (
+                global_call_sheet_id
+              )
+            `)
+            .in("project_id", Array.from(projectIds));
+          
+          // Group sheet IDs by project
+          const projectToSheetsMap = new Map<string, string[]>();
+          allProjectCallSheets?.forEach(pcs => {
+            const ucs = pcs.user_call_sheets as { global_call_sheet_id: string } | null;
+            if (ucs) {
+              const existing = projectToSheetsMap.get(pcs.project_id) || [];
+              existing.push(ucs.global_call_sheet_id);
+              projectToSheetsMap.set(pcs.project_id, existing);
+            }
+          });
+          
+          // Aggregate credits for each project from all its sheets
+          projectToSheetsMap.forEach((sheetIds, projectId) => {
+            const creditsMap = new Map<string, CreditEntry>(); // Dedupe by name
+            sheetIds.forEach(sheetId => {
+              const contacts = sheetContactsMap.get(sheetId) || [];
+              contacts.forEach(c => {
+                if (!creditsMap.has(c.name)) {
+                  creditsMap.set(c.name, {
+                    name: c.name,
+                    role: c.role,
+                    ig_handle: c.ig_handle,
+                  });
+                }
+              });
+            });
+            projectCreditsMap.set(projectId, Array.from(creditsMap.values()));
+          });
+        }
+
+        // Build credits map for sheet-level videos
+        const sheetVideoCreditsMap = new Map<string, { credits: CreditEntry[]; title: string | null }>();
         
         sheetsData?.forEach(sheet => {
           if (!sheet.youtube_video_id) return;
           
-          // Get credits from linked crew_contacts (with actual IG handles)
           const linkedContacts = sheetContactsMap.get(sheet.id) || [];
           const credits: CreditEntry[] = linkedContacts.map(c => ({
             name: c.name,
@@ -192,44 +306,57 @@ export default function ContactYouTubePortfolio() {
             ig_handle: c.ig_handle,
           }));
           
-          videoCreditsMap.set(sheet.youtube_video_id, {
+          sheetVideoCreditsMap.set(sheet.youtube_video_id, {
             credits,
             title: sheet.project_title,
           });
         });
         
-        // Get unique video IDs and fetch video metadata
-        const videoIds = [...new Set(
-          (sheetsData || [])
-            .map(s => s.youtube_video_id)
-            .filter((id): id is string => !!id)
-        )];
-        
-        if (videoIds.length === 0) {
-          setVideos([]);
-          setLoading(false);
-          return;
-        }
-        
-        const { data: videosData, error: videosError } = await supabase
-          .from("youtube_videos")
-          .select("*")
-          .in("id", videoIds);
-        
-        if (videosError) throw videosError;
-        
-        // Dedupe by video_id, attach credits, and sort by view_count
+        // Collect all unique videos from BOTH sources
         const uniqueVideos = new Map<string, VideoWithCredits>();
-        (videosData || []).forEach(video => {
-          if (!uniqueVideos.has(video.video_id)) {
-            const creditsData = videoCreditsMap.get(video.id);
-            uniqueVideos.set(video.video_id, {
-              ...video,
-              credits: creditsData?.credits || [],
-              projectTitle: creditsData?.title || null,
+        
+        // Add project-level videos (prioritized)
+        projectVideosMap.forEach((videos, projectId) => {
+          const projectCredits = projectCreditsMap.get(projectId) || [];
+          
+          videos.forEach(({ youtube_video }) => {
+            if (!youtube_video) return;
+            const videoId = youtube_video.video_id;
+            
+            if (!uniqueVideos.has(videoId)) {
+              uniqueVideos.set(videoId, {
+                ...youtube_video,
+                credits: projectCredits,
+                projectTitle: null, // Could fetch project name if needed
+              });
+            }
+          });
+        });
+        
+        // Add sheet-level videos (only if not already added from projects)
+        if (sheetsData && sheetsData.length > 0) {
+          const sheetVideoIds = sheetsData
+            .map(s => s.youtube_video_id)
+            .filter((id): id is string => !!id);
+          
+          if (sheetVideoIds.length > 0) {
+            const { data: sheetVideosData } = await supabase
+              .from("youtube_videos")
+              .select("*")
+              .in("id", sheetVideoIds);
+            
+            sheetVideosData?.forEach(video => {
+              if (!uniqueVideos.has(video.video_id)) {
+                const creditsData = sheetVideoCreditsMap.get(video.id);
+                uniqueVideos.set(video.video_id, {
+                  ...video,
+                  credits: creditsData?.credits || [],
+                  projectTitle: creditsData?.title || null,
+                });
+              }
             });
           }
-        });
+        }
         
         const sortedVideos = Array.from(uniqueVideos.values())
           .sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
