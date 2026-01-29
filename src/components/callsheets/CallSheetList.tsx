@@ -163,6 +163,106 @@ export function CallSheetList({}: CallSheetListProps) {
     setSortDirection(direction);
   }, []);
 
+  // Fetch projects for user
+  const fetchProjects = async () => {
+    if (!userId) return;
+    
+    try {
+      // Step 1: Get user's projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('id, name, created_at, updated_at')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false });
+      
+      if (projectsError) throw projectsError;
+      
+      if (!projectsData || projectsData.length === 0) {
+        setProjects([]);
+        return;
+      }
+      
+      const projectIds = projectsData.map(p => p.id);
+      
+      // Step 2: Get call sheets for each project
+      const { data: projectSheets } = await supabase
+        .from('project_call_sheets')
+        .select(`
+          project_id,
+          user_call_sheet_id,
+          user_call_sheets (
+            id,
+            user_label,
+            global_call_sheet_id,
+            global_call_sheets (
+              id,
+              original_file_name,
+              status
+            )
+          )
+        `)
+        .in('project_id', projectIds);
+      
+      // Step 3: Get videos for each project
+      const { data: projectVideos } = await supabase
+        .from('project_videos')
+        .select(`
+          project_id,
+          video_id,
+          youtube_url,
+          youtube_videos (
+            id,
+            video_id,
+            title,
+            view_count,
+            thumbnail_url
+          )
+        `)
+        .in('project_id', projectIds);
+      
+      // Build project objects with aggregated data
+      const builtProjects: Project[] = projectsData.map(p => {
+        const sheets = (projectSheets || [])
+          .filter(ps => ps.project_id === p.id && ps.user_call_sheets)
+          .map(ps => ({
+            id: ps.user_call_sheets!.id,
+            user_label: ps.user_call_sheets!.user_label,
+            global_call_sheets: ps.user_call_sheets!.global_call_sheets as {
+              id: string;
+              original_file_name: string;
+              status: string;
+            }
+          }));
+        
+        const videos = (projectVideos || [])
+          .filter(pv => pv.project_id === p.id && pv.youtube_videos)
+          .map(pv => ({
+            id: pv.youtube_videos!.id,
+            video_id: pv.youtube_videos!.video_id,
+            title: pv.youtube_videos!.title,
+            view_count: pv.youtube_videos!.view_count,
+            thumbnail_url: pv.youtube_videos!.thumbnail_url
+          }));
+        
+        const totalViews = videos.reduce((sum, v) => sum + (v.view_count || 0), 0);
+        
+        return {
+          id: p.id,
+          name: p.name,
+          created_at: p.created_at,
+          updated_at: p.updated_at,
+          callSheets: sheets,
+          videos,
+          totalViews
+        };
+      });
+      
+      setProjects(builtProjects);
+    } catch (error: any) {
+      console.error('[CallSheetList] Fetch projects error:', error);
+    }
+  };
+
   // Fetch user's call sheet links with global call sheet data and joined project
   const fetchUserCallSheets = async () => {
     // GUARD: Abort if userId is not yet available (prevents stale closure errors)
@@ -237,13 +337,13 @@ export function CallSheetList({}: CallSheetListProps) {
       
       if (projectIds.length > 0) {
         // Note: canonical_title added via migration but may not be in types yet
-        const { data: projects } = await supabase
+        const { data: projectsData } = await supabase
           .from('youtube_videos')
           .select('id, video_id, title')
           .in('id', projectIds);
         
-        if (projects) {
-          for (const p of projects) {
+        if (projectsData) {
+          for (const p of projectsData) {
             projectMap.set(p.id, p);
           }
         }
@@ -306,6 +406,7 @@ export function CallSheetList({}: CallSheetListProps) {
     if (!userId) return;
     
     fetchUserCallSheets();
+    fetchProjects();
     
     // Check if user is admin
     const checkAdmin = async () => {
@@ -529,13 +630,27 @@ export function CallSheetList({}: CallSheetListProps) {
     return sorted;
   }, [userLinks, sortField, sortDirection]);
 
-  // Search/filter logic
+  // Compute which user_call_sheet IDs are grouped into projects
+  const groupedSheetIds = useMemo(() => {
+    const ids = new Set<string>();
+    projects.forEach(p => {
+      p.callSheets.forEach(cs => ids.add(cs.id));
+    });
+    return ids;
+  }, [projects]);
+
+  // Filter out grouped sheets from the main view (they appear inside project folders)
+  const ungroupedSheets = useMemo(() => {
+    return sortedSheets.filter(link => !groupedSheetIds.has(link.id));
+  }, [sortedSheets, groupedSheetIds]);
+
+  // Search/filter logic - apply to ungrouped sheets only
   const filteredSheets = useMemo(() => {
-    if (!debouncedSearch.trim()) return sortedSheets;
+    if (!debouncedSearch.trim()) return ungroupedSheets;
     
     const query = debouncedSearch.toLowerCase().trim();
     
-    return sortedSheets.filter(link => {
+    return ungroupedSheets.filter(link => {
       const sheet = link.global_call_sheets;
       const displayName = link.user_label || sheet.original_file_name;
       
@@ -559,7 +674,34 @@ export function CallSheetList({}: CallSheetListProps) {
       
       return false;
     });
-  }, [sortedSheets, debouncedSearch]);
+  }, [ungroupedSheets, debouncedSearch]);
+
+  // Filter projects by search query
+  const filteredProjects = useMemo(() => {
+    if (!debouncedSearch.trim()) return projects;
+    
+    const query = debouncedSearch.toLowerCase().trim();
+    
+    return projects.filter(project => {
+      // Match project name
+      if (project.name.toLowerCase().includes(query)) return true;
+      
+      // Match any call sheet filename in the project
+      const sheetMatch = project.callSheets.some(cs => {
+        const name = cs.user_label || cs.global_call_sheets.original_file_name;
+        return name.toLowerCase().includes(query);
+      });
+      if (sheetMatch) return true;
+      
+      // Match any video title
+      const videoMatch = project.videos.some(v => 
+        v.title?.toLowerCase().includes(query)
+      );
+      if (videoMatch) return true;
+      
+      return false;
+    });
+  }, [projects, debouncedSearch]);
 
   // Selection helpers with Shift-click range support
   const handleSelectOne = useCallback((linkId: string, selected: boolean, event?: React.MouseEvent) => {
@@ -612,6 +754,7 @@ export function CallSheetList({}: CallSheetListProps) {
   const handleBulkComplete = useCallback(() => {
     setSelectedIds(new Set());
     fetchUserCallSheets();
+    fetchProjects();
   }, []);
 
   // Payment status change handler
@@ -751,7 +894,7 @@ export function CallSheetList({}: CallSheetListProps) {
       )}
 
       {/* No results message */}
-      {filteredSheets.length === 0 && debouncedSearch && (
+      {filteredSheets.length === 0 && filteredProjects.length === 0 && debouncedSearch && (
         <div className="text-center py-8">
           <Search className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm text-muted-foreground">
@@ -760,8 +903,18 @@ export function CallSheetList({}: CallSheetListProps) {
         </div>
       )}
 
-      {filteredSheets.length > 0 && viewMode === 'cards' && (
+      {(filteredSheets.length > 0 || filteredProjects.length > 0) && viewMode === 'cards' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Render Project Folders first */}
+          {filteredProjects.map((project) => (
+            <ProjectFolderCard
+              key={project.id}
+              project={project}
+              onClick={(p) => setSelectedProject(p)}
+            />
+          ))}
+          
+          {/* Render ungrouped call sheets */}
           {filteredSheets.map((link) => {
             // Needs review if parsed but no contacts saved yet
             const needsReview = link.global_call_sheets.status === 'parsed' && 
@@ -1013,6 +1166,19 @@ export function CallSheetList({}: CallSheetListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Project Detail Modal */}
+      <ProjectDetailModal
+        open={!!selectedProject}
+        onOpenChange={(open) => !open && setSelectedProject(null)}
+        project={selectedProject}
+        userLinks={userLinks}
+        onProjectChange={() => {
+          fetchProjects();
+          fetchUserCallSheets();
+        }}
+        onDeleteLink={(link) => setDeleteLink(link)}
+      />
     </>
   );
 }
