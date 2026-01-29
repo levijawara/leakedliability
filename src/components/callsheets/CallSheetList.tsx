@@ -703,6 +703,91 @@ export function CallSheetList({}: CallSheetListProps) {
     });
   }, [projects, debouncedSearch]);
 
+  // Type for combined grid items
+  type GridItem = 
+    | { type: 'project'; project: Project; anchorDate: Date }
+    | { type: 'sheet'; link: UserCallSheetLink };
+
+  // Compute anchor dates for projects and create combined interleaved grid items
+  const combinedGridItems = useMemo(() => {
+    // Build project items with anchor dates
+    const projectItems: GridItem[] = filteredProjects.map(project => {
+      // Find dates from grouped call sheets
+      const sheetDates = project.callSheets
+        .map(cs => {
+          // Find the full link data to get created_at and parsed_date
+          const link = userLinks.find(l => l.id === cs.id);
+          if (!link) return null;
+          
+          // Use parsed_date for shootDate sort, created_at for uploadDate sort
+          if (sortField === 'shootDate') {
+            return link.global_call_sheets.parsed_date 
+              ? new Date(link.global_call_sheets.parsed_date) 
+              : null;
+          }
+          return link.created_at ? new Date(link.created_at) : null;
+        })
+        .filter((d): d is Date => d !== null);
+      
+      // For desc sort: use LATEST date (appears first)
+      // For asc sort: use EARLIEST date (appears first)
+      let anchorDate: Date;
+      if (sheetDates.length > 0) {
+        if (sortDirection === 'desc') {
+          anchorDate = new Date(Math.max(...sheetDates.map(d => d.getTime())));
+        } else {
+          anchorDate = new Date(Math.min(...sheetDates.map(d => d.getTime())));
+        }
+      } else {
+        anchorDate = new Date(project.created_at);
+      }
+      
+      return { type: 'project' as const, project, anchorDate };
+    });
+    
+    // Build sheet items
+    const sheetItems: GridItem[] = filteredSheets.map(link => ({
+      type: 'sheet' as const,
+      link
+    }));
+    
+    // Combine and sort
+    const items = [...projectItems, ...sheetItems];
+    
+    items.sort((a, b) => {
+      let dateA: Date;
+      let dateB: Date;
+      
+      if (sortField === 'shootDate') {
+        if (a.type === 'project') {
+          dateA = a.anchorDate;
+        } else {
+          dateA = a.link.global_call_sheets.parsed_date 
+            ? new Date(a.link.global_call_sheets.parsed_date)
+            : new Date(0); // Sheets without date go to end
+        }
+        
+        if (b.type === 'project') {
+          dateB = b.anchorDate;
+        } else {
+          dateB = b.link.global_call_sheets.parsed_date 
+            ? new Date(b.link.global_call_sheets.parsed_date)
+            : new Date(0);
+        }
+      } else {
+        // uploadDate
+        dateA = a.type === 'project' ? a.anchorDate : new Date(a.link.created_at);
+        dateB = b.type === 'project' ? b.anchorDate : new Date(b.link.created_at);
+      }
+      
+      return sortDirection === 'desc' 
+        ? dateB.getTime() - dateA.getTime()
+        : dateA.getTime() - dateB.getTime();
+    });
+    
+    return items;
+  }, [filteredProjects, filteredSheets, userLinks, sortField, sortDirection]);
+
   // Selection helpers with Shift-click range support
   const handleSelectOne = useCallback((linkId: string, selected: boolean, event?: React.MouseEvent) => {
     // Get ordered list of IDs in current filtered view
@@ -894,7 +979,7 @@ export function CallSheetList({}: CallSheetListProps) {
       )}
 
       {/* No results message */}
-      {filteredSheets.length === 0 && filteredProjects.length === 0 && debouncedSearch && (
+      {combinedGridItems.length === 0 && debouncedSearch && (
         <div className="text-center py-8">
           <Search className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm text-muted-foreground">
@@ -903,20 +988,22 @@ export function CallSheetList({}: CallSheetListProps) {
         </div>
       )}
 
-      {(filteredSheets.length > 0 || filteredProjects.length > 0) && viewMode === 'cards' && (
+      {combinedGridItems.length > 0 && viewMode === 'cards' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {/* Render Project Folders first */}
-          {filteredProjects.map((project) => (
-            <ProjectFolderCard
-              key={project.id}
-              project={project}
-              onClick={(p) => setSelectedProject(p)}
-            />
-          ))}
-          
-          {/* Render ungrouped call sheets */}
-          {filteredSheets.map((link) => {
-            // Needs review if parsed but no contacts saved yet
+          {/* Render interleaved projects and ungrouped sheets based on anchor dates */}
+          {combinedGridItems.map((item) => {
+            if (item.type === 'project') {
+              return (
+                <ProjectFolderCard
+                  key={item.project.id}
+                  project={item.project}
+                  onClick={(p) => setSelectedProject(p)}
+                />
+              );
+            }
+            
+            // Sheet item
+            const link = item.link;
             const needsReview = link.global_call_sheets.status === 'parsed' && 
               (link.savedContactCount === undefined || link.savedContactCount === 0);
             
