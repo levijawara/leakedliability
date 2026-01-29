@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FolderOpen, X, Loader2, Unlink, Pencil, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +77,13 @@ export function ProjectDetailModal({
   const [showUngroupConfirm, setShowUngroupConfirm] = useState(false);
   const [isUngrouping, setIsUngrouping] = useState(false);
   const [videos, setVideos] = useState(project?.videos || []);
+
+  // Sync videos state when project changes (e.g., after refresh)
+  useEffect(() => {
+    if (project?.videos) {
+      setVideos(project.videos);
+    }
+  }, [project?.videos]);
 
   // Get full call sheet data for cards
   const projectCallSheets = project

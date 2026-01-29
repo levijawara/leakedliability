@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { extractYouTubeVideoId, formatViewCount } from "@/lib/youtubeHelpers";
+import { extractYouTubeVideoId, formatFullViewCount } from "@/lib/youtubeHelpers";
 
 interface ProjectVideo {
   id: string;
@@ -155,9 +155,9 @@ export function ProjectVideoLinker({
             <span className="max-w-[180px] truncate">
               {video.title || video.video_id}
             </span>
-            {video.view_count !== null && (
-              <span className="text-xs text-muted-foreground">
-                {formatViewCount(video.view_count)}
+            {video.view_count !== null && video.view_count > 0 && (
+              <span className="text-xs text-muted-foreground font-mono">
+                {formatFullViewCount(video.view_count)} views
               </span>
             )}
             <a
