@@ -1,77 +1,57 @@
 
-## Plan: Fix Greyed-Out Save Button in SaveContactModal
 
-### Problem Identified
+## Plan: Re-run Duplicate Detection When Name is Edited
 
-The Save button is disabled because `action` state is `null`. There's a bug in the `useEffect` logic:
+### Problem
+When you edit the contact name in the SaveContactModal (e.g., changing "Shaeden Gallegos" to your own name), the duplicate detection doesn't re-run. This means:
+1. If you already exist as a saved contact, you won't get the "Merge with Existing" prompt
+2. You might accidentally create a duplicate of yourself
 
-```text
-Effect 1 (line 201): if (open && existingContacts.length > 0) → sets action to 'save_new'
-Effect 2 (line 214): if (open) → ALWAYS resets action to null (line 226)
-```
+### Solution
+Add a second `useEffect` that re-runs duplicate detection whenever `editableName` changes.
 
-**Two issues:**
-1. Effect 2 runs AFTER Effect 1 and unconditionally resets `action = null`
-2. Effect 1 never runs if `existingContacts` is empty (no contacts saved yet)
+---
 
-### Fix
+### Implementation
 
-Merge the logic into a single `useEffect` that properly handles the action state:
+**File:** `src/components/callsheets/SaveContactModal.tsx`
 
-**Before (broken):**
+Add a new effect after the initialization effect (around line 226):
+
 ```typescript
-// Effect 1: Check duplicates
+// Re-check duplicates when editable name changes
 useEffect(() => {
-  if (open && existingContacts.length > 0) {
-    const match = findPotentialMatch(contact, existingContacts);
+  if (open && editableName && existingContacts.length > 0) {
+    // Build a synthetic contact with the edited name
+    const editedContact: ParsedContact = {
+      ...contact,
+      name: editableName.trim(),
+    };
+    const match = findPotentialMatch(editedContact, existingContacts);
     setDuplicateMatch(match);
-    if (match) {
-      setAction(null);
-    } else {
-      setAction('save_new');
-    }
+    // If no match, default to save_new; if match found, force user to choose
+    setAction(match ? null : 'save_new');
   }
-}, [open, contact, existingContacts]);
-
-// Effect 2: Initialize fields (overwrites action!)
-useEffect(() => {
-  if (open) {
-    // ... set all fields ...
-    setAction(null);  // BUG: This always runs and resets action
-  }
-}, [open, contact]);
+}, [editableName]);
 ```
 
-**After (fixed):**
-```typescript
-// Single unified effect for modal initialization
-useEffect(() => {
-  if (open) {
-    // Reset all form fields
-    setSelectedRoles(new Set(contact.roles || []));
-    setSelectedEmails(new Set(contact.emails || []));
-    setSelectedPhones(new Set(contact.phones || []));
-    setSelectedDepartments(new Set(contact.departments || []));
-    setExtraIgHandle(contact.ig_handle || '');
-    setEditableName(contact.name);
-    setNewRole('');
-    setNewEmail('');
-    setNewPhone('');
-    setShowExtraFields(false);
-    
-    // Check for duplicates and set action AFTER field initialization
-    if (existingContacts.length > 0) {
-      const match = findPotentialMatch(contact, existingContacts);
-      setDuplicateMatch(match);
-      setAction(match ? null : 'save_new');
-    } else {
-      // No existing contacts - default to save_new
-      setDuplicateMatch(null);
-      setAction('save_new');
-    }
-  }
-}, [open, contact, existingContacts]);
-```
+---
+
+### Behavior After Fix
+
+| Scenario | Before Fix | After Fix |
+|----------|------------|-----------|
+| Open modal with "Shaeden Gallegos" (no match) | Save enabled | Save enabled |
+| Edit name to "Levi Smith" (exists in contacts) | Save stays enabled (creates duplicate) | Yellow warning appears, must choose Merge or Save as New |
+| Edit name to "John Doe" (doesn't exist) | Save enabled | Save enabled |
+
+---
+
+### Technical Details
+
+- Uses the existing `findPotentialMatch()` function with a synthetic contact object
+- Only runs when modal is open and user has existing contacts
+- Debouncing not needed since `findPotentialMatch` is synchronous and fast (in-memory check)
 
 ---
 
@@ -79,31 +59,24 @@ useEffect(() => {
 
 | File | Change |
 |------|--------|
-| `src/components/callsheets/SaveContactModal.tsx` | Merge two useEffects into one; ensure action defaults to 'save_new' when no duplicates |
+| `src/components/callsheets/SaveContactModal.tsx` | Add useEffect to re-check duplicates when editableName changes |
 
 ---
 
 ### Verification Steps
 
-1. Navigate to `/call-sheets/:id/review`
-2. Click on a contact from the PDF to open SaveContactModal
-3. Verify the Save button is **enabled** (not greyed out) for new contacts
-4. Verify duplicate warning still appears and disables Save when there IS a match
+1. Go to ParseReview page
+2. Click a contact to open SaveContactModal
+3. Change the name to match an existing contact you've already saved
+4. Verify yellow "Possible match" warning appears
+5. Choose "Save as New" or "Merge with Existing"
+6. Confirm Save button works
 
 ---
 
 ### Risks
 
-- **Low risk**: Single file change to effect logic
-- **No UI changes**: Button behavior only
+- **Low risk**: Adding one additional effect, no structural changes
+- **No UI changes**: Same warning component already exists
 - **Rollback**: Revert 1 file
 
----
-
-### Technical Details
-
-The root cause is React's effect execution order. When both effects have overlapping triggers (`open`), they both run in sequence. Effect 2 always won because it ran last and unconditionally set `action = null`.
-
-By consolidating into a single effect with the correct dependency array `[open, contact, existingContacts]`, the logic becomes deterministic:
-- If duplicate found → `action = null` (force user choice)
-- If no duplicate OR no existing contacts → `action = 'save_new'` (enable Save immediately)
