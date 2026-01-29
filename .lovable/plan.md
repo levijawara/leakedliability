@@ -1,130 +1,142 @@
 
-# Plan: Attribute Total Project Views to Crew Members
+
+# Plan: Add Project-Level Videos to Portfolio Page
 
 ## Problem Summary
-Currently, `fetchYouTubeViewCounts` in `CrewContacts.tsx` only sums `youtube_view_count` from `global_call_sheets`. This misses views from videos added at the **project folder level** via `project_videos`.
 
-The user wants: **If you appear on ANY call sheet in a project, you get credit for ALL the project's video views.**
+The YouTube Portfolio page (`/crew-contacts/:contactId/youtube`) currently only finds videos via the **legacy path**:
+- `contact_call_sheets` → `global_call_sheets.youtube_url`
 
-## Database Relationships
+This misses videos added at the **project folder level** via:
+- `contact_call_sheets` → `user_call_sheets` → `project_call_sheets` → `project_videos` → `youtube_videos`
+
+**Evidence:** Ronnie Lee Gotch's portfolio shows "0 projects" despite being linked to the Arin Ray project with 3 videos (~1.8M total views).
+
+## Solution: Dual-Source Video Fetching
+
+Extend `ContactYouTubePortfolio.tsx` to fetch videos from TWO sources:
+
+1. **Project-Level Videos** (NEW): Videos linked via `project_videos` to any project the contact's call sheets belong to
+2. **Sheet-Level Videos** (Existing): Videos linked directly via `global_call_sheets.youtube_video_id`
+
+## Database Path for Project Videos
+
 ```text
 crew_contacts
-    ↓ contact_call_sheets
-global_call_sheets ←→ user_call_sheets
-                          ↓ project_call_sheets
-                       projects
-                          ↓ project_videos  
-                       youtube_videos (view_count)
+    ↓ contact_call_sheets (contact_id → call_sheet_id)
+global_call_sheets (id = call_sheet_id)
+    ↓ user_call_sheets (global_call_sheet_id = id)
+        ↓ project_call_sheets (user_call_sheet_id = id)
+            ↓ projects (id = project_id)
+                ↓ project_videos (project_id = id)
+                    ↓ youtube_videos (id = video_id)
 ```
 
-## Solution: Dual-Source View Aggregation
-
-Rewrite `fetchYouTubeViewCounts` to calculate views from TWO sources:
-
-1. **Project-Level Views**: If a contact's call sheet is part of a project folder, sum ALL video views linked to that project (deduplicated across sheets)
-2. **Sheet-Level Views** (Legacy): For call sheets NOT in a project, use the existing `global_call_sheets.youtube_view_count`
-
-### Deduplication Logic
-If a contact appears on 2 sheets in the same project, they should NOT get double credit for the project's videos. We deduplicate by:
-- Finding **unique projects** a contact is linked to
-- Summing **unique video view counts** per project
-
-## Technical Approach
+## Technical Changes
 
 ### File to Modify
-`src/pages/CrewContacts.tsx` - `fetchYouTubeViewCounts` function
+`src/pages/ContactYouTubePortfolio.tsx`
 
-### New Query Strategy
+### Implementation Steps
 
-**Step 1: Fetch project-level video views**
+**Step 1: Fetch contact's linked call sheets** (existing)
 ```typescript
-// Get contacts linked to projects and their project's video views
-const { data: projectViewData } = await supabase
-  .from('contact_call_sheets')
+const { data: links } = await supabase
+  .from("contact_call_sheets")
+  .select("call_sheet_id")
+  .eq("contact_id", contactId);
+```
+
+**Step 2: Find which call sheets are in projects** (NEW)
+```typescript
+// Get user_call_sheets → project links for this contact's sheets
+const { data: projectLinks } = await supabase
+  .from("user_call_sheets")
   .select(`
-    contact_id,
-    user_call_sheets!inner (
-      project_call_sheets!inner (
-        project_id,
-        project_videos!inner (
-          youtube_videos!inner (
-            id,
-            view_count
-          )
-        )
-      )
+    global_call_sheet_id,
+    project_call_sheets!inner (
+      project_id
     )
   `)
+  .in("global_call_sheet_id", callSheetIds);
 ```
 
-**Step 2: Aggregate project views (deduplicate videos)**
+**Step 3: Get project videos** (NEW)
 ```typescript
-// Build: contact_id -> Set of youtube_videos.id -> sum unique view counts
-const projectViewsByContact = new Map<string, Map<string, number>>();
-
-projectViewData.forEach(row => {
-  const contactId = row.contact_id;
-  const videoId = row.youtube_videos.id;
-  const viewCount = row.youtube_videos.view_count;
-  
-  if (!projectViewsByContact.has(contactId)) {
-    projectViewsByContact.set(contactId, new Map());
-  }
-  // Map deduplicates by video ID automatically
-  projectViewsByContact.get(contactId).set(videoId, viewCount);
-});
+// Get all videos for the projects the contact is linked to
+const { data: projectVideosData } = await supabase
+  .from("project_videos")
+  .select(`
+    project_id,
+    video_id,
+    youtube_videos!inner (*)
+  `)
+  .in("project_id", uniqueProjectIds);
 ```
 
-**Step 3: Add legacy sheet-level views (non-project sheets)**
-Keep existing logic for sheets with `youtube_view_count` that aren't part of a project.
-
-**Step 4: Combine both sources**
+**Step 4: Merge with legacy sheet videos** (existing, modified)
 ```typescript
-const viewTotals: Record<string, number> = {};
+// Legacy: sheets with direct youtube_video_id
+const { data: sheetsData } = await supabase
+  .from("global_call_sheets")
+  .select("id, youtube_video_id, ...")
+  .in("id", callSheetIds)
+  .not("youtube_video_id", "is", null);
 
-// Add project views (deduplicated)
-projectViewsByContact.forEach((videoMap, contactId) => {
-  const projectTotal = Array.from(videoMap.values()).reduce((a, b) => a + b, 0);
-  viewTotals[contactId] = (viewTotals[contactId] || 0) + projectTotal;
-});
-
-// Add sheet-level views (non-project only)
-sheetViewData.forEach(row => {
-  if (!contactsWithProjects.has(row.contact_id)) {
-    viewTotals[row.contact_id] = (viewTotals[row.contact_id] || 0) + row.youtube_view_count;
-  }
-});
+// Combine both sources, deduplicate by video_id
+const allVideoIds = new Set([
+  ...projectVideoIds,
+  ...sheetVideoIds
+]);
 ```
 
-## Supabase Query Limitations
+**Step 5: Fetch credits for project videos** (NEW)
+For project videos, credits come from ALL contacts linked to ANY call sheet in that project:
 
-The nested join path (`contact_call_sheets` → `user_call_sheets` → `project_call_sheets` → `project_videos` → `youtube_videos`) may be too deep for a single Supabase JS query. If so, we'll use **two separate queries**:
+```typescript
+// Get all contacts linked to the project's call sheets
+const { data: projectContacts } = await supabase
+  .from("contact_call_sheets")
+  .select(`
+    call_sheet_id,
+    crew_contacts!inner (id, name, ig_handle, roles)
+  `)
+  .in("call_sheet_id", projectCallSheetIds);
+```
 
-1. Query 1: Get contact → project links
-2. Query 2: Get project → video view counts  
-3. Client-side join and aggregate
+## Deduplication Logic
+
+If the same video appears in both:
+- A project folder (`project_videos`)
+- A direct sheet link (`global_call_sheets.youtube_video_id`)
+
+We deduplicate by `video_id` and prefer the project-level attribution (richer credits from multiple sheets).
 
 ## Expected Results
 
-For "Levi Jawara" who appears on 2 Arin Ray sheets + 4 other sheets:
-- Arin Ray project: 3 videos = 1,824,794 views (counted ONCE, not twice)
-- Other sheets: Bobby Shmurda (33M), MGK (6M), etc.
-- **Total: ~43M views** (deduplicated correctly)
+For "Ronnie Lee Gotch" who appears on "Arin Ray 12:19:21.pdf":
+
+| Before | After |
+|--------|-------|
+| 0 videos | 3 videos |
+| 0 views | 1,824,794 views |
+| "No YouTube Projects Yet" message | Video grid with thumbnails |
 
 ## Edge Cases
 
 | Scenario | Behavior |
 |----------|----------|
-| Contact on 2 sheets in same project | Project views counted once (deduplicated) |
-| Contact on sheet NOT in any project | Uses sheet-level `youtube_view_count` |
-| Sheet in project but project has no videos | No views from that project |
-| Video linked to sheet AND project | Project-level takes precedence |
+| Video in both project & sheet | Deduplicated, project credits used |
+| Contact on multiple sheets in same project | Same project videos shown once |
+| Project has no videos | No videos from that project |
+| Sheet not in any project | Uses legacy sheet-level video |
 
 ## Summary
 
 | What Changes | Before | After |
 |--------------|--------|-------|
-| View source | Sheet-level only | Project + Sheet level |
-| Project videos | Not counted | Counted and attributed |
-| Deduplication | N/A | By unique video ID per project |
-| Multiple sheets same project | N/A | Counted once per project |
+| Video sources | Sheet-level only | Project + Sheet level |
+| Project folder videos | NOT shown | Shown in portfolio |
+| Arin Ray crew portfolio | Empty | 3 videos, 1.8M views |
+| Credits on project videos | N/A | All project crew listed |
+
