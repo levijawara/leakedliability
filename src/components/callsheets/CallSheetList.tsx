@@ -50,6 +50,8 @@ import { CreditsModal } from "./CreditsModal";
 import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
 import { PaymentStatusRadio } from "./PaymentStatusRadio";
 import { ReparseControlPanel } from "./ReparseControlPanel";
+import { ProjectFolderCard, Project } from "./ProjectFolderCard";
+import { ProjectDetailModal } from "./ProjectDetailModal";
 
 interface GlobalCallSheet {
   id: string;
@@ -142,6 +144,10 @@ export function CallSheetList({}: CallSheetListProps) {
   
   // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
+
+  // Project state
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // Initialize search from URL param
   useEffect(() => {
@@ -726,10 +732,16 @@ export function CallSheetList({}: CallSheetListProps) {
       </div>
 
       {/* Bulk Actions Bar */}
-      {selectedIds.size > 0 && (
+      {selectedIds.size > 0 && userId && (
         <CallSheetBulkActionsBar
           selectedIds={Array.from(selectedIds)}
           selectedGlobalIds={selectedGlobalIds}
+          selectedSheets={filteredSheets
+            .filter(link => selectedIds.has(link.id))
+            .map(link => ({
+              id: link.id,
+              fileName: link.user_label || link.global_call_sheets.original_file_name
+            }))}
           totalCount={filteredSheets.length}
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}

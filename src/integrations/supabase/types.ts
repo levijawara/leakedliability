@@ -2400,6 +2400,105 @@ export type Database = {
         }
         Relationships: []
       }
+      project_call_sheets: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          user_call_sheet_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          user_call_sheet_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          user_call_sheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_call_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_call_sheets_user_call_sheet_id_fkey"
+            columns: ["user_call_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "user_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_videos: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          video_id: string
+          youtube_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          video_id: string
+          youtube_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          video_id?: string
+          youtube_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_videos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_videos_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pscs_config: {
         Row: {
           description: string | null

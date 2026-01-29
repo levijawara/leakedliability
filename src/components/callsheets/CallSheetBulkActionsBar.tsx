@@ -6,7 +6,8 @@ import {
   CheckSquare,
   Square,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  FolderPlus
 } from "lucide-react";
 import {
   AlertDialog,
@@ -20,10 +21,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CreateProjectModal } from "./CreateProjectModal";
+
+interface SelectedSheet {
+  id: string;
+  fileName: string;
+}
 
 interface CallSheetBulkActionsBarProps {
   selectedIds: string[]; // user_call_sheets IDs
   selectedGlobalIds: string[]; // global_call_sheets IDs for re-parse
+  selectedSheets: SelectedSheet[]; // For project creation
   totalCount: number;
   onSelectAll: () => void;
   onDeselectAll: () => void;
@@ -34,6 +42,7 @@ interface CallSheetBulkActionsBarProps {
 export function CallSheetBulkActionsBar({
   selectedIds,
   selectedGlobalIds,
+  selectedSheets,
   totalCount,
   onSelectAll,
   onDeselectAll,
@@ -42,6 +51,7 @@ export function CallSheetBulkActionsBar({
 }: CallSheetBulkActionsBarProps) {
   const { toast } = useToast();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showCreateProject, setShowCreateProject] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReparsing, setIsReparsing] = useState(false);
 
@@ -149,6 +159,19 @@ export function CallSheetBulkActionsBar({
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Create Project - show when 2+ selected */}
+          {selectedIds.length >= 2 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCreateProject(true)}
+              className="h-8"
+            >
+              <FolderPlus className="h-4 w-4 mr-2" />
+              Create Project
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -186,6 +209,7 @@ export function CallSheetBulkActionsBar({
         </div>
       </div>
 
+      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -217,6 +241,15 @@ export function CallSheetBulkActionsBar({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create Project Modal */}
+      <CreateProjectModal
+        open={showCreateProject}
+        onOpenChange={setShowCreateProject}
+        selectedSheets={selectedSheets}
+        userId={userId}
+        onProjectCreated={onBulkComplete}
+      />
     </>
   );
 }
