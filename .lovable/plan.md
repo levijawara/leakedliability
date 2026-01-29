@@ -1,100 +1,77 @@
 
+## Plan: Fix Greyed-Out Save Button in SaveContactModal
 
-## Plan: Add "Sign in with Google" Button
+### Problem Identified
 
-### Summary
-Add a Google OAuth sign-in button to the Auth page using Lovable Cloud's managed Google authentication.
+The Save button is disabled because `action` state is `null`. There's a bug in the `useEffect` logic:
 
----
-
-### Step 1: Configure Social Auth (Required First)
-
-Before I can write the code, I need to use the `configure-social-auth` tool to:
-1. Generate the `src/integrations/lovable/` module
-2. Install the `@lovable.dev/cloud-auth-js` package
-
-**This must happen when I switch to implementation mode.**
-
----
-
-### Step 2: Update Auth.tsx
-
-#### 2a. Add Import
-```typescript
-import { lovable } from "@/integrations/lovable/index";
+```text
+Effect 1 (line 201): if (open && existingContacts.length > 0) → sets action to 'save_new'
+Effect 2 (line 214): if (open) → ALWAYS resets action to null (line 226)
 ```
 
-#### 2b. Add Google Sign-In Handler
-```typescript
-const [googleLoading, setGoogleLoading] = useState(false);
+**Two issues:**
+1. Effect 2 runs AFTER Effect 1 and unconditionally resets `action = null`
+2. Effect 1 never runs if `existingContacts` is empty (no contacts saved yet)
 
-const handleGoogleSignIn = async () => {
-  setGoogleLoading(true);
-  try {
-    const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    
-    if (error) throw error;
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Failed to sign in with Google",
-      variant: "destructive",
-    });
-    setGoogleLoading(false);
+### Fix
+
+Merge the logic into a single `useEffect` that properly handles the action state:
+
+**Before (broken):**
+```typescript
+// Effect 1: Check duplicates
+useEffect(() => {
+  if (open && existingContacts.length > 0) {
+    const match = findPotentialMatch(contact, existingContacts);
+    setDuplicateMatch(match);
+    if (match) {
+      setAction(null);
+    } else {
+      setAction('save_new');
+    }
   }
-};
+}, [open, contact, existingContacts]);
+
+// Effect 2: Initialize fields (overwrites action!)
+useEffect(() => {
+  if (open) {
+    // ... set all fields ...
+    setAction(null);  // BUG: This always runs and resets action
+  }
+}, [open, contact]);
 ```
 
-#### 2c. Add Google Button to Sign In Tab
-
-After the email/password form, add:
-
-```tsx
-{/* Divider */}
-<div className="relative my-6">
-  <div className="absolute inset-0 flex items-center">
-    <span className="w-full border-t" />
-  </div>
-  <div className="relative flex justify-center text-xs uppercase">
-    <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
-  </div>
-</div>
-
-{/* Google Button */}
-<Button
-  type="button"
-  variant="outline"
-  className="w-full"
-  onClick={handleGoogleSignIn}
-  disabled={googleLoading || loading}
->
-  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-    <path
-      fill="currentColor"
-      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-    />
-    <path
-      fill="currentColor"
-      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-    />
-    <path
-      fill="currentColor"
-      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-    />
-    <path
-      fill="currentColor"
-      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-    />
-  </svg>
-  {googleLoading ? "Connecting..." : "Continue with Google"}
-</Button>
+**After (fixed):**
+```typescript
+// Single unified effect for modal initialization
+useEffect(() => {
+  if (open) {
+    // Reset all form fields
+    setSelectedRoles(new Set(contact.roles || []));
+    setSelectedEmails(new Set(contact.emails || []));
+    setSelectedPhones(new Set(contact.phones || []));
+    setSelectedDepartments(new Set(contact.departments || []));
+    setExtraIgHandle(contact.ig_handle || '');
+    setEditableName(contact.name);
+    setNewRole('');
+    setNewEmail('');
+    setNewPhone('');
+    setShowExtraFields(false);
+    
+    // Check for duplicates and set action AFTER field initialization
+    if (existingContacts.length > 0) {
+      const match = findPotentialMatch(contact, existingContacts);
+      setDuplicateMatch(match);
+      setAction(match ? null : 'save_new');
+    } else {
+      // No existing contacts - default to save_new
+      setDuplicateMatch(null);
+      setAction('save_new');
+    }
+  }
+}, [open, contact, existingContacts]);
 ```
-
-#### 2d. Add Same Button to Sign Up Tab
-
-Add the same divider and Google button after the signup form, so users can also **sign up** via Google.
 
 ---
 
@@ -102,42 +79,31 @@ Add the same divider and Google button after the signup form, so users can also 
 
 | File | Change |
 |------|--------|
-| `src/integrations/lovable/` | Auto-generated by configure-social-auth tool |
-| `src/pages/Auth.tsx` | Add Google OAuth button to both Sign In and Sign Up tabs |
-
----
-
-### Visual Result
-
-**Sign In Tab:**
-```
-┌─────────────────────────────────┐
-│  Email: [______________]        │
-│  Password: [______________]     │
-│  Forgot password?               │
-│  [       Sign In        ]       │
-│                                 │
-│  ─────── Or continue with ───── │
-│                                 │
-│  [G] Continue with Google       │
-└─────────────────────────────────┘
-```
+| `src/components/callsheets/SaveContactModal.tsx` | Merge two useEffects into one; ensure action defaults to 'save_new' when no duplicates |
 
 ---
 
 ### Verification Steps
 
-1. Navigate to `/auth`
-2. Click "Continue with Google" button
-3. Should redirect to Google OAuth consent screen
-4. After authorizing, should redirect back and sign in
-5. Test on Sign Up tab as well
+1. Navigate to `/call-sheets/:id/review`
+2. Click on a contact from the PDF to open SaveContactModal
+3. Verify the Save button is **enabled** (not greyed out) for new contacts
+4. Verify duplicate warning still appears and disables Save when there IS a match
 
 ---
 
 ### Risks
 
-- **Low risk**: UI-only change + managed OAuth (no credentials needed)
-- **Dependency**: Requires `configure-social-auth` tool to run first
-- **Rollback**: Revert 1 file + remove generated lovable module
+- **Low risk**: Single file change to effect logic
+- **No UI changes**: Button behavior only
+- **Rollback**: Revert 1 file
 
+---
+
+### Technical Details
+
+The root cause is React's effect execution order. When both effects have overlapping triggers (`open`), they both run in sequence. Effect 2 always won because it ran last and unconditionally set `action = null`.
+
+By consolidating into a single effect with the correct dependency array `[open, contact, existingContacts]`, the logic becomes deterministic:
+- If duplicate found → `action = null` (force user choice)
+- If no duplicate OR no existing contacts → `action = 'save_new'` (enable Save immediately)
