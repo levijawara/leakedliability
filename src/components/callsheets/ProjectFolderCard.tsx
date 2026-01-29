@@ -2,7 +2,7 @@ import { FolderOpen, Video, Youtube, Eye } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { formatViewCount } from "@/lib/youtubeHelpers";
+import { formatFullViewCount } from "@/lib/youtubeHelpers";
 
 interface ProjectCallSheet {
   id: string;
@@ -113,9 +113,9 @@ export function ProjectFolderCard({
             <span>{videoCount} video{videoCount !== 1 ? 's' : ''}</span>
           </div>
           {project.totalViews > 0 && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
               <Youtube className="h-3 w-3 text-destructive" />
-              {formatViewCount(project.totalViews)} views
+              {formatFullViewCount(project.totalViews)} views
             </span>
           )}
         </div>
