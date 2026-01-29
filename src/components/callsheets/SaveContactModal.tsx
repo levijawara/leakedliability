@@ -197,22 +197,10 @@ export function SaveContactModal({
   const [newEmail, setNewEmail] = useState('');
   const [newPhone, setNewPhone] = useState('');
 
-  // Check for duplicates on open
-  useEffect(() => {
-    if (open && existingContacts.length > 0) {
-      const match = findPotentialMatch(contact, existingContacts);
-      setDuplicateMatch(match);
-      if (match) {
-        setAction(null); // User must choose
-      } else {
-        setAction('save_new'); // Default to save new if no duplicate
-      }
-    }
-  }, [open, contact, existingContacts]);
-
-  // Initialize selections
+  // Initialize modal state and check for duplicates
   useEffect(() => {
     if (open) {
+      // Reset all form fields
       setSelectedRoles(new Set(contact.roles || []));
       setSelectedEmails(new Set(contact.emails || []));
       setSelectedPhones(new Set(contact.phones || []));
@@ -223,9 +211,19 @@ export function SaveContactModal({
       setNewEmail('');
       setNewPhone('');
       setShowExtraFields(false);
-      setAction(null);
+
+      // Check for duplicates and set action AFTER field initialization
+      if (existingContacts.length > 0) {
+        const match = findPotentialMatch(contact, existingContacts);
+        setDuplicateMatch(match);
+        setAction(match ? null : 'save_new');
+      } else {
+        // No existing contacts - default to save_new
+        setDuplicateMatch(null);
+        setAction('save_new');
+      }
     }
-  }, [open, contact]);
+  }, [open, contact, existingContacts]);
 
   const toggleRole = (role: string) => {
     setSelectedRoles(prev => {
