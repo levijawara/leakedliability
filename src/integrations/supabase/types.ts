@@ -1740,6 +1740,42 @@ export type Database = {
           },
         ]
       }
+      nova_master_identities: {
+        Row: {
+          created_at: string | null
+          full_name: string
+          id: string
+          normalized_name: string
+          profile_url: string
+          roles: string[] | null
+          sources: string[] | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          full_name: string
+          id?: string
+          normalized_name: string
+          profile_url: string
+          roles?: string[] | null
+          sources?: string[] | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          normalized_name?: string
+          profile_url?: string
+          roles?: string[] | null
+          sources?: string[] | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       past_debts: {
         Row: {
           amount_owed: number

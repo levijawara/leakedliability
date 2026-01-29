@@ -123,6 +123,11 @@ export default function Admin() {
   const [igMasterImporting, setIgMasterImporting] = useState(false);
   const [igMasterStats, setIgMasterStats] = useState<{ total: number } | null>(null);
   const [igMasterFile, setIgMasterFile] = useState<File | null>(null);
+  
+  // NOVA Master List state
+  const [novaMasterImporting, setNovaMasterImporting] = useState(false);
+  const [novaMasterStats, setNovaMasterStats] = useState<{ total: number } | null>(null);
+  const [novaMasterFile, setNovaMasterFile] = useState<File | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -3876,6 +3881,175 @@ export default function Admin() {
                       Clear
                     </Button>
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* NOVA Master List Import Section */}
+            <div className="border-t pt-6 mt-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold mb-1">NOVA Master List</h3>
+                <p className="text-sm text-muted-foreground">
+                  Import scraped NOVA profiles for auto-matching crew contacts
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                {/* Stats */}
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const { count } = await supabase
+                        .from('nova_master_identities')
+                        .select('*', { count: 'exact', head: true });
+                      setNovaMasterStats({ total: count || 0 });
+                      toast({
+                        title: "Stats Loaded",
+                        description: `NOVA list contains ${count || 0} entries.`,
+                      });
+                    }}
+                  >
+                    Refresh NOVA Stats
+                  </Button>
+                  {novaMasterStats && (
+                    <Badge variant="secondary">{novaMasterStats.total} NOVA profiles</Badge>
+                  )}
+                </div>
+
+                {/* Import Section */}
+                <div className="border rounded-lg p-4 space-y-4">
+                  <h4 className="font-medium">Import NOVA CSV/JSON</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Upload a JSON file with NOVA profiles (URL, Name, Roles/Occupation fields).
+                  </p>
+                  
+                  {/* File Input Zone */}
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                    <input
+                      type="file"
+                      accept=".json,application/json,.csv,text/csv"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setNovaMasterFile(file);
+                      }}
+                      className="hidden"
+                      id="nova-master-file-input"
+                    />
+                    <label 
+                      htmlFor="nova-master-file-input" 
+                      className="cursor-pointer block"
+                    >
+                      {novaMasterFile ? (
+                        <div className="space-y-2">
+                          <p className="font-medium">{novaMasterFile.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(novaMasterFile.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                          <p>Click to select JSON or CSV file</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        if (!novaMasterFile) {
+                          toast({ title: "No file selected", variant: "destructive" });
+                          return;
+                        }
+                        
+                        try {
+                          setNovaMasterImporting(true);
+                          
+                          // Read file content
+                          const text = await novaMasterFile.text();
+                          
+                          let contacts;
+                          if (novaMasterFile.name.endsWith('.csv')) {
+                            // Parse CSV manually (simple parser for this format)
+                            const lines = text.split('\n');
+                            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                            contacts = lines.slice(1)
+                              .filter(line => line.trim())
+                              .map(line => {
+                                // Simple CSV parsing (handles basic cases)
+                                const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                                const obj: Record<string, string> = {};
+                                headers.forEach((h, i) => {
+                                  obj[h] = (values[i] || '').replace(/^"|"$/g, '').trim();
+                                });
+                                return obj;
+                              });
+                          } else {
+                            contacts = JSON.parse(text);
+                          }
+                          
+                          if (!Array.isArray(contacts)) throw new Error("Data must be an array");
+                          
+                          const { data, error } = await supabase.functions.invoke('import-nova-master-list', {
+                            body: { contacts, source: 'admin_nova_import' }
+                          });
+                          
+                          if (error) throw error;
+                          
+                          toast({
+                            title: "NOVA Import Complete",
+                            description: `Imported: ${data.imported}, Updated: ${data.updated}, Skipped: ${data.skipped}`,
+                          });
+                          
+                          // Reset file input
+                          setNovaMasterFile(null);
+                          const fileInput = document.getElementById('nova-master-file-input') as HTMLInputElement;
+                          if (fileInput) fileInput.value = '';
+                          
+                          // Refresh stats
+                          const { count } = await supabase
+                            .from('nova_master_identities')
+                            .select('*', { count: 'exact', head: true });
+                          setNovaMasterStats({ total: count || 0 });
+                          
+                        } catch (err: any) {
+                          toast({
+                            title: "Import Failed",
+                            description: err.message || "Invalid file",
+                            variant: "destructive"
+                          });
+                        } finally {
+                          setNovaMasterImporting(false);
+                        }
+                      }}
+                      disabled={!novaMasterFile || novaMasterImporting}
+                    >
+                      {novaMasterImporting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Importing NOVA...
+                        </>
+                      ) : (
+                        'Import NOVA File'
+                      )}
+                    </Button>
+                    {novaMasterFile && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setNovaMasterFile(null);
+                          const fileInput = document.getElementById('nova-master-file-input') as HTMLInputElement;
+                          if (fileInput) fileInput.value = '';
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
