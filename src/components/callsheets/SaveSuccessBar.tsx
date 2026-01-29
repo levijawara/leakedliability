@@ -5,6 +5,7 @@ interface SaveSuccessBarProps {
   savedCount: number;
   mergedCount: number;
   onGoToMatching: () => void;
+  onGoToNOVAMatching?: () => void;
   onDismiss: () => void;
 }
 
@@ -12,6 +13,7 @@ export function SaveSuccessBar({
   savedCount,
   mergedCount,
   onGoToMatching,
+  onGoToNOVAMatching,
   onDismiss,
 }: SaveSuccessBarProps) {
   const parts = [];
@@ -24,7 +26,7 @@ export function SaveSuccessBar({
       <div className="container mx-auto flex items-center justify-between gap-4 max-w-5xl">
         <div className="flex items-center gap-3">
           <CheckCircle2 className="h-5 w-5 flex-shrink-0" />
-          <span className="font-medium">{summary}. Ready for IG matching?</span>
+          <span className="font-medium">{summary}. Ready for matching?</span>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -33,9 +35,20 @@ export function SaveSuccessBar({
             onClick={onGoToMatching}
             className="gap-1"
           >
-            Go to IG Matching
+            IG Matching
             <ArrowRight className="h-4 w-4" />
           </Button>
+          {onGoToNOVAMatching && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onGoToNOVAMatching}
+              className="gap-1 bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              NOVA Matching
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

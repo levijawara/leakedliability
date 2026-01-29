@@ -57,6 +57,7 @@ import CallSheetManager from "./pages/CallSheetManager";
 import CrewContacts from "./pages/CrewContacts";
 import ParseReview from "./pages/ParseReview";
 import IGMatching from "./pages/IGMatching";
+import NOVAMatching from "./pages/NOVAMatching";
 import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
 import AdminNetworkGraph from "./pages/AdminNetworkGraph";
 import BetaUnlock from "./pages/BetaUnlock";
@@ -417,6 +418,7 @@ const AppContent = () => {
         <Route path="/call-sheets" element={<RequireAuth requireBeta><CallSheetManager /></RequireAuth>} />
         <Route path="/call-sheets/:id/review" element={<RequireAuth requireBeta><ParseReview /></RequireAuth>} />
         <Route path="/call-sheets/:id/ig-matching" element={<RequireAuth requireBeta><IGMatching /></RequireAuth>} />
+        <Route path="/call-sheets/:id/nova-matching" element={<RequireAuth requireBeta><NOVAMatching /></RequireAuth>} />
         <Route path="/crew-contacts" element={<RequireAuth requireBeta><CrewContacts /></RequireAuth>} />
         <Route path="/crew-contacts/:contactId/youtube" element={<RequireAuth requireBeta><ContactYouTubePortfolio /></RequireAuth>} />
         <Route path="/admin/call-sheet-reservoir" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />

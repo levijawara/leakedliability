@@ -484,6 +484,7 @@ export default function ParseReview() {
             savedCount={saveResult.savedCount}
             mergedCount={saveResult.mergedCount}
             onGoToMatching={() => navigate(`/call-sheets/${id}/ig-matching`)}
+            onGoToNOVAMatching={() => navigate(`/call-sheets/${id}/nova-matching`)}
             onDismiss={() => setSaveResult(null)}
           />
         )}
