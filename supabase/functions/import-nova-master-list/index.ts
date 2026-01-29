@@ -19,8 +19,10 @@ function normalizeName(name: string): string {
 }
 
 function extractUsernameFromUrl(url: string): string | null {
-  // Handle URLs like https://itsnova.co/andrelynch
-  const match = url.match(/itsnova\.co\/([^/?#]+)/i);
+  // Handle URLs like:
+  // - https://itsnova.co/andrelynch
+  // - https://www.itsnova.com/andrelynch
+  const match = url.match(/(?:www\.)?itsnova\.(?:co|com)\/([^/?#]+)/i);
   if (match) {
     return match[1].toLowerCase().trim();
   }
