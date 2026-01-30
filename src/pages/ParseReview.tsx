@@ -353,6 +353,62 @@ export default function ParseReview() {
     URL.revokeObjectURL(url);
   };
 
+  const handleExportTXT = () => {
+    if (!callSheet?.parsed_contacts) return;
+    
+    const includedContacts = callSheet.parsed_contacts
+      .filter((_, idx) => !excludedIndices.has(idx));
+    
+    const lines = includedContacts.map(c => {
+      const parts = [c.name];
+      if (c.roles.length > 0) parts.push(`(${c.roles.join(', ')})`);
+      if (c.emails.length > 0) parts.push(c.emails[0]);
+      if (c.phones.length > 0) parts.push(c.phones[0]);
+      return parts.join(' | ');
+    });
+    
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `contacts-${id}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSelectWithContact = () => {
+    if (!callSheet?.parsed_contacts) return;
+    const toInclude: number[] = [];
+    callSheet.parsed_contacts.forEach((contact, idx) => {
+      const hasEmail = contact.emails && contact.emails.length > 0;
+      const hasPhone = contact.phones && contact.phones.length > 0;
+      if (hasEmail || hasPhone) {
+        toInclude.push(idx);
+      }
+    });
+    handleIncludeMultiple(toInclude);
+  };
+
+  // Selected = included contacts (not excluded)
+  const selectedCount = (callSheet?.parsed_contacts?.length || 0) - excludedIndices.size;
+
+  const handleSaveSelected = async () => {
+    // Save Selected is same as Save All (saves included contacts)
+    await handleSaveAll();
+  };
+
+  const handleSelectAll = () => {
+    // Clear all exclusions
+    setExcludedIndices(new Set());
+  };
+
+  const handleDeselectAll = () => {
+    // Exclude all contacts
+    const all = new Set<number>();
+    (callSheet?.parsed_contacts || []).forEach((_, idx) => all.add(idx));
+    setExcludedIndices(all);
+  };
+
   if (loading) {
     return (
       <>
@@ -405,10 +461,14 @@ export default function ParseReview() {
           <ParseReviewHeader
             totalContacts={contacts.length}
             excludedCount={excludedIndices.size}
+            selectedCount={selectedCount}
             onSaveAll={handleSaveAll}
+            onSaveSelected={handleSaveSelected}
             onExportJSON={handleExportJSON}
             onExportCSV={handleExportCSV}
+            onExportTXT={handleExportTXT}
             onTogglePdf={() => setShowPdf(!showPdf)}
+            onSelectWithContact={handleSelectWithContact}
             showPdf={showPdf}
             saving={saving}
           />
