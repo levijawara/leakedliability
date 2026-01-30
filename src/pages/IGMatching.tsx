@@ -18,6 +18,16 @@ interface ContactToMatch {
   ig_handle: string | null;
 }
 
+// Normalize name for comparison
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function IGMatching() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -26,8 +36,10 @@ export default function IGMatching() {
   const [contacts, setContacts] = useState<ContactToMatch[]>([]);
   const [matchedCount, setMatchedCount] = useState(0);
   const [skippedCount, setSkippedCount] = useState(0);
+  const [autoMatchedCount, setAutoMatchedCount] = useState(0);
   const [totalOriginal, setTotalOriginal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [masterIdentityCount, setMasterIdentityCount] = useState(0);
   const isPortal = usePortalMode();
   const portalBase = usePortalBase();
 
@@ -40,6 +52,13 @@ export default function IGMatching() {
           navigate(portalBase ? `${portalBase}/auth` : "/auth");
           return;
         }
+
+        // Fetch master identity count
+        const { count: identityCount } = await supabase
+          .from('ig_master_identities')
+          .select('*', { count: 'exact', head: true });
+        
+        setMasterIdentityCount(identityCount || 0);
 
         // Get contacts linked to this call sheet that don't have IG handles
         const { data: contactLinks, error: linksError } = await supabase
@@ -59,27 +78,69 @@ export default function IGMatching() {
 
         if (linksError) throw linksError;
 
-        // Filter to contacts without IG handles
+        // Get ALL user's contacts that have IG handles (for auto-matching by name)
+        const { data: userContactsWithIG } = await supabase
+          .from('crew_contacts')
+          .select('name, ig_handle')
+          .eq('user_id', user.id)
+          .not('ig_handle', 'is', null);
+
+        // Build a map of normalized name -> ig_handle for quick lookup
+        const nameToIGMap = new Map<string, string>();
+        for (const contact of userContactsWithIG || []) {
+          if (contact.ig_handle) {
+            nameToIGMap.set(normalizeName(contact.name), contact.ig_handle);
+          }
+        }
+
+        // Filter to contacts without IG handles and check for auto-matches
         const contactsWithoutIG: ContactToMatch[] = [];
         const seen = new Set<string>();
+        let autoMatched = 0;
 
         for (const link of contactLinks || []) {
           const contact = (link as any).crew_contacts;
           if (contact && !contact.ig_handle && !seen.has(contact.id)) {
             seen.add(contact.id);
-            contactsWithoutIG.push({
-              id: contact.id,
-              name: contact.name,
-              roles: contact.roles || [],
-              phones: contact.phones || [],
-              emails: contact.emails || [],
-              ig_handle: null
-            });
+            
+            const normalizedName = normalizeName(contact.name);
+            const existingIG = nameToIGMap.get(normalizedName);
+            
+            if (existingIG) {
+              // Auto-apply the IG handle from previous match
+              const { error: updateError } = await supabase
+                .from('crew_contacts')
+                .update({ ig_handle: existingIG })
+                .eq('id', contact.id);
+              
+              if (!updateError) {
+                autoMatched++;
+                console.log(`[IGMatching] Auto-matched ${contact.name} to @${existingIG}`);
+              }
+            } else {
+              // Add to matching queue
+              contactsWithoutIG.push({
+                id: contact.id,
+                name: contact.name,
+                roles: contact.roles || [],
+                phones: contact.phones || [],
+                emails: contact.emails || [],
+                ig_handle: null
+              });
+            }
           }
         }
 
+        setAutoMatchedCount(autoMatched);
         setContacts(contactsWithoutIG);
-        setTotalOriginal(contactsWithoutIG.length);
+        setTotalOriginal(contactsWithoutIG.length + autoMatched);
+        
+        if (autoMatched > 0) {
+          toast({
+            title: `Auto-matched ${autoMatched} contacts`,
+            description: "Based on your previous IG matches"
+          });
+        }
       } catch (error: any) {
         console.error('[IGMatching] Fetch error:', error);
         toast({
@@ -95,7 +156,7 @@ export default function IGMatching() {
     if (id) {
       fetchContacts();
     }
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, portalBase]);
 
   const handleMatch = (contactId: string, igHandle: string | null) => {
     if (igHandle) {
@@ -118,12 +179,12 @@ export default function IGMatching() {
   const handleFinish = () => {
     toast({
       title: "IG Matching Complete",
-      description: `Matched ${matchedCount} Instagram handles.`
+      description: `Matched ${matchedCount + autoMatchedCount} Instagram handles${autoMatchedCount > 0 ? ` (${autoMatchedCount} auto-matched)` : ''}.`
     });
     navigate(`${portalBase}/call-sheets/${id}/nova-matching`);
   };
 
-  const processedCount = matchedCount + skippedCount;
+  const processedCount = matchedCount + skippedCount + autoMatchedCount;
   const progressPercent = totalOriginal > 0 
     ? (processedCount / totalOriginal) * 100 
     : 0;
@@ -150,11 +211,12 @@ export default function IGMatching() {
         {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+            <CheckCircle className="h-16 w-16 text-primary mx-auto" />
             <h1 className="text-2xl font-bold">All Done!</h1>
             <p className="text-muted-foreground">
-              Matched {matchedCount} Instagram handles
-              {skippedCount > 0 && ` (${skippedCount} skipped)`}
+              Matched {matchedCount + autoMatchedCount} Instagram handles
+              {autoMatchedCount > 0 && ` (${autoMatchedCount} auto-matched)`}
+              {skippedCount > 0 && ` • ${skippedCount} skipped`}
             </p>
             <Button onClick={() => navigate(`${portalBase}/call-sheets/${id}/nova-matching`)}>
               Continue to NOVA Matching
@@ -225,7 +287,7 @@ export default function IGMatching() {
         {/* Subtitle */}
         <div className="container mx-auto px-4 py-4">
           <p className="text-muted-foreground text-center">
-            Cross-referencing against {833} verified identities • One at a time
+            Cross-referencing against {masterIdentityCount.toLocaleString()} verified identities • One at a time
           </p>
         </div>
 
