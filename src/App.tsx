@@ -76,12 +76,21 @@ const AppContent = () => {
   const [rlsValidated, setRlsValidated] = useState(false);
   const location = useLocation();
 
-  // Domain-based redirect for extracredit.studio
+  // Domain-based redirect AND metadata for extracredit.studio
   useEffect(() => {
     const hostname = window.location.hostname;
     const isExtraCreditDomain = 
       hostname === 'extracredit.studio' || 
       hostname === 'www.extracredit.studio';
+    
+    // Update title and favicon for Extra Credit domain
+    if (isExtraCreditDomain) {
+      document.title = 'Extra Credit';
+      const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+      if (favicon) {
+        favicon.href = '/favicon-ec.png';
+      }
+    }
     
     // Only redirect if on extracredit.studio AND not already in /extra-credit path
     if (isExtraCreditDomain && !location.pathname.startsWith('/extra-credit')) {
