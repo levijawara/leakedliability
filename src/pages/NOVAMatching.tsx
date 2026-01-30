@@ -16,6 +16,16 @@ interface ContactToMatch {
   nova_profile_url: string | null;
 }
 
+// Normalize name for comparison
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 export default function NOVAMatching() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -24,8 +34,10 @@ export default function NOVAMatching() {
   const [contacts, setContacts] = useState<ContactToMatch[]>([]);
   const [matchedCount, setMatchedCount] = useState(0);
   const [skippedCount, setSkippedCount] = useState(0);
+  const [autoMatchedCount, setAutoMatchedCount] = useState(0);
   const [totalOriginal, setTotalOriginal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [masterIdentityCount, setMasterIdentityCount] = useState(0);
   const isPortal = usePortalMode();
   const portalBase = usePortalBase();
 
@@ -37,6 +49,13 @@ export default function NOVAMatching() {
           navigate(portalBase ? `${portalBase}/auth` : "/auth");
           return;
         }
+
+        // Fetch master identity count from nova_master_identities
+        const { count: identityCount } = await supabase
+          .from('nova_master_identities')
+          .select('*', { count: 'exact', head: true });
+        
+        setMasterIdentityCount(identityCount || 0);
 
         // Get contacts linked to this call sheet that don't have NOVA profiles
         const { data: contactLinks, error: linksError } = await supabase
@@ -54,25 +73,67 @@ export default function NOVAMatching() {
 
         if (linksError) throw linksError;
 
-        // Filter to contacts without NOVA profiles
+        // Get ALL user's contacts that have NOVA profiles (for auto-matching by name)
+        const { data: userContactsWithNOVA } = await supabase
+          .from('crew_contacts')
+          .select('name, nova_profile_url')
+          .eq('user_id', user.id)
+          .not('nova_profile_url', 'is', null);
+
+        // Build a map of normalized name -> nova_profile_url for quick lookup
+        const nameToNOVAMap = new Map<string, string>();
+        for (const contact of userContactsWithNOVA || []) {
+          if (contact.nova_profile_url) {
+            nameToNOVAMap.set(normalizeName(contact.name), contact.nova_profile_url);
+          }
+        }
+
+        // Filter to contacts without NOVA profiles and check for auto-matches
         const contactsWithoutNOVA: ContactToMatch[] = [];
         const seen = new Set<string>();
+        let autoMatched = 0;
 
         for (const link of contactLinks || []) {
           const contact = (link as any).crew_contacts;
           if (contact && !contact.nova_profile_url && !seen.has(contact.id)) {
             seen.add(contact.id);
-            contactsWithoutNOVA.push({
-              id: contact.id,
-              name: contact.name,
-              roles: contact.roles || [],
-              nova_profile_url: null
-            });
+            
+            const normalizedName = normalizeName(contact.name);
+            const existingNOVA = nameToNOVAMap.get(normalizedName);
+            
+            if (existingNOVA) {
+              // Auto-apply the NOVA profile from previous match
+              const { error: updateError } = await supabase
+                .from('crew_contacts')
+                .update({ nova_profile_url: existingNOVA })
+                .eq('id', contact.id);
+              
+              if (!updateError) {
+                autoMatched++;
+                console.log(`[NOVAMatching] Auto-matched ${contact.name} to ${existingNOVA}`);
+              }
+            } else {
+              // Add to matching queue
+              contactsWithoutNOVA.push({
+                id: contact.id,
+                name: contact.name,
+                roles: contact.roles || [],
+                nova_profile_url: null
+              });
+            }
           }
         }
 
+        setAutoMatchedCount(autoMatched);
         setContacts(contactsWithoutNOVA);
-        setTotalOriginal(contactsWithoutNOVA.length);
+        setTotalOriginal(contactsWithoutNOVA.length + autoMatched);
+        
+        if (autoMatched > 0) {
+          toast({
+            title: `Auto-matched ${autoMatched} contacts`,
+            description: "Based on your previous NOVA matches"
+          });
+        }
       } catch (error: any) {
         console.error('[NOVAMatching] Fetch error:', error);
         toast({
@@ -88,7 +149,7 @@ export default function NOVAMatching() {
     if (id) {
       fetchContacts();
     }
-  }, [id, navigate, toast]);
+  }, [id, navigate, toast, portalBase]);
 
   const handleMatch = (contactId: string, profileUrl: string | null) => {
     if (profileUrl) {
@@ -109,12 +170,12 @@ export default function NOVAMatching() {
   const handleFinish = () => {
     toast({
       title: "NOVA Matching Complete",
-      description: `Matched ${matchedCount} NOVA profiles.`
+      description: `Matched ${matchedCount + autoMatchedCount} NOVA profiles${autoMatchedCount > 0 ? ` (${autoMatchedCount} auto-matched)` : ''}.`
     });
     navigate(`${portalBase}/crew-contacts`);
   };
 
-  const processedCount = matchedCount + skippedCount;
+  const processedCount = matchedCount + skippedCount + autoMatchedCount;
   const progressPercent = totalOriginal > 0 
     ? (processedCount / totalOriginal) * 100 
     : 0;
@@ -140,11 +201,12 @@ export default function NOVAMatching() {
         {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
-            <CheckCircle className="h-16 w-16 text-purple-500 mx-auto" />
+            <CheckCircle className="h-16 w-16 text-primary mx-auto" />
             <h1 className="text-2xl font-bold">All Done!</h1>
             <p className="text-muted-foreground">
-              Matched {matchedCount} NOVA profiles
-              {skippedCount > 0 && ` (${skippedCount} skipped)`}
+              Matched {matchedCount + autoMatchedCount} NOVA profiles
+              {autoMatchedCount > 0 && ` (${autoMatchedCount} auto-matched)`}
+              {skippedCount > 0 && ` • ${skippedCount} skipped`}
             </p>
             <Button onClick={() => navigate(`${portalBase}/crew-contacts`)}>
               Go to Crew Contacts
@@ -223,7 +285,7 @@ export default function NOVAMatching() {
         {/* Subtitle */}
         <div className="container mx-auto px-4 py-4">
           <p className="text-muted-foreground text-center">
-            Cross-referencing against 33K+ NOVA profiles • Name-based matching
+            Cross-referencing against {masterIdentityCount.toLocaleString()} NOVA profiles • Name-based matching
           </p>
         </div>
 
