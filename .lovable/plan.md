@@ -1,61 +1,45 @@
 
 
-# Plan: Remove Beta Menu Items for Non-Admin Users
+# Plan: Remove Beta Access Section from Profile Page
 
 ## Problem
-The "Call Sheets" and "Crew Contacts" buttons in the Account dropdown are currently shown to users with `hasBetaAccess || isAdmin`. Now that there's a dedicated Extra Credit portal, these should only be visible to admins.
+The "Beta Access Unlocked" badge and "Can you keep a secret?" button are still showing for non-admin users on the Profile page, even though the beta program has ended.
 
 ## Solution
-Change the condition from `(hasBetaAccess || isAdmin)` to just `isAdmin` in both desktop and mobile navigation menus.
+Remove the entire beta access section from the Profile page since these features are now accessed through the dedicated portal.
 
 ---
 
 ## Changes
 
-### File: `src/components/Navigation.tsx`
+### File: `src/pages/Profile.tsx`
 
-| Edit | Lines | Change |
-|------|-------|--------|
-| 1 | ~217-226 | Desktop: Change `{(hasBetaAccess || isAdmin) && (` to `{isAdmin && (` |
-| 2 | ~289-298 | Mobile: Change `{(hasBetaAccess || isAdmin) && (` to `{isAdmin && (` |
+**Remove lines ~219-238** - The entire beta access section:
 
-**Before:**
 ```tsx
-{(hasBetaAccess || isAdmin) && (
+{/* Beta Access Section - ONLY for non-admins, BELOW Refresh Status */}
+{!isAdmin && (
   <>
-    <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
-      <FileSpreadsheet className="h-4 w-4 mr-2" />
-      Call Sheets
-    </DropdownMenuItem>
-    <DropdownMenuItem onClick={() => navigate("/crew-contacts")}>
-      <Users className="h-4 w-4 mr-2" />
-      Crew Contacts
-    </DropdownMenuItem>
+    <Separator />
+    {!betaAccess ? (
+      <Button 
+        variant="outline" 
+        className="w-full"
+        onClick={() => navigate('/beta-unlock')}
+      >
+        Can you keep a secret? 👀
+      </Button>
+    ) : (
+      <div className="flex items-center gap-2">
+        <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
+          <CheckCircle className="h-3 w-3 mr-1" />
+          Beta Access Unlocked
+        </Badge>
+      </div>
+    )}
   </>
 )}
 ```
-
-**After:**
-```tsx
-{isAdmin && (
-  <>
-    <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
-      <FileSpreadsheet className="h-4 w-4 mr-2" />
-      Call Sheets
-    </DropdownMenuItem>
-    <DropdownMenuItem onClick={() => navigate("/crew-contacts")}>
-      <Users className="h-4 w-4 mr-2" />
-      Crew Contacts
-    </DropdownMenuItem>
-  </>
-)}
-```
-
----
-
-## Optional Cleanup
-
-The `hasBetaAccess` state and `checkBetaAccess` function can be removed entirely since they're no longer used, but I'll leave them in case you want to use beta gating for future features.
 
 ---
 
@@ -63,9 +47,9 @@ The `hasBetaAccess` state and `checkBetaAccess` function can be removed entirely
 
 | Aspect | Details |
 |--------|---------|
-| Files modified | 1 (`src/components/Navigation.tsx`) |
-| Lines changed | 2 (condition updates) |
-| Risk | Low - UI visibility change only |
+| Files modified | 1 (`src/pages/Profile.tsx`) |
+| Lines removed | ~20 |
+| Risk | Low - UI removal only |
 
 ---
 
@@ -73,9 +57,9 @@ The `hasBetaAccess` state and `checkBetaAccess` function can be removed entirely
 
 | User Type | Before | After |
 |-----------|--------|-------|
-| Admin | Sees Call Sheets, Crew Contacts | Sees Call Sheets, Crew Contacts |
-| Beta User | Sees Call Sheets, Crew Contacts | **Hidden** |
-| Regular User | Hidden | Hidden |
+| Admin | No beta section shown | No change |
+| Non-Admin with Beta | Shows "Beta Access Unlocked" badge | **Removed** |
+| Non-Admin without Beta | Shows "Can you keep a secret?" button | **Removed** |
 
-Non-admin users who need Call Sheets/Crew Contacts will access them through the Extra Credit portal instead.
+The Leaderboard Access card will show just the access status and "Refresh Status" button, without any beta-related UI.
 
