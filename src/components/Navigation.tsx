@@ -266,7 +266,7 @@ export function Navigation() {
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  {(hasBetaAccess || isAdmin) && (
+                  {isAdmin && (
                     <>
                       <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
                         <FileSpreadsheet className="h-4 w-4 mr-2" />
@@ -353,7 +353,7 @@ export function Navigation() {
                       <User className="h-4 w-4 mr-2" />
                       Profile
                     </DropdownMenuItem>
-                    {(hasBetaAccess || isAdmin) && (
+                    {isAdmin && (
                       <>
                         <DropdownMenuItem onClick={() => handleNavigate("/call-sheets")}>
                           <FileSpreadsheet className="h-4 w-4 mr-2" />
