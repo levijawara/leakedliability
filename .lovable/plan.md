@@ -1,44 +1,116 @@
 
 
-# Plan: Remove Beta Access Section from Profile Page
+# Plan: Add Extra Credit Portal to Sitemap + Admin Navigation in Portal
 
 ## Problem
-The "Beta Access Unlocked" badge and "Can you keep a secret?" button are still showing for non-admin users on the Profile page, even though the beta program has ended.
+1. The Sitemap page doesn't show the Extra Credit portal routes, making it incomplete
+2. Admin users in the Extra Credit portal have no way to navigate back to the main Leaked Liability site or access admin features
 
 ## Solution
-Remove the entire beta access section from the Profile page since these features are now accessed through the dedicated portal.
+
+### Part 1: Add Extra Credit Portal Routes to Sitemap
+
+**File: `src/config/routes.ts`**
+
+Add a new category `portal` and add all Extra Credit routes:
+
+```typescript
+// Add 'portal' to the RouteMetadata category type (line 7)
+category: 'public' | 'authenticated' | 'leaderboard' | 'admin' | 'system' | 'portal';
+
+// Add portal routes after system routes (after line 75)
+// Portal Routes (Extra Credit)
+{ path: "/extra-credit", component: "Redirect", name: "Extra Credit Portal", icon: "Sparkles", description: "Portal redirect to call sheets", category: "portal" },
+{ path: "/extra-credit/auth", component: "Auth", name: "Portal Auth", icon: "LogIn", description: "Portal authentication", category: "portal" },
+{ path: "/extra-credit/call-sheets", component: "CallSheetManager", name: "Portal Call Sheets", icon: "FileSpreadsheet", description: "Call sheet management (portal)", category: "portal" },
+{ path: "/extra-credit/call-sheets/:id/review", component: "ParseReview", name: "Portal Parse Review", icon: "FileSearch", description: "Review parsed call sheet (portal)", category: "portal" },
+{ path: "/extra-credit/call-sheets/:id/ig-matching", component: "IGMatching", name: "Portal IG Matching", icon: "Instagram", description: "Instagram matching (portal)", category: "portal" },
+{ path: "/extra-credit/call-sheets/:id/nova-matching", component: "NOVAMatching", name: "Portal NOVA Matching", icon: "Star", description: "NOVA matching (portal)", category: "portal" },
+{ path: "/extra-credit/crew-contacts", component: "CrewContacts", name: "Portal Crew Contacts", icon: "Users", description: "Crew contacts (portal)", category: "portal" },
+{ path: "/extra-credit/crew-contacts/:contactId/youtube", component: "ContactYouTubePortfolio", name: "Portal YouTube Portfolio", icon: "Youtube", description: "Contact YouTube portfolio (portal)", category: "portal" },
+
+// Update ROUTE_CATEGORIES (line 78)
+export const ROUTE_CATEGORIES = ['public', 'authenticated', 'leaderboard', 'admin', 'system', 'portal'] as const;
+```
+
+**File: `src/pages/Sitemap.tsx`**
+
+Add portal category handling:
+- Add `portal` to the `RoutesData` interface
+- Add portal variant styling (sparkles/purple theme)
+- Add portal section in the render
+
+### Part 2: Add Admin Menu Items to Portal Navigation
+
+**File: `src/components/PortalNavigation.tsx`**
+
+Add admin status check and admin menu items:
+
+```typescript
+// Add imports
+import { Shield, TrendingUp, Map, Home } from "lucide-react";
+
+// Add admin state and check
+const [isAdmin, setIsAdmin] = useState(false);
+
+// Add checkAdminStatus function (similar to Navigation.tsx)
+const checkAdminStatus = async (userId: string) => { ... };
+
+// Add admin menu items to dropdown (when isAdmin is true):
+<DropdownMenuSeparator />
+<DropdownMenuItem onClick={() => navigate("/")}>
+  <Home className="h-4 w-4 mr-2" />
+  Leaked Liability
+</DropdownMenuItem>
+{isAdmin && (
+  <>
+    <DropdownMenuItem onClick={() => navigate("/admin")}>
+      <Shield className="h-4 w-4 mr-2" />
+      Admin Dashboard
+    </DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate("/leaderboard-analytics")}>
+      <TrendingUp className="h-4 w-4 mr-2" />
+      Analytics
+    </DropdownMenuItem>
+    <DropdownMenuItem onClick={() => navigate("/sitemap")}>
+      <Map className="h-4 w-4 mr-2" />
+      Site Map
+    </DropdownMenuItem>
+  </>
+)}
+```
 
 ---
 
-## Changes
+## Visual Preview
 
-### File: `src/pages/Profile.tsx`
+### Sitemap - New Portal Section
+```
+┌─────────────────────────────────────────────────────┐
+│ ✨ EXTRA CREDIT PORTAL ROUTES       8 routes        │
+├─────────────────────────────────────────────────────┤
+│ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐  │
+│ │ Portal Entry │ │ Portal Auth  │ │ Call Sheets  │  │
+│ │    ✨ Portal │ │    ✨ Portal │ │    ✨ Portal │  │
+│ └──────────────┘ └──────────────┘ └──────────────┘  │
+└─────────────────────────────────────────────────────┘
+```
 
-**Remove lines ~219-238** - The entire beta access section:
-
-```tsx
-{/* Beta Access Section - ONLY for non-admins, BELOW Refresh Status */}
-{!isAdmin && (
-  <>
-    <Separator />
-    {!betaAccess ? (
-      <Button 
-        variant="outline" 
-        className="w-full"
-        onClick={() => navigate('/beta-unlock')}
-      >
-        Can you keep a secret? 👀
-      </Button>
-    ) : (
-      <div className="flex items-center gap-2">
-        <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
-          <CheckCircle className="h-3 w-3 mr-1" />
-          Beta Access Unlocked
-        </Badge>
-      </div>
-    )}
-  </>
-)}
+### Portal Navigation - Admin Menu
+```
+┌─────────────────────────┐
+│ admin@example.com       │
+├─────────────────────────┤
+│ 📄 Call Sheets          │
+│ 👥 Crew Contacts        │
+├─────────────────────────┤
+│ 🏠 Leaked Liability     │  ← NEW: Link to main site
+│ 🛡️ Admin Dashboard      │  ← NEW: Admin only
+│ 📈 Analytics            │  ← NEW: Admin only
+│ 🗺️ Site Map             │  ← NEW: Admin only
+├─────────────────────────┤
+│ 🚪 Sign Out             │
+└─────────────────────────┘
 ```
 
 ---
@@ -47,19 +119,8 @@ Remove the entire beta access section from the Profile page since these features
 
 | Aspect | Details |
 |--------|---------|
-| Files modified | 1 (`src/pages/Profile.tsx`) |
-| Lines removed | ~20 |
-| Risk | Low - UI removal only |
-
----
-
-## Result
-
-| User Type | Before | After |
-|-----------|--------|-------|
-| Admin | No beta section shown | No change |
-| Non-Admin with Beta | Shows "Beta Access Unlocked" badge | **Removed** |
-| Non-Admin without Beta | Shows "Can you keep a secret?" button | **Removed** |
-
-The Leaderboard Access card will show just the access status and "Refresh Status" button, without any beta-related UI.
+| Files modified | 3 (`routes.ts`, `Sitemap.tsx`, `PortalNavigation.tsx`) |
+| Lines added | ~80 |
+| Risk | Low - additive changes only |
+| Behavior change | Admin users can now navigate between portal and main site |
 
