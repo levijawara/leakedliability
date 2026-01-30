@@ -52,6 +52,7 @@ import { PaymentStatusRadio } from "./PaymentStatusRadio";
 import { ReparseControlPanel } from "./ReparseControlPanel";
 import { ProjectFolderCard, Project } from "./ProjectFolderCard";
 import { ProjectDetailModal } from "./ProjectDetailModal";
+import { usePortalBase } from "@/contexts/PortalContext";
 
 interface GlobalCallSheet {
   id: string;
@@ -110,6 +111,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function CallSheetList({}: CallSheetListProps) {
+  const portalBase = usePortalBase();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const contactIdFilter = searchParams.get('contact_id');
@@ -1016,7 +1018,7 @@ export function CallSheetList({}: CallSheetListProps) {
                 isAdmin={isAdmin}
                 needsReview={needsReview}
                 onSelect={handleSelectOne}
-                onView={(sheet) => navigate(`/call-sheets/${sheet.id}/review`)}
+                onView={(sheet) => navigate(`${portalBase}/call-sheets/${sheet.id}/review`)}
                 onViewPdf={(sheet) => setViewingPdf({ 
                   filePath: sheet.master_file_path, 
                   fileName: sheet.original_file_name 
@@ -1128,7 +1130,7 @@ export function CallSheetList({}: CallSheetListProps) {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => navigate(`/call-sheets/${sheet.id}/review`)}
+                                  onClick={() => navigate(`${portalBase}/call-sheets/${sheet.id}/review`)}
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>

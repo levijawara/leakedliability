@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -48,6 +49,8 @@ const defaultFilters: ContactFilters = {
 
 export default function CrewContacts() {
   const { toast } = useToast();
+  const isPortal = usePortalMode();
+  const portalBase = usePortalBase();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [contacts, setContacts] = useState<CrewContact[]>([]);
@@ -832,8 +835,8 @@ export default function CrewContacts() {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navigation />
-      
+      {!isPortal && <Navigation />}
+
       <main className="flex-1 container mx-auto px-4 py-8 md:pt-24">
         <div className="max-w-6xl mx-auto space-y-4">
           {/* Header */}
@@ -849,7 +852,7 @@ export default function CrewContacts() {
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild className="gap-2">
-                <Link to="/call-sheets">
+                <Link to={`${portalBase}/call-sheets`}>
                   <FileSpreadsheet className="h-4 w-4" />
                   Call Sheets
                 </Link>
@@ -988,7 +991,7 @@ export default function CrewContacts() {
         onMergeComplete={handleMergeComplete}
       />
 
-      <Footer />
+      {!isPortal && <Footer />}
     </div>
   );
 }

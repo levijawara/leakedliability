@@ -7,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Star, Mail, Phone, FileText, Pencil, Trash2, Youtube, RotateCcw, Copy, Check, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { usePortalBase } from "@/contexts/PortalContext";
 import { cn, censorEmail, censorPhone } from "@/lib/utils";
 import { formatFullViewCount } from "@/lib/youtubeHelpers";
 import { useToast } from "@/hooks/use-toast";
@@ -49,13 +50,14 @@ export function CrewContactCard({
   onToggleSelect
 }: CrewContactCardProps) {
   const navigate = useNavigate();
+  const portalBase = usePortalBase();
   const { toast } = useToast();
   const [isFlipped, setIsFlipped] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const handleCallSheetClick = () => {
     if (callSheetCount > 0) {
-      navigate(`/call-sheets?contact_id=${contact.id}&contact_name=${encodeURIComponent(contact.name)}`);
+      navigate(`${portalBase}/call-sheets?contact_id=${contact.id}&contact_name=${encodeURIComponent(contact.name)}`);
     }
   };
 
@@ -315,7 +317,7 @@ export function CrewContactCard({
                               className="h-6 px-0 text-xs hover:bg-transparent hover:underline justify-start"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/crew-contacts/${contact.id}/youtube`);
+                                navigate(`${portalBase}/crew-contacts/${contact.id}/youtube`);
                               }}
                             >
                               <Youtube className="h-3.5 w-3.5 text-destructive mr-1.5 shrink-0" />

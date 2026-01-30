@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Navigation } from "@/components/Navigation";
+import { usePortalMode } from "@/contexts/PortalContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -53,6 +54,7 @@ export default function Auth() {
   const [redirectInfo, setRedirectInfo] = useState<ReturnType<typeof getRedirectInfo>>(null);
   const [liabilityContext, setLiabilityContext] = useState<"initial" | "redirect" | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const isPortal = usePortalMode();
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -349,7 +351,7 @@ export default function Auth() {
 
   return (
     <>
-      <Navigation />
+      {!isPortal && <Navigation />}
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4 pt-24 md:pt-28">
         <Card className="w-full max-w-md p-8 mx-auto">
         <div className="mb-8 text-center">
@@ -616,7 +618,7 @@ export default function Auth() {
         userId={newUserId}
       />
       
-      <Footer />
+      {!isPortal && <Footer />}
       </div>
     </>
   );

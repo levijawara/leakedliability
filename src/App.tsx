@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
@@ -63,6 +63,7 @@ import AdminNetworkGraph from "./pages/AdminNetworkGraph";
 import BetaUnlock from "./pages/BetaUnlock";
 import ContactYouTubePortfolio from "./pages/ContactYouTubePortfolio";
 import { FailureIndicator } from "./components/FailureIndicator";
+import { PortalLayout } from "./components/PortalLayout";
 
 const queryClient = new QueryClient();
 
@@ -425,6 +426,18 @@ const AppContent = () => {
         <Route path="/admin/intelligence/network-graph" element={<RequireAuth requireAdmin><AdminNetworkGraph /></RequireAuth>} />
         <Route path="/admin/intelligence/heat-map" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
         <Route path="/beta-unlock" element={<RequireAuth><BetaUnlock /></RequireAuth>} />
+        {/* Extra Credit portal routes — same pages, portal-only layout */}
+        <Route path="/extra-credit" element={<Navigate to="/extra-credit/call-sheets" replace />} />
+        <Route path="/extra-credit/auth" element={<PortalLayout><Auth /></PortalLayout>} />
+        <Route path="/extra-credit/reset-password" element={<PortalLayout><ResetPassword /></PortalLayout>} />
+        <Route path="/extra-credit/verify-email" element={<PortalLayout><VerifyEmail /></PortalLayout>} />
+        <Route path="/extra-credit/ban/:banId" element={<PortalLayout><BanPage /></PortalLayout>} />
+        <Route path="/extra-credit/call-sheets" element={<PortalLayout><RequireAuth requireBeta><CallSheetManager /></RequireAuth></PortalLayout>} />
+        <Route path="/extra-credit/call-sheets/:id/review" element={<PortalLayout><RequireAuth requireBeta><ParseReview /></RequireAuth></PortalLayout>} />
+        <Route path="/extra-credit/call-sheets/:id/ig-matching" element={<PortalLayout><RequireAuth requireBeta><IGMatching /></RequireAuth></PortalLayout>} />
+        <Route path="/extra-credit/call-sheets/:id/nova-matching" element={<PortalLayout><RequireAuth requireBeta><NOVAMatching /></RequireAuth></PortalLayout>} />
+        <Route path="/extra-credit/crew-contacts" element={<PortalLayout><RequireAuth requireBeta><CrewContacts /></RequireAuth></PortalLayout>} />
+        <Route path="/extra-credit/crew-contacts/:contactId/youtube" element={<PortalLayout><RequireAuth requireBeta><ContactYouTubePortfolio /></RequireAuth></PortalLayout>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
         </Routes>

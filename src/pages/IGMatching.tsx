@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { IGContactCard } from "@/components/callsheets/IGContactCard";
 import { Navigation } from "@/components/Navigation";
+import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
 
 interface ContactToMatch {
   id: string;
@@ -27,6 +28,8 @@ export default function IGMatching() {
   const [skippedCount, setSkippedCount] = useState(0);
   const [totalOriginal, setTotalOriginal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const isPortal = usePortalMode();
+  const portalBase = usePortalBase();
 
   useEffect(() => {
     async function fetchContacts() {
@@ -34,7 +37,7 @@ export default function IGMatching() {
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          navigate('/auth');
+          navigate(portalBase ? `${portalBase}/auth` : "/auth");
           return;
         }
 
@@ -109,7 +112,7 @@ export default function IGMatching() {
   };
 
   const handleSkipAll = () => {
-    navigate('/crew-contacts');
+    navigate(`${portalBase}/crew-contacts`);
   };
 
   const handleFinish = () => {
@@ -117,7 +120,7 @@ export default function IGMatching() {
       title: "IG Matching Complete",
       description: `Matched ${matchedCount} Instagram handles.`
     });
-    navigate('/crew-contacts');
+    navigate(`${portalBase}/crew-contacts`);
   };
 
   const processedCount = matchedCount + skippedCount;
@@ -132,7 +135,7 @@ export default function IGMatching() {
   if (loading) {
     return (
       <>
-        <Navigation />
+        {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -144,7 +147,7 @@ export default function IGMatching() {
   if (contacts.length === 0 && totalOriginal > 0) {
     return (
       <>
-        <Navigation />
+        {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
             <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
@@ -153,7 +156,7 @@ export default function IGMatching() {
               Matched {matchedCount} Instagram handles
               {skippedCount > 0 && ` (${skippedCount} skipped)`}
             </p>
-            <Button onClick={() => navigate('/crew-contacts')}>
+            <Button onClick={() => navigate(`${portalBase}/crew-contacts`)}>
               Go to Crew Contacts
             </Button>
           </div>
@@ -166,7 +169,7 @@ export default function IGMatching() {
   if (contacts.length === 0 && totalOriginal === 0) {
     return (
       <>
-        <Navigation />
+        {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <div className="text-center space-y-4">
             <Instagram className="h-16 w-16 text-muted-foreground mx-auto" />
@@ -174,7 +177,7 @@ export default function IGMatching() {
             <p className="text-muted-foreground">
               All contacts from this call sheet already have Instagram handles or none were imported.
             </p>
-            <Button onClick={() => navigate('/crew-contacts')}>
+            <Button onClick={() => navigate(`${portalBase}/crew-contacts`)}>
               Go to Crew Contacts
             </Button>
           </div>
@@ -185,14 +188,14 @@ export default function IGMatching() {
 
   return (
     <>
-      <Navigation />
+      {!isPortal && <Navigation />}
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="border-b sticky top-0 bg-background z-10">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <Button variant="ghost" size="sm" onClick={() => navigate('/call-sheets')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate(`${portalBase}/call-sheets`)}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back
                 </Button>

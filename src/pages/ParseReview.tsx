@@ -11,6 +11,7 @@ import { ParsedContactsTable } from "@/components/callsheets/ParsedContactsTable
 import { ParseChatAssistant } from "@/components/callsheets/ParseChatAssistant";
 import { SaveSuccessBar } from "@/components/callsheets/SaveSuccessBar";
 import { Navigation } from "@/components/Navigation";
+import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface ParsedContact {
@@ -46,6 +47,8 @@ export default function ParseReview() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isPortal = usePortalMode();
+  const portalBase = usePortalBase();
   
   const [callSheet, setCallSheet] = useState<CallSheetData | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
@@ -72,7 +75,7 @@ export default function ParseReview() {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          navigate('/auth');
+          navigate(portalBase ? `${portalBase}/auth` : "/auth");
           return;
         }
         setUserId(user.id);
@@ -137,7 +140,7 @@ export default function ParseReview() {
           description: error.message,
           variant: "destructive"
         });
-        navigate('/call-sheets');
+        navigate(`${portalBase}/call-sheets`);
       } finally {
         setLoading(false);
       }
@@ -353,7 +356,7 @@ export default function ParseReview() {
   if (loading) {
     return (
       <>
-        <Navigation />
+        {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
@@ -364,7 +367,7 @@ export default function ParseReview() {
   if (!callSheet || !userId) {
     return (
       <>
-        <Navigation />
+        {!isPortal && <Navigation />}
         <div className="min-h-screen flex items-center justify-center">
           <p className="text-muted-foreground">Call sheet not found</p>
         </div>
@@ -376,13 +379,13 @@ export default function ParseReview() {
 
   return (
     <>
-      <Navigation />
+      {!isPortal && <Navigation />}
       <div className="min-h-screen bg-background">
         {/* Header */}
         <div className="border-b">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => navigate('/call-sheets')}>
+              <Button variant="ghost" size="sm" onClick={() => navigate(`${portalBase}/call-sheets`)}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back
               </Button>
@@ -461,7 +464,7 @@ export default function ParseReview() {
                 setTimeout(() => row.classList.remove('ring-2', 'ring-primary'), 2000);
               }
             }}
-            onNavigateToMatching={() => navigate(`/call-sheets/${id}/ig-matching`)}
+            onNavigateToMatching={() => navigate(`${portalBase}/call-sheets/${id}/ig-matching`)}
           />
         )}
 
@@ -483,8 +486,8 @@ export default function ParseReview() {
           <SaveSuccessBar
             savedCount={saveResult.savedCount}
             mergedCount={saveResult.mergedCount}
-            onGoToMatching={() => navigate(`/call-sheets/${id}/ig-matching`)}
-            onGoToNOVAMatching={() => navigate(`/call-sheets/${id}/nova-matching`)}
+            onGoToMatching={() => navigate(`${portalBase}/call-sheets/${id}/ig-matching`)}
+            onGoToNOVAMatching={() => navigate(`${portalBase}/call-sheets/${id}/nova-matching`)}
             onDismiss={() => setSaveResult(null)}
           />
         )}

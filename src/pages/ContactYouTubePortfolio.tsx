@@ -4,6 +4,7 @@ import { ArrowLeft, Youtube, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Navigation } from "@/components/Navigation";
+import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
@@ -80,7 +81,9 @@ function formatRelativeTime(dateString: string | null): string {
 export default function ContactYouTubePortfolio() {
   const { contactId } = useParams<{ contactId: string }>();
   const navigate = useNavigate();
-  
+  const isPortal = usePortalMode();
+  const portalBase = usePortalBase();
+
   const [contact, setContact] = useState<ContactData | null>(null);
   const [videos, setVideos] = useState<VideoWithCredits[]>([]);
   const [loading, setLoading] = useState(true);
@@ -384,14 +387,14 @@ export default function ContactYouTubePortfolio() {
 
   return (
     <>
-      <Navigation />
+      {!isPortal && <Navigation />}
       <div className="container mx-auto px-4 pt-24 pb-12 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate("/crew-contacts")}
+            onClick={() => navigate(`${portalBase}/crew-contacts`)}
             className="mb-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -439,7 +442,7 @@ export default function ContactYouTubePortfolio() {
                   <Button
                     variant="outline"
                     className="mt-4"
-                    onClick={() => navigate("/call-sheets")}
+                    onClick={() => navigate(`${portalBase}/call-sheets`)}
                   >
                     Go to Call Sheets
                   </Button>

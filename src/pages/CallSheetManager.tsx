@@ -1,6 +1,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -12,14 +13,16 @@ import { FileSpreadsheet, Users } from "lucide-react";
 export default function CallSheetManager() {
   const [searchParams] = useSearchParams();
   const contactIdFilter = searchParams.get('contact_id');
+  const isPortal = usePortalMode();
+  const portalBase = usePortalBase();
 
   // No need for local user state - RequireAuth wrapper guarantees authentication
   // Components get userId from session directly to prevent RLS race conditions
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
-      <Navigation />
-      
+      {!isPortal && <Navigation />}
+
       <main className="flex-1 container mx-auto px-4 py-8 md:pt-24">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
@@ -34,7 +37,7 @@ export default function CallSheetManager() {
               </div>
             </div>
             <Button variant="outline" size="sm" asChild className="gap-2">
-              <Link to="/crew-contacts">
+              <Link to={`${portalBase}/crew-contacts`}>
                 <Users className="h-4 w-4" />
                 Crew Contacts
               </Link>
@@ -79,7 +82,7 @@ export default function CallSheetManager() {
         </div>
       </main>
 
-      <Footer />
+      {!isPortal && <Footer />}
     </div>
   );
 }

@@ -21,6 +21,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { usePortalBase } from "@/contexts/PortalContext";
 import { CallSheetCard } from "./CallSheetCard";
 import { ProjectVideoLinker } from "./ProjectVideoLinker";
 import { Project } from "./ProjectFolderCard";
@@ -71,6 +72,7 @@ export function ProjectDetailModal({
 }: ProjectDetailModalProps) {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const portalBase = usePortalBase();
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -250,7 +252,7 @@ export function ProjectDetailModal({
                       needsReview={needsReview}
                       onView={(sheet) => {
                         onOpenChange(false);
-                        navigate(`/call-sheets/${sheet.id}/review`);
+                        navigate(`${portalBase}/call-sheets/${sheet.id}/review`);
                       }}
                       onViewPdf={() => {}}
                       onCredits={() => {}}
