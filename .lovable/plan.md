@@ -1,54 +1,63 @@
 
-# Plan: Add Domain-Based Redirect for extracredit.studio
+
+# Plan: Dynamic Title & Favicon for Extra Credit Domain
 
 ## Problem
-Now that `extracredit.studio` is connected to this project, visitors to that domain should be automatically redirected to the Extra Credit portal (`/extra-credit/call-sheets`) instead of the main Leaked Liability homepage.
+When users visit `extracredit.studio`, the browser tab still shows "Leaked Liability" with the "LL" favicon, which is confusing.
 
 ## Solution
-Add hostname detection in `AppContent` that redirects visitors from `extracredit.studio` to the portal.
+1. Generate an "EC" favicon matching the existing "LL" style (bold black letters, white background)
+2. Add dynamic metadata switching based on hostname
 
 ---
 
 ## Changes
 
-### File: `src/App.tsx`
+### 1. Create New Favicon
+**File: `public/favicon-ec.png`**
 
-**Add a useEffect hook** after line 77 (after `const location = useLocation();`) to detect the domain and redirect:
+Generate an "EC" favicon using the AI image generation API with the same styling:
+- Bold black "EC" letters
+- White/transparent background
+- Same dimensions as existing favicon
+
+### 2. Dynamic Metadata Switching
+**File: `src/App.tsx`**
+
+Extend the existing domain detection `useEffect` to also update document title and favicon:
 
 ```typescript
-// Domain-based redirect for extracredit.studio
+// Domain-based redirect AND metadata for extracredit.studio
 useEffect(() => {
   const hostname = window.location.hostname;
   const isExtraCreditDomain = 
     hostname === 'extracredit.studio' || 
     hostname === 'www.extracredit.studio';
   
-  // Only redirect if on extracredit.studio AND not already in /extra-credit path
-  if (isExtraCreditDomain && !location.pathname.startsWith('/extra-credit')) {
-    // Preserve the path for auth/reset-password, map others to portal
-    const portalPaths = ['/auth', '/reset-password', '/verify-email'];
-    const currentPath = location.pathname;
-    
-    if (portalPaths.includes(currentPath)) {
-      window.location.href = `/extra-credit${currentPath}`;
-    } else {
-      window.location.href = '/extra-credit/call-sheets';
+  // Update title and favicon for Extra Credit domain
+  if (isExtraCreditDomain) {
+    document.title = 'Extra Credit';
+    const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+    if (favicon) {
+      favicon.href = '/favicon-ec.png';
     }
+  }
+  
+  // Only redirect if not already in /extra-credit path
+  if (isExtraCreditDomain && !location.pathname.startsWith('/extra-credit')) {
+    // ... existing redirect logic ...
   }
 }, [location.pathname]);
 ```
 
 ---
 
-## Behavior
+## Result
 
-| Domain | Path | Result |
-|--------|------|--------|
-| `extracredit.studio` | `/` | Redirect to `/extra-credit/call-sheets` |
-| `extracredit.studio` | `/auth` | Redirect to `/extra-credit/auth` |
-| `extracredit.studio` | `/extra-credit/...` | No redirect (already in portal) |
-| `leakedliability.com` | `/` | Normal homepage (no redirect) |
-| `leakedliability.com` | `/extra-credit/...` | Normal portal access |
+| Domain | Tab Title | Favicon |
+|--------|-----------|---------|
+| `leakedliability.lovable.app` | Leaked Liability | LL |
+| `extracredit.studio` | Extra Credit | EC |
 
 ---
 
@@ -56,7 +65,8 @@ useEffect(() => {
 
 | Aspect | Details |
 |--------|---------|
+| Files created | 1 (`public/favicon-ec.png`) |
 | Files modified | 1 (`src/App.tsx`) |
-| Lines added | ~15 |
-| Risk | Low - conditional redirect only |
-| Note | Uses `window.location.href` for clean redirect without flash |
+| Lines changed | ~8 |
+| Risk | Low - additive metadata change |
+
