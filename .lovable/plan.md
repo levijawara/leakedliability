@@ -1,43 +1,69 @@
 
-# Plan: Route IG Matching to NOVA Matching
+# Plan: Smart Auto-Skip + Dynamic Counts for IG & NOVA Matching
 
 ## Problem
-After completing IG Matching, users are taken directly to Crew Contacts instead of NOVA Matching.
+1. Users must re-match names they've already matched before (time waste)
+2. The "833 verified identities" (IG) and "33K+ NOVA profiles" texts are hardcoded
 
 ## Solution
-Update the IG Matching page to navigate to NOVA Matching when complete, preserving the call sheet ID for context.
+For both matching pages, implement:
+1. **Auto-skip logic**: Check `user_ig_map` / previously matched NOVA profiles to auto-apply known matches
+2. **Dynamic count**: Fetch actual counts from master identity tables
 
 ---
 
 ## Changes
 
-### File: `src/pages/IGMatching.tsx`
+### File 1: `src/pages/IGMatching.tsx`
 
-**Edit 1: Update `handleFinish` (lines 118-124)**
-- Change navigation from `/crew-contacts` to `/call-sheets/{id}/nova-matching`
+| Edit | Lines | Description |
+|------|-------|-------------|
+| 1 | ~30 | Add `masterIdentityCount` state |
+| 2 | 34-98 | Update `fetchContacts` to check `user_ig_map` and auto-apply known matches |
+| 3 | 228 | Replace hardcoded `833` with `{masterIdentityCount.toLocaleString()}` |
 
-**Edit 2: Update `handleSkipAll` (lines 114-116)**
-- Change navigation to go to NOVA Matching instead of Crew Contacts
-
-**Edit 3: Update "All Done" screen button (line 159)**
-- Change button to "Continue to NOVA Matching"
-- Navigate to `/call-sheets/{id}/nova-matching`
-
-**Edit 4: Update "No Contacts" screen button (line 180)**
-- Change navigation to NOVA Matching (users may still want to match NOVA profiles even if no IG handles needed)
+**Auto-skip logic:**
+```text
+For each contact without IG:
+  1. Check user_ig_map for (user_id, name)
+  2. If found → update crew_contacts.ig_handle, skip queue
+  3. If not found → add to matching queue
+```
 
 ---
 
-## Flow After Implementation
+### File 2: `src/pages/NOVAMatching.tsx`
+
+| Edit | Lines | Description |
+|------|-------|-------------|
+| 1 | ~30 | Add `masterIdentityCount` state |
+| 2 | 34-72 | Update `fetchContacts` to check if name was previously matched by this user |
+| 3 | ~145 | Replace hardcoded "33K+" with `{masterIdentityCount.toLocaleString()}` |
+
+**Auto-skip logic:**
+```text
+For each contact without NOVA:
+  1. Query nova_master_identities for exact name match
+  2. If contact's name was previously matched by this user → auto-apply, skip queue
+  3. If not found → add to matching queue
+```
+
+**Note:** For NOVA, we'll check if the user has previously matched this exact name to a NOVA profile by looking at their other crew_contacts that share the same normalized name and have a nova_profile_url.
+
+---
+
+## Flow Diagram
 
 ```text
-Parse Review
+Contact Load
     ↓
-IG Matching (/call-sheets/:id/ig-matching)
-    ↓ (Finish / Skip All / All Done)
-NOVA Matching (/call-sheets/:id/nova-matching)
-    ↓ (Finish / Skip All / All Done)
-Crew Contacts
+Already has IG/NOVA? → Skip (existing)
+    ↓
+Check user's previous matches for this name
+    ↓
+Found match? → Auto-apply, increment auto-matched count
+    ↓
+Not found? → Add to matching queue
 ```
 
 ---
@@ -46,7 +72,17 @@ Crew Contacts
 
 | Aspect | Details |
 |--------|---------|
-| Files modified | 1 (`src/pages/IGMatching.tsx`) |
-| Lines changed | ~8 |
-| Database changes | None |
-| Risk | Low - navigation only |
+| Files modified | 2 |
+| Tables queried | `user_ig_map`, `ig_master_identities`, `nova_master_identities`, `crew_contacts` |
+| New columns | None |
+| Risk | Low - additive logic only |
+
+---
+
+## Verification Steps
+
+1. Match "Ryan Schwerzler" to an IG handle on one call sheet
+2. Upload a new call sheet with "Ryan Schwerzler"
+3. Start IG Matching → Ryan should be auto-skipped
+4. Verify subtitle shows live count (e.g., "854" not "833")
+5. Repeat test for NOVA matching
