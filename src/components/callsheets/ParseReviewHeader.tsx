@@ -1,14 +1,24 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, FileJson, FileSpreadsheet, FileText } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CheckCircle2, Download, FileText, Mail, Phone, ChevronDown } from "lucide-react";
 
 interface ParseReviewHeaderProps {
   totalContacts: number;
   excludedCount: number;
+  selectedCount: number;
   onSaveAll: () => void;
+  onSaveSelected: () => void;
   onExportJSON: () => void;
   onExportCSV: () => void;
+  onExportTXT: () => void;
   onTogglePdf: () => void;
+  onSelectWithContact: () => void;
   showPdf: boolean;
   saving?: boolean;
 }
@@ -16,10 +26,14 @@ interface ParseReviewHeaderProps {
 export function ParseReviewHeader({
   totalContacts,
   excludedCount,
+  selectedCount,
   onSaveAll,
+  onSaveSelected,
   onExportJSON,
   onExportCSV,
+  onExportTXT,
   onTogglePdf,
+  onSelectWithContact,
   showPdf,
   saving = false,
 }: ParseReviewHeaderProps) {
@@ -55,27 +69,48 @@ export function ParseReviewHeader({
           >
             {saving ? 'Saving...' : 'Save All'}
           </Button>
+
+          {selectedCount > 0 && (
+            <Button
+              variant="secondary"
+              onClick={onSaveSelected}
+              disabled={saving}
+            >
+              Save Selected ({selectedCount})
+            </Button>
+          )}
           
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onExportJSON}
-              title="Export as JSON"
-            >
-              <FileJson className="h-4 w-4 mr-1" />
-              JSON
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onExportCSV}
-              title="Export as CSV"
-            >
-              <FileSpreadsheet className="h-4 w-4 mr-1" />
-              CSV
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onSelectWithContact}
+            title="Select contacts with email or phone"
+          >
+            <Mail className="h-4 w-4 mr-1" />
+            <Phone className="h-4 w-4 mr-1" />
+            Select
+          </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-1" />
+                Export
+                <ChevronDown className="h-3 w-3 ml-1" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onExportJSON}>
+                Export as JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onExportCSV}>
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onExportTXT}>
+                Export as TXT
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant="ghost"

@@ -43,6 +43,12 @@ interface ParsedContactsTableProps {
   onShiftSelect?: (fromIndex: number, toIndex: number) => void;
   activeFilter: string | null;
   rowRefs: MutableRefObject<Map<number, HTMLTableRowElement>>;
+  onSelectAll?: () => void;
+  onDeselectAll?: () => void;
+  onMergeAll?: () => void;
+  onAddAll?: () => void;
+  onSkipAll?: () => void;
+  duplicateCount?: number;
 }
 
 // Check if a parsed contact has a potential duplicate in existing contacts
@@ -111,6 +117,12 @@ export function ParsedContactsTable({
   existingContacts,
   activeFilter,
   rowRefs,
+  onSelectAll,
+  onDeselectAll,
+  onMergeAll,
+  onAddAll,
+  onSkipAll,
+  duplicateCount = 0,
 }: ParsedContactsTableProps) {
   const [lastClickedIndex, setLastClickedIndex] = useState<number | null>(null);
 
@@ -226,9 +238,11 @@ export function ParsedContactsTable({
                 ref={(el) => {
                   if (el) rowRefs.current.set(originalIndex, el);
                 }}
+                data-duplicate={isDuplicate && !isExcluded}
                 className={cn(
                   "transition-all",
-                  isExcluded && "bg-muted/50 opacity-60"
+                  isExcluded && "bg-muted/50 opacity-60",
+                  isDuplicate && !isExcluded && "bg-green-900/20 border-l-2 border-l-green-600"
                 )}
               >
                 <TableCell className="px-2 py-2">
