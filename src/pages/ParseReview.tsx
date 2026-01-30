@@ -8,7 +8,7 @@ import { InteractivePdfViewer } from "@/components/callsheets/InteractivePdfView
 import { SaveContactModal } from "@/components/callsheets/SaveContactModal";
 import { ParseReviewHeader } from "@/components/callsheets/ParseReviewHeader";
 import { ParsedContactsTable } from "@/components/callsheets/ParsedContactsTable";
-import { ParseChatAssistant } from "@/components/callsheets/ParseChatAssistant";
+
 import { SaveSuccessBar } from "@/components/callsheets/SaveSuccessBar";
 import { Navigation } from "@/components/Navigation";
 import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
@@ -441,32 +441,6 @@ export default function ParseReview() {
           </div>
         </div>
 
-        {/* AI Chat Assistant */}
-        {contacts.length > 0 && (
-          <ParseChatAssistant
-            callSheetId={callSheet.id}
-            fileName={callSheet.original_file_name}
-            parsedContacts={contacts}
-            excludedIndices={excludedIndices}
-            existingContacts={existingContacts}
-            onExclude={handleExcludeMultiple}
-            onInclude={handleIncludeMultiple}
-            onSaveAll={handleSaveAll}
-            onTogglePdf={() => setShowPdf(prev => !prev)}
-            showPdf={showPdf}
-            onFilterView={setActiveFilter}
-            activeFilter={activeFilter}
-            onJumpToContact={(index) => {
-              const row = rowRefs.current.get(index);
-              if (row) {
-                row.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                row.classList.add('ring-2', 'ring-primary');
-                setTimeout(() => row.classList.remove('ring-2', 'ring-primary'), 2000);
-              }
-            }}
-            onNavigateToMatching={() => navigate(`${portalBase}/call-sheets/${id}/ig-matching`)}
-          />
-        )}
 
         {/* Edit Contact Modal */}
         {selectedContact && userId && (
