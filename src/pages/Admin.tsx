@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Papa from 'papaparse';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
@@ -3973,20 +3974,13 @@ export default function Admin() {
                           
                           let contacts;
                           if (novaMasterFile.name.endsWith('.csv')) {
-                            // Parse CSV manually (simple parser for this format)
-                            const lines = text.split('\n');
-                            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-                            contacts = lines.slice(1)
-                              .filter(line => line.trim())
-                              .map(line => {
-                                // Simple CSV parsing (handles basic cases)
-                                const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                                const obj: Record<string, string> = {};
-                                headers.forEach((h, i) => {
-                                  obj[h] = (values[i] || '').replace(/^"|"$/g, '').trim();
-                                });
-                                return obj;
-                              });
+                            // Use PapaParse for robust CSV parsing (handles spaces in names correctly)
+                            const parsed = Papa.parse(text, {
+                              header: true,
+                              skipEmptyLines: true,
+                              transformHeader: (h: string) => h.trim().replace(/"/g, ''),
+                            });
+                            contacts = parsed.data;
                           } else {
                             contacts = JSON.parse(text);
                           }
