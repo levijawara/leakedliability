@@ -4,7 +4,7 @@ export interface RouteMetadata {
   name: string;
   icon: string; // lucide icon name as string
   description: string;
-  category: 'public' | 'authenticated' | 'leaderboard' | 'admin' | 'system';
+  category: 'public' | 'authenticated' | 'leaderboard' | 'admin' | 'system' | 'portal';
   requiresAuth?: boolean;
   requiresAdmin?: boolean;
   tabs?: string[];
@@ -73,6 +73,16 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/pay/:code", component: "PayEscrow", name: "Escrow Payment", icon: "DollarSign", description: "Anonymous payment", category: "system" },
   { path: "/pay/:code/success", component: "PayEscrow", name: "Payment Success", icon: "FileCheck", description: "Post-payment confirmation", category: "system" },
   { path: "*", component: "NotFound", name: "404 Not Found", icon: "FileX", description: "Fallback route", category: "system" },
+
+  // Portal Routes (Extra Credit)
+  { path: "/extra-credit", component: "Redirect", name: "Extra Credit Portal", icon: "Sparkles", description: "Portal redirect to call sheets", category: "portal" },
+  { path: "/extra-credit/auth", component: "Auth", name: "Portal Auth", icon: "LogIn", description: "Portal authentication", category: "portal" },
+  { path: "/extra-credit/call-sheets", component: "CallSheetManager", name: "Portal Call Sheets", icon: "FileSpreadsheet", description: "Call sheet management (portal)", category: "portal" },
+  { path: "/extra-credit/call-sheets/:id/review", component: "ParseReview", name: "Portal Parse Review", icon: "FileSearch", description: "Review parsed call sheet (portal)", category: "portal" },
+  { path: "/extra-credit/call-sheets/:id/ig-matching", component: "IGMatching", name: "Portal IG Matching", icon: "Instagram", description: "Instagram matching (portal)", category: "portal" },
+  { path: "/extra-credit/call-sheets/:id/nova-matching", component: "NOVAMatching", name: "Portal NOVA Matching", icon: "Star", description: "NOVA matching (portal)", category: "portal" },
+  { path: "/extra-credit/crew-contacts", component: "CrewContacts", name: "Portal Crew Contacts", icon: "Users", description: "Crew contacts (portal)", category: "portal" },
+  { path: "/extra-credit/crew-contacts/:contactId/youtube", component: "ContactYouTubePortfolio", name: "Portal YouTube Portfolio", icon: "Youtube", description: "Contact YouTube portfolio (portal)", category: "portal" },
 ];
 
-export const ROUTE_CATEGORIES = ['public', 'authenticated', 'leaderboard', 'admin', 'system'] as const;
+export const ROUTE_CATEGORIES = ['public', 'authenticated', 'leaderboard', 'admin', 'system', 'portal'] as const;
