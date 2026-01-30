@@ -47,7 +47,7 @@ export function PortalNavigation() {
             <button
               type="button"
               onClick={() => navigate(`${PORTAL_BASE}/call-sheets`)}
-              className="text-xl font-semibold tracking-tight text-foreground hover:opacity-80 transition-opacity"
+              className="text-2xl font-black tracking-tight text-foreground hover:opacity-80 transition-opacity"
             >
               Extra Credit
             </button>

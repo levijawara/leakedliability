@@ -355,8 +355,10 @@ export default function Auth() {
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-4 pt-24 md:pt-28">
         <Card className="w-full max-w-md p-8 mx-auto">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-black mb-2">Leaked Liability™</h1>
-          <p className="text-muted-foreground">Filmmaking's financial accountability platform.</p>
+          <h1 className="text-3xl font-black mb-2">{isPortal ? "Extra Credit" : "Leaked Liability™"}</h1>
+          <p className="text-muted-foreground">
+            {isPortal ? "Submit call sheets, collect contacts, and build a work portfolio!" : "Filmmaking's financial accountability platform."}
+          </p>
         </div>
 
         {/* Redirect Context Banner */}
@@ -606,9 +608,11 @@ export default function Auth() {
           </TabsContent>
         </Tabs>
 
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>Crew member identities remain anonymous, always. If you're a producer, known exploitation may cause career instability. Move with caution.</p>
-        </div>
+        {!isPortal && (
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <p>Crew member identities remain anonymous, always. If you're a producer, known exploitation may cause career instability. Move with caution.</p>
+          </div>
+        )}
       </Card>
 
       {/* Producer Association Modal */}
