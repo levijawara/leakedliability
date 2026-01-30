@@ -1,70 +1,52 @@
 
-# Plan: Smart Auto-Skip + Dynamic Counts for IG & NOVA Matching
+# Plan: Fix NOVA CSV Parsing Bug
 
 ## Problem
-1. Users must re-match names they've already matched before (time waste)
-2. The "833 verified identities" (IG) and "33K+ NOVA profiles" texts are hardcoded
+The CSV parser uses a broken regex that splits names containing spaces. When importing "Adam Gharib", only "Gharib" is captured.
+
+**Root Cause (line 3983):**
+```javascript
+// BROKEN: [^",\s]+ excludes spaces, splitting "Adam Gharib" into two matches
+const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+```
 
 ## Solution
-For both matching pages, implement:
-1. **Auto-skip logic**: Check `user_ig_map` / previously matched NOVA profiles to auto-apply known matches
-2. **Dynamic count**: Fetch actual counts from master identity tables
+Replace the manual regex parser with PapaParse (already installed in dependencies) for robust CSV handling.
 
 ---
 
 ## Changes
 
-### File 1: `src/pages/IGMatching.tsx`
+### File: `src/pages/Admin.tsx`
 
-| Edit | Lines | Description |
-|------|-------|-------------|
-| 1 | ~30 | Add `masterIdentityCount` state |
-| 2 | 34-98 | Update `fetchContacts` to check `user_ig_map` and auto-apply known matches |
-| 3 | 228 | Replace hardcoded `833` with `{masterIdentityCount.toLocaleString()}` |
+**Edit 1: Add PapaParse import (near top of file)**
+```typescript
+import Papa from 'papaparse';
+```
 
-**Auto-skip logic:**
-```text
-For each contact without IG:
-  1. Check user_ig_map for (user_id, name)
-  2. If found → update crew_contacts.ig_handle, skip queue
-  3. If not found → add to matching queue
+**Edit 2: Replace CSV parsing logic (lines 3975-3989)**
+
+Replace the broken manual CSV parser with PapaParse:
+
+```typescript
+if (novaMasterFile.name.endsWith('.csv')) {
+  // Use PapaParse for robust CSV parsing
+  const parsed = Papa.parse(text, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: (h: string) => h.trim().replace(/"/g, ''),
+  });
+  contacts = parsed.data;
+} else {
+  contacts = JSON.parse(text);
+}
 ```
 
 ---
 
-### File 2: `src/pages/NOVAMatching.tsx`
+## After Fix: Re-import Required
 
-| Edit | Lines | Description |
-|------|-------|-------------|
-| 1 | ~30 | Add `masterIdentityCount` state |
-| 2 | 34-72 | Update `fetchContacts` to check if name was previously matched by this user |
-| 3 | ~145 | Replace hardcoded "33K+" with `{masterIdentityCount.toLocaleString()}` |
-
-**Auto-skip logic:**
-```text
-For each contact without NOVA:
-  1. Query nova_master_identities for exact name match
-  2. If contact's name was previously matched by this user → auto-apply, skip queue
-  3. If not found → add to matching queue
-```
-
-**Note:** For NOVA, we'll check if the user has previously matched this exact name to a NOVA profile by looking at their other crew_contacts that share the same normalized name and have a nova_profile_url.
-
----
-
-## Flow Diagram
-
-```text
-Contact Load
-    ↓
-Already has IG/NOVA? → Skip (existing)
-    ↓
-Check user's previous matches for this name
-    ↓
-Found match? → Auto-apply, increment auto-matched count
-    ↓
-Not found? → Add to matching queue
-```
+Once the fix is deployed, the admin will need to **re-import the CSV** to correct the data. The existing 33K records have incorrect names and will be updated via the upsert logic (matched by username).
 
 ---
 
@@ -72,17 +54,17 @@ Not found? → Add to matching queue
 
 | Aspect | Details |
 |--------|---------|
-| Files modified | 2 |
-| Tables queried | `user_ig_map`, `ig_master_identities`, `nova_master_identities`, `crew_contacts` |
-| New columns | None |
-| Risk | Low - additive logic only |
+| Files modified | 1 (`src/pages/Admin.tsx`) |
+| Lines changed | ~20 |
+| Risk | Low - PapaParse is already installed |
+| Database impact | None until re-import |
 
 ---
 
 ## Verification Steps
 
-1. Match "Ryan Schwerzler" to an IG handle on one call sheet
-2. Upload a new call sheet with "Ryan Schwerzler"
-3. Start IG Matching → Ryan should be auto-skipped
-4. Verify subtitle shows live count (e.g., "854" not "833")
-5. Repeat test for NOVA matching
+1. Deploy the fix
+2. Re-upload `nova_profiles.csv` in Admin Dashboard
+3. Query database: `SELECT * FROM nova_master_identities WHERE username = 'adamgharib'`
+4. Verify `full_name = "Adam Gharib"` (not "Gharib")
+5. Test NOVA Matching - "Adam Gharib" should now auto-suggest
