@@ -76,6 +76,27 @@ const AppContent = () => {
   const [rlsValidated, setRlsValidated] = useState(false);
   const location = useLocation();
 
+  // Domain-based redirect for extracredit.studio
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const isExtraCreditDomain = 
+      hostname === 'extracredit.studio' || 
+      hostname === 'www.extracredit.studio';
+    
+    // Only redirect if on extracredit.studio AND not already in /extra-credit path
+    if (isExtraCreditDomain && !location.pathname.startsWith('/extra-credit')) {
+      // Preserve the path for auth/reset-password, map others to portal
+      const portalPaths = ['/auth', '/reset-password', '/verify-email'];
+      const currentPath = location.pathname;
+      
+      if (portalPaths.includes(currentPath)) {
+        window.location.href = `/extra-credit${currentPath}`;
+      } else {
+        window.location.href = '/extra-credit/call-sheets';
+      }
+    }
+  }, [location.pathname]);
+
   // Dev-mode route config validator
   if (import.meta.env.DEV) {
     console.log("[Router] Loaded route config:", ROUTES.map(r => r.path));
