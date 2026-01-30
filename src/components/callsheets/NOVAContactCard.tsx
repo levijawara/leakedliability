@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Loader2, Users, Sparkles, User, ExternalLink } from "lucide-react";
+import { Check, Loader2, Users, Sparkles, User, ExternalLink, Link } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +39,7 @@ export function NOVAContactCard({
   onSkip
 }: NOVAContactCardProps) {
   const [searchValue, setSearchValue] = useState("");
+  const [manualUsername, setManualUsername] = useState("");
   const [suggestions, setSuggestions] = useState<Array<{ profile_url: string; full_name: string; username: string; roles: string[] }>>([]);
   const [coworkers, setCoworkers] = useState<Coworker[]>([]);
   const [loadingCoworkers, setLoadingCoworkers] = useState(true);
@@ -188,6 +189,35 @@ export function NOVAContactCard({
     if (seedSuggestion) {
       handleSelectSuggestion(seedSuggestion.profileUrl, seedSuggestion.username);
     }
+  };
+
+  const handleManualUrlSubmit = async () => {
+    if (!manualUsername.trim()) return;
+    
+    // Extract username from full URL or use as-is
+    let username = manualUsername.trim();
+    
+    // Handle full URLs: extract username from itsnova.co or itsnova.com
+    const urlMatch = username.match(/(?:https?:\/\/)?(?:www\.)?itsnova\.(?:co|com)\/([^/?#]+)/i);
+    if (urlMatch) {
+      username = urlMatch[1];
+    }
+    
+    // Validate: only allow alphanumeric and basic characters
+    if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+      return; // Invalid username format
+    }
+    
+    // Build the full URL
+    const profileUrl = `https://www.itsnova.com/${username}`;
+    
+    // Update the contact
+    await supabase
+      .from('crew_contacts')
+      .update({ nova_profile_url: profileUrl })
+      .eq('id', contactId);
+
+    onMatch(profileUrl);
   };
 
   const getMatchReasonLabel = (reason: string) => {
@@ -348,6 +378,42 @@ export function NOVAContactCard({
               <Loader2 className="h-4 w-4 animate-spin" />
               Searching...
             </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-card px-2 text-muted-foreground">Or add URL manually</span>
+          </div>
+        </div>
+
+        {/* Manual URL Input */}
+        <div className="space-y-3">
+          <div className="relative">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground flex items-center gap-1">
+              <Link className="h-4 w-4" />
+              <span className="text-sm">itsnova.com/</span>
+            </div>
+            <Input
+              value={manualUsername}
+              onChange={(e) => setManualUsername(e.target.value)}
+              placeholder="username"
+              className="pl-32 h-12 text-lg"
+              onKeyDown={(e) => e.key === 'Enter' && handleManualUrlSubmit()}
+            />
+          </div>
+          {manualUsername.trim() && (
+            <Button 
+              onClick={handleManualUrlSubmit}
+              className="w-full bg-purple-600 hover:bg-purple-700"
+            >
+              <Check className="h-4 w-4 mr-2" />
+              Add NOVA Profile
+            </Button>
           )}
         </div>
 
