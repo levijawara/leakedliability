@@ -112,7 +112,7 @@ export default function IGMatching() {
   };
 
   const handleSkipAll = () => {
-    navigate(`${portalBase}/crew-contacts`);
+    navigate(`${portalBase}/call-sheets/${id}/nova-matching`);
   };
 
   const handleFinish = () => {
@@ -120,7 +120,7 @@ export default function IGMatching() {
       title: "IG Matching Complete",
       description: `Matched ${matchedCount} Instagram handles.`
     });
-    navigate(`${portalBase}/crew-contacts`);
+    navigate(`${portalBase}/call-sheets/${id}/nova-matching`);
   };
 
   const processedCount = matchedCount + skippedCount;
@@ -156,8 +156,8 @@ export default function IGMatching() {
               Matched {matchedCount} Instagram handles
               {skippedCount > 0 && ` (${skippedCount} skipped)`}
             </p>
-            <Button onClick={() => navigate(`${portalBase}/crew-contacts`)}>
-              Go to Crew Contacts
+            <Button onClick={() => navigate(`${portalBase}/call-sheets/${id}/nova-matching`)}>
+              Continue to NOVA Matching
             </Button>
           </div>
         </div>
@@ -177,8 +177,8 @@ export default function IGMatching() {
             <p className="text-muted-foreground">
               All contacts from this call sheet already have Instagram handles or none were imported.
             </p>
-            <Button onClick={() => navigate(`${portalBase}/crew-contacts`)}>
-              Go to Crew Contacts
+            <Button onClick={() => navigate(`${portalBase}/call-sheets/${id}/nova-matching`)}>
+              Continue to NOVA Matching
             </Button>
           </div>
         </div>
