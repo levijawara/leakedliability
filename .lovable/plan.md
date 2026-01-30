@@ -1,94 +1,52 @@
 
-# Plan: Incremental Parse Review Enhancements
+# Plan: Route IG Matching to NOVA Matching
 
-## Strategy
+## Problem
+After completing IG Matching, users are taken directly to Crew Contacts instead of NOVA Matching.
 
-Break the large update into **6 small edits** across 3 files to avoid platform timeouts.
-
----
-
-## Edit 1: ParseReviewHeader.tsx - Add new props and dropdown
-
-**Changes:**
-- Add props: `selectedCount`, `onSaveSelected`, `onSelectWithContact`, `onExportTXT`
-- Replace JSON/CSV buttons with dropdown menu
-- Add "Save Selected" and "Email / Phone" buttons
-
-**Lines affected:** ~90 lines total, full rewrite acceptable for small file
+## Solution
+Update the IG Matching page to navigate to NOVA Matching when complete, preserving the call sheet ID for context.
 
 ---
 
-## Edit 2: ParsedContactsTable.tsx - Add new props interface
+## Changes
 
-**Changes (lines 37-46):**
-- Add to interface: `onSelectAll`, `onDeselectAll`, `onMergeAll`, `onAddAll`, `onSkipAll`, `duplicateCount`
+### File: `src/pages/IGMatching.tsx`
 
----
+**Edit 1: Update `handleFinish` (lines 118-124)**
+- Change navigation from `/crew-contacts` to `/call-sheets/{id}/nova-matching`
 
-## Edit 3: ParsedContactsTable.tsx - Add duplicate sorting and global checkbox
+**Edit 2: Update `handleSkipAll` (lines 114-116)**
+- Change navigation to go to NOVA Matching instead of Crew Contacts
 
-**Changes:**
-- Add useMemo for duplicate-first sorting
-- Add global checkbox in header
-- Add duplicate banner before table
+**Edit 3: Update "All Done" screen button (line 159)**
+- Change button to "Continue to NOVA Matching"
+- Navigate to `/call-sheets/{id}/nova-matching`
 
----
-
-## Edit 4: ParsedContactsTable.tsx - Update row styling
-
-**Changes (lines 229-232):**
-- Add green background for duplicate rows: `bg-green-900/20 border-l-2 border-l-green-600`
+**Edit 4: Update "No Contacts" screen button (line 180)**
+- Change navigation to NOVA Matching (users may still want to match NOVA profiles even if no IG handles needed)
 
 ---
 
-## Edit 5: ParseReview.tsx - Add new handlers
-
-**Changes (after line 354):**
-- Add `handleExportTXT` function
-- Add `handleSaveSelected` function  
-- Add `handleSelectWithContact` function
-- Add `handleSelectAll` / `handleDeselectAll`
-- Add duplicate bulk action handlers
-
----
-
-## Edit 6: ParseReview.tsx - Update component props
-
-**Changes (lines 405-440):**
-- Add AI disclaimer subtext in header section
-- Pass new props to `ParseReviewHeader`
-- Pass new props to `ParsedContactsTable`
-
----
-
-## Execution Order
+## Flow After Implementation
 
 ```text
-1. ParseReviewHeader.tsx    (full rewrite - small file)
-2. ParsedContactsTable.tsx  (interface update)
-3. ParsedContactsTable.tsx  (sorting + banner)
-4. ParsedContactsTable.tsx  (row styling)
-5. ParseReview.tsx          (handlers)
-6. ParseReview.tsx          (props + JSX)
+Parse Review
+    ↓
+IG Matching (/call-sheets/:id/ig-matching)
+    ↓ (Finish / Skip All / All Done)
+NOVA Matching (/call-sheets/:id/nova-matching)
+    ↓ (Finish / Skip All / All Done)
+Crew Contacts
 ```
 
 ---
 
-## Risk Mitigation
-
-| Risk | Mitigation |
-|------|------------|
-| Edit timeout | Small edits (~30-50 lines each) |
-| Partial state | Each edit is functional standalone |
-| Rollback | Can revert individual edits |
-
----
-
-## Summary
+## Technical Details
 
 | Aspect | Details |
 |--------|---------|
-| Total edits | 6 |
-| Max lines per edit | ~50 |
-| Files touched | 3 |
+| Files modified | 1 (`src/pages/IGMatching.tsx`) |
+| Lines changed | ~8 |
 | Database changes | None |
+| Risk | Low - navigation only |
