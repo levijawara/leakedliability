@@ -385,28 +385,6 @@ const Profile = () => {
               {/* Leaderboard Access Status - PRIORITY */}
               <LeaderboardAccessStatus />
               
-              {/* Beta Access Section - ONLY for non-admins, BELOW Refresh Status */}
-              {!isAdmin && (
-                <>
-                  <Separator />
-                  {!betaAccess ? (
-                    <Button 
-                      variant="outline" 
-                      className="w-full"
-                      onClick={() => navigate('/beta-unlock')}
-                    >
-                      Can you keep a secret? 👀
-                    </Button>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Beta Access Unlocked
-                      </Badge>
-                    </div>
-                  )}
-                </>
-              )}
             </CardContent>
           </Card>
 
