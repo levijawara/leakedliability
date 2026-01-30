@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, LogOut, FileSpreadsheet, Users } from "lucide-react";
+import { User, LogOut, FileSpreadsheet, Users, Shield, TrendingUp, Map, Home } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   DropdownMenu,
@@ -17,7 +17,8 @@ const PORTAL_BASE = "/extra-credit";
 
 export function PortalNavigation() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<{ email?: string } | null>(null);
+  const [user, setUser] = useState<{ id?: string; email?: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -25,14 +26,37 @@ export function PortalNavigation() {
       return;
     }
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      if (sessionUser?.id) {
+        checkAdminStatus(sessionUser.id);
+      }
     }).catch(() => setUser(null));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const sessionUser = session?.user ?? null;
+      setUser(sessionUser);
+      if (sessionUser?.id) {
+        checkAdminStatus(sessionUser.id);
+      } else {
+        setIsAdmin(false);
+      }
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  const checkAdminStatus = async (userId: string) => {
+    try {
+      const { data, error } = await supabase.rpc('has_role', { _user_id: userId, _role: 'admin' });
+      if (!error && data) {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } catch {
+      setIsAdmin(false);
+    }
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -93,6 +117,28 @@ export function PortalNavigation() {
                     <Users className="h-4 w-4 mr-2" />
                     Crew Contacts
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/")}>
+                    <Home className="h-4 w-4 mr-2" />
+                    Leaked Liability
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate("/admin")}>
+                        <Shield className="h-4 w-4 mr-2" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/leaderboard-analytics")}>
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Analytics
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate("/sitemap")}>
+                        <Map className="h-4 w-4 mr-2" />
+                        Site Map
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out

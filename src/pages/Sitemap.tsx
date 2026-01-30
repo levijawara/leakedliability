@@ -27,6 +27,8 @@ interface RoutesData {
   authenticated: RouteInfo[];
   leaderboard: RouteInfo[];
   admin: RouteInfo[];
+  system: RouteInfo[];
+  portal: RouteInfo[];
   edgeFunctions: RouteInfo[];
 }
 
@@ -422,6 +424,8 @@ const Sitemap = () => {
     authenticated: routesByCategory.authenticated,
     leaderboard: routesByCategory.leaderboard,
     admin: routesByCategory.admin,
+    system: routesByCategory.system,
+    portal: routesByCategory.portal,
     edgeFunctions: [], // Keep empty for now, can be moved to config later if needed
   };
 
@@ -435,7 +439,7 @@ const Sitemap = () => {
     );
   };
 
-  const RouteCard = ({ route, variant }: { route: RouteInfo; variant: "public" | "authenticated" | "leaderboard" | "admin" | "edgeFunctions" }) => {
+  const RouteCard = ({ route, variant }: { route: RouteInfo; variant: "public" | "authenticated" | "leaderboard" | "admin" | "system" | "portal" | "edgeFunctions" }) => {
     const Icon = route.icon;
     const isCurrentPage = location.pathname === route.path;
     const isEdgeFunction = variant === "edgeFunctions";
@@ -446,6 +450,8 @@ const Sitemap = () => {
       authenticated: "border-blue-500/20 hover:border-blue-500/40",
       leaderboard: "border-purple-500/20 hover:border-purple-500/40",
       admin: "border-red-500/20 hover:border-red-500/40",
+      system: "border-orange-500/20 hover:border-orange-500/40",
+      portal: "border-violet-500/20 hover:border-violet-500/40",
       edgeFunctions: "border-gray-500/20 hover:border-gray-500/40",
     };
 
@@ -454,6 +460,8 @@ const Sitemap = () => {
       authenticated: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
       leaderboard: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20",
       admin: "bg-red-500/10 text-red-700 dark:text-red-300 border-red-500/20",
+      system: "bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20",
+      portal: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
       edgeFunctions: "bg-gray-500/10 text-gray-700 dark:text-gray-300 border-gray-500/20",
     };
 
@@ -482,6 +490,8 @@ const Sitemap = () => {
             <Badge variant="outline" className={badgeVariants[variant]}>
               {variant === "public" && <Icons.Globe className="h-3 w-3 mr-1" />}
               {variant === "authenticated" && <Icons.Lock className="h-3 w-3 mr-1" />}
+              {variant === "system" && <Icons.Settings className="h-3 w-3 mr-1" />}
+              {variant === "portal" && <Icons.Sparkles className="h-3 w-3 mr-1" />}
               {variant === "leaderboard" && <Icons.TrendingUp className="h-3 w-3 mr-1" />}
               {variant === "admin" && <Icons.Shield className="h-3 w-3 mr-1" />}
               {variant === "edgeFunctions" && <Icons.Settings className="h-3 w-3 mr-1" />}
@@ -516,10 +526,12 @@ const Sitemap = () => {
   const filteredAuthRoutes = filterRoutes(routes.authenticated);
   const filteredLeaderboardRoutes = filterRoutes(routes.leaderboard);
   const filteredAdminRoutes = filterRoutes(routes.admin);
+  const filteredSystemRoutes = filterRoutes(routes.system);
+  const filteredPortalRoutes = filterRoutes(routes.portal);
   const filteredEdgeFunctions = filterRoutes(routes.edgeFunctions);
 
-  const totalRoutes = routes.public.length + routes.authenticated.length + routes.leaderboard.length + routes.admin.length + routes.edgeFunctions.length;
-  const totalFiltered = filteredPublicRoutes.length + filteredAuthRoutes.length + filteredLeaderboardRoutes.length + filteredAdminRoutes.length + filteredEdgeFunctions.length;
+  const totalRoutes = routes.public.length + routes.authenticated.length + routes.leaderboard.length + routes.admin.length + routes.system.length + routes.portal.length + routes.edgeFunctions.length;
+  const totalFiltered = filteredPublicRoutes.length + filteredAuthRoutes.length + filteredLeaderboardRoutes.length + filteredAdminRoutes.length + filteredSystemRoutes.length + filteredPortalRoutes.length + filteredEdgeFunctions.length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -587,7 +599,7 @@ const Sitemap = () => {
                 size="sm"
                 onClick={() => {
                   setRouteViewMode("gallery");
-                  const allRoutes = [...filteredPublicRoutes, ...filteredAuthRoutes, ...filteredLeaderboardRoutes, ...filteredAdminRoutes];
+                  const allRoutes = [...filteredPublicRoutes, ...filteredAuthRoutes, ...filteredLeaderboardRoutes, ...filteredAdminRoutes, ...filteredSystemRoutes, ...filteredPortalRoutes];
                   if (!selectedRoute && allRoutes.length > 0) {
                     setSelectedRoute(allRoutes[0]);
                   }
@@ -674,6 +686,43 @@ const Sitemap = () => {
             </div>
           )}
 
+          {/* System Routes */}
+          {filteredSystemRoutes.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Icons.Settings className="h-6 w-6 text-orange-600" />
+                <h2 className="text-2xl font-bold">✔ SYSTEM ROUTES</h2>
+                <Badge variant="outline" className="bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20">
+                  {filteredSystemRoutes.length} routes
+                </Badge>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredSystemRoutes.map((route) => (
+                  <RouteCard key={route.path} route={route} variant="system" />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Portal Routes (Extra Credit) */}
+          {filteredPortalRoutes.length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <Icons.Sparkles className="h-6 w-6 text-violet-600" />
+                <h2 className="text-2xl font-bold">✨ EXTRA CREDIT PORTAL ROUTES</h2>
+                <Badge variant="outline" className="bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20">
+                  {filteredPortalRoutes.length} routes
+                </Badge>
+              </div>
+              <p className="text-sm text-muted-foreground mb-4">Standalone portal for Call Sheets & Crew Contacts</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredPortalRoutes.map((route) => (
+                  <RouteCard key={route.path} route={route} variant="portal" />
+                ))}
+              </div>
+            </div>
+          )}
+
               {/* Edge Functions */}
               {filteredEdgeFunctions.length > 0 && (
                 <div>
@@ -705,6 +754,8 @@ const Sitemap = () => {
                     ...filteredAuthRoutes.map(r => ({ ...r, category: 'authenticated' as const })),
                     ...filteredLeaderboardRoutes.map(r => ({ ...r, category: 'leaderboard' as const })),
                     ...filteredAdminRoutes.map(r => ({ ...r, category: 'admin' as const })),
+                    ...filteredSystemRoutes.map(r => ({ ...r, category: 'system' as const })),
+                    ...filteredPortalRoutes.map(r => ({ ...r, category: 'portal' as const })),
                   ].map((route) => {
                     const Icon = route.icon;
                     const isSelected = selectedRoute?.path === route.path;
@@ -713,6 +764,8 @@ const Sitemap = () => {
                       authenticated: 'text-blue-600',
                       leaderboard: 'text-purple-600',
                       admin: 'text-red-600',
+                      system: 'text-orange-600',
+                      portal: 'text-violet-600',
                     };
                     return (
                       <button
