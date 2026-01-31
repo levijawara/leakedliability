@@ -36,6 +36,11 @@ const getNameClasses = (name: string) => {
   return "text-base font-semibold";                // Very long: minimum
 };
 
+// Check if NOVA URL is valid (not null, empty, or N/A marker)
+const isValidNovaUrl = (url: string | null | undefined): boolean => {
+  return !!url && url !== 'N/A' && url.startsWith('http');
+};
+
 export function CrewContactCard({
   contact,
   callSheetCount,
@@ -103,7 +108,7 @@ export function CrewContactCard({
   const displayViews = youtubeViewCount > 0 ? formatFullViewCount(youtubeViewCount) : null;
 
   // Check if any icons exist
-  const hasIcons = contact.nova_profile_url || contact.ig_handle;
+  const hasIcons = isValidNovaUrl(contact.nova_profile_url) || contact.ig_handle;
 
   return (
     <TooltipProvider>
@@ -212,7 +217,7 @@ export function CrewContactCard({
                   {/* Only render icon container if icons exist */}
                   {hasIcons && (
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {contact.nova_profile_url && (
+                      {isValidNovaUrl(contact.nova_profile_url) && (
                         <a
                           href={contact.nova_profile_url}
                           target="_blank"
