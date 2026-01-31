@@ -40,7 +40,7 @@ export function CreateProjectModal({
 
   const handleCreate = async () => {
     if (!projectName.trim()) return;
-    if (selectedSheets.length < 2) return;
+    if (selectedSheets.length < 1) return;
 
     setIsCreating(true);
     try {
@@ -97,7 +97,7 @@ export function CreateProjectModal({
             Create Project Folder
           </DialogTitle>
           <DialogDescription>
-            Group {selectedSheets.length} call sheets into a single project folder.
+            Group {selectedSheets.length} call sheet{selectedSheets.length !== 1 ? 's' : ''} into a project folder.
           </DialogDescription>
         </DialogHeader>
 
@@ -135,7 +135,7 @@ export function CreateProjectModal({
           </Button>
           <Button
             onClick={handleCreate}
-            disabled={isCreating || !projectName.trim() || selectedSheets.length < 2}
+            disabled={isCreating || !projectName.trim() || selectedSheets.length < 1}
           >
             {isCreating ? (
               <>
