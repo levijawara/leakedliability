@@ -159,8 +159,8 @@ export function CallSheetBulkActionsBar({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Create Project - show when 2+ selected */}
-          {selectedIds.length >= 2 && (
+          {/* Create Project - show when 1+ selected */}
+          {selectedIds.length >= 1 && (
             <Button
               variant="outline"
               size="sm"
