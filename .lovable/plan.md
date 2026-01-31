@@ -1,46 +1,85 @@
 
-# Plan: Allow Single Call Sheet Project Creation
+# Plan: Sticky Toolbar + Fix Project Modal Buttons
 
-## Problem
-Currently, the "Create Project" button only appears when 2+ call sheets are selected. However, a single work-day (one call sheet) can result in multiple videos, so users need the ability to create a project folder for just one call sheet.
-
-## Solution
-Lower the minimum selection threshold from 2 to 1 in two files.
+## Problem Summary
+1. The Call Sheets page toolbar scrolls away, unlike the Crew Contacts page where it stays visible
+2. "View PDF" and "Generate Credits" buttons don't work when viewing call sheets inside a project folder
 
 ---
 
 ## Changes
 
-### 1. Show Button for 1+ Selected
-**File: `src/components/callsheets/CallSheetBulkActionsBar.tsx`**
+### 1. Make Call Sheets Toolbar Sticky
+**File: `src/components/callsheets/CallSheetList.tsx`**
+
+Wrap the ReparseControlPanel and search/sort controls in a sticky container, matching the Crew Contacts toolbar pattern:
 
 ```typescript
-// Line 163: Change threshold from 2 to 1
-- {selectedIds.length >= 2 && (
-+ {selectedIds.length >= 1 && (
+// Around line 927, wrap controls in sticky container
+<div className="sticky top-[73px] z-10 bg-background pb-4 pt-2">
+  {/* Reparse Control Panel */}
+  <ReparseControlPanel ... />
+
+  {/* Search and Sort Controls */}
+  <div className="flex flex-col sm:flex-row gap-3 mt-3">
+    ...
+  </div>
+</div>
 ```
 
-### 2. Update Modal Validation & Copy
-**File: `src/components/callsheets/CreateProjectModal.tsx`**
-
-```typescript
-// Line 43: Allow single sheet
-- if (selectedSheets.length < 2) return;
-+ if (selectedSheets.length < 1) return;
-
-// Line 99-101: Handle singular/plural description
-- Group {selectedSheets.length} call sheets into a single project folder.
-+ Group {selectedSheets.length} call sheet{selectedSheets.length !== 1 ? 's' : ''} into a project folder.
-
-// Line 138: Update button disabled condition
-- disabled={isCreating || !projectName.trim() || selectedSheets.length < 2}
-+ disabled={isCreating || !projectName.trim() || selectedSheets.length < 1}
-```
+The `top-[73px]` value aligns with the navigation bar height.
 
 ---
 
-## Result
-Users can now create a project folder with just 1 call sheet selected, allowing them to link multiple videos to a single work-day.
+### 2. Fix View PDF and Credits Buttons in Project Modal
+**File: `src/components/callsheets/ProjectDetailModal.tsx`**
+
+Add local state and handlers for the PDF viewer and Credits modals:
+
+**Add imports:**
+- `PDFViewerModal` from `./PDFViewerModal`
+- `CreditsModal` from `./CreditsModal`
+
+**Add state:**
+```typescript
+const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
+const [creditsSheet, setCreditsSheet] = useState<{ id: string; fileName: string } | null>(null);
+```
+
+**Update CallSheetCard props:**
+```typescript
+onViewPdf={(sheet) => setViewingPdf({ 
+  filePath: sheet.master_file_path, 
+  fileName: sheet.original_file_name 
+})}
+onCredits={(sheet) => setCreditsSheet({ 
+  id: sheet.id, 
+  fileName: sheet.original_file_name 
+})}
+```
+
+**Add modals to render:**
+```typescript
+{/* PDF Viewer Modal */}
+{viewingPdf && (
+  <PDFViewerModal
+    open={!!viewingPdf}
+    onOpenChange={() => setViewingPdf(null)}
+    filePath={viewingPdf.filePath}
+    fileName={viewingPdf.fileName}
+  />
+)}
+
+{/* Credits Modal */}
+{creditsSheet && (
+  <CreditsModal
+    open={!!creditsSheet}
+    onOpenChange={() => setCreditsSheet(null)}
+    callSheetId={creditsSheet.id}
+    fileName={creditsSheet.fileName}
+  />
+)}
+```
 
 ---
 
@@ -49,5 +88,15 @@ Users can now create a project folder with just 1 call sheet selected, allowing 
 | Aspect | Details |
 |--------|---------|
 | Files modified | 2 |
-| Lines changed | 4 |
-| Risk | None - simple threshold change |
+| Lines changed | ~30 |
+| Risk | Low - UI positioning and event handler wiring |
+| Rollback | Revert sticky class, remove modal state/handlers |
+
+---
+
+## Verification
+
+1. Open Call Sheets page and scroll down - toolbar should remain visible
+2. Open a project folder with call sheets inside
+3. Click the "View PDF" button (FileType icon) - PDF viewer modal should open
+4. Click the "Generate Credits" button (List icon) - Credits modal should open
