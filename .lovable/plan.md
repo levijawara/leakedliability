@@ -1,84 +1,164 @@
 
-# Plan: Sticky Toolbar + Fix Project Modal Buttons
+# Plan: Add Navigation Buttons + N/A Button for Matching Pages
 
 ## Problem Summary
-1. The Call Sheets page toolbar scrolls away, unlike the Crew Contacts page where it stays visible
-2. "View PDF" and "Generate Credits" buttons don't work when viewing call sheets inside a project folder
+1. Users cannot go back to review/fix previous matching decisions
+2. NOVA matching wastes time re-searching names that don't have NOVA profiles
+
+---
+
+## Solution Overview
+
+### Architecture Change
+Switch from "remove from queue" to "index-based navigation":
+- Keep all contacts in array throughout the session
+- Track current position with `currentIndex` state
+- Track processed contacts with a `Set<string>` for matched/skipped IDs
+- For NOVA: Add separate tracking for "N/A" (no profile exists)
+
+```text
+Before: contacts = [A, B, C] -> match A -> contacts = [B, C]
+After:  contacts = [A, B, C], currentIndex = 0 -> match A -> currentIndex = 1
+```
 
 ---
 
 ## Changes
 
-### 1. Make Call Sheets Toolbar Sticky
-**File: `src/components/callsheets/CallSheetList.tsx`**
+### 1. IGMatching.tsx
+**File: `src/pages/IGMatching.tsx`**
 
-Wrap the ReparseControlPanel and search/sort controls in a sticky container, matching the Crew Contacts toolbar pattern:
+**State changes:**
+- Add `currentIndex` state (default 0)
+- Add `processedIds` Set to track matched/skipped contacts
+- Keep full contacts array (don't filter on match/skip)
 
+**New handlers:**
 ```typescript
-// Around line 927, wrap controls in sticky container
-<div className="sticky top-[73px] z-10 bg-background pb-4 pt-2">
-  {/* Reparse Control Panel */}
-  <ReparseControlPanel ... />
+const handlePrevious = () => {
+  if (currentIndex > 0) setCurrentIndex(prev => prev - 1);
+};
 
-  {/* Search and Sort Controls */}
-  <div className="flex flex-col sm:flex-row gap-3 mt-3">
-    ...
-  </div>
+const handleNext = () => {
+  if (currentIndex < contacts.length - 1) setCurrentIndex(prev => prev + 1);
+};
+```
+
+**Updated match/skip handlers:**
+- Add contact ID to processedIds Set
+- Auto-advance to next contact (increment currentIndex)
+
+**UI addition (below the contact card):**
+```typescript
+<div className="flex justify-center gap-4 mt-6">
+  <Button 
+    variant="outline" 
+    onClick={handlePrevious}
+    disabled={currentIndex === 0}
+  >
+    <ChevronLeft className="h-4 w-4 mr-2" />
+    Previous
+  </Button>
+  <Button 
+    variant="outline" 
+    onClick={handleNext}
+    disabled={currentIndex >= contacts.length - 1}
+  >
+    Next
+    <ChevronRight className="h-4 w-4 ml-2" />
+  </Button>
 </div>
 ```
 
-The `top-[73px]` value aligns with the navigation bar height.
+---
+
+### 2. NOVAMatching.tsx
+**File: `src/pages/NOVAMatching.tsx`**
+
+Same changes as IGMatching, plus:
+
+**Additional state:**
+- Add `noProfileIds` Set to track contacts marked as "N/A"
+
+**New handler:**
+```typescript
+const handleNoProfile = async (contactId: string) => {
+  // Mark in database with special value
+  await supabase
+    .from('crew_contacts')
+    .update({ nova_profile_url: 'N/A' })
+    .eq('id', contactId);
+  
+  setNoProfileIds(prev => new Set([...prev, contactId]));
+  setSkippedCount(prev => prev + 1);
+  
+  // Auto-advance
+  if (currentIndex < contacts.length - 1) {
+    setCurrentIndex(prev => prev + 1);
+  }
+};
+```
+
+**Pass to NOVAContactCard:**
+```typescript
+onNoProfile={() => handleNoProfile(currentContact.id)}
+```
 
 ---
 
-### 2. Fix View PDF and Credits Buttons in Project Modal
-**File: `src/components/callsheets/ProjectDetailModal.tsx`**
+### 3. NOVAContactCard.tsx
+**File: `src/components/callsheets/NOVAContactCard.tsx`**
 
-Add local state and handlers for the PDF viewer and Credits modals:
-
-**Add imports:**
-- `PDFViewerModal` from `./PDFViewerModal`
-- `CreditsModal` from `./CreditsModal`
-
-**Add state:**
+**Props addition:**
 ```typescript
-const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
-const [creditsSheet, setCreditsSheet] = useState<{ id: string; fileName: string } | null>(null);
+interface NOVAContactCardProps {
+  // ... existing props
+  onNoProfile?: () => void;  // New optional prop
+}
 ```
 
-**Update CallSheetCard props:**
+**UI addition (next to Skip button):**
 ```typescript
-onViewPdf={(sheet) => setViewingPdf({ 
-  filePath: sheet.master_file_path, 
-  fileName: sheet.original_file_name 
-})}
-onCredits={(sheet) => setCreditsSheet({ 
-  id: sheet.id, 
-  fileName: sheet.original_file_name 
-})}
+<div className="mt-6 flex justify-center gap-3">
+  <Button variant="ghost" size="lg" onClick={onSkip} className="text-muted-foreground">
+    Skip This Person
+  </Button>
+  {onNoProfile && (
+    <Button 
+      variant="outline" 
+      size="lg" 
+      onClick={onNoProfile}
+      className="text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
+    >
+      <Ban className="h-4 w-4 mr-2" />
+      N/A (No Profile)
+    </Button>
+  )}
+</div>
 ```
 
-**Add modals to render:**
-```typescript
-{/* PDF Viewer Modal */}
-{viewingPdf && (
-  <PDFViewerModal
-    open={!!viewingPdf}
-    onOpenChange={() => setViewingPdf(null)}
-    filePath={viewingPdf.filePath}
-    fileName={viewingPdf.fileName}
-  />
-)}
+---
 
-{/* Credits Modal */}
-{creditsSheet && (
-  <CreditsModal
-    open={!!creditsSheet}
-    onOpenChange={() => setCreditsSheet(null)}
-    callSheetId={creditsSheet.id}
-    fileName={creditsSheet.fileName}
-  />
-)}
+## N/A Logic for NOVA
+
+When "N/A" is clicked:
+1. Store `nova_profile_url = 'N/A'` in the database
+2. This special value will:
+   - Be excluded from "needs matching" queries in future sessions
+   - Be recognized as "confirmed no profile" vs "never checked"
+3. User can still go back with Previous button and change their mind
+
+---
+
+## Position Display Update
+
+The header position display will show actual index position:
+```typescript
+// Before: based on processedCount
+{currentPosition} of {totalOriginal}
+
+// After: based on currentIndex
+{currentIndex + 1} of {contacts.length}
 ```
 
 ---
@@ -87,16 +167,20 @@ onCredits={(sheet) => setCreditsSheet({
 
 | Aspect | Details |
 |--------|---------|
-| Files modified | 2 |
-| Lines changed | ~30 |
-| Risk | Low - UI positioning and event handler wiring |
-| Rollback | Revert sticky class, remove modal state/handlers |
+| Files modified | 3 |
+| Lines changed | ~80 |
+| Risk | Low - UI navigation, no data model changes |
+| Database change | Store 'N/A' string in nova_profile_url for explicit no-profile |
 
 ---
 
 ## Verification
 
-1. Open Call Sheets page and scroll down - toolbar should remain visible
-2. Open a project folder with call sheets inside
-3. Click the "View PDF" button (FileType icon) - PDF viewer modal should open
-4. Click the "Generate Credits" button (List icon) - Credits modal should open
+1. Go to IG Matching page with multiple contacts
+2. Match first contact, verify auto-advance to second
+3. Click "Previous" - should go back to first contact (already matched)
+4. Click "Next" - should return to second contact
+5. Go to NOVA Matching page
+6. Click "N/A" on a contact - should advance and mark as N/A
+7. Click "Previous" - should see the N/A'd contact
+8. Verify N/A'd contacts don't appear in future matching sessions
