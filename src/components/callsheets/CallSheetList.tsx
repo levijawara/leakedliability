@@ -924,41 +924,44 @@ export function CallSheetList({}: CallSheetListProps) {
         </div>
       )}
 
-      {/* Reparse Control Panel - shows when pending/error sheets exist */}
-      <ReparseControlPanel
-        statusCounts={statusCounts}
-        pendingSheetIds={pendingSheetIds}
-        errorSheetIds={errorSheetIds}
-        onQueueComplete={fetchUserCallSheets}
-      />
-
-      {/* Search and Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search by filename or contact..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9"
-          />
-          {searchQuery && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-              onClick={() => setSearchQuery('')}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-        <SortToggle
-          sortField={sortField}
-          sortDirection={sortDirection}
-          onSortChange={handleSortChange}
+      {/* Sticky Toolbar Container */}
+      <div className="sticky top-[73px] z-10 bg-background pb-4 pt-2 -mx-4 px-4 md:-mx-6 md:px-6">
+        {/* Reparse Control Panel - shows when pending/error sheets exist */}
+        <ReparseControlPanel
+          statusCounts={statusCounts}
+          pendingSheetIds={pendingSheetIds}
+          errorSheetIds={errorSheetIds}
+          onQueueComplete={fetchUserCallSheets}
         />
-        <ViewToggle view={viewMode} onViewChange={setViewMode} />
+
+        {/* Search and Sort Controls */}
+        <div className="flex flex-col sm:flex-row gap-3 mt-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by filename or contact..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9"
+            />
+            {searchQuery && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                onClick={() => setSearchQuery('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <SortToggle
+            sortField={sortField}
+            sortDirection={sortDirection}
+            onSortChange={handleSortChange}
+          />
+          <ViewToggle view={viewMode} onViewChange={setViewMode} />
+        </div>
       </div>
 
       {/* Bulk Actions Bar */}
