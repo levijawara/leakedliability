@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Instagram, Loader2, CheckCircle } from "lucide-react";
+import { ArrowLeft, Instagram, Loader2, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
@@ -34,10 +34,9 @@ export default function IGMatching() {
   const { toast } = useToast();
 
   const [contacts, setContacts] = useState<ContactToMatch[]>([]);
-  const [matchedCount, setMatchedCount] = useState(0);
-  const [skippedCount, setSkippedCount] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [processedIds, setProcessedIds] = useState<Set<string>>(new Set());
   const [autoMatchedCount, setAutoMatchedCount] = useState(0);
-  const [totalOriginal, setTotalOriginal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [masterIdentityCount, setMasterIdentityCount] = useState(0);
   const isPortal = usePortalMode();
@@ -133,7 +132,6 @@ export default function IGMatching() {
 
         setAutoMatchedCount(autoMatched);
         setContacts(contactsWithoutIG);
-        setTotalOriginal(contactsWithoutIG.length + autoMatched);
         
         if (autoMatched > 0) {
           toast({
@@ -159,17 +157,31 @@ export default function IGMatching() {
   }, [id, navigate, toast, portalBase]);
 
   const handleMatch = (contactId: string, igHandle: string | null) => {
-    if (igHandle) {
-      setMatchedCount(prev => prev + 1);
+    setProcessedIds(prev => new Set([...prev, contactId]));
+    // Auto-advance to next contact
+    if (currentIndex < contacts.length - 1) {
+      setCurrentIndex(prev => prev + 1);
     }
-    // Remove from queue - next contact will appear
-    setContacts(prev => prev.filter(c => c.id !== contactId));
   };
 
   const handleSkip = (contactId: string) => {
-    setSkippedCount(prev => prev + 1);
-    // Remove from queue - next contact will appear
-    setContacts(prev => prev.filter(c => c.id !== contactId));
+    setProcessedIds(prev => new Set([...prev, contactId]));
+    // Auto-advance to next contact
+    if (currentIndex < contacts.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    }
+  };
+
+  const handleNext = () => {
+    if (currentIndex < contacts.length - 1) {
+      setCurrentIndex(prev => prev + 1);
+    }
   };
 
   const handleSkipAll = () => {
@@ -177,6 +189,11 @@ export default function IGMatching() {
   };
 
   const handleFinish = () => {
+    const matchedCount = [...processedIds].filter(id => {
+      const contact = contacts.find(c => c.id === id);
+      return contact?.ig_handle !== null;
+    }).length;
+    
     toast({
       title: "IG Matching Complete",
       description: `Matched ${matchedCount + autoMatchedCount} Instagram handles${autoMatchedCount > 0 ? ` (${autoMatchedCount} auto-matched)` : ''}.`
@@ -184,14 +201,13 @@ export default function IGMatching() {
     navigate(`${portalBase}/call-sheets/${id}/nova-matching`);
   };
 
-  const processedCount = matchedCount + skippedCount + autoMatchedCount;
-  const progressPercent = totalOriginal > 0 
-    ? (processedCount / totalOriginal) * 100 
+  const matchedCount = [...processedIds].length;
+  const progressPercent = contacts.length > 0 
+    ? (processedIds.size / contacts.length) * 100 
     : 0;
   
-  // Current contact is always the first one in the queue
-  const currentContact = contacts[0];
-  const currentPosition = processedCount + 1;
+  // Current contact based on index
+  const currentContact = contacts[currentIndex];
 
   if (loading) {
     return (
@@ -204,8 +220,8 @@ export default function IGMatching() {
     );
   }
 
-  // All done
-  if (contacts.length === 0 && totalOriginal > 0) {
+  // All done - all contacts processed
+  if (contacts.length > 0 && processedIds.size === contacts.length) {
     return (
       <>
         {!isPortal && <Navigation />}
@@ -214,13 +230,17 @@ export default function IGMatching() {
             <CheckCircle className="h-16 w-16 text-primary mx-auto" />
             <h1 className="text-2xl font-bold">All Done!</h1>
             <p className="text-muted-foreground">
-              Matched {matchedCount + autoMatchedCount} Instagram handles
+              Processed {contacts.length} contacts
               {autoMatchedCount > 0 && ` (${autoMatchedCount} auto-matched)`}
-              {skippedCount > 0 && ` • ${skippedCount} skipped`}
             </p>
-            <Button onClick={() => navigate(`${portalBase}/call-sheets/${id}/nova-matching`)}>
-              Continue to NOVA Matching
-            </Button>
+            <div className="flex gap-3 justify-center">
+              <Button variant="outline" onClick={() => setCurrentIndex(0)}>
+                Review Again
+              </Button>
+              <Button onClick={() => navigate(`${portalBase}/call-sheets/${id}/nova-matching`)}>
+                Continue to NOVA Matching
+              </Button>
+            </div>
           </div>
         </div>
       </>
@@ -228,7 +248,7 @@ export default function IGMatching() {
   }
 
   // No contacts need matching
-  if (contacts.length === 0 && totalOriginal === 0) {
+  if (contacts.length === 0) {
     return (
       <>
         {!isPortal && <Navigation />}
@@ -268,7 +288,12 @@ export default function IGMatching() {
               </div>
               <div className="flex items-center gap-4">
                 <span className="text-sm font-medium">
-                  {currentPosition} of {totalOriginal}
+                  {currentIndex + 1} of {contacts.length}
+                  {processedIds.size > 0 && (
+                    <span className="text-muted-foreground ml-2">
+                      ({processedIds.size} processed)
+                    </span>
+                  )}
                 </span>
                 <Button variant="outline" size="sm" onClick={handleSkipAll}>
                   Skip All
@@ -287,11 +312,11 @@ export default function IGMatching() {
         {/* Subtitle */}
         <div className="container mx-auto px-4 py-4">
           <p className="text-muted-foreground text-center">
-            Cross-referencing against {masterIdentityCount.toLocaleString()} verified identities • One at a time
+            Cross-referencing against {masterIdentityCount.toLocaleString()} verified identities • Use Previous/Next to review
           </p>
         </div>
 
-        {/* Current Contact Card - ONE at a time */}
+        {/* Current Contact Card */}
         <div className="container mx-auto px-4 pb-8">
           <div className="max-w-2xl mx-auto">
             {currentContact && (
@@ -307,6 +332,26 @@ export default function IGMatching() {
                 onSkip={() => handleSkip(currentContact.id)}
               />
             )}
+
+            {/* Navigation Buttons */}
+            <div className="flex justify-center gap-4 mt-6">
+              <Button 
+                variant="outline" 
+                onClick={handlePrevious}
+                disabled={currentIndex === 0}
+              >
+                <ChevronLeft className="h-4 w-4 mr-2" />
+                Previous
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={handleNext}
+                disabled={currentIndex >= contacts.length - 1}
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

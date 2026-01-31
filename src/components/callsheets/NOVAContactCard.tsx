@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Loader2, Users, Sparkles, User, ExternalLink, Link } from "lucide-react";
+import { Check, Loader2, Users, Sparkles, User, ExternalLink, Link, Ban } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ interface NOVAContactCardProps {
   callSheetId: string;
   onMatch: (profileUrl: string | null) => void;
   onSkip: () => void;
+  onNoProfile?: () => void;
 }
 
 export function NOVAContactCard({
@@ -36,7 +37,8 @@ export function NOVAContactCard({
   role,
   callSheetId,
   onMatch,
-  onSkip
+  onSkip,
+  onNoProfile
 }: NOVAContactCardProps) {
   const [searchValue, setSearchValue] = useState("");
   const [manualUsername, setManualUsername] = useState("");
@@ -417,11 +419,22 @@ export function NOVAContactCard({
           )}
         </div>
 
-        {/* Skip Button */}
-        <div className="mt-6 text-center">
+        {/* Skip and N/A Buttons */}
+        <div className="mt-6 flex justify-center gap-3">
           <Button variant="ghost" size="lg" onClick={onSkip} className="text-muted-foreground">
             Skip This Person
           </Button>
+          {onNoProfile && (
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={onNoProfile}
+              className="text-orange-500 border-orange-500/50 hover:bg-orange-500/10"
+            >
+              <Ban className="h-4 w-4 mr-2" />
+              N/A (No Profile)
+            </Button>
+          )}
         </div>
 
         {/* Coworkers Section */}
