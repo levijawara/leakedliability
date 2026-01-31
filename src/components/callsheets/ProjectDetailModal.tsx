@@ -25,6 +25,8 @@ import { usePortalBase } from "@/contexts/PortalContext";
 import { CallSheetCard } from "./CallSheetCard";
 import { ProjectVideoLinker } from "./ProjectVideoLinker";
 import { Project } from "./ProjectFolderCard";
+import { PDFViewerModal } from "./PDFViewerModal";
+import { CreditsModal } from "./CreditsModal";
 
 interface GlobalCallSheet {
   id: string;
@@ -79,6 +81,11 @@ export function ProjectDetailModal({
   const [showUngroupConfirm, setShowUngroupConfirm] = useState(false);
   const [isUngrouping, setIsUngrouping] = useState(false);
   const [videos, setVideos] = useState(project?.videos || []);
+  
+  // PDF viewer modal state
+  const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
+  // Credits modal state
+  const [creditsSheet, setCreditsSheet] = useState<{ id: string; fileName: string } | null>(null);
 
   // Sync videos state when project changes (e.g., after refresh)
   useEffect(() => {
@@ -157,9 +164,24 @@ export function ProjectDetailModal({
     }
   };
 
-  // Dummy handlers for CallSheetCard props
+  // Dummy handlers for CallSheetCard props (retry and payment not supported in project view)
   const handleRetry = async () => {};
   const handlePaymentStatusChange = () => {};
+
+  // Handlers for View PDF and Credits modals
+  const handleViewPdf = (sheet: GlobalCallSheet) => {
+    setViewingPdf({ 
+      filePath: sheet.master_file_path, 
+      fileName: sheet.original_file_name 
+    });
+  };
+
+  const handleCredits = (sheet: GlobalCallSheet) => {
+    setCreditsSheet({ 
+      id: sheet.id, 
+      fileName: sheet.original_file_name 
+    });
+  };
 
   if (!project) return null;
 
@@ -254,14 +276,14 @@ export function ProjectDetailModal({
                         onOpenChange(false);
                         navigate(`${portalBase}/call-sheets/${sheet.id}/review`);
                       }}
-                      onViewPdf={() => {}}
-                      onCredits={() => {}}
-                      onRetry={handleRetry}
-                      onDelete={(link) => {
-                        onDeleteLink?.(link);
-                      }}
-                      onPaymentStatusChange={handlePaymentStatusChange}
-                    />
+                    onViewPdf={handleViewPdf}
+                    onCredits={handleCredits}
+                    onRetry={handleRetry}
+                    onDelete={(link) => {
+                      onDeleteLink?.(link);
+                    }}
+                    onPaymentStatusChange={handlePaymentStatusChange}
+                  />
                   );
                 })}
               </div>
@@ -311,6 +333,26 @@ export function ProjectDetailModal({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Viewer Modal */}
+      {viewingPdf && (
+        <PDFViewerModal
+          open={!!viewingPdf}
+          onOpenChange={() => setViewingPdf(null)}
+          filePath={viewingPdf.filePath}
+          fileName={viewingPdf.fileName}
+        />
+      )}
+
+      {/* Credits Modal */}
+      {creditsSheet && (
+        <CreditsModal
+          open={!!creditsSheet}
+          onOpenChange={() => setCreditsSheet(null)}
+          callSheetId={creditsSheet.id}
+          fileName={creditsSheet.fileName}
+        />
+      )}
     </>
   );
 }
