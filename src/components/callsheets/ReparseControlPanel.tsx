@@ -79,8 +79,8 @@ export function ReparseControlPanel({
 
       if (updateError) throw updateError;
 
-      // Trigger queue processor
-      await supabase.functions.invoke('queue-processor', {});
+      // Trigger continuous queue processor (self-continues until queue empty)
+      await supabase.functions.invoke('continuous-queue-processor', {});
 
       toast({
         title: "Batch queued",
@@ -119,8 +119,8 @@ export function ReparseControlPanel({
 
       if (updateError) throw updateError;
 
-      // Trigger queue processor
-      await supabase.functions.invoke('queue-processor', {});
+      // Trigger continuous queue processor (self-continues until queue empty)
+      await supabase.functions.invoke('continuous-queue-processor', {});
 
       toast({
         title: "Errors queued for retry",
