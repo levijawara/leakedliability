@@ -1,29 +1,44 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Uploads files to the submission-documents bucket with secure random naming
- * Uses UUIDs instead of predictable user_id paths to prevent enumeration attacks
+ * Uploads files to the submission-documents bucket with secure random naming.
+ * Uses Promise.allSettled so partial failures don't lose already-uploaded paths.
  * @param files - Array of files to upload
- * @returns Array of file paths in storage
+ * @returns Array of successfully uploaded file paths in storage
  */
 export async function uploadFiles(files: File[]): Promise<string[]> {
-  const uploadedUrls: string[] = [];
-  
-  for (const file of files) {
-    const fileExt = file.name.split('.').pop();
-    // Use crypto.randomUUID for secure random filenames instead of predictable user_id paths
-    const fileName = `${crypto.randomUUID()}.${fileExt}`;
-    
-    const { error: uploadError } = await supabase.storage
-      .from('submission-documents')
-      .upload(fileName, file);
-
-    if (uploadError) throw uploadError;
-    
-    uploadedUrls.push(fileName);
+  if (!supabase) {
+    throw new Error('[STORAGE] Supabase client is not initialised — check env vars');
   }
-  
-  return uploadedUrls;
+
+  const results = await Promise.allSettled(
+    files.map(async (file) => {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('submission-documents')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+      return fileName;
+    })
+  );
+
+  const uploadedPaths: string[] = [];
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      uploadedPaths.push(result.value);
+    } else {
+      console.error('[STORAGE] File upload failed:', result.reason);
+    }
+  }
+
+  if (uploadedPaths.length === 0 && files.length > 0) {
+    throw new Error('[STORAGE] All file uploads failed');
+  }
+
+  return uploadedPaths;
 }
 
 /**
@@ -33,6 +48,10 @@ export async function uploadFiles(files: File[]): Promise<string[]> {
  * @returns Signed URL for file access
  */
 export async function getSignedUrl(filePath: string, expiresIn: number = 900): Promise<string> {
+  if (!supabase) {
+    throw new Error('[STORAGE] Supabase client is not initialised — check env vars');
+  }
+
   const { data, error } = await supabase.storage
     .from('submission-documents')
     .createSignedUrl(filePath, expiresIn);
@@ -42,14 +61,24 @@ export async function getSignedUrl(filePath: string, expiresIn: number = 900): P
 }
 
 /**
- * Generates signed URLs for multiple files
+ * Generates signed URLs for multiple files using Promise.allSettled.
+ * Individual failures are logged but do not block other URLs from resolving.
  * @param filePaths - Array of file paths
  * @param expiresIn - Expiration time in seconds (default: 900 = 15 minutes)
- * @returns Array of signed URLs
+ * @returns Array of signed URLs (may be shorter than filePaths if some failed)
  */
 export async function getSignedUrls(filePaths: string[], expiresIn: number = 900): Promise<string[]> {
-  const signedUrls = await Promise.all(
+  const results = await Promise.allSettled(
     filePaths.map(path => getSignedUrl(path, expiresIn))
   );
+
+  const signedUrls: string[] = [];
+  for (const result of results) {
+    if (result.status === 'fulfilled') {
+      signedUrls.push(result.value);
+    } else {
+      console.error('[STORAGE] Failed to get signed URL:', result.reason);
+    }
+  }
   return signedUrls;
 }
