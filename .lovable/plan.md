@@ -1,66 +1,79 @@
 
-# Plan: Fix NOVA Icon Showing for "N/A" Contacts
+
+# Fix: Randy's Submission Documents Not Displaying
 
 ## Problem
-When a contact is marked with "N/A" for their NOVA profile (meaning they don't have a profile), the contact card still shows the NOVA icon as a clickable link pointing to the literal string "N/A" - which is not a valid URL.
+Randy Nguyen submitted a crew report with 17 supporting documents. The files were uploaded successfully and exist in storage, but the admin Review modal shows an empty "Documents:" section, and the ZIP download produces a corrupted file named "Randy Nguyen."
 
 ## Root Cause
-In `CrewContactCard.tsx`:
-- Line 106: `const hasIcons = contact.nova_profile_url || contact.ig_handle;`
-- Line 215: `{contact.nova_profile_url && (...)`
+The `getSignedUrls` function uses `Promise.all` to generate signed URLs for all 17 files. If even ONE `createSignedUrl` call fails (e.g., due to a transient network error, a timing issue, or a policy evaluation hiccup), the entire batch fails. The error is caught, `documentSignedUrls` is set to `[]`, and the admin sees nothing.
 
-Both checks only test for truthiness. The string "N/A" is truthy, so the icon renders.
+The same fragile pattern exists in `downloadAllAsZip` -- one bad URL kills the entire ZIP.
 
 ## Solution
-Add a helper function to check if a NOVA URL is valid (not null, not empty, not "N/A"), and use it in both the icon visibility check and render condition.
+Make document URL generation resilient using `Promise.allSettled` so that partial results are shown instead of nothing. Also add a null-safety guard for the Supabase client.
 
 ---
 
 ## Changes
 
-**File: `src/components/contacts/CrewContactCard.tsx`**
+### File: `src/lib/storage.ts` (1 file, ~15 lines changed)
 
-### 1. Add helper function (around line 38)
+**1. Add null guard for the Supabase client**
+
+Currently `getSignedUrl` calls `supabase.storage` without checking if `supabase` is null (it can be). Add a guard that throws a clear error instead of crashing.
+
+**2. Replace `Promise.all` with `Promise.allSettled` in `getSignedUrls`**
+
+Before (fragile):
 ```typescript
-// Check if NOVA URL is valid (not null, empty, or N/A marker)
-const isValidNovaUrl = (url: string | null | undefined): boolean => {
-  return !!url && url !== 'N/A' && url.startsWith('http');
-};
+const signedUrls = await Promise.all(
+  filePaths.map(path => getSignedUrl(path, expiresIn))
+);
+return signedUrls;
 ```
 
-### 2. Update hasIcons check (line 106)
+After (resilient):
 ```typescript
-// Before
-const hasIcons = contact.nova_profile_url || contact.ig_handle;
+const results = await Promise.allSettled(
+  filePaths.map(path => getSignedUrl(path, expiresIn))
+);
 
-// After
-const hasIcons = isValidNovaUrl(contact.nova_profile_url) || contact.ig_handle;
+const signedUrls: string[] = [];
+for (const result of results) {
+  if (result.status === 'fulfilled') {
+    signedUrls.push(result.value);
+  } else {
+    console.error('[STORAGE] Failed to get signed URL:', result.reason);
+  }
+}
+return signedUrls;
 ```
 
-### 3. Update render condition (line 215)
-```typescript
-// Before
-{contact.nova_profile_url && (
+This ensures that if 16 out of 17 files succeed, the admin sees 16 documents instead of 0.
 
-// After
-{isValidNovaUrl(contact.nova_profile_url) && (
-```
+**3. Add same resilience to `uploadFiles`** (defensive)
+
+If one upload in a batch fails, the function currently throws and loses all previously uploaded paths. Wrap in `allSettled` so partial uploads are preserved.
 
 ---
 
-## Technical Details
-
-| Aspect | Details |
-|--------|---------|
-| Files modified | 1 |
-| Lines changed | ~5 |
-| Risk | None - defensive check, no behavior change for valid URLs |
-| Rollback | Revert the 3 small changes |
-
----
+## What will NOT change (invariants)
+- No frontend/UI changes
+- No schema changes
+- No new files created
+- The upload flow for users remains identical
+- The storage bucket configuration stays the same
+- No RLS policy changes needed (policies are correct)
 
 ## Verification
+1. Open Admin dashboard, navigate to All Submissions tab
+2. Click "Review" on Randy Nguyen's submission
+3. Confirm the Documents section shows clickable links (up to 17)
+4. Click "Download All as ZIP" -- should produce a valid ZIP file with the actual documents
+5. If any individual file fails, the rest should still be visible
 
-1. View a contact with `nova_profile_url = 'N/A'` - should NOT show NOVA icon
-2. View a contact with a valid NOVA URL - should show NOVA icon as before
-3. View a contact with `nova_profile_url = null` - should NOT show NOVA icon
+## Risks
+- None -- this is a purely defensive change that makes the existing code more resilient
+- Rollback: revert `src/lib/storage.ts` to previous version
+
