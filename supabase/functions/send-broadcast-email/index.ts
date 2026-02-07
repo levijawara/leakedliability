@@ -25,6 +25,7 @@ const container = {
   paddingLeft: '12px',
   paddingRight: '12px',
   margin: '0 auto',
+  maxWidth: '100%',
   paddingTop: '40px',
   paddingBottom: '40px',
 };
@@ -41,6 +42,7 @@ const text = {
   color: '#333',
   fontSize: '14px',
   lineHeight: '24px',
+  textAlign: 'left' as const,
   fontFamily: 'IBM Plex Mono, monospace',
 };
 
