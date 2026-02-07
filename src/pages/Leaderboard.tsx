@@ -231,6 +231,36 @@ export default function Leaderboard() {
     },
   });
 
+  // Fetch leaderboard config for delinquent-only toggle
+  const { data: leaderboardConfig, refetch: refetchConfig } = useQuery({
+    queryKey: ["leaderboard_config"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leaderboard_config")
+        .select("show_delinquent_only")
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const showDelinquentOnly = leaderboardConfig?.show_delinquent_only ?? false;
+
+  const toggleDelinquentOnly = async () => {
+    const newValue = !showDelinquentOnly;
+    const { error } = await supabase
+      .from("leaderboard_config")
+      .update({ show_delinquent_only: newValue })
+      .eq("id", (await supabase.from("leaderboard_config").select("id").single()).data?.id ?? "");
+    
+    if (error) {
+      console.error("Failed to update delinquent toggle:", error);
+      return;
+    }
+    refetchConfig();
+  };
+
   // Check admin status FIRST
   useEffect(() => {
     const checkAdmin = async () => {
@@ -653,6 +683,20 @@ export default function Leaderboard() {
               />
             </div>
           )}
+          
+          {/* Delinquent Toggle - Only visible to admins */}
+          {isAdmin && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
+              <Label htmlFor="delinquent-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
+                {showDelinquentOnly ? 'Delinquent' : 'All'}
+              </Label>
+              <Switch
+                id="delinquent-mode"
+                checked={showDelinquentOnly}
+                onCheckedChange={() => toggleDelinquentOnly()}
+              />
+            </div>
+          )}
         </div>
 
         {/* Mobile Accordion View */}
@@ -692,13 +736,18 @@ export default function Leaderboard() {
               </div>
             </div>
           ) : (() => {
-            const filteredProducers = producers?.filter((producer) => {
+            let filteredProducers = producers?.filter((producer) => {
               if (!searchTerm.trim()) return true;
               const search = searchTerm.trim().toLowerCase();
               const name = (producer.producer_name || "").toLowerCase();
               const company = (producer.company_name || "").toLowerCase();
               return name === search || company === search;
             }) || [];
+
+            // Apply delinquent filter if enabled
+            if (showDelinquentOnly) {
+              filteredProducers = filteredProducers.filter(p => (p.total_amount_owed || 0) > 0);
+            }
 
             return filteredProducers.length > 0 ? (
               <Accordion type="multiple" className="w-full">
@@ -931,7 +980,7 @@ export default function Leaderboard() {
                   </TableRow>
                 ) : (() => {
                   // Filter producers based on search term
-                  const filteredProducers = producers?.filter((producer) => {
+                  let filteredProducers = producers?.filter((producer) => {
                     if (!searchTerm.trim()) return true; // Show all if no search
                     
                     const search = searchTerm.trim().toLowerCase();
@@ -940,6 +989,11 @@ export default function Leaderboard() {
                     
                     return name === search || company === search;
                   }) || [];
+
+                  // Apply delinquent filter if enabled
+                  if (showDelinquentOnly) {
+                    filteredProducers = filteredProducers.filter(p => (p.total_amount_owed || 0) > 0);
+                  }
                   
                   return filteredProducers.length > 0 ? (
                     filteredProducers.map((producer) => (

@@ -1228,6 +1228,7 @@ export type Database = {
           id: string
           locked_at: string | null
           producer_count_at_lock: number | null
+          show_delinquent_only: boolean
           threshold_locked: boolean
           updated_at: string | null
         }
@@ -1237,6 +1238,7 @@ export type Database = {
           id?: string
           locked_at?: string | null
           producer_count_at_lock?: number | null
+          show_delinquent_only?: boolean
           threshold_locked?: boolean
           updated_at?: string | null
         }
@@ -1246,6 +1248,7 @@ export type Database = {
           id?: string
           locked_at?: string | null
           producer_count_at_lock?: number | null
+          show_delinquent_only?: boolean
           threshold_locked?: boolean
           updated_at?: string | null
         }
