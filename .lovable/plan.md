@@ -1,97 +1,81 @@
 
 
-# Fix: "Unknown Producer" — Serena de Comarmond Not Showing on Leaderboard
+# Widen Email Body Container for All Email Templates
 
 ## Problem
-Randy's verified crew report created a producer record named **"Unknown Producer"** instead of **"Serena de Comarmond"**. The leaderboard correctly shows the producer — but under the wrong name.
-
-## Root Cause
-The submission form (`CrewReportForm.tsx`) stores producer info as **flat top-level fields**:
-
-```text
-form_data = {
-  "producer_name": "Serena",           // flat string
-  "producer_last_name": "De Comarmond", // flat string
-  "producer_company": "Elysium Media",  // flat string
-  "producer_email": "serena@elysiummedia.tv"
-}
-```
-
-But the Admin approval code (`Admin.tsx` lines 621-623) expects `producer_name` to be an **object** with sub-properties:
-
-```typescript
-// What Admin.tsx expects (wrong):
-formData.producer_name?.company     // undefined — it's a string "Serena"
-formData.producer_name?.firstName   // undefined
-formData.producer_name?.lastName    // undefined
-// Result: falls through to 'Unknown Producer'
-```
-
-This mismatch causes every crew report to create a producer named "Unknown Producer."
+The screenshot (image-205) shows Randy's "Report Verified" email still rendering in a narrow, center-condensed column. That email comes from the shared template system (not the broadcast system we already fixed). All 28 email templates import their styles from a single shared file: `_shared/styles.ts`. That file's `container` style lacks `maxWidth: '100%'` and its `text` style lacks `textAlign: 'left'`, so the `@react-email/components` Container defaults to 580px wide.
 
 ## Solution
-Update the producer name extraction logic in `Admin.tsx` to handle both the flat-field format (what the form actually sends) and the nested-object format (legacy/defensive). This pattern appears in 4 places in the file.
+Update the shared styles file with the same two properties we added to the broadcast email. Since all 28 templates import from this one file, a single edit fixes every email notification system-wide.
 
 ## Changes
 
-### File: `src/pages/Admin.tsx` (1 file, ~4 locations, same fix each time)
+### File: `supabase/functions/send-email/_templates/_shared/styles.ts` (1 file, 2 lines added)
 
-Replace the producer name extraction at lines 621-623, 790-792, 975-977, and 1006-1008 with logic that checks both formats:
+**1. Add `maxWidth: '100%'` to the `container` style (line 9-15)**
 
-Before (all 4 locations):
+Before:
 ```typescript
-const producerName = formData.producer_name?.company || 
-  `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-  'Unknown Producer';
+export const container = {
+  paddingLeft: '12px',
+  paddingRight: '12px',
+  margin: '0 auto',
+  paddingTop: '40px',
+  paddingBottom: '40px',
+};
 ```
 
 After:
 ```typescript
-const producerName = (
-  // Format 1: flat fields from CrewReportForm (current)
-  (typeof formData.producer_name === 'string' && formData.producer_name)
-    ? (formData.producer_company && formData.reporting_type === 'production_company'
-        ? formData.producer_company
-        : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
-    // Format 2: nested object (legacy/defensive)
-    : formData.producer_name?.company || 
-      `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
-) || 'Unknown Producer';
+export const container = {
+  paddingLeft: '12px',
+  paddingRight: '12px',
+  margin: '0 auto',
+  maxWidth: '100%',
+  paddingTop: '40px',
+  paddingBottom: '40px',
+};
 ```
 
-This produces:
-- For Randy's submission: `"Serena De Comarmond"` (correct)
-- For production company reports: the company name (correct)
-- For any legacy nested-object format: still works (backward compatible)
+**2. Add `textAlign: 'left'` to the `text` style (line 25-30)**
 
-### Database: Fix the existing "Unknown Producer" record
-
-A one-time data fix is also needed to rename the existing producer record from "Unknown Producer" to "Serena de Comarmond" and set the company to "Elysium Media". This will be done via a migration:
-
-```sql
-UPDATE producers 
-SET name = 'Serena de Comarmond', 
-    company = 'Elysium Media',
-    sub_name = 'Elysium Media'
-WHERE id = '329fee85-25dd-4e14-882e-48b4b592f6ac' 
-  AND name = 'Unknown Producer';
+Before:
+```typescript
+export const text = {
+  color: '#333',
+  fontSize: '14px',
+  lineHeight: '24px',
+  fontFamily: 'IBM Plex Mono, monospace',
+};
 ```
+
+After:
+```typescript
+export const text = {
+  color: '#333',
+  fontSize: '14px',
+  lineHeight: '24px',
+  textAlign: 'left' as const,
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+```
+
+## Templates that will be fixed (all 28)
+crew-report-confirmation, producer-payment-confirmation, dispute-submission, counter-dispute-submission, producer-submission, admin-notification, crew-report-verified, crew-report-rejected, welcome, crew-report-payment-confirmed, producer-report-notification, vendor-report-confirmation, vendor-report-verified, vendor-report-rejected, admin-created-account, liability-notification, liability-loop-detected, email-verification, password-reset, liability-accepted, dispute-evidence-round-started, dispute-additional-info-required, dispute-resolved-paid, dispute-resolved-mutual, dispute-closed-unresolved, subscription-payment-failed, subscription-canceled, custom-broadcast
 
 ## What will NOT change
-- No frontend/UI layout changes
-- No schema changes (just a data update)
+- No frontend/UI changes
+- No schema changes
 - No new files created
-- The submission form itself is untouched
-- No edge functions modified
-- The #HoldThatL generator is unrelated to this issue
+- The broadcast email's inlined styles are already fixed (untouched)
+- No edge function logic changes
+- No template content or structure changes
 
 ## Verification
-1. After applying: check the leaderboard — "Serena de Comarmond" with sub-name "Elysium Media" should appear where "Unknown Producer" was
-2. Submit a new test crew report with a different producer name
-3. Verify and approve it in Admin
-4. Confirm the new producer appears on the leaderboard with the correct name (not "Unknown Producer")
+1. Trigger any email (e.g., approve a test submission, or use the manual email sender)
+2. Open the received email in Gmail
+3. Confirm: paragraphs flow full-width, left-aligned, like a normal email
 
 ## Risks
-- Low: the name extraction change handles both data formats defensively
-- The data fix targets a single record by UUID + name guard, so no accidental updates
-- Rollback: revert `Admin.tsx` and rename the producer back to "Unknown Producer"
+- None -- this adds two CSS properties to a shared style object
+- Rollback: remove the two added lines from `_shared/styles.ts`
