@@ -1,79 +1,95 @@
 
 
-# Fix: Randy's Submission Documents Not Displaying
+# Fix: Broadcast Email Text Wrapping (Center-Condensed to Natural)
 
 ## Problem
-Randy Nguyen submitted a crew report with 17 supporting documents. The files were uploaded successfully and exist in storage, but the admin Review modal shows an empty "Documents:" section, and the ZIP download produces a corrupted file named "Randy Nguyen."
+The broadcast email body renders in a narrow, center-condensed column (approx 580px wide) because the `Container` component from `@react-email/components` defaults to `max-width: 580px`. Combined with the monospace font (`IBM Plex Mono`), this creates the "poetry-style" paragraph wrapping visible in the H&MUA email (image-198). The Corporate Billing email (image-200) looks natural because it has no artificial width constraint.
 
 ## Root Cause
-The `getSignedUrls` function uses `Promise.all` to generate signed URLs for all 17 files. If even ONE `createSignedUrl` call fails (e.g., due to a transient network error, a timing issue, or a policy evaluation hiccup), the entire batch fails. The error is caught, `documentSignedUrls` is set to `[]`, and the admin sees nothing.
-
-The same fragile pattern exists in `downloadAllAsZip` -- one bad URL kills the entire ZIP.
+Line 114 of `send-broadcast-email/index.ts`:
+```typescript
+React.createElement(Container, { style: container }, ...)
+```
+The `Container` component renders a `<table>` with inline `max-width: 580px`. The local `container` style (lines 24-30) does NOT override this, so the default kicks in.
 
 ## Solution
-Make document URL generation resilient using `Promise.allSettled` so that partial results are shown instead of nothing. Also add a null-safety guard for the Supabase client.
-
----
+Override the `Container` max-width to `100%` and add explicit `textAlign: 'left'` to the text style. This makes broadcast emails flow like normal Gmail/Outlook emails while keeping the LL header, footer, and overall structure intact.
 
 ## Changes
 
-### File: `src/lib/storage.ts` (1 file, ~15 lines changed)
+### File: `supabase/functions/send-broadcast-email/index.ts` (1 file, ~4 lines changed)
 
-**1. Add null guard for the Supabase client**
+**1. Widen the container (line 24-30)**
 
-Currently `getSignedUrl` calls `supabase.storage` without checking if `supabase` is null (it can be). Add a guard that throws a clear error instead of crashing.
-
-**2. Replace `Promise.all` with `Promise.allSettled` in `getSignedUrls`**
-
-Before (fragile):
+Before:
 ```typescript
-const signedUrls = await Promise.all(
-  filePaths.map(path => getSignedUrl(path, expiresIn))
-);
-return signedUrls;
+const container = {
+  paddingLeft: '12px',
+  paddingRight: '12px',
+  margin: '0 auto',
+  paddingTop: '40px',
+  paddingBottom: '40px',
+};
 ```
 
-After (resilient):
+After:
 ```typescript
-const results = await Promise.allSettled(
-  filePaths.map(path => getSignedUrl(path, expiresIn))
-);
-
-const signedUrls: string[] = [];
-for (const result of results) {
-  if (result.status === 'fulfilled') {
-    signedUrls.push(result.value);
-  } else {
-    console.error('[STORAGE] Failed to get signed URL:', result.reason);
-  }
-}
-return signedUrls;
+const container = {
+  paddingLeft: '12px',
+  paddingRight: '12px',
+  margin: '0 auto',
+  maxWidth: '100%',
+  paddingTop: '40px',
+  paddingBottom: '40px',
+};
 ```
 
-This ensures that if 16 out of 17 files succeed, the admin sees 16 documents instead of 0.
+Setting `maxWidth: '100%'` overrides the `Container` component's default `580px` so text flows to the full width of the email client viewport (just like a normal Gmail-composed email).
 
-**3. Add same resilience to `uploadFiles`** (defensive)
+**2. Add explicit left-alignment to body text (line 40-45)**
 
-If one upload in a batch fails, the function currently throws and loses all previously uploaded paths. Wrap in `allSettled` so partial uploads are preserved.
+Before:
+```typescript
+const text = {
+  color: '#333',
+  fontSize: '14px',
+  lineHeight: '24px',
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+```
+
+After:
+```typescript
+const text = {
+  color: '#333',
+  fontSize: '14px',
+  lineHeight: '24px',
+  textAlign: 'left' as const,
+  fontFamily: 'IBM Plex Mono, monospace',
+};
+```
+
+This prevents any email client from inheriting or defaulting to center alignment.
 
 ---
 
-## What will NOT change (invariants)
-- No frontend/UI changes
+## What will NOT change
+- No frontend/UI changes to the BroadcastEmailSender component
 - No schema changes
 - No new files created
-- The upload flow for users remains identical
-- The storage bucket configuration stays the same
-- No RLS policy changes needed (policies are correct)
+- The shared `_templates/_shared/styles.ts` is NOT modified (other emails keep their current look)
+- Auth, admin check, Resend logic, rate limiting, email logging -- all untouched
+- Only the BROADCAST email layout changes; all other email templates remain identical
 
 ## Verification
-1. Open Admin dashboard, navigate to All Submissions tab
-2. Click "Review" on Randy Nguyen's submission
-3. Confirm the Documents section shows clickable links (up to 17)
-4. Click "Download All as ZIP" -- should produce a valid ZIP file with the actual documents
-5. If any individual file fails, the rest should still be visible
+1. Go to Admin > Broadcast Email
+2. Enter a test subject, body text with multiple paragraphs, and your own email as recipient
+3. Send the test email
+4. Open the received email in Gmail
+5. Confirm: paragraphs flow full-width, left-aligned, like a normal email -- no narrow center-condensed column
 
 ## Risks
-- None -- this is a purely defensive change that makes the existing code more resilient
-- Rollback: revert `src/lib/storage.ts` to previous version
+- None -- this only changes two inline CSS properties on the broadcast email template
+- Other email templates are unaffected (they use the shared styles file, not this inlined copy)
+- Rollback: revert `supabase/functions/send-broadcast-email/index.ts` to previous version
 
