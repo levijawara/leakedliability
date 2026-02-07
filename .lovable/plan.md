@@ -1,81 +1,65 @@
 
 
-# Widen Email Body Container for All Email Templates
+# Add "All / Delinquent" Admin Toggle to Leaderboard
 
-## Problem
-The screenshot (image-205) shows Randy's "Report Verified" email still rendering in a narrow, center-condensed column. That email comes from the shared template system (not the broadcast system we already fixed). All 28 email templates import their styles from a single shared file: `_shared/styles.ts`. That file's `container` style lacks `maxWidth: '100%'` and its `text` style lacks `textAlign: 'left'`, so the `@react-email/components` Container defaults to 580px wide.
-
-## Solution
-Update the shared styles file with the same two properties we added to the broadcast email. Since all 28 templates import from this one file, a single edit fixes every email notification system-wide.
+## What this does
+Adds a persistent, admin-only toggle next to the existing "Public View / Admin View" toggle on the leaderboard page. When set to "Delinquent", only producers who actively owe money are shown. When set to "All", every reported producer appears (current behavior). The setting is stored in the database and persists until an admin changes it -- just like the "Free Leaderboard Access" toggle.
 
 ## Changes
 
-### File: `supabase/functions/send-email/_templates/_shared/styles.ts` (1 file, 2 lines added)
+### 1. Database migration (new column on `leaderboard_config`)
 
-**1. Add `maxWidth: '100%'` to the `container` style (line 9-15)**
+Add a `show_delinquent_only` boolean column (default `false`) to the existing `leaderboard_config` table:
 
-Before:
-```typescript
-export const container = {
-  paddingLeft: '12px',
-  paddingRight: '12px',
-  margin: '0 auto',
-  paddingTop: '40px',
-  paddingBottom: '40px',
-};
+```sql
+ALTER TABLE public.leaderboard_config
+  ADD COLUMN show_delinquent_only boolean NOT NULL DEFAULT false;
 ```
 
-After:
+No new RLS policies needed -- the table already has:
+- "Anyone can view leaderboard config" (SELECT, true)
+- "Only admins can modify leaderboard config" (ALL, admin-only)
+
+### 2. Frontend update: `src/pages/Leaderboard.tsx` (1 file)
+
+**a) Add a query to fetch `leaderboard_config`** -- specifically the `show_delinquent_only` field. This will sit alongside the existing `site_settings` query.
+
+**b) Add a mutation function** to update `show_delinquent_only` when the admin toggles it.
+
+**c) Add the toggle UI** next to the existing "Public View / Admin View" toggle (around line 644). Only visible to admins. The toggle label will read "All" or "Delinquent" based on state.
+
+**d) Apply the filter to both mobile and desktop views** -- filter producers where `total_amount_owed > 0` when `show_delinquent_only` is true. This filter applies globally (all users see the filtered list), but only admins can change the setting.
+
+The filtering logic (applied at both line ~695 for mobile and ~934 for desktop):
+
 ```typescript
-export const container = {
-  paddingLeft: '12px',
-  paddingRight: '12px',
-  margin: '0 auto',
-  maxWidth: '100%',
-  paddingTop: '40px',
-  paddingBottom: '40px',
-};
+// After existing search filter
+let filtered = producers?.filter(/* existing search logic */);
+
+// Apply delinquent filter if enabled
+if (showDelinquentOnly) {
+  filtered = filtered?.filter(p => (p.total_amount_owed || 0) > 0);
+}
 ```
-
-**2. Add `textAlign: 'left'` to the `text` style (line 25-30)**
-
-Before:
-```typescript
-export const text = {
-  color: '#333',
-  fontSize: '14px',
-  lineHeight: '24px',
-  fontFamily: 'IBM Plex Mono, monospace',
-};
-```
-
-After:
-```typescript
-export const text = {
-  color: '#333',
-  fontSize: '14px',
-  lineHeight: '24px',
-  textAlign: 'left' as const,
-  fontFamily: 'IBM Plex Mono, monospace',
-};
-```
-
-## Templates that will be fixed (all 28)
-crew-report-confirmation, producer-payment-confirmation, dispute-submission, counter-dispute-submission, producer-submission, admin-notification, crew-report-verified, crew-report-rejected, welcome, crew-report-payment-confirmed, producer-report-notification, vendor-report-confirmation, vendor-report-verified, vendor-report-rejected, admin-created-account, liability-notification, liability-loop-detected, email-verification, password-reset, liability-accepted, dispute-evidence-round-started, dispute-additional-info-required, dispute-resolved-paid, dispute-resolved-mutual, dispute-closed-unresolved, subscription-payment-failed, subscription-canceled, custom-broadcast
 
 ## What will NOT change
-- No frontend/UI changes
-- No schema changes
+- No layout or styling changes beyond the new toggle element
+- No schema changes to any other table
 - No new files created
-- The broadcast email's inlined styles are already fixed (untouched)
-- No edge function logic changes
-- No template content or structure changes
+- No edge functions modified
+- The existing "Public View / Admin View" toggle is untouched
+- The `public_leaderboard` view definition stays the same
 
 ## Verification
-1. Trigger any email (e.g., approve a test submission, or use the manual email sender)
-2. Open the received email in Gmail
-3. Confirm: paragraphs flow full-width, left-aligned, like a normal email
+1. Log in as admin, go to the leaderboard
+2. See the new "All / Delinquent" toggle next to the existing view toggle
+3. Toggle to "Delinquent" -- producers with $0 owed disappear
+4. Toggle back to "All" -- all producers reappear
+5. Refresh the page -- the setting persists (still shows whichever was last selected)
+6. Log in as a non-admin subscriber -- the toggle is not visible, but the filter applies based on what the admin last set
+7. Non-admin users cannot change the setting
 
 ## Risks
-- None -- this adds two CSS properties to a shared style object
-- Rollback: remove the two added lines from `_shared/styles.ts`
+- Low: single additive column, client-side filtering, existing RLS covers access
+- Rollback: drop the column and revert `Leaderboard.tsx`
+
