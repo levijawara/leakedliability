@@ -54,7 +54,7 @@ export function mapDatabaseError(error: any): string {
   }
   
   if (message.includes('admin notes must be')) {
-    return 'Admin notes are too long (max 2000 characters)';
+    return 'Admin notes are too long (max 10,000 characters)';
   }
   
   if (message.includes('maintenance message must be')) {
