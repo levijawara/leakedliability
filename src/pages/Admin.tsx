@@ -618,9 +618,16 @@ export default function Admin() {
       // Create payment report for crew reports
       if (submission?.submission_type === 'crew_report') {
         const formData = submission.form_data;
-        const producerName = formData.producer_name?.company || 
-          `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-          'Unknown Producer';
+        const producerName = (
+          // Format 1: flat fields from CrewReportForm (current)
+          (typeof formData.producer_name === 'string' && formData.producer_name)
+            ? (formData.producer_company && formData.reporting_type === 'production_company'
+                ? formData.producer_company
+                : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+            // Format 2: nested object (legacy/defensive)
+            : formData.producer_name?.company || 
+              `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+        ) || 'Unknown Producer';
         
         // Check if payment report already exists for this submission
         const { data: existingReport } = await supabase
@@ -787,9 +794,16 @@ export default function Admin() {
     // Create payment report for vendor reports  
     if (submission?.submission_type === 'vendor_report') {
       const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
+      const producerName = (
+        // Format 1: flat fields from CrewReportForm (current)
+        (typeof formData.producer_name === 'string' && formData.producer_name)
+          ? (formData.producer_company && formData.reporting_type === 'production_company'
+              ? formData.producer_company
+              : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+          // Format 2: nested object (legacy/defensive)
+          : formData.producer_name?.company || 
+            `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+      ) || 'Unknown Producer';
       
       // Find or create the producer
       let { data: existingProducer } = await supabase
@@ -972,9 +986,16 @@ export default function Admin() {
     // Send rejection email if it's a crew report
     if (submission?.submission_type === 'crew_report') {
       const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
+      const producerName = (
+        // Format 1: flat fields from CrewReportForm (current)
+        (typeof formData.producer_name === 'string' && formData.producer_name)
+          ? (formData.producer_company && formData.reporting_type === 'production_company'
+              ? formData.producer_company
+              : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+          // Format 2: nested object (legacy/defensive)
+          : formData.producer_name?.company || 
+            `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+      ) || 'Unknown Producer';
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
@@ -1003,9 +1024,16 @@ export default function Admin() {
     // Send rejection email if it's a vendor report
     if (submission?.submission_type === 'vendor_report') {
       const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
+      const producerName = (
+        // Format 1: flat fields from CrewReportForm (current)
+        (typeof formData.producer_name === 'string' && formData.producer_name)
+          ? (formData.producer_company && formData.reporting_type === 'production_company'
+              ? formData.producer_company
+              : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+          // Format 2: nested object (legacy/defensive)
+          : formData.producer_name?.company || 
+            `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+      ) || 'Unknown Producer';
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
