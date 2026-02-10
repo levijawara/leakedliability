@@ -779,6 +779,14 @@ serve(async (req) => {
     const finalContacts = enforceAnchorConstraint(validatedContacts, anchors);
     logAction(`Final: ${finalContacts.length} contacts after sanitization`, sanitizeStart);
 
+    // =========================================================================
+    // STEP 7.5: GPT-5.2 FINAL CORRECTION PASS
+    // =========================================================================
+    
+    const correctionStart = Date.now();
+    const correctedContacts = await correctWithGPT52(bestText, finalContacts, lovableApiKey);
+    logAction(`GPT-5.2 correction: ${correctedContacts.length} contacts (was ${finalContacts.length})`, correctionStart);
+
     const totalElapsedMs = Date.now() - parseStartTime;
 
     const parseTiming = {
@@ -788,18 +796,19 @@ serve(async (req) => {
       extraction_method: extractionMethod,
       has_screenshot: hasScreenshot,
       escalated: escalated,
+      gpt52_correction: true,
       anchors_found: { phones: anchors.phones.length, emails: anchors.emails.length },
       verification_metrics: metrics,
       unpdf_quality: unpdfQuality,
       firecrawl_quality: firecrawlQuality
     };
 
-    console.log(`[parse-call-sheet] Complete: ${finalContacts.length} contacts, ${totalElapsedMs}ms, method=${extractionMethod}, model=${modelUsed}`);
+    console.log(`[parse-call-sheet] Complete: ${correctedContacts.length} contacts, ${totalElapsedMs}ms, method=${extractionMethod}, model=${modelUsed}`);
 
     // Extract canonical producers (first parse only)
     let canonicalProducersUpdate: { canonical_producers?: CanonicalProducer[] } = {};
     if (!callSheet.canonical_producers) {
-      const canonicalProducers = extractCanonicalProducers(finalContacts);
+      const canonicalProducers = extractCanonicalProducers(correctedContacts);
       canonicalProducersUpdate = { canonical_producers: canonicalProducers };
       console.log(`[parse-call-sheet] LOCKED ${canonicalProducers.length} canonical producers`);
     }
@@ -809,8 +818,8 @@ serve(async (req) => {
       .from("global_call_sheets")
       .update({
         status: "parsed",
-        parsed_contacts: finalContacts,
-        contacts_extracted: finalContacts.length,
+        parsed_contacts: correctedContacts,
+        contacts_extracted: correctedContacts.length,
         project_title: parseResult.project_title,
         parsed_date: parseResult.parsed_date,
         parse_timing: parseTiming,
@@ -837,12 +846,12 @@ serve(async (req) => {
     
     const fingerprintProducers = callSheet.canonical_producers 
       ? callSheet.canonical_producers as CanonicalProducer[]
-      : extractCanonicalProducers(finalContacts);
+      : extractCanonicalProducers(correctedContacts);
     
     const fingerprint = generateFingerprint(
       parseResult.project_title,
       fingerprintProducers,
-      finalContacts,
+      correctedContacts,
       parseResult.parsed_date
     );
     
@@ -910,7 +919,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
-        contacts_count: finalContacts.length,
+        contacts_count: correctedContacts.length,
         project_title: parseResult.project_title,
         project_id: projectId,
         extraction_method: extractionMethod,
@@ -1159,6 +1168,125 @@ async function handleAIResponse(response: Response): Promise<ParseResult> {
   }
 
   throw new Error("AI returned unexpected response format");
+}
+
+// ============================================================================
+// GPT-5.2 FINAL CORRECTION PASS
+// ============================================================================
+
+async function correctWithGPT52(
+  rawText: string,
+  contacts: ParsedContact[],
+  apiKey: string
+): Promise<ParsedContact[]> {
+  const CORRECTION_SYSTEM_PROMPT = `You are a professional call sheet data editor. You receive raw OCR text from a PDF and a structured JSON parse of that text. Your job is to correct errors in the JSON using the raw text as ground truth.
+
+Rules:
+1. Fix OCR-garbled email domains (Levenshtein distance <= 2 from gmail.com, icloud.com, yahoo.com, outlook.com, hotmail.com only). Never guess a company domain from context.
+2. Reject truncated emails (ending in "..." or missing TLD).
+3. Correct obvious name misspellings ONLY if the raw text explicitly contains the correct spelling.
+4. Validate roles/departments against what appears in the raw text.
+5. Merge duplicates ONLY if BOTH email AND phone match, or the raw text clearly identifies them as the same person.
+6. Do NOT invent data. If you cannot confidently fix something, leave it unchanged.
+7. Do NOT remove contacts. Only correct or merge them.
+8. Preserve phone numbers exactly as provided.
+9. Do NOT expand partial names or initials into full names unless the raw text explicitly contains that exact full name.
+10. Never rewrite, reformat, normalize, or add country codes to phone numbers. Return them exactly as they appear in the input JSON.
+11. If a contact does not appear in the raw text provided, do not modify it.`;
+
+  const userPrompt = `## RAW EXTRACTED TEXT (ground truth)
+${rawText.slice(0, 20000)}
+
+## PARSED CONTACTS JSON (correct any errors)
+${JSON.stringify(contacts, null, 2)}
+
+Review the parsed contacts against the raw text. Fix any OCR errors, misspellings, or incorrect email domains. Return the corrected contacts array.`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-5.2",
+        messages: [
+          { role: "system", content: CORRECTION_SYSTEM_PROMPT },
+          { role: "user", content: userPrompt }
+        ],
+        max_completion_tokens: 16000,
+        tools: [{
+          type: "function",
+          function: {
+            name: "return_corrected_contacts",
+            description: "Return the corrected contacts array",
+            parameters: {
+              type: "object",
+              properties: {
+                contacts: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string" },
+                      roles: { type: "array", items: { type: "string" } },
+                      departments: { type: "array", items: { type: "string" } },
+                      emails: { type: "array", items: { type: "string" } },
+                      phones: { type: "array", items: { type: "string" } },
+                      ig_handle: { type: "string", nullable: true },
+                      confidence: { type: "number" },
+                      needs_review: { type: "boolean" }
+                    },
+                    required: ["name", "roles", "departments", "emails", "phones", "confidence", "needs_review"]
+                  }
+                }
+              },
+              required: ["contacts"]
+            }
+          }
+        }],
+        tool_choice: { type: "function", function: { name: "return_corrected_contacts" } }
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`[parse-call-sheet] GPT-5.2 correction failed (${response.status}): ${errText.slice(0, 200)}`);
+      return contacts; // Fallback to original
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall?.function?.arguments) {
+      console.warn("[parse-call-sheet] GPT-5.2 returned no tool call, falling back to original");
+      return contacts;
+    }
+
+    const parsed = JSON.parse(toolCall.function.arguments);
+    const corrected: ParsedContact[] = parsed.contacts || [];
+
+    // Post-response validation: drop zombie contacts
+    const validated = corrected.filter(c => {
+      const hasName = c.name && c.name.trim().length > 0;
+      const hasContact = (c.emails && c.emails.length > 0) || (c.phones && c.phones.length > 0);
+      const hasRoles = c.roles && c.roles.length > 0;
+      return hasName && hasContact && hasRoles;
+    });
+
+    const dropped = corrected.length - validated.length;
+    if (dropped > 0) {
+      console.warn(`[parse-call-sheet] GPT-5.2 correction: dropped ${dropped} zombie contacts`);
+    }
+
+    console.log(`[parse-call-sheet] GPT-5.2 correction complete: ${validated.length} contacts returned (input: ${contacts.length})`);
+    return validated;
+
+  } catch (err) {
+    console.warn(`[parse-call-sheet] GPT-5.2 correction error, falling back to original: ${err instanceof Error ? err.message : 'unknown'}`);
+    return contacts; // Fallback to original
+  }
 }
 
 // ============================================================================
