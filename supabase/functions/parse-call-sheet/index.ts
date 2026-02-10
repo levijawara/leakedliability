@@ -36,6 +36,70 @@ interface Anchors {
   igHandles: string[];
 }
 
+// Known-good email domains (expandable)
+const KNOWN_EMAIL_DOMAINS = [
+  'gmail.com', 'yahoo.com', 'icloud.com', 'outlook.com', 'hotmail.com',
+  'aol.com', 'me.com', 'mac.com', 'live.com', 'msn.com',
+  'protonmail.com', 'ymail.com', 'comcast.net', 'att.net', 'sbcglobal.net',
+];
+
+const GARBAGE_DOMAINS = [
+  'amall.com', 'amalll.com', 'amial.com', 'amail.com', 'amiall.com',
+  'amaill.com', 'gmial.com', 'gmaill.com', 'gmall.com',
+];
+
+function levenshteinDistance(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function correctEmailDomain(email: string): { corrected: string; changed: boolean; reason?: string } {
+  if (email.endsWith('...') || email.endsWith('\u2026') || !email.includes('.')) {
+    return { corrected: email, changed: false, reason: 'truncated_or_invalid' };
+  }
+
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return { corrected: email, changed: false };
+
+  const lowerDomain = domain.toLowerCase();
+
+  if (KNOWN_EMAIL_DOMAINS.includes(lowerDomain)) {
+    return { corrected: email, changed: false };
+  }
+
+  const domainParts = lowerDomain.split('.');
+  if (domainParts.length > 2 || (domainParts[0].length > 8 && !GARBAGE_DOMAINS.includes(lowerDomain))) {
+    return { corrected: email, changed: false };
+  }
+
+  let bestMatch = '';
+  let bestDistance = Infinity;
+
+  for (const known of KNOWN_EMAIL_DOMAINS) {
+    const dist = levenshteinDistance(lowerDomain, known);
+    if (dist < bestDistance) {
+      bestDistance = dist;
+      bestMatch = known;
+    }
+  }
+
+  if (bestDistance <= 2 && bestDistance > 0) {
+    const corrected = `${local}@${bestMatch}`;
+    console.log(`[parse-call-sheet] Email corrected: ${email} -> ${corrected} (distance=${bestDistance})`);
+    return { corrected, changed: true, reason: `${lowerDomain} -> ${bestMatch} (dist=${bestDistance})` };
+  }
+
+  return { corrected: email, changed: false };
+}
+
 function extractAnchors(text: string): Anchors {
   const phones = new Set<string>();
   const emails = new Set<string>();
@@ -55,10 +119,10 @@ function extractAnchors(text: string): Anchors {
   // Email extraction: standard email pattern
   const emailMatches = text.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
   for (const m of emailMatches) {
-    const email = m[0].toLowerCase().trim();
-    // Filter out obviously invalid emails
+    let email = m[0].toLowerCase().trim();
     if (!email.startsWith('.') && !email.endsWith('.') && email.includes('.')) {
-      emails.add(email);
+      const { corrected } = correctEmailDomain(email);
+      emails.add(corrected);
     }
   }
 
@@ -1327,10 +1391,16 @@ function validateAndNormalizeContacts(contacts: ParsedContact[]): ParsedContact[
         return "Miscellaneous";
       });
 
-      const validEmails = (contact.emails || []).filter(email => {
-        if (!email) return false;
-        return email.includes('@') && email.includes('.') && !email.startsWith('@');
-      });
+      const validEmails = (contact.emails || [])
+        .filter(email => {
+          if (!email) return false;
+          if (email.endsWith('...') || email.endsWith('\u2026')) return false;
+          return email.includes('@') && email.includes('.') && !email.startsWith('@');
+        })
+        .map(email => {
+          const { corrected } = correctEmailDomain(email);
+          return corrected;
+        });
 
       const confidence = contact.confidence || 0.75;
       const needsReview = confidence < 0.80 || contact.needs_review === true;
