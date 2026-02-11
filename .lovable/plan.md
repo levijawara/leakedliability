@@ -1,62 +1,71 @@
 
 
-# Fix Call Sheet Parser Accuracy
+# Import 439 Claude-Parsed Call Sheet JSONs
 
-## Problem
-The parser is significantly less accurate than ChatGPT/Claude because of architectural constraints, not prompt quality. The AI models being used are equally capable, but the pipeline around them degrades their output.
+## What This Does
+Creates a single edge function that accepts a batch of Claude Code's extracted JSON files, transforms them to match the database format, and updates the corresponding `global_call_sheets` records so they show as "parsed" with full contact data -- ready for review in the existing ParseReview UI.
 
-## Root Causes (ranked by impact)
+## Data Transformation
 
-### 1. Single-page screenshot (HIGHEST IMPACT)
-Firecrawl returns only one screenshot (page 1). Multi-page call sheets lose all visual context for pages 2+. The AI falls back to garbled `unpdf` text for those pages.
+Claude's format (per contact):
+```text
+{ department: "PRODUCTION", role: "Gaffer", name: "Dante Talano", phone: "850.814.3396", email: "dantetalano28@gmail.com", call_time: "12:00 PM" }
+```
 
-### 2. Anchor leash is too tight
-The system extracts phones/emails deterministically from `unpdf` text, then forbids the AI from outputting anything not in that list. But `unpdf` regularly misses or garbles phone numbers in complex table layouts. The AI sees the correct data in the screenshot but is not allowed to use it.
+Database format (per contact in `parsed_contacts` JSONB):
+```text
+{ name: "Dante Talano", roles: ["Gaffer"], departments: ["PRODUCTION"], phones: ["850.814.3396"], emails: ["dantetalano28@gmail.com"], confidence: 1.0, needs_review: false, ig_handle: null }
+```
 
-### 3. GPT-5.2 correction pass drops valid contacts
-The post-validation filter requires every contact to have a name, contact info (email or phone), AND at least one role. Contacts with a name and phone but no recognized role are silently deleted.
+The function will:
+- Convert singular `phone`/`email`/`role`/`department` to arrays
+- Filter out contacts where `name` is clearly a role label (e.g., "VIDEO", "Photographer", "Steadi Op") by checking if the name has no spaces and matches common role keywords -- but flag them for review rather than dropping them
+- Set confidence to 1.0 (human-verified extraction)
+- Extract `production_info.date` into `parsed_date`
+- Extract `production_info.production_name` into `project_title`
 
-### 4. Text truncation
-The multimodal path only sends 10,000 characters of supplemental text. The text-only path caps at 50,000. Dense call sheets can exceed these limits.
+## Matching Strategy
+Match Claude's `source_file` field against `original_file_name` in `global_call_sheets`. The filenames are "pretty much exactly the same" per your description, so we'll normalize both (lowercase, trim whitespace, normalize colons/slashes) before comparing.
 
-## Proposed Fix (single edge function change)
+## Edge Function: `import-parsed-contacts`
 
-### Change 1: Multi-page screenshots via Firecrawl
-Replace the single Firecrawl `/v1/scrape` call with per-page screenshot requests, or switch to using the PDF bytes directly as a file upload to the AI model (Gemini and GPT both accept PDF files natively now). This gives the AI full visual context for every page.
+**Input** (POST body): An array of Claude JSON objects, sent in batches.
 
-### Change 2: Relax anchor constraint to "prefer, don't enforce"
-Change the prompt and post-processing so anchors are used for *validation scoring* rather than hard filtering. If the AI returns a phone number that is NOT in the anchor list but IS clearly visible in the screenshot, keep it but flag it with lower confidence instead of deleting it.
+**Per record, the function will:**
+1. Normalize `source_file` and find the matching `global_call_sheets` row by `original_file_name`
+2. Transform `crew[]` contacts to the `parsed_contacts` JSONB format
+3. Update the row: set `parsed_contacts`, `contacts_extracted`, `status = 'parsed'`, `parsed_date`
+4. Log match/miss stats
 
-### Change 3: Fix the zombie filter
-Remove the requirement that contacts must have roles to survive. The filter should only drop contacts that have no name AND no contact info. A contact with a name and a phone number is valid even without a labeled role.
+**Auth:** Admin-only (same pattern as other admin edge functions).
 
-### Change 4: Send full text (up to model context limit)
-Increase the text hint from 10,000 to 30,000 chars for multimodal, and from 50,000 to 100,000 for text-only. Modern models handle this easily.
+## How You'll Use It
+You can upload the 439 JSON files in batches using a simple script or even paste them into the admin panel. The function accepts up to 50 files per request to stay within edge function timeouts.
 
-### Change 5: Consider removing the triple-pass pipeline
-The escalation + correction passes add latency and mutation risk. An alternative: run a single call with the strongest available model (GPT-5 or Gemini 2.5 Pro) and skip escalation entirely. This mirrors what ChatGPT does: one pass, full context, best model.
+Alternatively, I can add a small admin UI button on the Call Sheet Manager page that lets you drag-drop the JSON files and auto-imports them -- but that would be a frontend change, so I'll only do that if you want it.
 
 ## Files Changed
-- `supabase/functions/parse-call-sheet/index.ts` (1 file only)
+- `supabase/functions/import-parsed-contacts/index.ts` (NEW file -- 1 file only)
+- `supabase/config.toml` (add function config entry)
 
 ## What Will NOT Change
 - No frontend changes
-- No schema changes
-- No new files
-- No changes to the review UI, save flow, or any other edge function
+- No schema changes  
+- No modifications to existing edge functions
+- ParseReview UI will automatically work since it reads `parsed_contacts` from the same table
 
 ## Verification Steps
-1. Pick 3 call sheets that parsed poorly before
-2. Re-queue them for parsing
-3. Compare contact count and accuracy against a manual ChatGPT parse of the same PDFs
-4. Check edge function logs for the new metrics
+1. Deploy the edge function
+2. Send one test JSON (the ALO x Jisoo file you just shared) via curl
+3. Confirm the matching `global_call_sheets` row now has `status = 'parsed'` and correct `parsed_contacts`
+4. Open ParseReview for that call sheet and verify contacts display correctly
+5. Then batch-send the remaining 438 files
 
 ## Risks
-- Relaxing the anchor constraint could slightly increase hallucinated phone numbers (mitigated by confidence scoring)
-- Using a stronger model for every parse increases AI credit usage
-- Sending full PDFs directly to the model increases token consumption
+- Filename mismatches: if Claude's `source_file` doesn't match `original_file_name` exactly, those records will be skipped and reported in the response so you can fix them manually
+- No data loss: only updates rows that currently have `status != 'parsed'` or have empty `parsed_contacts`, unless you pass a `force: true` flag
 
-## Found, Not Fixed
-- Firecrawl API may not support per-page screenshots natively; may need to switch to direct PDF upload to AI models instead
-- The `unpdf` library itself has known issues with complex table layouts; long-term, a better PDF text extractor could help
-
+## Technical Notes
+- The function will NOT create new `global_call_sheets` rows -- it only updates existing ones
+- Contacts where `name` is null/empty will be dropped
+- The `call_time` field from Claude's output will be stored in a metadata field but won't break anything if ignored
