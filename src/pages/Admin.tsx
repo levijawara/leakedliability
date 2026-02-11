@@ -124,11 +124,29 @@ export default function Admin() {
   const [igMasterImporting, setIgMasterImporting] = useState(false);
   const [igMasterStats, setIgMasterStats] = useState<{ total: number } | null>(null);
   const [igMasterFile, setIgMasterFile] = useState<File | null>(null);
+  const [igIdentities, setIgIdentities] = useState<Array<{ raw_name: string; instagram: string }>>([]);
+  const [igIdentitiesLoading, setIgIdentitiesLoading] = useState(false);
+  const [igSearchTerm, setIgSearchTerm] = useState("");
   
   // NOVA Master List state
   const [novaMasterImporting, setNovaMasterImporting] = useState(false);
   const [novaMasterStats, setNovaMasterStats] = useState<{ total: number } | null>(null);
   const [novaMasterFile, setNovaMasterFile] = useState<File | null>(null);
+
+  // Fetch IG identities on mount
+  useEffect(() => {
+    async function fetchIgIdentities() {
+      setIgIdentitiesLoading(true);
+      const { data } = await supabase
+        .from('ig_master_identities')
+        .select('raw_name, instagram')
+        .order('raw_name')
+        .limit(2000);
+      setIgIdentities(data || []);
+      setIgIdentitiesLoading(false);
+    }
+    fetchIgIdentities();
+  }, []);
 
   useEffect(() => {
     checkAdminAccess();
@@ -3774,143 +3792,231 @@ export default function Admin() {
               </p>
             </div>
 
-            <div className="space-y-6">
-              {/* Stats */}
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    const { count } = await supabase
-                      .from('ig_master_identities')
-                      .select('*', { count: 'exact', head: true });
-                    setIgMasterStats({ total: count || 0 });
-                    toast({
-                      title: "Stats Loaded",
-                      description: `Master list contains ${count || 0} entries.`,
-                    });
-                  }}
-                >
-                  Refresh Stats
-                </Button>
-                {igMasterStats && (
-                  <Badge variant="secondary">{igMasterStats.total} entries</Badge>
-                )}
-              </div>
-
-              {/* Import Section */}
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="font-medium">Import Seed Data</h3>
-                <p className="text-sm text-muted-foreground">
-                  Upload a JSON file with contacts (name, instagram, roles, phone, email fields).
-                </p>
-                
-                {/* File Input Zone */}
-                <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setIgMasterFile(file);
-                    }}
-                    className="hidden"
-                    id="ig-master-file-input"
-                  />
-                  <label 
-                    htmlFor="ig-master-file-input" 
-                    className="cursor-pointer block"
-                  >
-                    {igMasterFile ? (
-                      <div className="space-y-2">
-                        <p className="font-medium">{igMasterFile.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(igMasterFile.size / 1024).toFixed(1)} KB
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p>Click to select JSON file</p>
-                      </div>
-                    )}
-                  </label>
-                </div>
-                
-                <div className="flex gap-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Left Column: Import Seed Data */}
+              <div className="space-y-6">
+                {/* Stats */}
+                <div className="flex items-center gap-4">
                   <Button
+                    variant="outline"
+                    size="sm"
                     onClick={async () => {
-                      if (!igMasterFile) {
-                        toast({ title: "No file selected", variant: "destructive" });
-                        return;
-                      }
-                      
-                      try {
-                        setIgMasterImporting(true);
-                        
-                        // Read file content
-                        const text = await igMasterFile.text();
-                        const contacts = JSON.parse(text);
-                        
-                        if (!Array.isArray(contacts)) throw new Error("JSON must be an array");
-                        
-                        const { data, error } = await supabase.functions.invoke('import-ig-master-list', {
-                          body: { contacts, source: 'admin_file_import' }
-                        });
-                        
-                        if (error) throw error;
-                        
-                        toast({
-                          title: "Import Complete",
-                          description: `Imported: ${data.imported}, Updated: ${data.updated}, Skipped: ${data.skipped}`,
-                        });
-                        
-                        // Reset file input
-                        setIgMasterFile(null);
-                        const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
-                        if (fileInput) fileInput.value = '';
-                        
-                        // Refresh stats
-                        const { count } = await supabase
-                          .from('ig_master_identities')
-                          .select('*', { count: 'exact', head: true });
-                        setIgMasterStats({ total: count || 0 });
-                        
-                      } catch (err: any) {
-                        toast({
-                          title: "Import Failed",
-                          description: err.message || "Invalid JSON file",
-                          variant: "destructive"
-                        });
-                      } finally {
-                        setIgMasterImporting(false);
-                      }
+                      const { count } = await supabase
+                        .from('ig_master_identities')
+                        .select('*', { count: 'exact', head: true });
+                      setIgMasterStats({ total: count || 0 });
+                      toast({
+                        title: "Stats Loaded",
+                        description: `Master list contains ${count || 0} entries.`,
+                      });
                     }}
-                    disabled={!igMasterFile || igMasterImporting}
                   >
-                    {igMasterImporting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Importing...
-                      </>
-                    ) : (
-                      'Import File'
-                    )}
+                    Refresh Stats
                   </Button>
-                  {igMasterFile && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIgMasterFile(null);
-                        const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
-                        if (fileInput) fileInput.value = '';
-                      }}
-                    >
-                      Clear
-                    </Button>
+                  {igMasterStats && (
+                    <Badge variant="secondary">{igMasterStats.total} entries</Badge>
                   )}
                 </div>
+
+                {/* Import Section */}
+                <div className="border rounded-lg p-4 space-y-4">
+                  <h3 className="font-medium">Import Seed Data</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Upload a JSON file with contacts (name, instagram, roles, phone, email fields).
+                  </p>
+                  
+                  {/* File Input Zone */}
+                  <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
+                    <input
+                      type="file"
+                      accept=".json,application/json"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setIgMasterFile(file);
+                      }}
+                      className="hidden"
+                      id="ig-master-file-input"
+                    />
+                    <label 
+                      htmlFor="ig-master-file-input" 
+                      className="cursor-pointer block"
+                    >
+                      {igMasterFile ? (
+                        <div className="space-y-2">
+                          <p className="font-medium">{igMasterFile.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(igMasterFile.size / 1024).toFixed(1)} KB
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                          <p>Click to select JSON file</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={async () => {
+                        if (!igMasterFile) {
+                          toast({ title: "No file selected", variant: "destructive" });
+                          return;
+                        }
+                        
+                        try {
+                          setIgMasterImporting(true);
+                          
+                          // Read file content
+                          const text = await igMasterFile.text();
+                          const contacts = JSON.parse(text);
+                          
+                          if (!Array.isArray(contacts)) throw new Error("JSON must be an array");
+                          
+                          const { data, error } = await supabase.functions.invoke('import-ig-master-list', {
+                            body: { contacts, source: 'admin_file_import' }
+                          });
+                          
+                          if (error) throw error;
+                          
+                          toast({
+                            title: "Import Complete",
+                            description: `Imported: ${data.imported}, Updated: ${data.updated}, Skipped: ${data.skipped}`,
+                          });
+                          
+                          // Reset file input
+                          setIgMasterFile(null);
+                          const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
+                          if (fileInput) fileInput.value = '';
+                          
+                          // Refresh stats + identity list
+                          const { count } = await supabase
+                            .from('ig_master_identities')
+                            .select('*', { count: 'exact', head: true });
+                          setIgMasterStats({ total: count || 0 });
+                          
+                          const { data: refreshed } = await supabase
+                            .from('ig_master_identities')
+                            .select('raw_name, instagram')
+                            .order('raw_name')
+                            .limit(2000);
+                          if (refreshed) setIgIdentities(refreshed);
+                          
+                        } catch (err: any) {
+                          toast({
+                            title: "Import Failed",
+                            description: err.message || "Invalid JSON file",
+                            variant: "destructive"
+                          });
+                        } finally {
+                          setIgMasterImporting(false);
+                        }
+                      }}
+                      disabled={!igMasterFile || igMasterImporting}
+                    >
+                      {igMasterImporting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Importing...
+                        </>
+                      ) : (
+                        'Import File'
+                      )}
+                    </Button>
+                    {igMasterFile && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setIgMasterFile(null);
+                          const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
+                          if (fileInput) fileInput.value = '';
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Matched Identities Browser */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">Matched Identities</h3>
+                  {igIdentities.length > 0 && (
+                    <span className="text-xs text-muted-foreground">
+                      Showing {igIdentities.filter(i => {
+                        if (!igSearchTerm) return true;
+                        const q = igSearchTerm.toLowerCase();
+                        return i.raw_name.toLowerCase().includes(q) || i.instagram.toLowerCase().includes(q);
+                      }).length} of {igIdentities.length}
+                    </span>
+                  )}
+                </div>
+                
+                <Input
+                  placeholder="Search by name or handle..."
+                  value={igSearchTerm}
+                  onChange={(e) => setIgSearchTerm(e.target.value)}
+                />
+
+                <div className="max-h-[500px] overflow-y-auto border rounded-md">
+                  {igIdentitiesLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : igIdentities.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground text-sm">
+                      No identities loaded. Click "Refresh" to load.
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm">
+                      <thead className="sticky top-0 bg-background border-b">
+                        <tr>
+                          <th className="text-left px-3 py-2 font-medium text-muted-foreground">Name</th>
+                          <th className="text-right px-3 py-2 font-medium text-muted-foreground">Handle</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {igIdentities
+                          .filter(i => {
+                            if (!igSearchTerm) return true;
+                            const q = igSearchTerm.toLowerCase();
+                            return i.raw_name.toLowerCase().includes(q) || i.instagram.toLowerCase().includes(q);
+                          })
+                          .map((identity, idx) => (
+                            <tr key={idx} className="border-b last:border-b-0 hover:bg-muted/50">
+                              <td className="px-3 py-2 select-all">{identity.raw_name}</td>
+                              <td className="px-3 py-2 text-right text-muted-foreground select-all">@{identity.instagram}</td>
+                            </tr>
+                          ))
+                        }
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+
+                {igIdentities.length === 0 && !igIdentitiesLoading && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={async () => {
+                      setIgIdentitiesLoading(true);
+                      const { data } = await supabase
+                        .from('ig_master_identities')
+                        .select('raw_name, instagram')
+                        .order('raw_name')
+                        .limit(2000);
+                      setIgIdentities(data || []);
+                      setIgIdentitiesLoading(false);
+                    }}
+                  >
+                    Load Identities
+                  </Button>
+                )}
               </div>
             </div>
 
