@@ -380,8 +380,8 @@ export default function ParseReview() {
     if (!callSheet?.parsed_contacts) return;
     const toInclude: number[] = [];
     callSheet.parsed_contacts.forEach((contact, idx) => {
-      const hasEmail = contact.emails && contact.emails.length > 0;
-      const hasPhone = contact.phones && contact.phones.length > 0;
+      const hasEmail = contact.emails && contact.emails.length > 0 && !contact.emails.every(e => e === "(empty)");
+      const hasPhone = contact.phones && contact.phones.length > 0 && !contact.phones.every(p => p === "(empty)");
       if (hasEmail || hasPhone) {
         toInclude.push(idx);
       }
