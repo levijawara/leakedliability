@@ -14,6 +14,7 @@ function normalizeFilename(name: string): string {
   return name
     .toLowerCase()
     .trim()
+    .replace(/["""'']/g, "") // strip quotation marks
     .replace(/\s+/g, " ")
     .replace(/[_:\/\\]/g, "-") // normalize colons, underscores, slashes to dashes
     .replace(/\.[^.]+$/, ""); // strip .pdf / .json
