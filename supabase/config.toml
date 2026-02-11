@@ -122,3 +122,6 @@ verify_jwt = false
 
 [functions.continuous-queue-processor]
 verify_jwt = false
+
+[functions.import-parsed-contacts]
+verify_jwt = true
