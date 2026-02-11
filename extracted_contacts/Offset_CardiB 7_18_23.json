@@ -1,0 +1,324 @@
+{
+  "source_file": "Offset:CardiB 7:18:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "EP/ Director",
+      "name": "SheShe",
+      "phone": null,
+      "email": "sheshe@shaleetapendleton.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Co-Director",
+      "name": "JakeTheShooter",
+      "phone": null,
+      "email": "jake@shooterco.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Maya Table",
+      "phone": null,
+      "email": "maya@mayatable.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Morgana Yasmeen",
+      "phone": "732.609.3733",
+      "email": "morganayasmeen@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "917.217.6694",
+      "email": "eclassic@mac.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director, Video Production",
+      "name": "2nd AD",
+      "phone": "310.779.0197",
+      "email": "antsetlife@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "2nd 2nd AD",
+      "phone": "310.424.0743",
+      "email": "lexxcorpp@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "AD PA",
+      "name": "Edward Cruz",
+      "phone": "951.570.6835",
+      "email": "Edward.cruz0825@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "AD PA",
+      "name": "Ricky Dula",
+      "phone": "310.890.1183",
+      "email": "Ricardofromhr@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Truck PA",
+      "name": "Jacob \"Khaki\" Mullins",
+      "phone": "719.243.6713",
+      "email": "khaki@needmoneyforschool.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Hope Coleman",
+      "phone": "682.561.5022",
+      "email": "colemanhope20@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Crafty/ Runner PA",
+      "name": "Solana Cambell",
+      "phone": "269.532.0659",
+      "email": "campbellsolana@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Client PA",
+      "name": "Monty",
+      "phone": null,
+      "email": "Archiemusictv@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cinematographer",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424.400.1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Location 2",
+      "name": "Steadicam",
+      "phone": "805.705.4915",
+      "email": "nick.almanza.main@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Drone",
+      "phone": "512.705.4096",
+      "email": "Joeyfpvx@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "LIGHTING",
+      "phone": null,
+      "email": "Cesar.Valenzuela@hercrentals.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "TITLE",
+      "phone": null,
+      "email": "rentals@amplepowergenerators.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Isaac Marziali",
+      "phone": "323.346.6450",
+      "email": "contact@isaacmarziali.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Security",
+      "name": "BBE",
+      "phone": "323.636.6978",
+      "email": "mikewilliamsoncinema@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Matthew Hall",
+      "phone": "562.505.6057",
+      "email": "728matthewhall@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Harrison Bliss",
+      "phone": "310.629.2663",
+      "email": "hbliss@harrisonbliss.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Emilio Zertuche",
+      "phone": "408.893.9696",
+      "email": "zertuche21emilio@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "KEY GRIP",
+      "name": "Josh Linkey",
+      "phone": "323.252.9252",
+      "email": "Joshlinkey@mac.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BBG",
+      "phone": "714.317.6091",
+      "email": "chris@chrisvanlieshout.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "CAMERA CAR/ JIB CAR",
+      "phone": "415.319.2419",
+      "email": "Improvizedproductions@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Sound Mixer",
+      "name": "Andrew Maldonado",
+      "phone": "818.445.6987",
+      "email": "Andrew@inplotwetrust.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Milli 4 Really",
+      "phone": "(818) 860-6031",
+      "email": "milly4really@me.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Assistant",
+      "name": "M Dot",
+      "phone": "(310) 341-5286",
+      "email": "mdot4mayor@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "OS Hair Stylist",
+      "name": "Kya Bilal",
+      "phone": "(626) 429-1005",
+      "email": "kbilalhair@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "K Hair Stylist",
+      "name": "Andrea Burroughs",
+      "phone": "(626) 756-7427",
+      "email": "Hairbyandreab@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Wardrobe Assistant",
+      "name": "Crystina Bond",
+      "phone": "(302) 353-8814",
+      "email": "crystinabondphoto@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": null,
+      "name": "T Glam Team POC",
+      "phone": null,
+      "email": "ashlee@forwardartists.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Trailers David",
+      "phone": "424.400.1879",
+      "email": "DAVID@kingkongtrailers.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Serena Wagner",
+      "phone": "805.705.4915",
+      "email": "stevewagner@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Circuit Roy",
+      "phone": "512.705.4096",
+      "email": "roykurt@me.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kitchen Issa",
+      "phone": "323.346.6450",
+      "email": "eldiamantekitchen@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

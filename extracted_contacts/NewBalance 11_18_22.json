@@ -1,0 +1,188 @@
+{
+  "source_file": "NewBalance 11:18:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "Nov 18, 2022",
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "EP/Director",
+      "name": "Nat Prinzi",
+      "phone": "(917) 407-5782",
+      "email": "nat@betterdays.tv",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "HOP/Producer",
+      "name": "Noelle Victoria",
+      "phone": "(808) 364-4862",
+      "email": "noelle@betterdays.tv",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Prod. Manager",
+      "name": "Iryna Glavnyk",
+      "phone": "(602) 349-6386",
+      "email": "iryna.glavnyk@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1ST AD",
+      "phone": "(908) 507-5462",
+      "email": "evanconiglio@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Operations Manager",
+      "name": "PHANTOM OP",
+      "phone": "(818) 648-6572",
+      "email": "info@hollywoodspecialops.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "PHOTOGRAPHER",
+      "phone": "(702) 499-0514",
+      "email": "jei.vision@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Designer",
+      "name": "DIGI TECH",
+      "phone": "(323) 810-4653",
+      "email": "creatorslabofficial@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Operations Manager",
+      "name": "BTS Photographer",
+      "phone": "(702)-533-9786",
+      "email": "MimiTagorda@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": "GAFFER - CLT",
+      "name": "Jordan Av-Tal",
+      "phone": "(818) 857-1210",
+      "email": "Jordan.avtal@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBE",
+      "phone": "(424) 772-9801",
+      "email": "Contact.Ryansilver@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Site PA",
+      "name": "ELECTRCIAN",
+      "phone": "(818) 720-0682",
+      "email": "Wesleyaharoni@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "KEY GRIP",
+      "name": "Adam Schaffer",
+      "phone": "(617) 894-9085",
+      "email": "adamschaffer617@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Site PA",
+      "name": "BBG",
+      "phone": "(714) 673-9340",
+      "email": "Sebastian.lam5@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "GRIP",
+      "name": "Jonathan Portillo",
+      "phone": "(805) 616-1834",
+      "email": "00jportillo@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Designer",
+      "name": "Rickey Ramirez",
+      "phone": "(818) 744-5511",
+      "email": "info@thetacticalchimp.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "KEY HMU",
+      "name": "Nelly Santiago",
+      "phone": "(323) 573-5359",
+      "email": "nellysntg@gmail.co",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "SET PA",
+      "name": "Sam Prinzi",
+      "phone": "(631) 665-2116",
+      "email": "sprinzi99@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "SET PA",
+      "name": "Jon Martinez",
+      "phone": "(562) 334-5605",
+      "email": "martinezjonm@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "SET PA",
+      "name": "Ron Davison",
+      "phone": "(818) 522-5189",
+      "email": "rondavison22@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rancho's Tacos",
+      "phone": "(323) 573-5359",
+      "email": "296-8061ranchosonsitetacos@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

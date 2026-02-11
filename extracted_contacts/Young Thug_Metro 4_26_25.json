@@ -1,0 +1,268 @@
+{
+  "source_file": "Young Thug:Metro 4:26:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "April 26, 2025",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Liron",
+      "phone": "646-823-7647",
+      "email": "lucasprevost@outlook.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Lopes",
+      "phone": "(781) 475-7018",
+      "email": "lopes@btstudios.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Galileo Mondol",
+      "phone": "(617) 981-1129",
+      "email": "galileo@btstudios.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Supervising Producer",
+      "name": "Alex Dewart",
+      "phone": "(617) 710-4403",
+      "email": "lex@btstudios.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Anfernee Aguado",
+      "phone": "(818) 916-9817",
+      "email": "AnferneeAguado@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Thomas Carmona",
+      "phone": "(201) 803-0822",
+      "email": "Thomas@cityislandprodctions.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BT CAM",
+      "phone": "(541) 901-2823",
+      "email": "kimlopesrocha99@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Model",
+      "phone": "(385) 281-9470",
+      "email": "apiobolgai@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "TITLE",
+      "phone": "(909) 231-0560",
+      "email": "kyndoll.mgmt@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DP",
+      "name": "Idan",
+      "phone": "(810) 938-0204",
+      "email": "sagewilson3@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Camera Operator",
+      "name": "Don Turner",
+      "phone": "(323) 363-9239",
+      "email": "Steadidon@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Grip",
+      "name": "Model",
+      "phone": "(386) 864-0038",
+      "email": "polinagourin@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "TITLE",
+      "phone": "(661) 644-9370",
+      "email": "charlottefreerules@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Key Grip",
+      "name": "Bobby Ortwin",
+      "phone": "(310) 801-4169",
+      "email": "Rcortwin@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist",
+      "name": "Hugo With",
+      "phone": null,
+      "email": "hugo.lecot15@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist Assistant",
+      "name": "Sydney Graham",
+      "phone": "(714) 673-4715",
+      "email": "Sydneygraham000@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist Assistant",
+      "name": "Eric Jackson Chen",
+      "phone": "(657) 253-2233",
+      "email": "ericjacksonchen@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Evadne Gonzalez",
+      "phone": "(347) 553-9655",
+      "email": "evadne.gonzales@icloud.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Gaffer",
+      "name": "Tristan Moffat",
+      "phone": "(909) 477-0936",
+      "email": "damoff17@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Red Letter Rentals",
+      "phone": "(818) 297-1905",
+      "email": "rentals@redletterrentals.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Truck PA",
+      "name": "Matt Geherty",
+      "phone": "(914) 310-9838",
+      "email": "mgerety70@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Truck PA",
+      "name": "Mack Price",
+      "phone": "(310) 403-1579",
+      "email": "mpfilms78@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Monk Serrell-Freed",
+      "phone": "(323) 519-1082",
+      "email": "Theloniussf@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "MUA",
+      "phone": "(847) 922-5722",
+      "email": "Nadia@nadiareese.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Hair Stylist",
+      "name": "Gabriela Aceves",
+      "phone": "(310) 918-6947",
+      "email": "gabrielaacevesbeauty@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Model Richelle",
+      "phone": "(617) 710-4403",
+      "email": "rvega123@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Model Hayden",
+      "phone": "(818) 916-9817",
+      "email": "hmuhayden@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jordyn Renee",
+      "phone": "(541) 901-2823",
+      "email": "Jordynflynn13@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Model Savvy",
+      "phone": "(323) 363-9239",
+      "email": "guzel@misfitmodelmgmt.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Hugo With",
+      "phone": null,
+      "email": "Hugo@10000.global",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Tyler Adams",
+      "phone": "(310) 403-1579",
+      "email": "Tyler@studiotyleradams.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

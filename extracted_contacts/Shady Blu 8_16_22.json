@@ -1,0 +1,204 @@
+{
+  "source_file": "Shady Blu 8:16:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 16, 2022",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Commmisioner",
+      "phone": null,
+      "email": "mark.bridges@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Hidji",
+      "phone": null,
+      "email": "ashleyn.strong@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Daniel Yaro",
+      "phone": null,
+      "email": "yaro@northofnow.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Matisse Gaillard",
+      "phone": "310.579.1215",
+      "email": "matisse@northofnow.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Mike Minahan",
+      "phone": "781.439.8798",
+      "email": "mike@northofnow.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Production Coordinator",
+      "name": "Elizabeth Cook",
+      "phone": "650.518.9447",
+      "email": "elizabeth@northofnow.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Artist Team",
+      "name": "1st AD",
+      "phone": "310.890.1183",
+      "email": "Ricardofromhr@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "2nd AD",
+      "phone": "951.662.4122",
+      "email": "jorden.ervin@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "7:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "574.514.5138",
+      "email": "steadifoster@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "805.204.7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Connor Vickers",
+      "phone": "707.294.8008",
+      "email": "contact@connorvickerscine.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Swing",
+      "name": "Samuel Diaz",
+      "phone": "916.402.6391",
+      "email": "samueldiaz019@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Designer",
+      "name": "Francesca Maldonado",
+      "phone": "818.381.1529",
+      "email": "francesca.k.maldonado@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Truck PA",
+      "name": "Chris Gonzalez",
+      "phone": "562.212.8164",
+      "email": "cvrisg01@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Elise Schatz",
+      "phone": "714.655.4564",
+      "email": "eliseschatz@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Sean Cavaliere",
+      "phone": "561.843.4989",
+      "email": "Seancavalieremgmt@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "NNR Simone",
+      "phone": "310.579.1215",
+      "email": "sg@nnr.la",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "NNR Cyrus",
+      "phone": "310.579.1215",
+      "email": "nois@nnr.la",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "NNR Ali",
+      "phone": "781.439.8798",
+      "email": "mba@nnr.la",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "NNR Dan",
+      "phone": "650.518.9447",
+      "email": "dm@nnr.la",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Q Love",
+      "phone": "310.890.1183",
+      "email": "qlove014@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Photographer Jahnae",
+      "phone": "574.514.5138",
+      "email": "jahnaeqbooking@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

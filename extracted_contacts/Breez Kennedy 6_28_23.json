@@ -1,0 +1,84 @@
+{
+  "source_file": "Breez Kennedy 6:28:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "June 27, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Kevin Douglas",
+      "phone": "(347) 859-6393",
+      "email": "nvsnproductions@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Jordan Espinoza",
+      "phone": "(661) 505-5008",
+      "email": "Jordanespinoza626@yahoo.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Tomiko Younge",
+      "phone": "(323) 717-5680",
+      "email": "Tomikoyounge@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Jasper A. Bagley",
+      "phone": "(626) 590-8531",
+      "email": "altadenabugclub@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Jonathan Charles",
+      "phone": "(347) 279-3039",
+      "email": "jonathancharles11234@gmail.com",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawa",
+      "phone": "(626) 590-8531",
+      "email": "lowjowara@gmail.com",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Steadicam Operator",
+      "name": "Edward Hill",
+      "phone": "(818) 201-6820",
+      "email": "hillstoneentertainment@gmail.com",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Levi Kaminkowitz",
+      "phone": "(323) 919-1597",
+      "email": "watchyoureyesllc@gmail.com",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Kurran Brown",
+      "phone": "(917) 573-4761",
+      "email": "kurranbrown@gmail.com",
+      "call_time": "3:00 PM"
+    }
+  ],
+  "talent": []
+}

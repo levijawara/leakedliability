@@ -1,0 +1,292 @@
+{
+  "source_file": "Lil Durk:J. Cole 4:27:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Tashi Bhutia",
+      "phone": "(347) 653-2839",
+      "email": "tashib947@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Tayler Nash",
+      "phone": "(708) 691-6803",
+      "email": "t@taylernash.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Ross Ginsberg",
+      "phone": "(914) 502-7789",
+      "email": "rosswginsberg@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Coordinator",
+      "name": "Max Acrish",
+      "phone": "(914) 841-0914",
+      "email": "maxacrish@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st Assistant Director",
+      "name": "Evan Coniglio",
+      "phone": "(908) 507-5462",
+      "email": "evanconiglio@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "2nd Assistant Director",
+      "name": "Lex Cardiel",
+      "phone": "310-424-0743",
+      "email": "lexxcorpp@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "2nd 2nd Assistant Director",
+      "name": "Lenny Curry",
+      "phone": "(424) 653-0174",
+      "email": "thereallennyrose@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "AD PA",
+      "name": "Aris Ray",
+      "phone": "(818) 397-0281",
+      "email": "arisray@rocketmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Ben Danielson",
+      "phone": "(207) 624-2868",
+      "email": "ben@941company.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Charlie Aguirre",
+      "phone": "(954) 695-7332",
+      "email": "charlieaguirre13@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Darren Perkins",
+      "phone": "(404) 997-1326",
+      "email": "Darrenperkins@dpla.live",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Bri Plewman",
+      "phone": "(509) 987-4783",
+      "email": "briplewphotography@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Quinn Biddle",
+      "phone": "(770) 639-6974",
+      "email": "quinnbiddle@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Rosa María Galvis",
+      "phone": "(786) 683-8385",
+      "email": "rstgalvis@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set Medic",
+      "name": "Melissa Reed",
+      "phone": "(213) 318-1818",
+      "email": "melissanicholereed@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Kid Extras",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st Assistant Camera",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd Assistant Camera",
+      "name": "Mallory Siegenthaler",
+      "phone": "(502) 424-6234",
+      "email": "mallory.cine@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "(714) 345 4520",
+      "email": "tplante00@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Techno",
+      "phone": "(310) 420-1642",
+      "email": "elifranks@me.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Balloon Technician",
+      "phone": "(818) 736-1891",
+      "email": "erik@onelightballoons.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Balloon Technician",
+      "phone": "(714) 357-5848",
+      "email": "ndfetzer@icloud.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Jordan Avtal",
+      "phone": "(818) 857-1210",
+      "email": "jordan.avtal@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Best Boy Electric",
+      "name": "Adam Schaffer",
+      "phone": "(617) 894-9085",
+      "email": "adamschaffer617@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Jacob Gonzalez",
+      "name": null,
+      "phone": "(818) 522-8737",
+      "email": "gonzalezjac0321@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "Wesley Aharoni",
+      "phone": "(818) 720-0682",
+      "email": "wesleyaharoni@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "Ricardo Biggs",
+      "phone": "(623) 237-2619",
+      "email": "biggs.ricardo@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Bevis Tran",
+      "phone": "(323) 683 5838",
+      "email": "imbevis@hotmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Best Boy Grip",
+      "name": "Alex Baele",
+      "phone": "(440) 552-6624",
+      "email": "baele@cinebae.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Josh Carrasco",
+      "phone": "(562) 381-3169",
+      "email": "caldera2211@hotmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Sergio G. Nava",
+      "phone": "(323) 806-2737",
+      "email": "sergiog323@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Rob Julin",
+      "phone": "(626) 421-4108",
+      "email": "robertjulin@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Eric Dimarco",
+      "phone": "(917) 687-9724",
+      "email": "ericdimarco1@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Arpi Hamzoian",
+      "phone": "(818) 486-2774",
+      "email": "rphamzoian@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Kamron Baity",
+      "phone": "(323) 620-2084",
+      "email": "kam24star@gmail.com",
+      "call_time": "9:00 AM"
+    }
+  ],
+  "talent": []
+}

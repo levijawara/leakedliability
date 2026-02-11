@@ -1,0 +1,332 @@
+{
+  "source_file": "Rob49:Weezy 12:13:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "DECEMBER 13, 2023",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "DIRECTOR",
+      "name": "Andrew Percival",
+      "phone": "703.380.6263",
+      "email": "drew@paperwork.studio",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CREATIVE DIRECTOR",
+      "name": "Frankie Watts",
+      "phone": "504.351.2524",
+      "email": "frankie@drinkfreewater.us",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "EXECUTIVE PRODUCER",
+      "name": "Joey Szela",
+      "phone": "978.766.6698",
+      "email": "joey@paperwork.studio",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "SUPERVISING PRODUCER",
+      "name": "Anuar Aly",
+      "phone": "305.803.8733",
+      "email": "anuar@iyn.agency",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCTION COORDINATOR",
+      "name": "Lisa Nakamoto",
+      "phone": "310.845.5979",
+      "email": "lisanakamoto09@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1ST AD",
+      "phone": "818.640.3182",
+      "email": "evangelista.joseph95@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "2ND AD",
+      "phone": "253.229.9216",
+      "email": "Votlara@outlook.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP/ Photographer",
+      "name": "Brian Bechwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "SECURITY",
+      "name": "STEADICAM",
+      "phone": "818.395.0984",
+      "email": "devin.jamieson@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "GAFFER",
+      "name": "Pablo “Saint” Lopez",
+      "phone": "562.391.6646",
+      "email": "pablo@litbydrip.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "ACLT / LCP",
+      "name": "Samuel Lynch",
+      "phone": "949.577.2082",
+      "email": "samuellyynch@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "SECURITY",
+      "name": "SLT",
+      "phone": "562.391.6646",
+      "email": "shoot4perf@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "KEY GRIP",
+      "name": "Eli Lopez",
+      "phone": "562.440.1837",
+      "email": "Josueeli11@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCTION DESIGNER",
+      "name": "Cameron Alford",
+      "phone": "631.383.5708",
+      "email": "cameron.ky.alford@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCTION DESIGNER",
+      "name": "Alica Simon",
+      "phone": "415.695.4993",
+      "email": "aesimon.pd@gmail.com",
+      "call_time": "8:30PM"
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Andres Palou",
+      "phone": "781.460.7276",
+      "email": "andres1palou@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Jonathan Tolentino",
+      "phone": "714.860.0883",
+      "email": "jonathant141@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Gabrielle Flores",
+      "phone": "909.285.6814",
+      "email": "gabriellefloresfilms@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Bryan Kaing",
+      "phone": "408.800.9830",
+      "email": "bryankaing@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Charlene Wang",
+      "phone": "818.575.0168",
+      "email": "charlene.chenhsi.wang@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Tre Cloud",
+      "phone": "804.297.6642",
+      "email": "Trecloud7@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Kenya Gaines",
+      "phone": "302.522.4456",
+      "email": "Kgvisualz302@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Edgar Ceron",
+      "phone": "424.526.0998",
+      "email": "Edgarrekm@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Pedro Solorio",
+      "phone": "323.247.4945",
+      "email": "Pedrosolorio52@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Cindy Yeh",
+      "phone": "425.372.8583",
+      "email": "icindy316316@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Chris Poupore",
+      "phone": "804.929.1125",
+      "email": "cpore58@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Corran Haug-Villalobos",
+      "phone": "213.514.1907",
+      "email": "corranhv523@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Matile Cellie",
+      "phone": "747.299.8007",
+      "email": "matilde.cellie.97@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Ivan Lizarraga",
+      "phone": "562.365.4852",
+      "email": "Ivan.liz014@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Adrian Palma",
+      "phone": "323.690.2854",
+      "email": "adrianpalma16@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Mira",
+      "phone": "703.380.6263",
+      "email": "mira@rebellavimusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rob49 Management",
+      "phone": "504.351.2524",
+      "email": "rob49mgmt@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "O/C",
+      "phone": "978.766.6698",
+      "email": "slimm@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Isaiah Milfort",
+      "phone": "305.803.8733",
+      "email": "Isaiah.Milfort@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lola Plaku",
+      "phone": "310.845.5979",
+      "email": "lola.plaku@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Courtney Couch",
+      "phone": "818.640.3182",
+      "email": "courtney.couch@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Votlara@outlook.com Jay",
+      "phone": "253.229.9216",
+      "email": "jay.pp.mail@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Keith Brown",
+      "phone": "845.240.3677",
+      "email": "cmrvideo@me.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lustt Models",
+      "phone": "714.860.0883",
+      "email": "Lusttmodels@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

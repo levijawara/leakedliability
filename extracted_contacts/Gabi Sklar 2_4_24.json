@@ -1,0 +1,68 @@
+{
+  "source_file": "Gabi Sklar 2:4:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "FEBRUARY 4, 2024",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director/EP",
+      "name": "Satien Mehta",
+      "phone": "760.504.6689",
+      "email": "sat@driveintlagency.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Jay Weneta",
+      "phone": "714.900.0897",
+      "email": "jlongsnap@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Notion",
+      "phone": "435.640.1005",
+      "email": "notion@happyimsad.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cinematographer",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Drone",
+      "phone": "562.644.8799",
+      "email": "mike@therealmikek.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "805.204.7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": "7:45 AM"
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,116 @@
+{
+  "source_file": "RANGEL 5:16:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "5/16/2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "Prod. Manager",
+      "name": "Janeeth Munoz",
+      "phone": "(951)772-1241",
+      "email": "janeethmunoz6@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Prod. Coordinator",
+      "name": "Kailyn Bueno",
+      "phone": "347 367 9208",
+      "email": "kailyn.bueno@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "DP",
+      "name": "Joshua Libertine",
+      "phone": "213-269-8208",
+      "email": "info@dotblk.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "(818) 445-1260",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "2ND AC",
+      "name": "Deangelo McDonald",
+      "phone": "(513) 393-1802",
+      "email": "DeAngelomcdonald55@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Angel Gonzalez",
+      "phone": "818 626 7104",
+      "email": "wavyxangel@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Swing",
+      "name": "Pierre Conley",
+      "phone": "(310) 808-5283",
+      "email": "pierre.planetfresh@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Brennen Harper",
+      "phone": "(323) 382-8427",
+      "email": "brennenjharper@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "GLAM ARTIST",
+      "name": "Lizzy Arroyo",
+      "phone": "323 214 6066",
+      "email": "lizzybeesbeauty@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "VANITIES",
+      "role": "PA",
+      "name": "Melissa Carrillo",
+      "phone": "(951) 796-1934",
+      "email": "melsproduction.mc@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "PA",
+      "name": "Juan GarciaxQuintero",
+      "phone": "847 401 8120",
+      "email": "juanthecameraman@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "YBTG DUB",
+      "phone": "213-269-8208",
+      "email": "Dub@ybtgent.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "YBTG RAHN",
+      "phone": "(818) 445-1260",
+      "email": "Rahn@ybtgent.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,132 @@
+{
+  "source_file": "MGK 7:16:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "July 16, 2025",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Excutive Producer",
+      "name": "Angel J Rosa",
+      "phone": "917.312.4425",
+      "email": "angel@madebyheirs.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Brandon H McClover",
+      "phone": "323.921.6504",
+      "email": "brandon@madebyheirs.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Director Of Photography",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424.400.1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Gaffer",
+      "name": "Micheal Morones",
+      "phone": "847.513.3846",
+      "email": "michael@stumblingproductions.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBE",
+      "phone": "706.840.9935",
+      "email": "josh.n.adams7@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Key Grip",
+      "name": "Julio Barrera",
+      "phone": "323.447.9312",
+      "email": "juliobarrerafilm@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBG",
+      "phone": "209.568.7074",
+      "email": "mpurkis4@hotmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Briggen Brikai",
+      "phone": "773.516.0324",
+      "email": "briggen.brikai@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art",
+      "name": "Isaac Burt",
+      "phone": "310.910.2338",
+      "email": "isaacburtfilm@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Marco Reed",
+      "phone": "818.510.1585",
+      "email": "marcuccio1130@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Elija Gray",
+      "phone": "818.635.3535",
+      "email": "e.gray2@lafilm.edu",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Charles Murray",
+      "phone": "415.419.1134",
+      "email": "ccmurray924@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Steph Epuna",
+      "phone": "310.770.4393",
+      "email": "epunaworks@gmail.com",
+      "call_time": "1:00 PM"
+    }
+  ],
+  "talent": []
+}

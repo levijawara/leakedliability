@@ -1,0 +1,156 @@
+{
+  "source_file": "Tee Grizzly 6:9:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Lead",
+      "name": "Jay Tauzin",
+      "phone": "504.481.8635",
+      "email": "jtauzin1@gmail.com",
+      "call_time": "2:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "678.704.7358",
+      "email": "info.showtimeshowtime@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Casting Director",
+      "name": "E Mills",
+      "phone": "909.630.3654",
+      "email": "millticketcasting@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Site Rep",
+      "phone": "718.799.2484",
+      "email": "info@idealsets.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Stacie Mae",
+      "phone": "702.672.5579",
+      "email": "staciemaee@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Prod. Coordinator",
+      "name": "Marisa Truitt",
+      "phone": "773.612.1527",
+      "email": "marisa@visionbankfilms.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Unc",
+      "phone": "818.416.4874",
+      "email": "bcfllc19@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Devin Duncan",
+      "phone": "734.731.6300",
+      "email": "devinduncan50@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Joshua Libertine",
+      "phone": "213.269.8208",
+      "email": "Info@dotblk.com",
+      "call_time": "2:30PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "LOJAWARA@GMAIL.COM",
+      "call_time": "2:30PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "SteadiCam",
+      "phone": "469.810.1860",
+      "email": "SteadicamJazz@gmail.com",
+      "call_time": "2:30PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Angel Gonzalez",
+      "phone": "818.626.7104",
+      "email": "wavyxangel@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Keith Shattle",
+      "phone": "818.660.8180",
+      "email": "Keithshattle1993@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Kimberly Chávez",
+      "phone": "626.487.3646",
+      "email": "Kimberlymorenochavez@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Nil Tosina",
+      "phone": "805.420.8267",
+      "email": "niklastosian@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Swing",
+      "name": "JC Rivas",
+      "phone": "424.200.5897",
+      "email": "jcbeat009@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Production Designer",
+      "name": "Briggs",
+      "phone": "773.516.0324",
+      "email": "briggen.brikai@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Makeup SFX",
+      "name": "Alan Gonzalez Jr.",
+      "phone": "626.747.2073",
+      "email": "alanjmua@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

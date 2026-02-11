@@ -1,0 +1,92 @@
+{
+  "source_file": "REMA 5:30:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "MAY 30, 2024",
+    "production_company": "0% Chance of Rain High: 67 Low: 55 Bullseye Production LLC Pacifica Hospital of the Valley",
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Pacifica Hospital of the Valley\n9449 San Fernando Rd, Sun Valley, CA 91352",
+      "name": "0% Chance of Rain High: 67 Low: 55\nSunrise: 5:43 AM\nSunset: 7:58 PM",
+      "phone": null,
+      "email": "bullseyeproductionllc@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "KeAmbra Tianez",
+      "phone": "213.315.8524",
+      "email": "roberts@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Grant Decyk",
+      "phone": "310.920.9203",
+      "email": "grantdecyk@gmail.com",
+      "call_time": "4:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Mike Duong",
+      "phone": "510.575.3118",
+      "email": "mduong92fb@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Christian Del Rio",
+      "phone": "818.946.9703",
+      "email": "cdc.delrio@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Swing",
+      "name": "Connor Dittman",
+      "phone": "661.857.7132",
+      "email": "connordittman@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "STUNTS",
+      "role": "Stunt Coordinator",
+      "name": "Robert Brown",
+      "phone": "512.415.2687",
+      "email": "robbrown3059@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Danielle Washington",
+      "phone": "870.557.4455",
+      "email": "dannierae33@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Ace Underhill",
+      "name": "Owner/Site Rep",
+      "phone": "310.991.5294",
+      "email": "brilliantscreenstudios@gmail.com",
+      "call_time": "10:00 AM"
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,108 @@
+{
+  "source_file": "Nige 5:26:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "May 26, 2024",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Anfy",
+      "phone": "(818) 916-9817",
+      "email": "anferneeaguado@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Roger Blandon",
+      "phone": "(209) 289-6267",
+      "email": "rogerblandonw@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "(503) 961-5340",
+      "email": "portlandsb@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "2nd AD",
+      "phone": "(310) 579-5676",
+      "email": "deedeedeschanel@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Drea Rodriguez",
+      "phone": "(323) 842-3877",
+      "email": "dreashootzllc@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Techno Crane Operator",
+      "name": "Eli Franks",
+      "phone": "(310) 420-1642",
+      "email": "elidfranks@gmail.com",
+      "call_time": "4:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": "(714) 686-5657",
+      "email": "jorge@glowingambers.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Swing",
+      "name": "Rich Song",
+      "phone": "(323) 333-4298",
+      "email": "richardsongmgmt@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Andrew Coffey",
+      "phone": "(508) 813-1024",
+      "email": "Andrewcoffeyllc@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Background Talent",
+      "name": "Men (14)",
+      "phone": null,
+      "email": "monica@hypmosis.com",
+      "call_time": "1:00 PM"
+    }
+  ],
+  "talent": []
+}

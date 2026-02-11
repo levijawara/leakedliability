@@ -1,0 +1,52 @@
+{
+  "source_file": "ZNI 6:21:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "Jun 21, 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [],
+  "talent": [
+    {
+      "character": "Artist",
+      "talent_name": "ZN Zni",
+      "call_time": "11:00am"
+    },
+    {
+      "character": "Choreographer",
+      "talent_name": "TS Terrence Spencer",
+      "call_time": "4:00pm"
+    },
+    {
+      "character": "Choreographer",
+      "talent_name": "TS Tenoa Spencer",
+      "call_time": "4:00pm"
+    },
+    {
+      "character": "Dancer",
+      "talent_name": "PC Phillysha Cottrell",
+      "call_time": "4:15pm"
+    },
+    {
+      "character": "Dancer",
+      "talent_name": "AK Alaniah Keller",
+      "call_time": "4:15pm"
+    },
+    {
+      "character": "Dancer",
+      "talent_name": "MW Monique Watson",
+      "call_time": "4:30pm"
+    },
+    {
+      "character": "Dancer",
+      "talent_name": "SC Starley Carrington",
+      "call_time": "4:15pm"
+    },
+    {
+      "character": "Dancer",
+      "talent_name": "SB Sophia Basilio",
+      "call_time": "4:15pm"
+    }
+  ]
+}

@@ -1,0 +1,356 @@
+{
+  "source_file": "The Browns 9:30:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "9/30/21",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Tara Long",
+      "phone": "323.930.1204",
+      "email": "tlong@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Gennifer Gardiner",
+      "phone": "310.351.8549",
+      "email": "ggardiner@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Mark Ford",
+      "phone": "323.930.1204",
+      "email": "mark.ford@creaturefilms.net",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Kevin Lopez",
+      "phone": "323.930.1204",
+      "email": "kevin.lopez@creaturefilms.net",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Alicia Etheridge-Brown",
+      "phone": "818.915.3321",
+      "email": "aemanagement123@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Executive Producer (Post)",
+      "name": "Alastair Surprise",
+      "phone": "323.253.5264",
+      "email": "surpico@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Co-Executive Producer",
+      "name": "Chelsea Low",
+      "phone": "323.828.8388",
+      "email": "chelsea@thecreativetank.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Line Producer",
+      "name": "Farzin Toussi",
+      "phone": "323.841.2736",
+      "email": "farzintoussi@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Field Producer",
+      "name": "Sheena House",
+      "phone": "312.576.5620",
+      "email": "booksheenad@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Segment Producer",
+      "name": "Mark Favreau",
+      "phone": "323.270.6300",
+      "email": "favreaufilms@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Talent Producer",
+      "name": "Alesiette Mayweather",
+      "phone": "832.610.5554",
+      "email": "alesiette67@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Associate Producer",
+      "name": "Shiloh Feldman",
+      "phone": "860.448.5898",
+      "email": "shilohfeldman@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Executive VP of Production",
+      "phone": "562.818.4792",
+      "email": "werb@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "VP of Production",
+      "phone": "936.433.9151",
+      "email": "jkalning@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Pegah Sabeti",
+      "phone": "407.963.0228",
+      "email": "p118swim@ymail.com",
+      "call_time": "8:20 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Coordinator",
+      "name": "Sylvio Del Pozzo",
+      "phone": "541.633.9021",
+      "email": "shanedelpozzo@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Asst. Prod. Coordinator",
+      "name": "Josh Cooper",
+      "phone": "925.819.1431",
+      "email": "jacooper1313@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Nathan Chin",
+      "phone": "731.293.4480",
+      "email": "nathantchin@gmail.com",
+      "call_time": "8:20 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Hunter Cohen",
+      "phone": "608.770.5305",
+      "email": "hunter.cohenmusic@gmail.com",
+      "call_time": "10:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Eric Louiselle",
+      "phone": "651.319.2259",
+      "email": "eriloui@gmail.com",
+      "call_time": "10:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Valeria Naidenova",
+      "phone": "757.839.9461",
+      "email": "shaput@icloud.com",
+      "call_time": "10:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Keelan Nealey",
+      "phone": "832.317.2594",
+      "email": "keelannealey123@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Ali-Reza Nusrat",
+      "phone": "714.317.2756",
+      "email": "alirezanusrat@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera Operator",
+      "name": "Chris Carter",
+      "phone": "310.938.7530",
+      "email": "clcarter1847@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera Operator",
+      "name": "Diego Lopez",
+      "phone": "915.328.7708",
+      "email": "lumierdplopez@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera Operator",
+      "name": "Delaney Moghanian",
+      "phone": "619.519.2918",
+      "email": "delaneymog@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera Operator",
+      "name": "John Ewing",
+      "phone": "626.404.6118",
+      "email": "johnhewing@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera Operator",
+      "name": "Orlando Rodriguez",
+      "phone": "917.497.6114",
+      "email": "orrodriguez23@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Cassandra Ellis",
+      "phone": "909.553.0545",
+      "email": "cassandra.ellis05@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Russell Nighswonger",
+      "phone": "562.896.6706",
+      "email": "russell.nighswonger@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Joey Skaggs",
+      "phone": "502.424.0374",
+      "email": "joeyskaggs2@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Mitch Stamm",
+      "phone": "608.577.2938",
+      "email": "mdstamm@me.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Audio Supervisor",
+      "name": "Patrick Hurley",
+      "phone": "650.534.7247",
+      "email": "hurleysound@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Audio Mixer",
+      "name": "Chris Faber",
+      "phone": "818.294.6993",
+      "email": "faber1229@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Audio Mixer",
+      "name": "Carlos Palmer",
+      "phone": "818.606.9543",
+      "email": "carlospalmer@ymail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "CCO",
+      "phone": "818.634.2673",
+      "email": "magicfmusic@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Lead Accountant",
+      "name": "Brian Friedman",
+      "phone": "323.930.1204",
+      "email": "bfriedman@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "VP, Post Production",
+      "phone": "818.800.2115",
+      "email": "droehrig@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Post Production Manager",
+      "name": "Samantha Kraft",
+      "phone": "323.930.1204",
+      "email": "skraft@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Post Supervisor",
+      "name": "Billy Hanson",
+      "phone": "207.423.4050",
+      "email": "billy.hanson@eone.co",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Clearance Coordinator",
+      "name": "Jasmin Cortez",
+      "phone": "323.930.1204",
+      "email": "jcortez@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Etheridge-Brown N/C",
+      "phone": "323.930.1204",
+      "email": "818.915.3321aemanagement123@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

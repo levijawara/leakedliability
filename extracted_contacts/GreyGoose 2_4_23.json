@@ -1,0 +1,100 @@
+{
+  "source_file": "GreyGoose 2:4:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "FEBRUARY 4th, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "PRODUCER",
+      "name": "GLEN MATHENY",
+      "phone": "925-357-7250",
+      "email": "GLEN@FOURFOUROFFET.COM",
+      "call_time": "9:30"
+    },
+    {
+      "department": null,
+      "role": "PRODUCTION MANAGER",
+      "name": "CAM HILL",
+      "phone": null,
+      "email": "CAM@FOURFOUROFFSET.COM",
+      "call_time": "9:30"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Content\n& Media, US",
+      "name": "DIR OF PHOTOGRAPHY",
+      "phone": "1619302521",
+      "email": "TREVOR@FYM.AGENCY",
+      "call_time": "9:30"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC - Camera A",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:30"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "SOUND OP",
+      "phone": "818-390-8011",
+      "email": "Dadonsound@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "BOOM OP",
+      "name": "G&E",
+      "phone": "660-234-4744",
+      "email": "Bricejrichardson@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "SET STYLIST",
+      "name": "TIM FERRO",
+      "phone": "941.350.1607",
+      "email": "tfer21@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ART ASST.",
+      "name": "LAURA HUGHES",
+      "phone": "434.203.7352",
+      "email": "laura.ehghs@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ART ASST.",
+      "name": "NICOLAS HEN",
+      "phone": "201.315.6707",
+      "email": "nicolas.b.hen@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA / SET",
+      "name": "Nico Morineau",
+      "phone": "8184833799",
+      "email": "directedbynico@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "TRISTAN LACOUR",
+      "phone": "1619302521",
+      "email": "tristan@matteprojects.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

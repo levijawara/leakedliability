@@ -1,0 +1,77 @@
+{
+  "source_file": "\"SURGEONS\" 7:12:24.pdf",
+  "production_info": {
+    "production_name": "SURGEONS",
+    "date": "July 12, 2024",
+    "production_company": null,
+    "day_info": "Day 1 of 2"
+  },
+  "crew": [],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "Evan Mills",
+      "call_time": "8:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Damon Royster",
+      "call_time": "8:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Crew Contact",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Damon Royster",
+      "call_time": "8:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Robert Vornkahl",
+      "call_time": "7:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Steven Tobiasz",
+      "call_time": "7:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Lian Uritsky",
+      "call_time": "7:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Martin Kittappa",
+      "call_time": "8:15 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Andrew Gaul",
+      "call_time": "7:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Levi Jawara",
+      "call_time": "7:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Danielle Vornkahl",
+      "call_time": "7:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Gabi Marler",
+      "call_time": "7:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Scott Goldstein",
+      "call_time": "9:00 AM"
+    }
+  ]
+}

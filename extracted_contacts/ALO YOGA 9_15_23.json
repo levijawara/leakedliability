@@ -1,0 +1,116 @@
+{
+  "source_file": "ALO YOGA 9:15:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "September 15th, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Bobby Whigham",
+      "phone": null,
+      "email": "bobby.whigham@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Dir",
+      "name": "Sara Kim",
+      "phone": null,
+      "email": "sara.kim@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Blake Sinclair",
+      "phone": null,
+      "email": "blake.sinclair@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Austin Calvello",
+      "phone": null,
+      "email": "austincalvello@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Dante Talano",
+      "phone": null,
+      "email": "dantetalano28@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Jules Bates",
+      "phone": null,
+      "email": "jules_bates@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Nick Zhang",
+      "phone": null,
+      "email": "nick.zhang@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Prop Stylist",
+      "name": "Natalia Diaz",
+      "phone": null,
+      "email": "ccooqquu@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Donny Hunt",
+      "phone": null,
+      "email": "donny.d.hunt@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Stylist",
+      "name": "Alex Violante",
+      "phone": null,
+      "email": "alex.violante@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Kameryn Evans",
+      "phone": null,
+      "email": "kameryn.evans@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Stacey Tan",
+      "name": "HMU",
+      "phone": null,
+      "email": "anita@art-dept.com",
+      "call_time": "9:00 AM"
+    }
+  ],
+  "talent": []
+}

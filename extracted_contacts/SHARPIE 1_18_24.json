@@ -1,0 +1,364 @@
+{
+  "source_file": "SHARPIE 1:18:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 2"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Rick Wayne",
+      "phone": "847.942.1624",
+      "email": "r@livelab.is",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "EP / Producer",
+      "name": "Danny Pollack",
+      "phone": "703.307.1892",
+      "email": "danny@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "EP / Producer",
+      "name": "Abi Perl",
+      "phone": "954.558.0376",
+      "email": "abi@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Jesse Rojas",
+      "phone": "845.521.1063",
+      "email": "jesse@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Coordinator",
+      "name": "Alli Acuff",
+      "phone": "614.638.5005",
+      "email": "alli@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1st AD",
+      "phone": "805.660.4644",
+      "email": "rjcollins1@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "2nd AD",
+      "phone": "717.519.7988",
+      "email": "mallory.a.chevalier@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Kalen Wolf",
+      "phone": "773.225.5035",
+      "email": "kalenwjackson@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Tristan Moffatt",
+      "phone": "909.477.0936",
+      "email": "damoff17@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Day 2 - Warehouse - Fashion Designer",
+      "name": "BBE",
+      "phone": "909.767.2414",
+      "email": "travismoffattwork@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "SLT",
+      "phone": "314.800.6452",
+      "email": "ewaddell777@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Robert Ortwin",
+      "phone": "310.801.4169",
+      "email": "rcortwin@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BBG",
+      "phone": "562.299.2024",
+      "email": "jbear8thegrip@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Tiara Olson",
+      "phone": "954-815-4930",
+      "email": "tiaraolson24@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Billy Ortwin",
+      "phone": "310.801.4139",
+      "email": "willortwinphoto@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "ART",
+      "name": "Judds Catering",
+      "phone": "323.687.5300",
+      "email": "info@juddscatering.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Production Designer",
+      "name": "Matt Sokoler",
+      "phone": "818.259.9308",
+      "email": "mattsokoler@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Art Director",
+      "name": "Spencer Trent",
+      "phone": "818.792.8008",
+      "email": "spencertrentart@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Lead Man",
+      "name": "Jonathan \"Utah\" Clemsen",
+      "phone": "443.617.4068",
+      "email": "jonathanclemsen@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Scenic",
+      "phone": "210.542.1246",
+      "email": "yougogirlstudios@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Art PA",
+      "name": "Katie Cordero",
+      "phone": "925.321.2695",
+      "email": "whoiskatiec@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "Audio / Sound Record",
+      "phone": "805.657.5300",
+      "email": "soundguyjimmy@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Stylist HMU",
+      "name": "Lizzy Arroyo",
+      "phone": "323.214.6066",
+      "email": "lizzybeesbeauty@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Stylist Assist",
+      "name": "Nataly Arroyo",
+      "phone": "323.347.9378",
+      "email": "Nataly.arroyo@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Makeup Day 1",
+      "name": "Brittany Sugarman",
+      "phone": "954.608.2748",
+      "email": "Brit3618@aol.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Makeup Day 2",
+      "name": "Abigail Hernandez",
+      "phone": "310.570.3152",
+      "email": "abysbeauty1@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Truck PA",
+      "name": "Angel Magallanes",
+      "phone": "424.533.6605",
+      "email": "A.rafaelmagallanes@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Pass Van PA",
+      "name": "Noah Zaidspiner",
+      "phone": "561.876.8607",
+      "email": "noah.zaidspiner@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Landon Watford",
+      "phone": "305.240.0414",
+      "email": "landon.watford.film@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Nevin Shoker",
+      "phone": "209-568-9029",
+      "email": "nshoker24@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Chase Shealey",
+      "phone": "973.477.8903",
+      "email": "chase.shealey@dojohouse.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Samuel Gove",
+      "phone": "847.942.1624",
+      "email": "sam@livelab.is",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Braeden Herrera",
+      "phone": "703.307.1892",
+      "email": "braeden@livelab.is",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Sarah Guzik",
+      "phone": "954.558.0376",
+      "email": "sarah@livelab.is",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Sarah-May Levy",
+      "phone": "845.240.3677",
+      "email": "bigapplecasting@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Sylvia Gao",
+      "phone": "904.303.8011",
+      "email": "gaosylvia05@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Cassidy Jorgensen",
+      "phone": "402.881.1508",
+      "email": "cassidyjorgensen18@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Chad Davis",
+      "phone": "909.477.0936",
+      "email": "iamchaddavis@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ashley Alquist",
+      "phone": "952.297.4674",
+      "email": "ashleyahlquist@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Tist One",
+      "phone": "314.800.6452",
+      "email": "onefamilyacting@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Shop Alexandra",
+      "phone": "562.299.2024",
+      "email": "hello@wildfloradesign.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Brian Boenher",
+      "phone": "954-815-4930",
+      "email": "brian@fateyestudios.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

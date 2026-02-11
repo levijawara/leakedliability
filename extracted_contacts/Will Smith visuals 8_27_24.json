@@ -1,0 +1,84 @@
+{
+  "source_file": "Will Smith visuals 8:27:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": "LightSpace Studios GENERAL Memorial Hospital of Gardena PRODUCTION CELLS",
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "Christina Alba",
+      "phone": "323-337-5566",
+      "email": "christina@sturdy.co",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "Lourenca Alencar",
+      "phone": "917-822-4527",
+      "email": "lourenca.ma@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "10:00 AM - 12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC/DIT",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:30 PM - 2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GAFFER",
+      "name": "Jorge Hernandez",
+      "phone": "714-686-5657",
+      "email": "Jorge@glowingambers.com",
+      "call_time": "4:00PM - 4:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBE",
+      "phone": "415-324-9242",
+      "email": "suterjamespeter@gmail.com",
+      "call_time": "4:30 PM - 6:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "KEY GRIP",
+      "name": "Sam Kim",
+      "phone": "703-628-0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": "7:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBG",
+      "phone": "209-446-7917",
+      "email": "jesseguzman2018@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA - STURDY. Intern",
+      "name": "Julia Shikhman",
+      "phone": "203-610-9948",
+      "email": "intern3@sturdy.co",
+      "call_time": "9:50 AM"
+    }
+  ],
+  "talent": []
+}

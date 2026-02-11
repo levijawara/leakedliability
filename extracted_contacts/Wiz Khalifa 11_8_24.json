@@ -1,0 +1,448 @@
+{
+  "source_file": "Wiz Khalifa 11:8:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 8, 2024",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "Production Company\nhappy i'm sad\n3150 Wilshire Blvd #1822\nLos Angeles, CA 90010\nTel: (435) 640-1005\nEmail: info@happyimsad.com\nProducer: Notion",
+      "name": "CREW PARKIING 3 P 5 o 3 m 0 o P n o a m , C on A a 9 B 17 lv 6 d 8",
+      "phone": "(435) 640-1005",
+      "email": "info@happyimsad.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Director",
+      "name": "Maya Table",
+      "phone": "818.317.3015",
+      "email": "maya@mayatable.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Notion",
+      "phone": "435.640.1005",
+      "email": "notion@happyimsad.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Operations Manager",
+      "name": "1st AD",
+      "phone": "678.654.5183",
+      "email": "ibrahim.yilla@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "CAMERA / SOUND DEPT",
+      "phone": "323.797.1044",
+      "email": "jhonatan@rsilocations.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "BBTHEDP@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Steadi",
+      "phone": "818.770.6239",
+      "email": "Steadidon@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "2nd AC",
+      "name": "Huda Yousef",
+      "phone": "323.772.0173",
+      "email": "dir.signedsealed@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Bryam Villacres",
+      "name": "BTS",
+      "phone": "908.774.3202",
+      "email": "bryam1214@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "VFX Supervisor",
+      "name": "JR Strictland",
+      "phone": "818.850.9134",
+      "email": "jr@noctrunalfx.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "ART DEPT",
+      "name": "Model",
+      "phone": "302.981.5170",
+      "email": "Amanya.l.r.maloba@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Alfred White",
+      "phone": "404.433.1378",
+      "email": "akblancodesigns@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Lead Man",
+      "name": "Matt Banister",
+      "phone": "817.944.4474",
+      "email": "mdban@sbcglobal.net",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Jonathan Jackson",
+      "phone": "919.450.6551",
+      "email": "jonwjack95@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "ELECTRIC DEPT",
+      "phone": "310.905.0450",
+      "email": "deimrumy@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Gaffer",
+      "name": "Eddie Reid",
+      "phone": "818.675.5530",
+      "email": "Eddieareid@yahoo.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "BB Electric",
+      "phone": "708.308.6631",
+      "email": "briandailey12@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Swing",
+      "name": "Patrick Gomez",
+      "phone": "909.239.0005",
+      "email": "cineboy1@hotmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Key Grip",
+      "name": "Otis Burkes",
+      "phone": "818.620.0818",
+      "email": "Otisdburkes@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "BB Grip",
+      "name": "Louise Sandaval",
+      "phone": "818.355.2642",
+      "email": "trkbtch13@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Swing",
+      "name": "Kevin Williams",
+      "phone": "818.802.0345",
+      "email": "ballakdub1@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Rigging",
+      "phone": null,
+      "email": "gabe@kingkongtrailers.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Key",
+      "name": "Nick Hermz",
+      "phone": "818.693.6425",
+      "email": "Nickstunts@yahoo.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Rigging",
+      "phone": null,
+      "email": "max.heavenrich.vassilos@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Rigging",
+      "phone": null,
+      "email": "Contactivancrasci@yahoo.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Coordinator",
+      "name": "Jasmine Claypool",
+      "phone": "310.819.2830",
+      "email": "Jasmine.claypool@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Samuel Smoot",
+      "phone": "803.728.9868",
+      "email": "samuelsmoot907@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Jesus Arroyo",
+      "phone": "323.407.3982",
+      "email": "Jesus.arroyo2013@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "David Roumbos",
+      "phone": "818.317.3015",
+      "email": "mohorentals@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "On Site",
+      "phone": "435.640.1005",
+      "email": "ranchosonsitetacos@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Mary Courtney",
+      "phone": "678.654.5183",
+      "email": "mary@rsilocations.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Withman Santiagos",
+      "phone": "908.774.3202",
+      "email": "withmansoul@aol.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dejah Nicole",
+      "phone": "818.850.9134",
+      "email": "dejahnicole1@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jossah Brizuela",
+      "phone": "404.433.1378",
+      "email": "Jossahbrizuela@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lindsey Normington",
+      "phone": "817.944.4474",
+      "email": "lindseynormington@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Davi Stefond",
+      "phone": "919.450.6551",
+      "email": "Stefonddavi@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Sascha Parafiniuk",
+      "phone": "818.675.5530",
+      "email": "sparafiniuk27@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "MOHO Rentals",
+      "phone": "818.693.6425",
+      "email": "wild1west@roadrunner.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Poly Pomona",
+      "phone": null,
+      "email": "Ramiro.Rodriguez@fire.ca.gov",
+      "call_time": null
+    }
+  ],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "BTS",
+      "call_time": "1:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "VFX Supervisor",
+      "call_time": "10:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "ART DEPT",
+      "call_time": "10:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Production Designer",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Lead Man",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Art PA",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "ELECTRIC DEPT",
+      "call_time": "12:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "Gaffer",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "BB Electric",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Swing",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "GRIP DEPT",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Key Grip",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "BB Grip",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Swing",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Rigging",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Key",
+      "call_time": "12:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "Rigging",
+      "call_time": "12:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "Rigging",
+      "call_time": "12:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "PRODUCTION",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Coordinator",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Set PA",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Set PA",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Set PA",
+      "call_time": "9:30 AM"
+    }
+  ]
+}

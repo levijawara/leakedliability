@@ -1,0 +1,68 @@
+{
+  "source_file": "You Hate When I Talk 9:26:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "9/24/2025",
+    "production_company": null,
+    "day_info": "DAY 1 OF 2"
+  },
+  "crew": [
+    {
+      "department": "LOCATIONS",
+      "role": "DIRECTOR",
+      "name": "Owen Marshall",
+      "phone": null,
+      "email": "owen@owenmars.com",
+      "call_time": null
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "DP",
+      "name": "Adam Coleman",
+      "phone": null,
+      "email": "Adam.coleman.119@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "Michael Figueroa",
+      "phone": null,
+      "email": "Michael.fig.media@gmail.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "LOJAWARA@GMAIL.COM",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "LOUELLA",
+      "phone": null,
+      "email": "itsnataliejoyce@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "HARRY",
+      "phone": null,
+      "email": "wlee3565@gmail.com",
+      "call_time": "1:45 PM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "MR. COLE",
+      "phone": null,
+      "email": "derek007orr@gmail.com",
+      "call_time": "1:45 PM"
+    }
+  ],
+  "talent": []
+}

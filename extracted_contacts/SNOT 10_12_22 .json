@@ -1,0 +1,284 @@
+{
+  "source_file": "SNOT 10:12:22 .pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "October 12, 2022",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": null,
+      "name": "EP / Supervising Prod.",
+      "phone": "781-475-7018",
+      "email": "lopes@btstudios.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Executive Producer",
+      "name": "Galileo Mondol",
+      "phone": "617-981-1129",
+      "email": "galileo@btstudios.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Line Producer",
+      "name": "Lex Dewart",
+      "phone": "617-710-4403",
+      "email": "lex@btstudios.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Manager",
+      "name": "Tali Weizman",
+      "phone": "818-569-9265",
+      "email": "tali@btstudios.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Product Manager",
+      "name": "Kwesi",
+      "phone": "650-799-4777",
+      "email": "kws.inquiries@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Kalen Wolf",
+      "phone": "773-225-5035",
+      "email": "kalenwjackson@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "916-289-1072",
+      "email": "joe.shootz66@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Lead Girl",
+      "name": "BTS",
+      "phone": "323-286-2492",
+      "email": "williama521@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Tristan Noelle",
+      "phone": "913-219-1720",
+      "email": "tristannoelle@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Stylist",
+      "name": "BBG",
+      "phone": "860-942-4524",
+      "email": "javauncb@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Israel Sandoval",
+      "phone": "707-486-4090",
+      "email": "israsand09@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": "714-868-5657",
+      "email": "jorge@glowingambers.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "BBE",
+      "phone": "786-443-3299",
+      "email": "camilo.godoy447@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "CREW ARRIVE AT LOCATION 8:00 AM | TALENT ARRIVE AT 8:30 AM | FOR",
+      "name": "Sam Kim",
+      "phone": "703-628-0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Carlos Hernandez",
+      "phone": "925-436-7400",
+      "email": "carlos2012hernandez@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Sherp Truck Op",
+      "phone": null,
+      "email": "upstreet90@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Goat Trainer",
+      "phone": "657-699-9436",
+      "email": "rarcvisual@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Roxane De Palma",
+      "phone": "781-960-4196",
+      "email": "roxane@btstudios.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Karmel Jacintho de Arruda",
+      "phone": "818-319-9089",
+      "email": "karmel.jacintho@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Luke James",
+      "phone": "904-402-2212",
+      "email": "lucasjameshouser@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Savannah Dingman",
+      "phone": "562-714-8489",
+      "email": "savannah.dingman@laverne.edu",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Produciton Assistant",
+      "name": "Bryan Jones",
+      "phone": "323-498-8498",
+      "email": "officialjonesrose@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Malcolm West",
+      "phone": "617-794-7256",
+      "email": "westmr3@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Mgmt Jake",
+      "phone": "781-475-7018",
+      "email": "jake@markow.inc",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lucas Prevost",
+      "phone": "818-569-9265",
+      "email": "lucasprevost@outlook.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lallie Jones",
+      "phone": "650-799-4777",
+      "email": "lallie.jones@threehundred.biz",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ape Casting",
+      "phone": "904-303-8011",
+      "email": "aprilmariarivera@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rudi Burn",
+      "phone": "773-225-5035",
+      "email": "rudiwilburn@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kid Ayotunde",
+      "phone": "916-289-1072",
+      "email": "jm_davidson@hotmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Aysia Collins",
+      "phone": "323-286-2492",
+      "email": "aysiavanee@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Moses Fofana",
+      "phone": "860-942-4524",
+      "email": "akenomgmt@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Hernandez AM",
+      "phone": "925-436-7400",
+      "email": "ACCOUNTING@BTSTUDIOS.COM",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

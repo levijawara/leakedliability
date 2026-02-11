@@ -1,0 +1,228 @@
+{
+  "source_file": "NIKE & DSG 11:4:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 4, 2024",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "EP / Founder R",
+      "phone": "801-564-5358",
+      "email": "rbever@rdmediahouse.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "EP / Line Producer P",
+      "name": "am Glennon",
+      "phone": "401-651-0462",
+      "email": "pamglennonproductions@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Field Producer D",
+      "name": "aniel \"Butters\" Berhane",
+      "phone": "313-205-6651",
+      "email": "dberhane@rdmediahouse.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager P",
+      "name": "ayton Williams",
+      "phone": "213-776-1066",
+      "email": "paytoncoordinator@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Director B",
+      "name": "ryan Schmier",
+      "phone": "516-672-5715",
+      "email": "bryan@strangenature.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": "DP J",
+      "name": "onathan Charles",
+      "phone": "347-279-3039",
+      "email": "jonathancharles11234@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC L",
+      "name": "evi Jawara",
+      "phone": "904 303 8011",
+      "email": "LOJAWARA@GMAIL.COM",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC H",
+      "name": "uda Yousef",
+      "phone": "323 772 0173",
+      "email": "dir.signedsealed@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": "DIT",
+      "name": "Nikola Kitanivski",
+      "phone": "818-731-5649",
+      "email": "info@nikolakitanovski.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Photographer A",
+      "phone": "510-604-4424",
+      "email": "alex@marketa.studio",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Gaffer",
+      "name": "Nathan Rupp",
+      "phone": "760-978-7117",
+      "email": "nathanjrupp@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BB Electric",
+      "phone": "312-316-1974",
+      "email": "Armeen.monahan@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Apache Production Supplies",
+      "name": "Electric J",
+      "phone": "310-803-6663",
+      "email": "JBirch817@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Key Grip",
+      "name": "Mike Flores",
+      "phone": "323-363-7222",
+      "email": "mikespicts@mac.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "BB Grip",
+      "name": "Chris Phenix",
+      "phone": "310-749-9282",
+      "email": "ChrisWPhenix@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Audio F",
+      "phone": "206-898-9384",
+      "email": "fredstuben1968@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "HMU S",
+      "phone": "310-905-7168",
+      "email": "sarahm.artistry@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Stylist",
+      "name": "Carlee Williams",
+      "phone": "213 589 8893",
+      "email": "hello@carleewallace.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "PA",
+      "name": "Deija Zavala",
+      "phone": "541-515-4436",
+      "email": "deijazavala@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "PA T",
+      "name": "om Condon",
+      "phone": "802-309-7891",
+      "email": "thomaslairdcondon@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "PA",
+      "name": "Conor Hennessey",
+      "phone": "714-656-5006",
+      "email": "Conorhenn96@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "VFX Supervisor H",
+      "name": "enry Lipatov",
+      "phone": "310-926-9389",
+      "email": "genri.lipatov@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Stage Manager T",
+      "name": "erry O’Kane",
+      "phone": "310-546-6100",
+      "email": "terry@bigdoor.tv",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "RDMH",
+      "phone": "714-795-1045",
+      "email": "andrew@rdmediahouse.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Apache Supplies",
+      "phone": "310-803-6663",
+      "email": "osman@apacherentalgroup.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Fast Glass",
+      "phone": "323-363-7222",
+      "email": "info@oldfastglass.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Letter Rentals",
+      "phone": "310-749-9282",
+      "email": "matt@redletterrentals.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

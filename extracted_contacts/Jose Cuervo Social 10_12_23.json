@@ -1,0 +1,116 @@
+{
+  "source_file": "Jose Cuervo Social 10:12:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "PRODUCER",
+      "name": "Seana Bruff",
+      "phone": "305.498.7931",
+      "email": "sbruff@matteprojects.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCER",
+      "name": "Glen Matheny",
+      "phone": "925.357.7250",
+      "email": "Gmatheny@matteprojects.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": null,
+      "role": "ASSOCIATE PRODUCER",
+      "name": "Harrison Hawkins",
+      "phone": "213.999.6853",
+      "email": "Harrisonjhawkins@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "DIR OF PHOTOGRAPHY",
+      "phone": "858.264.9452",
+      "email": "camohill@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "DIR OF PHOTOGRAPHY",
+      "phone": "619.990.2502",
+      "email": "jonny@fym.agency",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2ND AC/DIT",
+      "name": "Tarik Benbrahim",
+      "phone": "310.429.4410",
+      "email": "tarik@fym.agency",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Creative Director",
+      "name": "PHOTOGRAPHER",
+      "phone": "305-510-4480",
+      "email": "loamis@mail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Creative Director",
+      "name": "PHOTOGRAPHER",
+      "phone": "954-579-0420",
+      "email": "lexmerico@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Account\nManager",
+      "name": "Photo ASST",
+      "phone": "954.494.9272",
+      "email": "Kathysnapped@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "LEWY WESTHOFF",
+      "phone": "305-510-4480",
+      "email": "Lewy@matteprojects.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Director KELSEY",
+      "phone": "954-579-0420",
+      "email": "kelsey@matteprojects.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "House Manager",
+      "phone": "954.494.9272",
+      "email": "ypanah@matteprojects.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

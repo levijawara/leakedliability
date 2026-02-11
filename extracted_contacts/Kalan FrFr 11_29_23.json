@@ -1,0 +1,116 @@
+{
+  "source_file": "Kalan FrFr 11:29:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 29th, 2023",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Sockx",
+      "phone": "407-393-0364",
+      "email": "taylour@visionbankfilms.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "661 483 8984",
+      "email": "lejon@visionbankfilms.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Site Rep",
+      "phone": "818-394-9407",
+      "email": "rentals@thefunton.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Gotti",
+      "phone": "909 351 9877",
+      "email": "directedxgotti@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Luay Hussein",
+      "phone": "323 864 9095",
+      "email": "dedrobateslondon@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "(347) 279-3039",
+      "email": "bbthedp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904 303 8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Bts",
+      "phone": "951 252 4124",
+      "email": "andylopezmail@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Ronnie Batch",
+      "phone": "818 470 2509",
+      "email": "7thlightent@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "Stylist",
+      "name": "Ariel Tinsey",
+      "phone": null,
+      "email": "ariel@blacksaltpr.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "MUA/Hair",
+      "name": "Stacy Gonzalez",
+      "phone": "562-314-7909",
+      "email": "stacymakeup97@yahoo.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Kayla Whinter",
+      "phone": null,
+      "email": "artworkwhit@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dec Ce",
+      "phone": null,
+      "email": "createwithce@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

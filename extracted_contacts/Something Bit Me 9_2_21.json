@@ -1,0 +1,300 @@
+{
+  "source_file": "Something Bit Me 9:2:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "September 2, 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Exec Producer",
+      "name": "Jeff Conroy",
+      "phone": null,
+      "email": "Jconroytv@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "VP Production",
+      "phone": null,
+      "email": "gaxton@renegade83.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Line Producer",
+      "name": "Carol Costanzo",
+      "phone": "818.653.2063",
+      "email": "Ccostanzo.prods@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Supervising Producer",
+      "name": "Sean Dash",
+      "phone": "213.880.9089",
+      "email": "scdasher@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Ryan Moon",
+      "phone": "323.337.4036",
+      "email": "ryanmoon.sbm@gmail.com",
+      "call_time": "1:00 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Mitzi Rutherford",
+      "phone": "530.840.0123",
+      "email": "mitzitv0123@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Coordinator",
+      "name": "Gloria Reyes",
+      "phone": "956.483.8953",
+      "email": "gmreyesc@gmail.com",
+      "call_time": "1:00 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Coordinator",
+      "name": "Robert Wittstadt",
+      "phone": "443.340.3670",
+      "email": "rwittstadt@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Story Producer / AD",
+      "name": "Tarek Albaba",
+      "phone": "858.472.2565",
+      "email": "tarekalbaba@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Nathan Hengstebeck",
+      "phone": "614.747.6146",
+      "email": "nhengstebeck@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Associate Producer",
+      "name": "Alice Steiner",
+      "phone": "818.299.6111",
+      "email": "alicecsteiner@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Associate Producer",
+      "name": "Harris Ansari",
+      "phone": "631.377.9434",
+      "email": "contactharrisansari@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Cameron Glendenning",
+      "phone": "646.319.6553",
+      "email": "camgl@mac.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera Operator",
+      "name": "Chris Patterson",
+      "phone": "619.846.5525",
+      "email": "chrispatterson55@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Bond Bhinvatdhana",
+      "phone": "323.327.2823",
+      "email": "bondbhin@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Assistant Camera",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "G&E",
+      "phone": "805.705.5195",
+      "email": "usamijustin@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "ART",
+      "role": "Audio Mixer",
+      "name": "Tom Zmuda",
+      "phone": "609.937.2833",
+      "email": "tomzmudamusic@gmail.com",
+      "call_time": "2:00 P"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Chris Davis",
+      "phone": "213.810.1631",
+      "email": "chrisdavispd@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Prop Assist",
+      "phone": "323.823.3986",
+      "email": "metrosess@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Wardrobe",
+      "name": "Tracy Goetz",
+      "phone": "310.918.2989",
+      "email": "tracykgoetz@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Make Up",
+      "phone": "818.317.6994",
+      "email": "baileykdelong@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Ethan Beretz",
+      "phone": "760.207.7936",
+      "email": "ethan@beretz.com",
+      "call_time": "1:00 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Benjamin Little",
+      "phone": "714.655.0597",
+      "email": "benjaminlittle23@gmail.com",
+      "call_time": "1:00 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Arianna Fawk",
+      "phone": "626.340.9197",
+      "email": "adifawk15@gmail.com",
+      "call_time": "1:00 P"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Caitie Bailey",
+      "phone": "330.284.7560",
+      "email": "caitie@sitelogic.com",
+      "call_time": "1:00 P"
+    },
+    {
+      "department": "STUNTS",
+      "role": "Stunt Coordinator",
+      "name": "Mario Rocha",
+      "phone": "213.479.6447",
+      "email": "sng4food@aol.com",
+      "call_time": "4:00 P"
+    },
+    {
+      "department": "STUNTS",
+      "role": "Set Medic",
+      "name": "Matt Madere",
+      "phone": "323.836.5972",
+      "email": "matthew.madere@gmail.com",
+      "call_time": "1:30 P"
+    },
+    {
+      "department": "STUNTS",
+      "role": null,
+      "name": "John",
+      "phone": "818.740.2405",
+      "email": "onegai4649@hotmail.com",
+      "call_time": "2:00 P"
+    },
+    {
+      "department": "STUNTS",
+      "role": null,
+      "name": "Lynn",
+      "phone": "818.415.6499",
+      "email": "madfalk@charter.net",
+      "call_time": "2:00 P"
+    },
+    {
+      "department": "STUNTS",
+      "role": null,
+      "name": "Megan",
+      "phone": "323.491.5580",
+      "email": "carin@angelsmith.net",
+      "call_time": "2:30 P"
+    },
+    {
+      "department": "STUNTS",
+      "role": null,
+      "name": "Dogs",
+      "phone": "818.856.0886",
+      "email": "ben@mtnlocations.com",
+      "call_time": "5:30 P"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "Production/ Walkies/ Grip",
+      "name": "Walk and Talk Rentals",
+      "phone": "818.893.0269",
+      "email": "garret@walkandtalkrentals.com",
+      "call_time": null
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "Truck Rental/ Parking",
+      "name": "Avon Hollywood",
+      "phone": "323.850.0826",
+      "email": "hollywood@avonrents.com",
+      "call_time": null
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "If you feel you have been the subject of harassment, please contact Blossom Lefcourt by email at\nblefcourt@entonegroup.com or by phone directly at 424.274.4109. You may also contact Hasbro's Help line at\n1.800.9HELP.44 or write to the General Counsel, Hasbro Inc. PO BoX 496 Pawtucket, RI 02862",
+      "name": "9/1/21",
+      "phone": "424.274.4109",
+      "email": "blefcourt@entonegroup.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "P ALPINE",
+      "phone": "714.655.0597",
+      "email": "jakewebber7@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,276 @@
+{
+  "source_file": "PaperMate 3:31:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "ECD / Director",
+      "name": "Rick Wayne",
+      "phone": "847.942.1624",
+      "email": "r@livelab.is",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "CD / Photographer",
+      "phone": "816.695.4525",
+      "email": "samuel@livelab.is",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Sr. Brand Activist / Producer",
+      "name": "Sarah Guzik",
+      "phone": "630-215-9849",
+      "email": "sarah@livelab.is",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "EP / Producer",
+      "name": "Danny Pollack",
+      "phone": "703-307-1892",
+      "email": "danny@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Supervisor",
+      "name": "Abi Perl",
+      "phone": "954-558-0376",
+      "email": "abi@dojohouse.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Alli Acuff",
+      "phone": "614-638-5005",
+      "email": "alli@dojohouse.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Coordinator",
+      "name": "Jesse Rojas",
+      "phone": "845-521-1063",
+      "email": "jesse@dojohouse.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1st AD",
+      "phone": "805-660-4644",
+      "email": "rjcollins1@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "2nd AD",
+      "phone": "305-240-0414",
+      "email": "landon.watford.film@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Young T-Mac",
+      "name": "VIDEO",
+      "phone": "760-759-0569",
+      "email": "Ginalukas@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian Beckwtih",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC / DIT",
+      "name": "Jewel Perez",
+      "phone": "424-400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": null,
+      "role": "BTS Cam Operator",
+      "name": "Nick Peters",
+      "phone": "847-445-7602",
+      "email": "Nick@theButter.biz",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "Photo Assist/Art",
+      "name": "Ali Kent",
+      "phone": "843.991.1943",
+      "email": "ali@livelab.is",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "Photo Assist/Lighting Tech",
+      "phone": "660-864-7220",
+      "email": "katelynadkissonfilm@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "DigitTech",
+      "phone": "920-918-0589",
+      "email": "andicorbaxhi@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "805-204-7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "BBE",
+      "phone": "909-908-1258",
+      "email": "JulianCRoss96@yahoo.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BBG",
+      "phone": "703-943-7373",
+      "email": "kales.schoen@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "SLT",
+      "phone": "310-629-2663",
+      "email": "hbliss@harrisonbliss.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Mikey Avina",
+      "phone": "562-781-8440",
+      "email": "Mikey_avina15@yahoo.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Jesus Alvardo",
+      "phone": "562-341-9939",
+      "email": "alvardo.jesusxcii77@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "562-551-2818",
+      "email": "rbyron26@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Pablo Mena",
+      "name": "Sound Op",
+      "phone": "747-283-0102",
+      "email": "contact@pablomenaa.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Almodine Thompson",
+      "phone": "206-518-3903",
+      "email": "almodinet@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Victor Chavez",
+      "phone": "323-573-0270",
+      "email": "03vickchav@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Samuel Vogel",
+      "phone": "602-320-8750",
+      "email": "samuel@dojohouse.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA / BTS",
+      "name": "Chase Shealey",
+      "phone": "973-477-8903",
+      "email": "chase@dojohouse.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Studio Teacher",
+      "name": "Frankie Gelb",
+      "phone": "818-439-3994",
+      "email": "frankiegieb@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "O'Cean Coleman",
+      "phone": "305-240-0414",
+      "email": "occoleman2008@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rachel Haas",
+      "phone": "904-303-8011",
+      "email": "rachelhaasdesign@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lizzy Arroyo",
+      "phone": "424-400-1879",
+      "email": "lizzybeesbeauty@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,60 @@
+{
+  "source_file": "GUWOP 10:21:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "10/21/21",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": null,
+      "name": "CREATIVE DIR.",
+      "phone": "(310) 341-5286",
+      "email": "MDOT4MAYOR@GMAIL.COM",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCER",
+      "name": "JAY TAUZIN",
+      "phone": "(504) 481-8635",
+      "email": "JTAUZIN1@GMAIL.COM",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "PROD. MANAGER",
+      "name": "MORGANA YASMEEN",
+      "phone": "(732) 609-3733",
+      "email": "MYABUELHIJA@GMAIL.COM",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "PROD. COORDINATOR",
+      "name": "HENRY ANGUIANO",
+      "phone": null,
+      "email": "giuseppe@galacticrecords.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "SIMON",
+      "phone": null,
+      "email": "simon@galacticrecords.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": null,
+      "phone": null,
+      "email": "Akvisionscreen@gmail.com",
+      "call_time": "12:00 PM"
+    }
+  ],
+  "talent": []
+}

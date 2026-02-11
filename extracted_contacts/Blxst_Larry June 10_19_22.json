@@ -1,0 +1,84 @@
+{
+  "source_file": "Blxst:Larry June 10:19:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "October 19, 2022",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Galileo Mondol",
+      "phone": "617-981-1129",
+      "email": "galileo@btstudios.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Lopes",
+      "phone": "781-475-7018",
+      "email": "lopes@btstudios.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Nour Sayeh",
+      "phone": "617-952-1931",
+      "email": "nour@btstudios.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Zylo Hefferan",
+      "phone": "661-394-0519",
+      "email": "contrastuncut@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Natalle Jastrow",
+      "phone": "818-461-2075",
+      "email": "natallejastrow@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": null,
+      "phone": null,
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "703-943-9580",
+      "email": "cooperseanpatrick@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "drewshotyavideo@gmail.com",
+      "call_time": "9:00 AM"
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,284 @@
+{
+  "source_file": "Cameron Wales 8:12:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Adam Keely",
+      "phone": "310.402.4695",
+      "email": "roseandkeyproductions@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Prod. Coordinator",
+      "name": "Lev Bugaev",
+      "phone": "323.474.7349",
+      "email": "imlevbugaev@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Artist",
+      "name": "1st AD",
+      "phone": "508.846.4489",
+      "email": "lbdelguercio@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Bass",
+      "phone": "310.408.4930",
+      "email": "Jf.vn.ll.00@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Guitar",
+      "phone": "443.285.1796",
+      "email": "damonpollarducmc@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Drummer",
+      "phone": "309.781.4400",
+      "email": "sageweeberdrums@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "NAME",
+      "phone": "657.329.8635",
+      "email": "melaniechangmua@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "BBTHEDP@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "***LOCATION 2 CAST BELOW***",
+      "name": "Stedicam",
+      "phone": "818.770.6239",
+      "email": "donaldturnerdp@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "DIT",
+      "name": "Thando Mbhele",
+      "phone": "818.307.5686",
+      "email": "thandombhele99@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Security Guard",
+      "name": "Bartol Saric",
+      "phone": "310.429.3676",
+      "email": "info@skatermade.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "PHOTO",
+      "phone": "626.217.9602",
+      "email": "Muatmarie@yahoo.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "BTS Photo",
+      "phone": "559.612.0211",
+      "email": "alex.feggi@live.it",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Michela Melone",
+      "phone": "213.255.8371",
+      "email": "michelamelone.dance@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "NAME",
+      "phone": "619.916.1190",
+      "email": "jataungilbert@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Gaffer",
+      "name": "David Goodman",
+      "phone": "818.621.9091",
+      "email": "goodmangripandlight@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Swing",
+      "name": "Peter Balitmore",
+      "phone": "909.648.0643",
+      "email": "baltimorepj@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Key Grip",
+      "name": "Daniel Gomez",
+      "phone": "818.579.3501",
+      "email": "gomezdaniel86@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "LOCATION 2",
+      "name": "Remax",
+      "phone": "310.864.9382",
+      "email": "mg@remax.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "ART",
+      "name": "NAME",
+      "phone": "213.296.8061",
+      "email": "ranchosonsitetacos@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Prod. Designer",
+      "name": "Dylan Hutchins",
+      "phone": "323.419.9088",
+      "email": "poseidonalmighty@yahoo.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Connar Tandy",
+      "phone": "480.323.0008",
+      "email": "connar@connartandy.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Anton Sereda",
+      "phone": "323.336.7473",
+      "email": "8435966@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CRAFT",
+      "role": "Wardrobe / Hair",
+      "name": "Lizzy Arroyo",
+      "phone": "323.214.6066",
+      "email": "lizzybeesbeauty@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Evan Sanchez",
+      "phone": "909.565.7337",
+      "email": "directedbyevan@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Samuel Flores",
+      "phone": "909.714.3638",
+      "email": "samuelfloresfilms@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Donald Balitmore",
+      "phone": "909.557.9074",
+      "email": "splntr_dubs@yahoo.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Girl Maryjane",
+      "phone": "845.240.3677",
+      "email": "Marielam820@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kevin Carney",
+      "phone": "818.307.5686",
+      "email": "kevin@carneymusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Di Niro",
+      "phone": "559.612.0211",
+      "email": "mattia.diniro@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Misha Psychoil",
+      "phone": "818.621.9091",
+      "email": "23000ml@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Charisma Solis",
+      "phone": "909.648.0643",
+      "email": "charismasolis@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Cinepacks Studios",
+      "phone": "818.579.3501",
+      "email": "Andy@locustgarden.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,148 @@
+{
+  "source_file": "Ceranda 2:25:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "February 24th, 2023",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Choreographer",
+      "phone": "650-771-0294",
+      "email": "devinhicks714@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Paul Sains",
+      "name": "Male Model",
+      "phone": "623-239-7633",
+      "email": "Sainspaul@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "319-853-1159",
+      "email": "emmasmigs@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "510-325-8230",
+      "email": "ninahigo@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "248-877-1066",
+      "email": "Rshpro@umich.edu",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "925-787-6029",
+      "email": "claraannesanders@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "409-658-6306",
+      "email": "crystalk193@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "323-388-1878",
+      "email": "dean.espinosa30@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dancer",
+      "phone": "951-373-9638",
+      "email": "longtnguyen1029@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Robbie Joseph",
+      "phone": "718.869.6822",
+      "email": "directorrobbie@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Johnny Hernandez",
+      "phone": "818.231.1921",
+      "email": "johnny@cultclassic.tv",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Joseph Barbalaco",
+      "phone": "862.219.8934",
+      "email": "joseph@cultclassic.tv",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Mia Mormino",
+      "phone": "818.231.1633",
+      "email": "miamorminovisuals@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "805.204.7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Samuel Diaz",
+      "phone": "916.402.6391",
+      "email": "samueldiaz019@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Stylist",
+      "name": "Chelsea Bazilian",
+      "phone": "716.474.7359",
+      "email": "cbbazili@buffalo.edu",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

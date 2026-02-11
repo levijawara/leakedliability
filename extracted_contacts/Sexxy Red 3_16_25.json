@@ -1,0 +1,332 @@
+{
+  "source_file": "Sexxy Red 3:16:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "March 16th, 2025",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Garral Odunlade",
+      "phone": "(980) 205-4860",
+      "email": "odunladegarral@yahoo.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Gabriel Mouritzen",
+      "phone": "(619) 664-0436",
+      "email": "gabrielmouritzen@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Associate Producer",
+      "name": "TD Stills",
+      "phone": "(404) 721-9990",
+      "email": "stills@montage.tv",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Truck PA",
+      "name": "Nate Herbold",
+      "phone": "(630) 701-0425",
+      "email": "18nherbo@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Assistant",
+      "name": "Josiah Mendoza",
+      "phone": "(808) 726-8371",
+      "email": "josimendoza@chapman.edu",
+      "call_time": "8:15 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Assistant",
+      "name": "Johnny Hamilton",
+      "phone": "(978) 500-8146",
+      "email": "jfhamilton20@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Assistant",
+      "name": "Ben Gibbs",
+      "phone": "(978) 380-8058",
+      "email": "bengibbs721@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Casting Director",
+      "name": "April Rivera",
+      "phone": "(213) 444.9198",
+      "email": "april@apecastings.com",
+      "call_time": "9:15 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Director of Photography",
+      "name": "Brian Beckwith",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "A-Cam 1st AC",
+      "name": "Luca Turner",
+      "phone": "(424) 877-5223",
+      "email": "hello@lucaturner.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "B-Cam 1st AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "(424) 400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Cam PA",
+      "name": "Jim Montes",
+      "phone": "(951) 591-0976",
+      "email": "thejimmontes@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "(574) 514-5138",
+      "email": "steadifoster@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Jib Operator",
+      "name": "Eli Franks",
+      "phone": "(310) 420-1642",
+      "email": "elidfranks@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Jib Technician",
+      "phone": "(585) 746-7706",
+      "email": "steven.neel48@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "(805) 204-7915",
+      "email": "evancrocker93@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Best Electric",
+      "name": "Robert McQueeney",
+      "phone": "(518) 832-0000",
+      "email": "mcqueeneyrobert23@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "SLT",
+      "phone": "(949) 316-7882",
+      "email": "donaldnamfilm@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Nathan Kadota",
+      "phone": "(714) 759-7662",
+      "email": "nathanmkadota@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Best Grip",
+      "name": "Thorn Shaffer",
+      "phone": "(747) 207-7581",
+      "email": "tgrshaffer@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Swing",
+      "name": "Connor Vickers",
+      "phone": "(702) 294-8008",
+      "email": "mail@connorvickers.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Trevor Rittman",
+      "phone": "(908) 230-6166",
+      "email": "trittman@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Emmett Tekstra",
+      "phone": "(213) 810-8291",
+      "email": "emmetttekstra@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Lead Man",
+      "name": "Mitch Dillon",
+      "phone": "(330) 413-5952",
+      "email": "mitchdillon1@yahoo.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "(209) 938-9381",
+      "email": "talynlatour@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "(731) 487-7157",
+      "email": "cdrewwall@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "(417) 217-9143",
+      "email": "kelseymiralles@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "(858) 449-1526",
+      "email": "saadgate67@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Kabir Mogaji",
+      "phone": "(818) 792-1970",
+      "email": "kabirmogaji@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "MUA",
+      "phone": "(626) 747-2073",
+      "email": "alanjmua@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "MUA",
+      "phone": "(425) 223-9701",
+      "email": "natalie.roberts24680@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Sound Mixer",
+      "name": "PJ Riley",
+      "phone": "(805) 750-3420",
+      "email": "priley@soundwavaudioproduction.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "Photo",
+      "phone": "(315) 480-6733",
+      "email": "cqian19@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Driver",
+      "name": "Kevin Clark",
+      "phone": "(310) 420-1920",
+      "email": "kevin.clark@mac.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Quixote Vehicles Driver",
+      "name": "Victor Morante",
+      "phone": "(310) 894-1824",
+      "email": "titorepair@hotmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "500 AMP Driver",
+      "name": "Henry Tobar",
+      "phone": "(818) 438-0990",
+      "email": "henrodone@icloud.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Location Manager",
+      "name": "Amanda",
+      "phone": null,
+      "email": "lovethatlocation@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "SOUND",
+      "role": "Medic",
+      "name": "Jason Talmadge",
+      "phone": "(818) 388-7050",
+      "email": "hemodynamicsconsulting@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dancers Holliwood",
+      "phone": "(619) 664-0436",
+      "email": "holliwoodhoncho@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

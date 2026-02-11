@@ -1,0 +1,67 @@
+{
+  "source_file": "\"ON THE HUNT\" 1:23:25.pdf",
+  "production_info": {
+    "production_name": "ON THE HUNT",
+    "date": "January 23, 2025",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "TAMMY",
+      "call_time": "10:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "ALLI",
+      "call_time": "10:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "BUS DRIVER",
+      "call_time": "10:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "GUARD",
+      "call_time": "9:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "TRAVIS",
+      "call_time": "5:00PM"
+    },
+    {
+      "character": null,
+      "talent_name": "BACKGROUND",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "QTY",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "INMATES",
+      "call_time": "10:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "STOLEN CAR GUY",
+      "call_time": "11:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "AA MEETING BG",
+      "call_time": "10:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "STATUS",
+      "call_time": null
+    }
+  ]
+}

@@ -1,0 +1,108 @@
+{
+  "source_file": "Kehlani 11:6:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 6th, 2021",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCTION MANAGER",
+      "name": "Mikey Errante",
+      "phone": "760.397.3493",
+      "email": "mikey@sturdy.co",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "B CAM OP",
+      "phone": "773.225.5035",
+      "email": "Kalenwjackson@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Dima shorin",
+      "phone": "213.270.5645",
+      "email": "dimashorin.films@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "LOCATION",
+      "name": "Chad Fellers-Doughty",
+      "phone": "815.297.3264",
+      "email": "chad@wastedpotential.net",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "LD / PROGRAMER",
+      "phone": "704.426.7750",
+      "email": "caseydtaylor@me.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "LD / PROGRAMER",
+      "phone": "612.704.7259",
+      "email": "tyler@wastedpotential.net",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GAFFER",
+      "name": "Ryan Silber",
+      "phone": "650.490.5220",
+      "email": "silberryan@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "KEY GRIP",
+      "name": "Eric bastiani",
+      "phone": "386.864.2411",
+      "email": "LegitLooks@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "SWING",
+      "name": "Chris Oh",
+      "phone": "619.9521225",
+      "email": "ChrisOhLights@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Ari Dyrek",
+      "phone": "310.963.8894",
+      "email": "Ari.dyrek@gmail.com",
+      "call_time": "7:45 AM"
+    }
+  ],
+  "talent": []
+}

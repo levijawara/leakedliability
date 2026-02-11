@@ -1,0 +1,372 @@
+{
+  "source_file": "COVERGIRL 5:23:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Patti Whaley",
+      "phone": "646.662.0773",
+      "email": "patricia@nowheelies.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "John Morgan",
+      "phone": "323.253.4700",
+      "email": "johnnyfmorgan@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Prod. Coordinator",
+      "name": "Paul Traecy",
+      "phone": "(917) 251-3669",
+      "email": "paultreacyie@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CREW PARK",
+      "name": "Prod Asst.",
+      "phone": "503.522.4146",
+      "email": "jeangrant2015@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Shoot Location",
+      "name": "Prod Asst.",
+      "phone": "310.266.3430",
+      "email": "mattsgannon@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Joseph Martin",
+      "name": "Prod Asst. / Prod Rentals",
+      "phone": "760.393.1090",
+      "email": "josephbryanmartin@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CREW PARK",
+      "name": "Prod Asst.",
+      "phone": "(786) 348-5429",
+      "email": "stevehenryfrits@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Shoot Location",
+      "name": "Prod Asst.",
+      "phone": "802-779-3950",
+      "email": "tiana.brinton@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CREW PARK",
+      "name": "Prod Asst.",
+      "phone": "530.646.5184",
+      "email": "noahalcala7@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "LOCATION",
+      "name": "CAMERA TEAM",
+      "phone": null,
+      "email": "steve.miller@wilhelmina.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Clara Goldfarb",
+      "phone": "781-856-5086",
+      "email": "clara@sunnybunnyhearts.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "DP (A Set)",
+      "name": "Lukasz Pruchnik",
+      "phone": "646.8241642",
+      "email": "lukaszdp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "1st AC (A Set)",
+      "name": "Levy Ojawara",
+      "phone": "904-303-8011",
+      "email": "Lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Gaffer (A Set)",
+      "name": "Rob Padilla",
+      "phone": "760-562-0589",
+      "email": "RPadilla644@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Grip (A Set)",
+      "name": "Erick Vizcaino",
+      "phone": "(323) 499-7021",
+      "email": "erickqvizcaino@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Swing (Set A & B)",
+      "name": "Bevis Tran",
+      "phone": "(323) 683-5838",
+      "email": "imbevis@hotmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "DP (B Set)",
+      "name": "Rayana Rasamee",
+      "phone": "301.221.7007",
+      "email": "ray@rayana.co",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Gaffer (B Set)",
+      "name": "Samuel Grant",
+      "phone": "817.733.8819",
+      "email": "Steadisamla@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "1st AC (B Set)",
+      "name": "Nikki Skelly",
+      "phone": "508) 369-4508",
+      "email": "nskelly7@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "DIT (A & B Set)",
+      "name": "Kohl Bass",
+      "phone": "808-208-3847",
+      "email": "Kohlbaas1@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Make Up Artist",
+      "name": "Jo Franko",
+      "phone": "459.471.6885",
+      "email": "carole@bryanbantry.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CREW PARK",
+      "name": "MU Asst.",
+      "phone": null,
+      "email": "frankie@frankiesegura.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Make Up Artist",
+      "name": "Olga Pirmatova",
+      "phone": "916.316.0660",
+      "email": "olga@olgapirmatova.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CREW PARK",
+      "name": "MU Asst.",
+      "phone": "(405)921-5141",
+      "email": "littlerock.nia@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Hair Stylist",
+      "name": "Sylvia Wheeler",
+      "phone": "(415) 308-2011",
+      "email": "carole@forwardartists.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Hair Asst.",
+      "name": "Sadaf Azimi",
+      "phone": "(323) 818-7211",
+      "email": "Sadaf.Azimi@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Hair Asst.",
+      "name": "Nathan Unce",
+      "phone": "(213) 447-0578",
+      "email": "hairbynateunce@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Rachel Messick",
+      "name": "Nails",
+      "phone": "424-366-1628",
+      "email": "melanie@celestineagency.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Stylist",
+      "name": "Sarah Kinsuba",
+      "phone": "(818)287-1043",
+      "email": "meghan@ba-reps.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Asst.",
+      "name": "Rachel Harmon",
+      "phone": "508 479 0851",
+      "email": "rachelamanda.harmon@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Prop Stylist",
+      "name": "Skye Whitley",
+      "phone": "404.313.5950",
+      "email": "whitley.skye@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Prop Assistant",
+      "name": "Nick Pini",
+      "phone": "(508) 654-5870",
+      "email": "nick@pini.co",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Prop Assistant",
+      "name": "Marie Sommers",
+      "phone": null,
+      "email": "Marieksommers@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Caterer",
+      "name": "Beezoo",
+      "phone": "805-416-4893",
+      "email": "melissa@beezoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Location",
+      "name": "Image Locations",
+      "phone": "310-871-8004",
+      "email": "scott@imagelocations.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Patrick Ward-Perkins",
+      "name": "Site Rep",
+      "phone": "323-687-5280",
+      "email": "patrick@thesocialconstruction.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Grip & Electric",
+      "name": "Joe Jackson",
+      "phone": "818-300-4748",
+      "email": "cinemacypher@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Location Floor Protection",
+      "name": "Mat Men",
+      "phone": "646.497.3660",
+      "email": "damionmatmen@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Additional Rentals",
+      "name": "Edge Grip",
+      "phone": "323.934.3400",
+      "email": "reece@edge.la",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Shoot Location",
+      "name": "Honeywagon",
+      "phone": "818.667.2222",
+      "email": "gottagoluxury@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Location Security",
+      "name": "Premier Nation Security",
+      "phone": "818.282.4132",
+      "email": "info@pnsecurity.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Pass Van",
+      "name": "Galpin Hollywood",
+      "phone": "323.957.3333",
+      "email": "jrios@galpin.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Insurance",
+      "phone": "212-349-3390",
+      "email": "cathy@ameragents.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "LocationJacqueline Cassidy",
+      "phone": "802-779-3950",
+      "email": "joanna@officialmodelsny.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Baylee Schearer",
+      "phone": "530.646.5184",
+      "email": "emily@statemgmt.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

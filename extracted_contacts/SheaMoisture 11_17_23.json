@@ -1,0 +1,196 @@
+{
+  "source_file": "SheaMoisture 11:17:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "11/17/2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Mia Novak",
+      "phone": "310-600-3784",
+      "email": "monteilh@platinumeventsproductions.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director / DP",
+      "name": "Sam Brave",
+      "phone": "323-747-3771",
+      "email": "sbrave@latchlab.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer/ 1st AD",
+      "name": "Justin Nanfelt",
+      "phone": "262-825-3801",
+      "email": "justin@anaheimstudios.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Coordinator/ 2nd AD",
+      "name": "Rene Aranda",
+      "phone": "424-527-1558",
+      "email": "rene@anaheimstudios.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Camera Operator",
+      "name": "Justin Jones",
+      "phone": "213-925-0992",
+      "email": "justinjonesdp@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "2nd AC",
+      "name": "Raquel Wajner",
+      "phone": "239-682-1488",
+      "email": "Raquelwajner19@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Gaffer",
+      "name": "Adam Garib",
+      "phone": "608-515-7708",
+      "email": "adamgharibdp@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Best Boy Electric",
+      "name": "Dmitrii Khramov",
+      "phone": "310-571-7371",
+      "email": "dmitryxk@aol.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Key Grip",
+      "name": "Edgar Aragon",
+      "phone": "626-347-0500",
+      "email": "edgar.r.aragon2@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Best Boy Grip",
+      "name": "Akorede Amole",
+      "phone": "747-389-4464",
+      "email": "akoredeamole@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Audio",
+      "phone": "901-338-8927",
+      "email": "contact@yjgold.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Photographer",
+      "phone": null,
+      "email": "info@tayojr.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1 Assistant Colin Jacob\n2nd Assistant Zack Hughes\n3rd Assistant Jolson Diaz\n'Digi' Ed Canas",
+      "name": "Tayo Kuku Crew",
+      "phone": "(561) 212-2150",
+      "email": "sinkorswimla@gmail.com",
+      "call_time": "7:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Celeste Agency Artists (2x HMU)",
+      "name": "HMU (2X)",
+      "phone": "424-366-1628",
+      "email": "melanie@celestineagency.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA - Production",
+      "name": "Victoria Ortiz",
+      "phone": "415-794-0992",
+      "email": "victoriaortiz2125@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA - Production",
+      "name": "Amanda Rouse",
+      "phone": "208-943-1323",
+      "email": "amrouse08@gmail.com",
+      "call_time": "7:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BTS Photographer",
+      "phone": "858-829-9331",
+      "email": "lexgallegos@gmail.com",
+      "call_time": "6:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "O/C Producer",
+      "name": "Aaron Huisman",
+      "phone": "310-994-7821",
+      "email": "aaron@anaheimstudios.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Anaheim Studios In-Support",
+      "phone": "309-657-1479",
+      "email": "jude@anaheimstudios.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Zack Hughes",
+      "phone": "(561) 212-2150",
+      "email": "zack@zackhughes.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jolson Diaz",
+      "phone": "(561) 212-2150",
+      "email": "jolsondiaz93@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ed Canas",
+      "phone": "786-853-8936",
+      "email": "ed@edcanas.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

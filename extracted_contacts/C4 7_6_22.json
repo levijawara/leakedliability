@@ -1,0 +1,172 @@
+{
+  "source_file": "C4 7:6:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "Jul 6, 2022",
+    "production_company": null,
+    "day_info": "Day 1 of 2"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Andre LaDon Turner II\n13237474770 andre@andreladon.com",
+      "phone": "1323747477",
+      "email": "andre@andreladon.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Annie DeSanctis\nannie@times10.net",
+      "phone": null,
+      "email": "annie@times10.net",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Prod. Manager",
+      "name": "Justine Maldonado\n13109689237 justine@times10.net",
+      "phone": "1310968923",
+      "email": "justine@times10.net",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "1818288696",
+      "email": "mike@times10.net",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Production Asst.",
+      "phone": "1424350191",
+      "email": "willbernard.strong@gmail.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Project Manager",
+      "name": "Cam Nuessle\n18459059147 cameron@times10.net",
+      "phone": "1845905914",
+      "email": "cameron@times10.net",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Josh Libertine\n12132698208 info@dotblk.com",
+      "phone": "1213269820",
+      "email": "info@dotblk.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Forrest Gibson\n16368754070 forrestg.dev@gmail.com",
+      "phone": "1636875407",
+      "email": "forrestg.dev@gmail.com",
+      "call_time": "12:00pm"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cam Op",
+      "phone": "1901598963",
+      "email": "info@quanlogan.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara\n19043038011 lojawara@gmail.com",
+      "phone": "1904303801",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:00pm"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Josh Barbur\n12547443488 joshbarbur@gmail.com",
+      "phone": "1254744348",
+      "email": "joshbarbur@gmail.com",
+      "call_time": "12:00pm"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Steadicam Op",
+      "phone": "1469810186",
+      "email": "steadicamjazz@gmail.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Videographer",
+      "phone": "1818408928",
+      "email": "ceddy@times10.net",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Photographer",
+      "phone": "1818939315",
+      "email": "niko@times10.net",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Photographer",
+      "phone": "1951488441",
+      "email": "josephbaura@gmail.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Brennen Harper\n13233828427\nbrennenjharper@gmail.com",
+      "phone": "1323382842",
+      "email": "brennenjharper@gmail.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "GRIP",
+      "role": "Best Boy Grip",
+      "name": "Rich Bond\n15126199647 rich@atxgrip.com",
+      "phone": "1512619964",
+      "email": "rich@atxgrip.com",
+      "call_time": "1:30pm"
+    },
+    {
+      "department": "ART",
+      "role": "Sound Mixer",
+      "name": "Christopher Robleto-Harvey\n19159269626\nsynthetic\u0000lmso\u0000cial@gmail.com",
+      "phone": "1915926962",
+      "email": "cial@gmail.com",
+      "call_time": "1:30pm"
+    }
+  ],
+  "talent": [
+    {
+      "character": "Talent 1",
+      "talent_name": "JF Justin Fields",
+      "call_time": "4:00pm"
+    },
+    {
+      "character": "Talent 2",
+      "talent_name": "KP Kyle Pitts",
+      "call_time": "4:00pm"
+    },
+    {
+      "character": "Talent 3",
+      "talent_name": "CS Cj Stroud",
+      "call_time": "4:00pm"
+    }
+  ]
+}

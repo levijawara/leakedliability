@@ -1,0 +1,100 @@
+{
+  "source_file": "ALO 10:28:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "October 28th, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Michelle Finney",
+      "phone": null,
+      "email": "Michelle.finney@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Justin Cattran",
+      "phone": null,
+      "email": "Justin.cattran@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Props Stylist",
+      "name": "Natalia Diaz",
+      "phone": null,
+      "email": "ccooqquu@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Stylist",
+      "name": "Alex Violante",
+      "phone": null,
+      "email": "alex.violante@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kameryn Evans",
+      "phone": null,
+      "email": "kameryn.evans@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ashlin Crawley",
+      "phone": null,
+      "email": "ashlin.crawley@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Afton Williams",
+      "phone": null,
+      "email": "aftonwilliamsmakeup@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Karissa O’Hanlon",
+      "phone": null,
+      "email": "karissamariebeauty@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Vanessa Amador",
+      "phone": null,
+      "email": "Vanessa.amador@aloyoga.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Alix Margolis",
+      "phone": null,
+      "email": "Alix.margolis@aloyoga.com",
+      "call_time": "9:00 AM"
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,396 @@
+{
+  "source_file": "CBreezy:Tiller:Jeremih 5:18:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "May 18, 2024",
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "PRODUCER",
+      "name": "Mark Schroeder",
+      "phone": "917.600.9888",
+      "email": "markschroeder718@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Creative Director",
+      "name": "M Dot",
+      "phone": "310.341.5286",
+      "email": "mdot4mayor@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "UPM",
+      "phone": "(407)393-0364",
+      "email": "taylour@visionbankfilms.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Prod Coordinator",
+      "name": "Andre Dotten",
+      "phone": "857.869.8151",
+      "email": "andredotten44@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "1st Assistant Director",
+      "name": "Myeka Williams",
+      "phone": "323.200.4477",
+      "email": "myekawilliams@yahoo.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "2nd Assistant Director",
+      "name": "Brian Steffen",
+      "phone": "310.963.5399",
+      "email": "steffen.brian@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "2nd 2nd Asst Dir",
+      "phone": "773.399.9689",
+      "email": "emailimarajones@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Camera PA",
+      "name": "Jay Martinez",
+      "phone": "310.709.5317",
+      "email": "jay@popmediala.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "StediCam",
+      "phone": "213.910.4034",
+      "email": "harvey@panup.io",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "KEY GRIP",
+      "name": "Spenser Adelstein",
+      "phone": "(603) 548-2071",
+      "email": "spenser.adelstein@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Lead Female",
+      "name": "BBG",
+      "phone": "805.616.1834",
+      "email": "00portillo@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "GRIP",
+      "name": "Annie Dean-Ganek",
+      "phone": "978.387.5863",
+      "email": "anniedg1326@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Best Grip",
+      "name": "Dave Adam",
+      "phone": "213.610.0023",
+      "email": "daveadamge@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "GAFFER",
+      "name": "Jordan Avtal",
+      "phone": "818.857.1210",
+      "email": "jordan.avtal@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "BBE",
+      "phone": "603.325.8582",
+      "email": "kulig.jeff@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "ELECTRIC\nSWING",
+      "name": "Wesley Aharoni",
+      "phone": "818.720.0682",
+      "email": "wesleyaharoni@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "Simeon Mihaylov",
+      "phone": "818.337.9812",
+      "email": "simeonmih@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "PRODUCTION DEISGNER",
+      "phone": "773.516.0324",
+      "email": "briggen.brikai@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "ART DIRECTOR",
+      "name": "Jillian 'Milli' Doster",
+      "phone": "818.860.6031",
+      "email": "milli4really@me.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "ART COORDINATOR",
+      "name": "Rawan Adam",
+      "phone": "714.862.6137",
+      "email": "rawan.adam@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "MUA/HAIRSTYLIST",
+      "name": "Stacy Gonzalez",
+      "phone": "562.314.7909",
+      "email": "stacymakeup97@yahoo.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "MUA/HAIRSTYLIST ASST.",
+      "name": "Mayra Godoy",
+      "phone": "310.910.6028",
+      "email": "mayrahair.mua@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": null,
+      "name": "Team J MUA",
+      "phone": null,
+      "email": "makeupbykandirose@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": null,
+      "name": "MUA ASST.",
+      "phone": "424.391.5126",
+      "email": "chilufyamulenga122@yahoo.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "HAIRSTYLIST",
+      "name": "Brian Christopher",
+      "phone": "213.280.0550",
+      "email": "hairbybrianchristopher@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "BT Stylist",
+      "name": "Shiriel Makias",
+      "phone": null,
+      "email": "shirielmakias@gmail.com",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "Team J STYLIST",
+      "name": "Bobby Williams",
+      "phone": null,
+      "email": "info@bobbywesleycreative.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "BG wardrobe stylist",
+      "name": "Jahzeel",
+      "phone": "424.450.8025",
+      "email": "Jahzeeldelgado@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA - Team C",
+      "name": "Gotti",
+      "phone": "909.351.9877",
+      "email": "Directedxgott@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA - Team J",
+      "name": "Lejon Johnson",
+      "phone": "661.902.4408",
+      "email": "lejon@visionbankfilms.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "CALL CONTACT",
+      "name": "PRODUCTION ASST - SET",
+      "phone": "818.738.6639",
+      "email": "goodguyjinn@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PRODUCTION ASST - SET",
+      "phone": "424.284.5750",
+      "email": "armondnixon3@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PRODUCTION ASST - SET",
+      "phone": "775.445.9215",
+      "email": "hud5ophotography@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PRODUCTION ASST - SET",
+      "phone": "818.216.9442",
+      "email": "preimesberger21@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PRODUCTION ASST -",
+      "phone": "310.658.1732",
+      "email": "mejiatiarra@gmail.com",
+      "call_time": "11:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Shuttle - PA",
+      "name": "Ethan Rocha",
+      "phone": "661.360.9306",
+      "email": "ethanrocha11@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Shuttle - PA",
+      "name": "Natalia Fuentealba",
+      "phone": "818.930.0049",
+      "email": "thenataliafuentealba@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "TRUCK PA",
+      "name": "Alex Reyes",
+      "phone": "818.392.6715",
+      "email": "alexreeysmendez192@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Motorhome #1",
+      "phone": "818.317.3015",
+      "email": "david@mohorentals.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Bathrooms",
+      "phone": "818.822.8782",
+      "email": "rogerroberge@yahoo.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Matmen",
+      "phone": "626.716.4560",
+      "email": "mikemorales168@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Set Police",
+      "phone": "213.909.8363",
+      "email": "rory.dairy@yahoo.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "shotbyrlm93@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Legendary",
+      "phone": null,
+      "email": "legendaryimages@yahoo.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Vince Bouss",
+      "phone": null,
+      "email": "vincebouss@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "SEE EMILLS",
+      "phone": "978.387.5863",
+      "email": "millticketcasting@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

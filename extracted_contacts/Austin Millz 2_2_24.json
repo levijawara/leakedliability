@@ -1,0 +1,52 @@
+{
+  "source_file": "Austin Millz 2:2:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "PRODUCER",
+      "name": "Christina Alba",
+      "phone": "323-337-5566",
+      "email": "christina@sturdy.co",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "BRAND PRODUCER",
+      "name": "AJ Groy",
+      "phone": "717-644-4383",
+      "email": "aj@sturdy.co",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "EDITOR/DIT",
+      "name": "Quantay Peoples",
+      "phone": "407-413-6177",
+      "email": "quantay@sturdy.co",
+      "call_time": "8:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "SOUND MIXER",
+      "name": "Nathan Beausoleil",
+      "phone": "979-277-2059",
+      "email": "nathanbeausoleil@icloud.com",
+      "call_time": "6:15 PM"
+    }
+  ],
+  "talent": []
+}

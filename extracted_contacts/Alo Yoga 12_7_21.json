@@ -1,0 +1,164 @@
+{
+  "source_file": "Alo Yoga 12:7:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "December 7th 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Vanessa Amador",
+      "phone": "310.721.4547",
+      "email": "vanessa.amador@aloyoga.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Line Producer",
+      "name": "Alix Margolis",
+      "phone": "435.640.1918",
+      "email": "alix.margolis@aloyoga.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA 1",
+      "name": "Jillian Canter",
+      "phone": "949.307.8132",
+      "email": "canterjillian@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA 2/Shuttle",
+      "name": "Adam Volopo",
+      "phone": "949.701.5300",
+      "email": "avolpo11@gmail.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PHOTO",
+      "phone": null,
+      "email": "giorgiar@nextmodels.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Photographer",
+      "phone": null,
+      "email": "blake.sinclair@aloyoga.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st Assist",
+      "phone": null,
+      "email": "bret@bretlemke.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "2nd Assist",
+      "phone": null,
+      "email": "jaydiebel@gmail.com",
+      "call_time": "6:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Digit Tech",
+      "phone": null,
+      "email": "jules_bates@yahoo.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DP",
+      "name": "Justin Cattran",
+      "phone": null,
+      "email": "justin@jcattranworks.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "7:40 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Gaffer",
+      "name": "Drew Moe",
+      "phone": null,
+      "email": "drew.moe@me.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "HMU Leah",
+      "phone": null,
+      "email": "trinh.noseph@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist Lead",
+      "name": "Sara Alviti",
+      "phone": null,
+      "email": "saraalviti@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist Assist",
+      "name": "Alona Zankovska",
+      "phone": null,
+      "email": "alen.zankovska@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Summer Barry",
+      "phone": "310.721.4547",
+      "email": "summer.barry@aloyoga.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Zoe Weber",
+      "phone": "435.640.1918",
+      "email": "zoe.weber@aloyoga.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Katie DiTomaso",
+      "phone": "949.307.8132",
+      "email": "katie.ditamaso@aloyoga.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Model Maya",
+      "phone": null,
+      "email": "nancy@thelionsmanagment.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

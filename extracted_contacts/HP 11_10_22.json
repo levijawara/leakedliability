@@ -1,0 +1,140 @@
+{
+  "source_file": "HP 11:10:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 10, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "805-204-7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "First AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Second AC",
+      "name": "Kevin Wilson",
+      "phone": "773-972-0605",
+      "email": "wilson773kevin@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIT",
+      "name": "Jack Damon",
+      "phone": "248-420-2665",
+      "email": "jack@nomaddigitalla.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Sam May",
+      "phone": "773-593-3470",
+      "email": "sam@sammaysound.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist/Props",
+      "name": "Francesco O'Brien",
+      "phone": "323-630-9947",
+      "email": "cescobrien@gmail.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Wardrobe Stylist",
+      "name": "Michael Harris",
+      "phone": "661-874-3014",
+      "email": "mharrisbooking@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Hair & Makeup",
+      "name": "Adrienne Herbert",
+      "phone": "323-896-5982",
+      "email": "chip@art-dept.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Tony Pancho",
+      "phone": "310-503-2138",
+      "email": "tonypancho@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "CCO/Medic",
+      "name": "Becky Rossiter",
+      "phone": "818-919-2873",
+      "email": "becky@eventcare.us",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Alex McCarthy",
+      "name": "Talent",
+      "phone": "715-894-0603",
+      "email": "designer@9thstreetcreative.co",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "James Exley",
+      "phone": "310-418-6365",
+      "email": "james.exley@designory.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Coordinator",
+      "name": "James Adams",
+      "phone": "626-533-4182",
+      "email": "james.adams@designory.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Senior Creative Director",
+      "name": "Lauren Stegmeyer",
+      "phone": null,
+      "email": "lauren.stegmeyer@designory.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Associate Creative Director",
+      "name": "Ethan Scott",
+      "phone": null,
+      "email": "ethan.scott@designory.com",
+      "call_time": "7:45 AM"
+    }
+  ],
+  "talent": []
+}

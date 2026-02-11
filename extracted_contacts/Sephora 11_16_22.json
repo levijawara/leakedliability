@@ -1,0 +1,188 @@
+{
+  "source_file": "Sephora 11:16:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 16th, 2022",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "rijuta.agarwal@sephora.com 5:30 AM\nnatasha.maldonado@sephora.com 5:30 AM\nhope.lee@sephora.com 5:30 AM",
+      "phone": null,
+      "email": "rijuta.agarwal@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "wray.nendza@sephora.com\nbrent.mitchell@sephora.com",
+      "phone": null,
+      "email": "wray.nendza@sephora.com",
+      "call_time": "5:30 AM\nO/C"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "janet.kim@sephora.com 213-453-8145 4:00 AM\njasmine.davis@sephora.com 4:00 AM",
+      "phone": "213-453-8145",
+      "email": "janet.kim@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "laurafromsephora@gmail.com 617-306-9040\njessiejoemonge@gmail.com 787-525-7790\nclara@sunnybunnyhearts.com\nlukaszdp@gmail.com 646-824-1642",
+      "name": null,
+      "phone": "617-306-9040",
+      "email": "laurafromsephora@gmail.com",
+      "call_time": "5:30 AM\n7:00 AM\n4:30 AM\n4:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Lojawara@gmail.com 904-303-8011\ncinemacypher@gmail.com",
+      "name": null,
+      "phone": "904-303-8011",
+      "email": "Lojawara@gmail.com",
+      "call_time": "4:30 AM\n4:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIT: Gavin White\nSound: George Wymenga",
+      "name": null,
+      "phone": "720-217-9510",
+      "email": "gavin_gwhite@yahoo.com",
+      "call_time": "4:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Wymenga1@hotmail.com 818-337-9320",
+      "phone": "818-337-9320",
+      "email": "Wymenga1@hotmail.com",
+      "call_time": "4:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "davin@iris-world.net\nrachel@iris-world.net",
+      "name": null,
+      "phone": "310-993-9667",
+      "email": "davin@iris-world.net",
+      "call_time": "4:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "kennedycantrell@gmail.com 214-405-2215\nmorrisondan9@gmail.com 330-354-1700\nmariogaunner@yahoo.com 561-351-3835",
+      "phone": "214-405-2215",
+      "email": "kennedycantrell@gmail.com",
+      "call_time": "4:00 AM\n3:15 AM\n4:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "melissa@beezoo.com 805.416.4893 5:00 AM RTS",
+      "phone": "805.416.4893",
+      "email": "melissa@beezoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Chrissy Caskey",
+      "phone": null,
+      "email": "chrissy.caskey@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Natasha Maldonado",
+      "phone": null,
+      "email": "natasha.maldonado@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Hope Lee",
+      "phone": null,
+      "email": "hope.lee@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Brent Mitchell",
+      "phone": null,
+      "email": "brent.mitchell@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jasmine Davis",
+      "phone": "213-453-8145",
+      "email": "jasmine.davis@sephora.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Joe Monge",
+      "phone": "617-306-9040",
+      "email": "jessiejoemonge@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Clara Goldfarb",
+      "phone": "787-525-7790",
+      "email": "clara@sunnybunnyhearts.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lukasz Pruchnik",
+      "phone": "646-824-1642",
+      "email": "lukaszdp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Joe Jackson",
+      "phone": "904-303-8011",
+      "email": "cinemacypher@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rachel Wendell",
+      "phone": "310-993-9667",
+      "email": "rachel@iris-world.net",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dan Morrison",
+      "phone": "214-405-2215",
+      "email": "morrisondan9@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Mario Gaunner",
+      "phone": "330-354-1700",
+      "email": "mariogaunner@yahoo.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

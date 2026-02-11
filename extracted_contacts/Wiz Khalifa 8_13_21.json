@@ -1,0 +1,132 @@
+{
+  "source_file": "Wiz Khalifa 8:13:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 13th, 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "EXECUTIVE PRODUCER",
+      "name": "Brad Johnson",
+      "phone": "424.443.9922",
+      "email": "brad@seemediaarts.com",
+      "call_time": "9:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIRECTOR",
+      "name": "TAJ",
+      "phone": "818.430.7429",
+      "email": "slylightingrentals@gmail.com",
+      "call_time": "9:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "Satien Mehta",
+      "phone": "760.504.6689",
+      "email": "sat@driveintlagency.com",
+      "call_time": "9:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PM/AD",
+      "phone": "323.369.3512",
+      "email": "obispokid@gmail.com",
+      "call_time": "8:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "D.O.P.",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "GRIP",
+      "name": "Marko Bratina",
+      "phone": "818.448.8601",
+      "email": "marko@vannuysstudio.com",
+      "call_time": "9:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "MAKE UP",
+      "phone": "323.667.6410",
+      "email": "vickyg.artistry@gmail.com",
+      "call_time": "10:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ART",
+      "name": "Li Liu",
+      "phone": "626.808.7889",
+      "email": "li@driveintlagency.com",
+      "call_time": "8:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Nechama Fisher",
+      "phone": "845.825.7479",
+      "email": "nemfisher@gmail.com",
+      "call_time": "8:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "JP Hall",
+      "phone": "310.487.5921",
+      "email": "jphall@c21peak.com",
+      "call_time": "10:15AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Dakota Giglio",
+      "phone": "949.861.0629",
+      "email": "dakotagiglio@gmail.com",
+      "call_time": "10:15AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Lead Model",
+      "name": "BTS/SET PHOTOGRAPHER",
+      "phone": "424.375.9179",
+      "email": "masahico67@gmail.com",
+      "call_time": "10:30AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Moses Royale",
+      "phone": "760.504.6689",
+      "email": "royalevisionmedia@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Salvador Plasencia",
+      "phone": "323.369.3512",
+      "email": "contact@telimedi.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

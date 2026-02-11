@@ -1,0 +1,268 @@
+{
+  "source_file": "Church's Chicken 8:15:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 15, 2024",
+    "production_company": "KIN FILMS, LLC 8620 Belford Ave. Suite 101, Los Angeles, CA 90045 845.206.7023 ph",
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Producer / UPM",
+      "name": "Dustin Highbridge",
+      "phone": "914.497.7735",
+      "email": "dustin@kinfilms.tv",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "Prod. Supervisor",
+      "name": "Deryck Highbridge",
+      "phone": "845.206.7023",
+      "email": "deryck09@me.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Prod. Manager",
+      "name": "Susie Hamilton",
+      "phone": "210.601.0814",
+      "email": "susie@sixmodseven.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "Senior Account Manager",
+      "name": "1st A.D.",
+      "phone": "210-865-3344",
+      "email": "timothydsmith84@gmail.co",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Johnathan Charles",
+      "phone": "347.279.3039",
+      "email": "jonathancharles11234@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "2nd AC Julian Velasco 512-284-3450 julianjvc10@gmail.com\nDIT Dave Braverman 828-280-6836david@davidbraverman.com",
+      "name": "Senior Copywriter",
+      "phone": "512-284-3450",
+      "email": "julianjvc10@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "Gaffer Ron Meneses 210-473-8356 ronmeneses@gmail.com",
+      "name": "Ageny Producer",
+      "phone": "210-473-8356",
+      "email": "ronmeneses@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip Ralph Lopez 210-273-3514ralph_lopez19@hotmail.com\nBB Grip Roger Eickenoht 830-743-0148 rogere633@gmail.com\nSwing Carlos Campos 956-219-7593camposcarlos101@gmail.co",
+      "name": "VP, Sr. Editor",
+      "phone": "210-273-3514",
+      "email": "210-273-3514ralph_lopez19@hotmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": "GRIP",
+      "role": "Art / Home Ec",
+      "name": "Heindle Cinema",
+      "phone": "760.702.2579",
+      "email": "dustinheindl@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Props Dan Walker 210-243-6574danelektromusic@gmail.com\nFood Stylist Kristina Wolter 512-796-1279 girlgonegrits@yahoo.com",
+      "name": null,
+      "phone": "210-243-6574",
+      "email": "210-243-6574danelektromusic@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": "GRIP",
+      "role": "Payroll",
+      "name": "Nashville Talent Payments",
+      "phone": "615.370.8538",
+      "email": "ntpjuju@comcast.net",
+      "call_time": null
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Stylist Stacey Conant 512-964-7406 stacey@staceyconant.com",
+      "name": "Permit",
+      "phone": "512-964-7406",
+      "email": "stacey@staceyconant.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": "HAIR",
+      "role": "Key HMU Kat Franklin 210-753-7400katfranklinmakeup210@gmail.com",
+      "name": null,
+      "phone": "210-753-7400",
+      "email": "210-753-7400katfranklinmakeup210@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": "SOUND",
+      "role": "VTR Ryan Bovee 432-889-4307 ryansbovee@gmail.com\nSound Mixer Dave Novak 210-563-0467 toastworks@hotmail.com",
+      "name": "Trucking",
+      "phone": "432-889-4307",
+      "email": "ryansbovee@gmail.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "Location Manager",
+      "name": "Kristin Quintanilla 210-417-7376kristin@southfaceproductions.com",
+      "phone": "210-417-7376",
+      "email": "210-417-7376kristin@southfaceproductions.com",
+      "call_time": "12:00P"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "Self",
+      "phone": "310.365.3197",
+      "email": "theofficialdenika@yahoo.com",
+      "call_time": "7:15A"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "Production Support",
+      "phone": "310.365.3197",
+      "email": "lijuanstephens@gmail.com",
+      "call_time": "7:15A"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "Photographer",
+      "phone": "310-722-3829",
+      "email": "310-722-3829jeffmmercado13@gmail.com",
+      "call_time": "7:15A"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": "PA",
+      "name": "Mitchell Cummings361-296-4754 jamesmcummings@yahoo.com 12:00P\nChristie Kinsel 210-385-0216 christie.kinsel@gmail.com 12:00P\nJavi Aguirre 210-596-8068 javier.ttar@gmail.com 12:00P\nLaura Quinones 210-947-8942Ljquinones2003@gmail.com12:00P\nAddie Villareal 210-429-1792 chivo.131392@gmail.com 11:00A",
+      "phone": "361-296-4754",
+      "email": "jamesmcummings@yahoo.com",
+      "call_time": "12:00P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Tim Smith",
+      "phone": "210-865-3344",
+      "email": "timothydsmith84@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dave Braverman",
+      "phone": "512-284-3450",
+      "email": "828-280-6836david@davidbraverman.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Roger Eickenoht",
+      "phone": "830-743-0148",
+      "email": "rogere633@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Carlos Campos",
+      "phone": "830-743-0148",
+      "email": "956-219-7593camposcarlos101@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kristina Wolter",
+      "phone": "210-243-6574",
+      "email": "girlgonegrits@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Trucking Enterprise",
+      "phone": "432-889-4307",
+      "email": "jrios@galpin.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dave Novak",
+      "phone": "323.957.3333",
+      "email": "toastworks@hotmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Self Catalina",
+      "phone": "310-722-3829",
+      "email": "jahiharrisceo@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Christie Kinsel",
+      "phone": "361-296-4754",
+      "email": "christie.kinsel@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Javi Aguirre",
+      "phone": "210-596-8068",
+      "email": "javier.ttar@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Laura Quinones",
+      "phone": "210-596-8068",
+      "email": "210-947-8942Ljquinones2003@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Addie Villareal",
+      "phone": "210-429-1792",
+      "email": "chivo.131392@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,156 @@
+{
+  "source_file": "I.C.E. 12:16:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "December 16 2023",
+    "production_company": null,
+    "day_info": "DAY 2 of 3"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "DIRECTOR'S ASSIST. Ariya",
+      "name": "ariya@ariya-studios.com 12:00 PM 12:00 AM",
+      "phone": null,
+      "email": "ariya@ariya-studios.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "EXECUTIVE PRODUCER Max McGuire",
+      "name": "PRODUCTION EQ",
+      "phone": null,
+      "email": "max@solacecreative.co",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": null,
+      "role": "EXECUTIVE PRODUCER Kyle Zigan",
+      "name": "INSURANCE",
+      "phone": "626.224.0905",
+      "email": "kyle@solacecreative.co",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PROJECT MANAGER Sam Adgate",
+      "name": "sam@solacecreative.co 12:00 PM 12:00 AM",
+      "phone": "858.449.1526",
+      "email": "sam@solacecreative.co",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP Brian Beckwith",
+      "name": "bbthedp@gmail.com 12:00 PM 12:00 AM",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC Levi Jawara",
+      "name": "lojawara@gmail.com 12:00 PM 12:00 AM",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadi Donald Turner",
+      "phone": "714.471.6422",
+      "email": "steadidon@gmail.com",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "GAFFER Jorge Hernandez",
+      "name": "jorge@glowingambers.com 12:00 PM 12:00 AM",
+      "phone": "714.686.5657",
+      "email": "jorge@glowingambers.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "BBE Sam Kim",
+      "phone": "703.628.0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "KEY GRIP Jose Caldera 323.282.9702 caldera2211@hotmail.com 12:00 PM 12:00 AM",
+      "name": "Schedule to Follow",
+      "phone": "323.282.9702",
+      "email": "caldera2211@hotmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "BBG Jack Alexander 443.889.7401 jackalexander466@gmail.com 12:00 PM 12:00 AM",
+      "name": null,
+      "phone": "443.889.7401",
+      "email": "jackalexander466@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "KEY PA Nate Wilson",
+      "name": "425.999.5754 nwilsonw@icloud.com",
+      "phone": "425.999.5754",
+      "email": "nwilsonw@icloud.com",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA Will Petersen",
+      "name": null,
+      "phone": "425.615.2710",
+      "email": "willpetersen18@gmail.com",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director Lauren Boucher",
+      "name": "480.766.9114 lboucheract@gmail.com",
+      "phone": "480.766.9114",
+      "email": "lboucheract@gmail.com",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "STYLIST Donte Angelo 913.932.0201",
+      "name": null,
+      "phone": "913.932.0201",
+      "email": "sdonte124@gmail.com",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "STYLIST ASSIST. Kealy Farra 323.983.1861",
+      "name": null,
+      "phone": "323.983.1861",
+      "email": "kealymck@gmail.com",
+      "call_time": "12:00 PM 12:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "HMU Vaida Mikelenaite 708.745.1663",
+      "phone": "708.745.1663",
+      "email": "mikelenaitevaida@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "United Casting",
+      "phone": null,
+      "email": "info@unitedcasting.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

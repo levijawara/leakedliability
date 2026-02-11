@@ -1,0 +1,92 @@
+{
+  "source_file": "FUTURE 9:5:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "September 5, 2024",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Film Photographer",
+      "phone": "310-407-9475",
+      "email": "mattadamco@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Tali Weizman",
+      "phone": "818-569-9265",
+      "email": "me@taliweizman.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Production Logistics",
+      "phone": "213-588-5577",
+      "email": "tjgormley13@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": null,
+      "email": "jorge@glowingambers.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Mike Long",
+      "phone": "603-548-2071",
+      "email": "Mikellong.la@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Picture Car",
+      "phone": "862-437-2247",
+      "email": "erapicturecars@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Production Supplies",
+      "phone": null,
+      "email": "tj@bizzysets.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Sprinter",
+      "phone": "626-622-2500",
+      "email": "rvsprinterrental@gmail.com",
+      "call_time": "1:00 PM"
+    }
+  ],
+  "talent": []
+}

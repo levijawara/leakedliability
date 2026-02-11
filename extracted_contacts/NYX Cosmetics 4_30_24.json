@@ -1,0 +1,204 @@
+{
+  "source_file": "NYX Cosmetics 4:30:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 2 OF 3"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "N/A",
+      "phone": "323-213-9084",
+      "email": "devinamirz@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCER",
+      "name": "Paul O'Hannigan",
+      "phone": "310.462.2694",
+      "email": "paulohannigan@gmail.com",
+      "call_time": "7:45 A"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Jay Kaufman",
+      "phone": "330.714.8608",
+      "email": "jaykaufman101@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIT",
+      "name": "Ben Monlyneux",
+      "phone": "541.505.0663",
+      "email": "molyneuxben@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "GRIP",
+      "role": "GAFFER",
+      "name": "Zach Trout",
+      "phone": "323.972.9517",
+      "email": "ztrout77@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "GRIP",
+      "role": "KEY GRIP",
+      "name": "Conor Soules",
+      "phone": "315.406.7356",
+      "email": "conor.d.soules@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "GRIP",
+      "role": "GRIP",
+      "name": "Otto Gaiser",
+      "phone": "816-255-8377",
+      "email": "ottogaiser@yahoo.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "GRIP",
+      "role": "BEST BOY ELECTRICIAN",
+      "name": "Andrew Dorward",
+      "phone": "760.622.9666",
+      "email": "andrewdorward95@gmail.com",
+      "call_time": "13:00"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "STILLS ELECTRICIAN",
+      "phone": null,
+      "email": "Josueeli11@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "PHOTOGRAPHER",
+      "phone": "909.553.6036",
+      "email": "lee@quickstrikestudios.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "GRIP",
+      "role": "PHOTO ASSISTANT/ GAFFER",
+      "name": "Tutu Lee",
+      "phone": "785.317.2611",
+      "email": "hi@tutulee.co",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": "Lead Stylist",
+      "name": "Bernadet Davood",
+      "phone": null,
+      "email": "bernadet@bernadetdavood.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": "Styling Assistant",
+      "name": "Tatiana Isshac",
+      "phone": null,
+      "email": "tatianaisshac@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "MUA",
+      "phone": null,
+      "email": "a.martin@nyxcosmetics.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": "Martin",
+      "name": "MUA",
+      "phone": null,
+      "email": "mcorona@nyxcosmetics.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "MUA",
+      "phone": null,
+      "email": "acervantes@nyxcosmetics.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "MUA",
+      "phone": null,
+      "email": "iavila@nyxcosmetics.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "MUA",
+      "phone": null,
+      "email": "christian.carter@nyxcosmetics.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": "HAIR",
+      "name": "Maxi",
+      "phone": null,
+      "email": "presidentmaxi@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": "HAIR",
+      "name": "Stacy",
+      "phone": null,
+      "email": "Stacymakeup97@yahoo.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "HAIR",
+      "role": "HAIR",
+      "name": "Rasheeda",
+      "phone": null,
+      "email": "Rasheedaamera@gmail.com",
+      "call_time": "8:00 A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "SET PA",
+      "name": "Chelsea Eisen",
+      "phone": null,
+      "email": "chelseafilm@gmail.com",
+      "call_time": "7:45 A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "SET PA",
+      "name": "Colin Boppell",
+      "phone": "(714) 474-4508",
+      "email": "colinboppell@gmail.com",
+      "call_time": "7:45 A"
+    }
+  ],
+  "talent": []
+}

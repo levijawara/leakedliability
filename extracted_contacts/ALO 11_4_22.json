@@ -1,0 +1,108 @@
+{
+  "source_file": "ALO 11:4:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 4th, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Zoe Weber",
+      "phone": null,
+      "email": "zoeweber@aloyoga.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Michelle Finney",
+      "phone": null,
+      "email": "michelle.finney@aloyoga.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Blake Sinclair",
+      "phone": null,
+      "email": "blake.sinclair@aloyoga.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Amber Malouf",
+      "phone": null,
+      "email": "ambermaalouf@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Justin Cattran",
+      "phone": null,
+      "email": "Justin.cattran@aloyoga.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Props Stylist",
+      "name": "Natalia Diaz",
+      "phone": null,
+      "email": "ccooqquu@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Stylist",
+      "name": "Nicole Grasty",
+      "phone": null,
+      "email": "ngrasty19@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kameryn Evans",
+      "phone": null,
+      "email": "kameryn.evans@aloyoga.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ashlin Crawley",
+      "phone": null,
+      "email": "ashlin.crawley@aloyoga.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rya Ramirez",
+      "phone": null,
+      "email": "ryaramirezmakeup@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Alix Margolis",
+      "phone": null,
+      "email": "Alix.margolis@aloyoga.com",
+      "call_time": "9:30 AM"
+    }
+  ],
+  "talent": []
+}

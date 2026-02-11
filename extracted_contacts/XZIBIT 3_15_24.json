@@ -1,0 +1,292 @@
+{
+  "source_file": "XZIBIT 3:15:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "MARCH 15th, 2024",
+    "production_company": null,
+    "day_info": "DAY 2 of 2"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Rick Wayne",
+      "phone": "847-942-1642",
+      "email": "r@underscorefilms.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Danny Pollack",
+      "phone": "703-307-1892",
+      "email": "danny@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Brand Strategist- Space Ape",
+      "name": "EP / Head of Production",
+      "phone": "954-558-0376",
+      "email": "abi@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Jesse Rojas",
+      "phone": "845-521-1063",
+      "email": "jesse@dojohouse.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Coordinator",
+      "name": "Alli Acuff",
+      "phone": "614-638-5005",
+      "email": "alli@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "ARTIST",
+      "name": "1st AD",
+      "phone": "805-660-4644",
+      "email": "rjcollin1@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Celebrity Talent",
+      "phone": null,
+      "email": "masstaminded@me.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424-400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jib Op",
+      "phone": "310-420-1642",
+      "email": "elidfranks@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BTS",
+      "phone": "818-522-2565",
+      "email": "shotbydavidd@gmail.com",
+      "call_time": "8:15 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "HMU",
+      "phone": "954-608-2748",
+      "email": "Brit3618@aol.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Gaffer",
+      "name": "Tristan Moffatt",
+      "phone": "909-477-0936",
+      "email": "damoff17@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBE",
+      "phone": "909-908-1258",
+      "email": "JulianCRoss96@yahoo.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Locations",
+      "name": "SLT",
+      "phone": "314-800-6452",
+      "email": "Ewaddell777@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "GRIP",
+      "name": "Production Supplies & Trucking",
+      "phone": null,
+      "email": "garret@hollywooddepotrentals.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Key Grip",
+      "name": "Bobby Ortwin",
+      "phone": "310-801-4169",
+      "email": "rcortwin@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBG",
+      "phone": "562-299-2024",
+      "email": "jbear8thegrip@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Grip",
+      "name": "Eric Denman",
+      "phone": "818-388-1648",
+      "email": "edenman77@hotmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "ART",
+      "name": "Picture Car",
+      "phone": "214-404-1991",
+      "email": "nate@paramountpicturecars.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Designer",
+      "name": "Matt Sokoler",
+      "phone": "818-259-9308",
+      "email": "mattsokoler@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Art Director",
+      "name": "Spencer Trent",
+      "phone": "818-792-8008",
+      "email": "spencertrentart@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jimmy Molina",
+      "phone": "805-657-5300",
+      "email": "soundguyjimmy@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Teleprompter Op",
+      "phone": "559-348-8594",
+      "email": "prompterjake@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "AD PA",
+      "name": "Landon Watford",
+      "phone": "305.240.0414",
+      "email": "landon.watford.film@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Set PA",
+      "name": "Noah Zaidspiner",
+      "phone": "561-876-8607",
+      "email": "noah.zaidspiner@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Set PA",
+      "name": "Izzy Strauss",
+      "phone": "216-925-2432",
+      "email": "straussizzy@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Set PA",
+      "name": "Chase Shealey",
+      "phone": "973-477-8903",
+      "email": "chase.shealey@dojohouse.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Office PA",
+      "name": "Scott Crenshaw",
+      "phone": "512-983-3500",
+      "email": "Scottc.film@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Truck PA",
+      "name": "Angel Magallanes",
+      "phone": "424-533-6605",
+      "email": "a.rafaelmagallanes@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dontay Kidd",
+      "phone": "904-303-8011",
+      "email": "dkidd@openbarent.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Aris Alvarado",
+      "phone": "310-420-1642",
+      "email": "Sapo4322@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "AM Judds",
+      "phone": "909-908-1258",
+      "email": "info@juddscatering.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Picture Vehicles",
+      "phone": "818-388-1648",
+      "email": "office@studiopicturevehicles.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

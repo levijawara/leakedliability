@@ -1,0 +1,172 @@
+{
+  "source_file": "AMIRA 5:4:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "05/03/2024",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Vinny Balbo",
+      "phone": null,
+      "email": "contact@vinnybalbo.com",
+      "call_time": "11:00A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Nas Bogado",
+      "phone": null,
+      "email": "nas@weirdweird.net",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Vic Brandt",
+      "phone": "818-804-6053",
+      "email": "vic@stainedstudios.com",
+      "call_time": "9:00A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Siobhan McCarthy",
+      "name": "1st AD",
+      "phone": null,
+      "email": "Shivfmccarthy@gmail.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Casting Director",
+      "name": "Page Ruth",
+      "phone": null,
+      "email": "pageruth@me.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Wes Spaulding",
+      "phone": null,
+      "email": "wesley.e.spaulding@gmail.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Olive Kowalczyk",
+      "phone": "973-919-3787",
+      "email": "olive@weirdweird.net",
+      "call_time": "10:00A"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "813-766-6343",
+      "email": "cyburbsproductions@gmail.com",
+      "call_time": "10:00A"
+    },
+    {
+      "department": "ART",
+      "role": "Director of Photography",
+      "name": "Jay Kaufman",
+      "phone": null,
+      "email": "jaykaufman101@gmail.com",
+      "call_time": "9:00A"
+    },
+    {
+      "department": "ART",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "ART",
+      "role": "Gaffer",
+      "name": "Sebastian Kolderup-Lane",
+      "phone": "415-350-6777",
+      "email": "kinosabs@gmail.com",
+      "call_time": "10:00A"
+    },
+    {
+      "department": "ART",
+      "role": "Best Boy Electric",
+      "name": "Niko Baur",
+      "phone": "818-668-7731",
+      "email": "theonlynikob@gmail.com",
+      "call_time": "9:00A"
+    },
+    {
+      "department": "ART",
+      "role": "Key Grip",
+      "name": "Declan Adams",
+      "phone": "424-251-2898",
+      "email": "declan.j.adams@gmail.com",
+      "call_time": "9:00A"
+    },
+    {
+      "department": "ART",
+      "role": "Swing",
+      "name": "Joe Desantis",
+      "phone": null,
+      "email": "joseph.desantis@atlanticrecords.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "ART",
+      "role": "Swing",
+      "name": "Melissa Tesillo",
+      "phone": null,
+      "email": "melissa.tesillo@atlanticrecords.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Video Commissioner",
+      "phone": null,
+      "email": "trevor.newton@atlanticrecords.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Video Commissioner",
+      "phone": null,
+      "email": "violeta.boix@atlanticrecords.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Atlantic Video",
+      "phone": null,
+      "email": "claudia.chiossone@atlanticrecords.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Jackie Wongso",
+      "name": "Atlantic Marketing",
+      "phone": null,
+      "email": "jackie.wongso@atlanticrecords.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "This Project is Supervised by:\nVic Brandt - Producer\n818.804.6053 – victoriabrandt4@gmail.com",
+      "name": null,
+      "phone": "818.804.6053",
+      "email": "victoriabrandt4@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,228 @@
+{
+  "source_file": "New Balance 11:21:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "Nov 21, 2024",
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "EP/Director",
+      "name": "Nat Prinzi",
+      "phone": "(917) 407-5782",
+      "email": "nat@betterdays.tv",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": "HOP/Producer",
+      "name": "Noelle Victoria",
+      "phone": "(808) 364-4862",
+      "email": "noelle@betterdays.tv",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Prod. Coordinator",
+      "name": "Tiffany Spriggs",
+      "phone": "(510) 821-2640",
+      "email": "createwhat.inc@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1ST AD",
+      "phone": "(650) 799-4777",
+      "email": "kws.inquiries@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "CINEMATOGRAPHER",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "(424) 400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "JIB",
+      "phone": "(407) 733-3803",
+      "email": "Myles@bigshotproductions.tv",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BTS",
+      "phone": "(323) 810-4653",
+      "email": "aloha@studiomomoproduction.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "G&E",
+      "phone": "(818) 693-6425",
+      "email": "Nickstunts@yahoo.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "GAFFER",
+      "name": "Jorge Hernandez",
+      "phone": "(714) 686-5657",
+      "email": "jorge@glowingambers.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Panera",
+      "name": "BBE",
+      "phone": "(703) 628-0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Harrison Bliss",
+      "phone": "(310) 629-2663",
+      "email": "hbliss@harrisonbliss.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": null,
+      "role": "KEY GRIP",
+      "name": "James Suter",
+      "phone": "(415) 324-9242",
+      "email": "suterjamespeter@gmail.com",
+      "call_time": "8:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Jack Alexander",
+      "name": "BBG",
+      "phone": "(443) 889-7401",
+      "email": "jackalexander466@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "GRIP",
+      "name": "Derek Dresda",
+      "phone": "(818) 849-2130",
+      "email": "Derek.dresda2@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PROD DESIGNER",
+      "name": "Ava Jones",
+      "phone": "(310) 658-7768",
+      "email": "avajones4507@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "LEAD MAN",
+      "name": "Logan Blue",
+      "phone": "(567) 454-0070",
+      "email": "loganblue22@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "SWING",
+      "name": "Jesse Villacis",
+      "phone": "(323) 573-4973",
+      "email": "jessevillacis@icloud.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "SWING",
+      "name": "Bill Kaiser",
+      "phone": "(323) 547-4881",
+      "email": "billkaisere@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "SWING",
+      "name": "Bryant Gonzalez",
+      "phone": "(714) 266-5428",
+      "email": "moneyb.ill@icloud.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "STUNTS",
+      "role": null,
+      "name": "STUNT RIGGER",
+      "phone": null,
+      "email": "max.heavenrich.vassilos@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "LEAD WARDROBE",
+      "name": "Emily Heyman",
+      "phone": "310) 745-1583",
+      "email": "emilyheymancostumes@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "SET PA",
+      "name": "Mars Collins",
+      "phone": "(415) 699-9935",
+      "email": "Jamar.Collins@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "SET PA",
+      "name": "John Paul Bonin",
+      "phone": "(559) 304-3041",
+      "email": "boninjohnpaul@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "SET PA",
+      "name": "Ben Polster",
+      "phone": "(240) 994-4790",
+      "email": "polstermediaco@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Studio C2",
+      "phone": "(424) 400-1879",
+      "email": "nancy.carlson@me.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

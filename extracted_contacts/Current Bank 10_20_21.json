@@ -1,0 +1,332 @@
+{
+  "source_file": "Current Bank 10:20:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Dan Lubell",
+      "phone": "917.270.7100",
+      "email": "dan@lubellhouse.com",
+      "call_time": "2:45P"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Jasmine Rose",
+      "phone": "540.241.7336",
+      "email": "jasminerose1928@gmail.com",
+      "call_time": "2:45P"
+    },
+    {
+      "department": null,
+      "role": "Commercial Coordinator",
+      "name": "Giulia Di Stravola",
+      "phone": "954.909.9313",
+      "email": "giulia.rdistravola@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1st AD",
+      "phone": "213.840.5992",
+      "email": "hidenton@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "2nd AD",
+      "phone": "818.371.9892",
+      "email": "magnalachat@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Lukasz Pruchnik",
+      "phone": "646.824.1642",
+      "email": "lukaszdp@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Joanne Octoman",
+      "phone": "626.615.1187",
+      "email": "joanneoctoman@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "DIT",
+      "name": "Ryan Harding",
+      "phone": "920.680.8975",
+      "email": "ryanhdit@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "Location",
+      "name": "ELECTRIC DEPT",
+      "phone": "406.465.0987",
+      "email": "iambelladelong@gmail.com",
+      "call_time": "2:15P"
+    },
+    {
+      "department": null,
+      "role": "Gaffer",
+      "name": "Joe Jackson",
+      "phone": "818.300.4748",
+      "email": "Cinemacypher@gmail.com",
+      "call_time": "2:15P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBE",
+      "phone": "832.882.9019",
+      "email": "Kevin.Bryan.simmons@gmail.com",
+      "call_time": "2:15P"
+    },
+    {
+      "department": null,
+      "role": "Key Grip",
+      "name": "Joshua Benson",
+      "phone": "307.854.8061",
+      "email": "jbensondp@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": "Best Boy Grip",
+      "name": "Brian Patierno",
+      "phone": "973.735.8127",
+      "email": "britierno@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": "G&E Swing",
+      "name": "Walter Orsini",
+      "phone": "732.619.1214",
+      "email": "worsini@gmail.com",
+      "call_time": "1:45P"
+    },
+    {
+      "department": null,
+      "role": "Sound Mixer",
+      "name": "Jonathan Scott",
+      "phone": "626.327.1087",
+      "email": "Scottechproductions@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "VTR",
+      "phone": "805.705.2695",
+      "email": "bcphillis@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "Production Designer",
+      "name": "Tony Pizza",
+      "phone": "310.493.2121",
+      "email": "tonylovespizza@yahoo.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Prop Master",
+      "phone": "561.379.6783",
+      "email": "Damiancasting@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "310.994.5329",
+      "email": "kristopher.ingram@icloud.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Stylist",
+      "name": "Tia Lui",
+      "phone": "281.777.9366",
+      "email": "tianicolelui@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Assistant",
+      "name": "Alina Silva",
+      "phone": "626.223.2958",
+      "email": "asilvafilms@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Key HMU",
+      "name": "Abigail Smith",
+      "phone": "208.859.8775",
+      "email": "abigailsmith.makeup@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "HMU Assist",
+      "phone": "530.647.6014",
+      "email": "Hannahstarkemua@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Craft Service",
+      "name": "Itan Chavira",
+      "phone": "626.383.4211",
+      "email": "craftservicebros@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": "PA - Driver",
+      "name": "Preston Oliver",
+      "phone": "323.793.2612",
+      "email": "presoliver32@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": "PA - Driver",
+      "name": "Steven Hartfield",
+      "phone": "210.867.8392",
+      "email": "hcveteranpost@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Charlie Capp",
+      "phone": "310.526.1458",
+      "email": "charlescapp410@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Yubicela Brito",
+      "phone": "602.697.2947",
+      "email": "yubicela.m.brito@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": "PA - Office",
+      "name": "Julia Hirsch",
+      "phone": "860.301.9789",
+      "email": "juhirsch@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "FSA",
+      "phone": "9493227561",
+      "email": "mlf170mac@yahoo.com",
+      "call_time": "3:00P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Site Rep",
+      "phone": "805.501.5536",
+      "email": "onsetagain@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Picture Car/Lot Rep",
+      "phone": "661.466.6607",
+      "email": "anibalmurillo81@gmail.com",
+      "call_time": "2:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "COVID COO",
+      "phone": "818.915.1425",
+      "email": "barajasdarlyn@gmail.com",
+      "call_time": "1:30P"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Karen Berkowitz",
+      "phone": "646.824.1642",
+      "email": "karen@greenpointpictures.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Victoria Vallas",
+      "phone": "626.615.1187",
+      "email": "victoria@greenpointpictures.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Garrett Gallego",
+      "phone": "818.300.4748",
+      "email": "garrotte119@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jay Clegg",
+      "phone": "832.882.9019",
+      "email": "julianaobusiness@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Bathrooms Cinecraft",
+      "phone": "973.735.8127",
+      "email": "jlemus399@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Amigos Walnut",
+      "phone": "732.619.1214",
+      "email": "losamigoswalnut@yahoo.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,92 @@
+{
+  "source_file": "TOAST 2:10:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "2/10/23",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Matt Tranguch",
+      "phone": "484-459-8209",
+      "email": "matt@paperboygo.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "DIRECTOR",
+      "name": "Matt Dunstan",
+      "phone": "484-634-2585",
+      "email": "mdunstan@paperboygo.com",
+      "call_time": "1:00P"
+    },
+    {
+      "department": null,
+      "role": "PRODUCER",
+      "name": "Jon Applebaum",
+      "phone": "609-330-5944",
+      "email": "jon@appleslicefilms.com",
+      "call_time": "2:00P"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "CAMERA OP",
+      "phone": "951-850-4909",
+      "email": "spencehord@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "GAFFER",
+      "name": "Evan Croker",
+      "phone": "805-204-7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "KEY GRIP",
+      "name": "Samuel Diaz",
+      "phone": "916-402-6391",
+      "email": "Samueldiaz019@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "SOUND MIXER",
+      "name": "James DeVore",
+      "phone": "740-340-8499",
+      "email": "jamesdevore7@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PA",
+      "name": "Sunterrah Palmer",
+      "phone": "951-334-8244",
+      "email": "sunterrah@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

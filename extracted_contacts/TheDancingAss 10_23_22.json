@@ -1,0 +1,92 @@
+{
+  "source_file": "TheDancingAss 10:23:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "CAMERA",
+      "role": "PRODUCER",
+      "name": "Ivonne Escobar",
+      "phone": "818.322.6191",
+      "email": "ivonne@ishkorecords.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIRECTOR/PRODUCER",
+      "name": "Jaquece \"Q\" Abraham",
+      "phone": "310.926.8211",
+      "email": "visualques@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "1ST AD",
+      "phone": "407.460.2708",
+      "email": "djrodger13@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "PRODUCTION ASSISTANT",
+      "name": "Anastashia Sanchez",
+      "phone": "562.454.4573",
+      "email": "anastashia@ishkorecords.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "PRODUCTION ASSISTANT",
+      "name": "Deena Macias",
+      "phone": "626.833.3918",
+      "email": "Deena@ishkorecords.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "DP",
+      "name": "Pablo Saint",
+      "phone": "562.391.6646",
+      "email": "pablo@litbydrip.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "1st AC",
+      "name": "Levyi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "STILLS",
+      "phone": "305.879.7300",
+      "email": "adamgarciaphotography@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "MUA/HAIR",
+      "name": "Amanda Terry",
+      "phone": "909.709.2639",
+      "email": "Makeupmandi86@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "WARDROBE",
+      "name": "NAME",
+      "phone": "323.718.8894",
+      "email": "ahavens99@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

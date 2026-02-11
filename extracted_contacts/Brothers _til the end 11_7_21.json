@@ -1,0 +1,300 @@
+{
+  "source_file": "Brothers 'til the end 11:7:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "Carmine",
+      "phone": "818 292 7272",
+      "email": "rrstunts@hotmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Roman",
+      "phone": "818 445 6167",
+      "email": "romanmitichyan@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Alex",
+      "phone": "917 446 4531",
+      "email": "alexanagnos1@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": null,
+      "role": "Michael Pashan",
+      "name": "Bootleg",
+      "phone": "818 480 2734",
+      "email": "michaelpashan21@yahoo.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Joker",
+      "phone": "818 425 3535",
+      "email": "madmaxdaniels@aol.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Cowboy",
+      "phone": "310 999 5352",
+      "email": "miketarnofsky@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "The Heavy",
+      "phone": "323 420 6580",
+      "email": "marcostunts@hotmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Enzo",
+      "phone": "858 248 0217",
+      "email": "stevenbriggscomedy@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Janet",
+      "phone": "310 666 1663",
+      "email": "juliadmars@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Johnny Randazzo",
+      "phone": "818 437 6183",
+      "email": "marcokhan2002@yahoo.com",
+      "call_time": "6:00PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Stunt Performer 1",
+      "phone": "310 433 1675",
+      "email": "baxterhumby@aol.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Stunt Performer 2",
+      "phone": "747 388 2818",
+      "email": "m.h.musheghyan@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": "Anthony Martins",
+      "name": "Stunt Performer 3",
+      "phone": "818 749 1157",
+      "email": "anthonymartins003@yahoo.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Stunt Performer 4",
+      "phone": "661 593 0491",
+      "email": "jasonenergylewis@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Randazzo’s men",
+      "phone": "253 329 3399",
+      "email": "josetrujillo2003@icloud.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Tigran Mutafyan",
+      "phone": "818 388 0755",
+      "email": "tig.glasscore@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Daniel Antunez",
+      "phone": "626 404 6918",
+      "email": "antunezfilms@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Zakari Asdurian",
+      "phone": "949 500 9204",
+      "email": "zasdourian@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Ray Guzman",
+      "phone": "818 456 8862",
+      "email": "rayyguzman70@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Storyboard Artist",
+      "name": "Paul Power",
+      "phone": "818 980 8852",
+      "email": "zonkie54@aol.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st Assistant Director",
+      "name": "Tammy-Anne Fortuin",
+      "phone": "310 467 5281",
+      "email": "tammyannefortuin@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st Assistant Camera A unit",
+      "name": "Levi Jawara",
+      "phone": "904 308 8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st Assistant Camera B Unit",
+      "name": "Sai Aung Tung",
+      "phone": "626 400 3918",
+      "email": "s.silentstorm@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": null,
+      "role": "Cam Operator B Unit",
+      "name": "Val Hovanesian",
+      "phone": "818 515 0025",
+      "email": "revalmedia@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Vatche Girragossian",
+      "phone": "559 696 5999",
+      "email": "giragossian.cine@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Gerardo Miramontes",
+      "phone": "323 597 9114",
+      "email": "Giragossian.cine@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Vinve Urquieta",
+      "phone": "818 385 9869",
+      "email": "vinceurquieta@yahoo.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Swing",
+      "name": "Renato Gontijo",
+      "phone": "818 720 8816",
+      "email": "renatocgontijo@gmail.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "Production Sound",
+      "phone": "323 891 6401",
+      "email": "alex24036@gmail.com",
+      "call_time": "01:30PM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Sound + Boom Operator (Stunt Day)",
+      "name": "Kostiantyn Sukhonosov",
+      "phone": "323 561 2399",
+      "email": "vojd.sound@gmail.com",
+      "call_time": "01:30PM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Script Supervisor",
+      "name": "Maria Pogosyan",
+      "phone": "747 257 5003",
+      "email": "mariapogosy@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Marine Minasyan",
+      "phone": "626 316 2114",
+      "email": "marineminasyan21@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "Key, A Unit + SFX",
+      "name": "Rita Janikyan",
+      "phone": "818 510 6338",
+      "email": "rita.janikyan@gmail.com",
+      "call_time": "11:30AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "Key, B Unit",
+      "name": "Sosi Bournazyan",
+      "phone": "818 793 1904",
+      "email": "sosibournazyan_mua@yahoo.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "Photographer",
+      "phone": "718 669 4101",
+      "email": "me@donfreshly.com",
+      "call_time": "12:30PM"
+    },
+    {
+      "department": "CATERING",
+      "role": "Catering + Craft services",
+      "name": "Haro Sargsyan",
+      "phone": "323 707 6501",
+      "email": "uptowncoffeecorp@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

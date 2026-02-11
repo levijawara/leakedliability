@@ -1,0 +1,238 @@
+{
+  "source_file": "\"AGUA NEGRA\" 10:12:24.pdf",
+  "production_info": {
+    "production_name": "AGUA NEGRA",
+    "date": "October 12th, 2024",
+    "production_company": "AGUA NEGRA Creators Lab LLC.",
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "CRAFT",
+      "role": "Director",
+      "name": "Eduardo Sanchez Flores",
+      "phone": "(323) 810-4653",
+      "email": "creatorslabofficial@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "CRAFT",
+      "role": "Prod. Manager",
+      "name": "Josselin Flores",
+      "phone": "(323) 806-0759",
+      "email": "floresjosselin@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "CRAFT",
+      "role": "Production Assistant",
+      "name": "Viviana Retana",
+      "phone": null,
+      "email": "vretanatorres@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CRAFT",
+      "role": "Production Assistant",
+      "name": "DeAngelo Bonner",
+      "phone": null,
+      "email": "deangelo.bonner@gmail.com",
+      "call_time": "6:00AM"
+    },
+    {
+      "department": "CRAFT",
+      "role": "Production Assistant",
+      "name": "Juan Chavez",
+      "phone": null,
+      "email": "music@jsalez.com",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Chance Flakner",
+      "phone": null,
+      "email": "directlychance@gmail.com",
+      "call_time": "6:00AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levy Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "6:00AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Techno Crane",
+      "phone": null,
+      "email": "garreW@collecYvecameracranes.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "maebabbiW9@gmail.com",
+      "call_time": "6:00AM"
+    },
+    {
+      "department": "G/E",
+      "role": "Gaffer",
+      "name": "Erik Glode",
+      "phone": null,
+      "email": "erikglode@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "G/E",
+      "role": "Key Grip",
+      "name": "MaWhew Cole",
+      "phone": null,
+      "email": "maWcole5668@gmail.com",
+      "call_time": "6:00AM"
+    },
+    {
+      "department": "G/E",
+      "role": "Grip",
+      "name": "Jacob Alvarado",
+      "phone": null,
+      "email": "electricskyvisuals@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": null,
+      "name": "SFX Make up",
+      "phone": null,
+      "email": "applemakeup41@gmail.com",
+      "call_time": "12:00PM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Nick Burrell",
+      "phone": null,
+      "email": "niburrell89@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "SOUND",
+      "role": "Sound Mixer",
+      "name": "Connor Jay Colebrook",
+      "phone": null,
+      "email": "connorjaycolebrook@gmail.com",
+      "call_time": "5:00 PM"
+    }
+  ],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "Director",
+      "call_time": "5:45AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Prod. Manager",
+      "call_time": "5:45AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Production Assistant",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Production Assistant",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Production Assistant",
+      "call_time": "7:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "CAMERA",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Director of Photography",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Levy Jawara",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Techno Crane",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "BTS",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "G/E",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Gaffer",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Key Grip",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Grip",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "VANITIES",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "SFX Make up",
+      "call_time": "11:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "ART",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Production Designer",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "SOUND",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Sound Mixer",
+      "call_time": "5:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "HARD OUT",
+      "call_time": "6:00 PM"
+    }
+  ]
+}

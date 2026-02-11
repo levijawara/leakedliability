@@ -1,0 +1,182 @@
+{
+  "source_file": "Ultraviolet Catastrophe 9:8:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "09/08/2024",
+    "production_company": null,
+    "day_info": "Day 2 of 2"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director/ DP / Producer",
+      "name": "Robert Vornkahl",
+      "phone": "906-396-7921",
+      "email": "robertvornkahl@gmail.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Designer / Producer",
+      "name": "Danielle Vornkahl",
+      "phone": "508-864-4561",
+      "email": "daniellevornkahl@gmail.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Martin Kittappa",
+      "name": null,
+      "phone": "626 524 5847",
+      "email": "mkittappa@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Gaffer",
+      "name": "Brian Hayes",
+      "phone": "6263169212",
+      "email": "brianedwardhayes@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set Decorator / Art Assist",
+      "name": "Lillie",
+      "phone": "323.632.3514",
+      "email": "Lillie.tangerine@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Assistant Camera",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "HMU",
+      "phone": "3362549686",
+      "email": "mollyagstevens@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Stage Rep / Waitress",
+      "phone": "4407855075",
+      "email": "leah@kevonstagestudios.com",
+      "call_time": "9:30 AM"
+    }
+  ],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "EXT. - Cafe Day",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Woman and Man Discuss their relationship.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Comapny Move inside the Studio",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "EXT - Street - Man and Woman walk through Fog at night (Transitioning to Black Box)",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Inserts and replays from scene 1 - Black Box",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Inserts and replays from scene 1 - Black Box",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Inserts and replays from scene 1 - Black Box",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Inserts and replays from scene 1 - Black Box",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "CAST",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Robyn Couch",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Jared Raymont",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "PRODUCTION NOTES",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "POSITION",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Director/ DP / Producer",
+      "call_time": "9:30A"
+    },
+    {
+      "character": null,
+      "talent_name": "Production Designer / Producer",
+      "call_time": "9:30A"
+    },
+    {
+      "character": null,
+      "talent_name": "Sound",
+      "call_time": "10:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Gaffer",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Set Decorator / Art Assist",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Assistant Camera",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "HMU",
+      "call_time": "10:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Stage Rep / Waitress",
+      "call_time": "9:30 AM"
+    }
+  ]
+}

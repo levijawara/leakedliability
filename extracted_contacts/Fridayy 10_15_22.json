@@ -1,0 +1,204 @@
+{
+  "source_file": "Fridayy 10:15:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "October 15, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "JakeTheShooter",
+      "phone": "978-675-6187",
+      "email": "jake@shooterco.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Chase Moran",
+      "phone": "302-299-7278",
+      "email": "business.chase18@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Michael Borgers",
+      "phone": "310-994-1889",
+      "email": "mikeyb.reelgoats@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Prod. Coordinator",
+      "name": "Darryl Milana",
+      "phone": null,
+      "email": "darrylmilana@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": null,
+      "email": "michaeljoseph2161@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Juan Pablo",
+      "name": "2nd AD",
+      "phone": null,
+      "email": "Juan.p.gonzalez3179@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "LEAD",
+      "name": "D.P.",
+      "phone": null,
+      "email": "grdgrd1229@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": null,
+      "email": "jewelpz@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": null,
+      "email": "nick.almanza.main@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "JIB",
+      "phone": null,
+      "email": "Gabrielkimpson@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "NAME",
+      "phone": null,
+      "email": "bigapplecasting.la@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Charles Schaefer",
+      "phone": null,
+      "email": "info@sparkliterentals.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Zachary Garcia",
+      "phone": null,
+      "email": "zachgarcia217@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Grip",
+      "name": "Caleb Csuzack",
+      "phone": null,
+      "email": "honoraryfilm@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Grip",
+      "name": "Aaron Rodriguez",
+      "phone": null,
+      "email": "Aaronrodriguez209@icloud.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Art Director",
+      "name": "Mikey Avina",
+      "phone": null,
+      "email": "Mikey_avina15@yahoo.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Art Assistant",
+      "name": "Jesus Alvarado",
+      "phone": null,
+      "email": "alvarado_jesus77@yahoo.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Makeup",
+      "name": "Alyssa Sawan",
+      "phone": null,
+      "email": "alyssa.makeuphabibi@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Key PA",
+      "name": "TILLY",
+      "phone": null,
+      "email": "mjdattilio22@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Roakii",
+      "phone": null,
+      "email": "roakiimusic@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Location 2",
+      "name": "BTS",
+      "phone": null,
+      "email": "reroutedmusic@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "FPV Drone",
+      "phone": null,
+      "email": "nwesterhout@chapman.edu",
+      "call_time": "1:00 - 2:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Manager Edgar",
+      "phone": "978-675-6187",
+      "email": "Edgarcutino@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,252 @@
+{
+  "source_file": "HP 4:11:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "APRIL 11th, 2024",
+    "production_company": "YORK Productions EVERYONE MUST PARK IN THE CREW PARKING LOT EXCEPT PRE-",
+    "day_info": "DAY 1 OF 2"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Director / DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Line Producer",
+      "name": "Jessika Yoshikawa",
+      "phone": "347-451-7100",
+      "email": "jessikayoshikawa@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Senior Content Producer",
+      "name": "Danielle Knight",
+      "phone": "201-238-5310",
+      "email": "danielle.knight@egplusww.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Production Supervisor",
+      "name": "Stefanie Bockenstette",
+      "phone": "586-243-4097",
+      "email": "stefaniejorge7@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "2ND AC",
+      "name": "Jewel Perez",
+      "phone": "424-400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": "DIT",
+      "name": "Kalen Wolf",
+      "phone": "773-225-5035",
+      "email": "kalenwjackson@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "GAFFER",
+      "name": "Jorge Hernandez",
+      "phone": "714-686-5657",
+      "email": "Jorge@glowingambers.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BB ELECTRIC",
+      "phone": "703-628-0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": "7:05 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "3rd ELECTRIC",
+      "phone": null,
+      "email": "daniel@kreativartists.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "GRIP NAME PHONE EMAIL CALL OUT",
+      "name": "Extra - Roomate",
+      "phone": null,
+      "email": "melissa@creativetalentus.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "KEY GRIP",
+      "name": "Mike Long",
+      "phone": "603-548-2071",
+      "email": "mikellong.la@gmail.com",
+      "call_time": "7:05 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PROD DESIGNER",
+      "name": "Kayla Whitner",
+      "phone": "404-754-7714",
+      "email": "Artworkwhit@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "ART",
+      "role": "ART DIRECTOR",
+      "name": "Paris Peterson",
+      "phone": "781-572-9058",
+      "email": "parispeterson1234@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "PROP MASTER",
+      "phone": "612-865-4286",
+      "email": "Haylie.harwood@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "SOUND MIXER",
+      "name": "Chuck Hendy",
+      "phone": "818-836-9076",
+      "email": "chuckhendy@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "SCRIPT SUPERVISOR",
+      "name": "Nicole Jolly",
+      "phone": "201-238-5310",
+      "email": "nicole.e.jolly@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "STYLIST",
+      "name": "Kate Longarzo",
+      "phone": "859-608-8948",
+      "email": "katelongarzo@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "HMU",
+      "phone": "626-689-3533",
+      "email": "Cynthia@cynthiaangelina.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "LOCATIONS / TRANSPORTATION",
+      "name": "Layout Board",
+      "phone": "818-447-3265",
+      "email": "ernando@supremelayout.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "LOCATION MGR",
+      "name": "Robert Newcombe",
+      "phone": "951-415-8645",
+      "email": "robnewcombe@sbcglobal.net",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "G&E",
+      "phone": "714-686-5657",
+      "email": "jorge@glowingambers.com",
+      "call_time": "7:05 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "PA - Office",
+      "name": "Autumn Palen",
+      "phone": "760-576-8668",
+      "email": "autumngpalen@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "PA - 15 Pass Van Crew",
+      "name": "Chris Rasmussen",
+      "phone": "310-926-0154",
+      "email": "cgrphoto1@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "PA - Prod Truck & Set",
+      "name": "James Arrington",
+      "phone": "301-471-2312",
+      "email": "jwainproduction@gmail.com",
+      "call_time": "6:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "PA - Set",
+      "name": "Mateo Caldas",
+      "phone": "617-435-8641",
+      "email": "mateocaldas24@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Hanon Rosenthal",
+      "phone": "586-243-4097",
+      "email": "hanon.rosenthal@egplusww.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rockit Foods",
+      "phone": "859-608-8948",
+      "email": "info@rockit-foods.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "B Productions",
+      "phone": "626-689-3533",
+      "email": "Brent@avebpv.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Supreme Layout",
+      "phone": "818-447-3265",
+      "email": "fernando@supremelayout.comFernando",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

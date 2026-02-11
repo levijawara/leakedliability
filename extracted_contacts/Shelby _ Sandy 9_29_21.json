@@ -1,0 +1,84 @@
+{
+  "source_file": "Shelby & Sandy 9:29:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "09/29/21",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "BELLA + CANVAS\n6670 Flotilla St\nLos Angeles, CA 90040\nap@bellacanvs.com",
+      "name": "742 Gladys Ave, Los Angeles, CA 90021",
+      "phone": null,
+      "email": "ap@bellacanvs.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "VP Marketing Summer Barry 818.324.3700 summer.barry@bellacanvas.com\nMarketing Director Tori Thomas 909.282.7319 victoria.thomas@bellacanvas.com\nProducer Alex Lendrum 562.569.1973 alex.lendrum@bellacanvas.com\nSocial Manager Kacee Silva kacee.silva@bellacanvas.com\nSocial Video Chris Simoniet chris.simoniet@bellacanvas.com\nVideo Content Manager Wes tate wes.tate@bellacanvas.com",
+      "name": null,
+      "phone": "818.324.3700",
+      "email": "summer.barry@bellacanvas.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BC Photo Richard Brooks richard@unionlosangeles.com\nBC Video Justin Cattran justin@jcattranworks.com",
+      "phone": null,
+      "email": "richard@unionlosangeles.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Tori Thomas",
+      "phone": "818.324.3700",
+      "email": "victoria.thomas@bellacanvas.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Alex Lendrum",
+      "phone": "909.282.7319",
+      "email": "alex.lendrum@bellacanvas.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kacee Silva",
+      "phone": "562.569.1973",
+      "email": "kacee.silva@bellacanvas.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Chris Simoniet",
+      "phone": null,
+      "email": "chris.simoniet@bellacanvas.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Manager Wes",
+      "phone": null,
+      "email": "wes.tate@bellacanvas.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Justin Cattran",
+      "phone": null,
+      "email": "justin@jcattranworks.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,412 @@
+{
+  "source_file": "John Legend 11:4:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "NOVEMBER 4th, 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Stephan Bielecki",
+      "phone": "845.943.0402",
+      "email": "stephan.bielecki@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Jasmine Rose",
+      "phone": "540.241.7336",
+      "email": "jasminerose1928@gmail.com",
+      "call_time": "7:30A"
+    },
+    {
+      "department": null,
+      "role": "Prod Coordinator",
+      "name": "Giulia Di Stravola",
+      "phone": "954.909.9313",
+      "email": "giulia.rdistravola@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1st AD",
+      "phone": "917.587.0636",
+      "email": "Evsalomon@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "2nd AD",
+      "phone": "626.731.2961",
+      "email": "francismarrion@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Peter Mosiman",
+      "phone": "773.870.5478",
+      "email": "peter.mosiman@gmail.com",
+      "call_time": "7:30A"
+    },
+    {
+      "department": null,
+      "role": "Steadicam Operator",
+      "name": "Jose Espinoza",
+      "phone": "323.947.5264",
+      "email": "Jmespinoza323@gmail.com",
+      "call_time": "7:30A"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Corey Bringas",
+      "phone": "858.705.4869",
+      "email": "coreybringas@gmail.com",
+      "call_time": "6:45A"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Natalie Fong",
+      "phone": "267.408.8900",
+      "email": "nfongfoto@gmail.com",
+      "call_time": "6:45A"
+    },
+    {
+      "department": null,
+      "role": "Media Manager",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "CONTACT",
+      "name": "Photographer",
+      "phone": "818.919.2512",
+      "email": "eric@ewillphoto.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BTS Photographer",
+      "phone": "323.816.7447",
+      "email": "mgul.7680@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "GRIP",
+      "name": "D&R Catering",
+      "phone": null,
+      "email": "d.r.catering11@gmail.com",
+      "call_time": "6:30A"
+    },
+    {
+      "department": null,
+      "role": "Key Grip",
+      "name": "JQ Silva",
+      "phone": "310.498.6813",
+      "email": "jqdasilva@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBG",
+      "phone": "423.260.5041",
+      "email": "HaydenJamesGrissom@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Grip",
+      "name": "Jose Caldera",
+      "phone": "323.282.9702",
+      "email": "Caldera2211@hotmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Grip",
+      "name": "Noah Markham",
+      "phone": "562.565.9422",
+      "email": "NoahMarkhamBreedon4865@Yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Grip",
+      "name": "Fernando Nevarez",
+      "phone": "310.383.2151",
+      "email": "fern1993@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Ardy Fatehi",
+      "phone": "773.369.5987",
+      "email": "ardy.fatehi@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "BBE",
+      "phone": "714.487.9523",
+      "email": "jdluu23@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "SLT (Board Op)",
+      "phone": "561.906.3126",
+      "email": "Danegerwig@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "SLT",
+      "phone": "812.457.7814",
+      "email": "Eddyscully@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "SLT",
+      "phone": "615.804.6071",
+      "email": "Phil.r.gardner@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "SLT",
+      "phone": "213.984.7502",
+      "email": "wrecksbrixton@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Francesca Palombo",
+      "phone": "845.235.5598",
+      "email": "francescampalombo@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Prop Master",
+      "phone": null,
+      "email": "sadiemoon27@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Props Asst 2",
+      "phone": null,
+      "email": "Sunshineacidart@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Decorator",
+      "phone": "818.530.6416",
+      "email": "info@ginacanavan.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Leadman",
+      "name": "Patrick Justice",
+      "phone": null,
+      "email": "patrickorbenjamin@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Set Dresser / Driver",
+      "name": "Jason Valdez",
+      "phone": null,
+      "email": "brietyso@gmail.com",
+      "call_time": "6:30A"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Truck Set Dresser",
+      "phone": null,
+      "email": "DLewis.rsvp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "On Set Dresser",
+      "phone": null,
+      "email": "sm.dorsainvil@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Prop Assistant",
+      "name": "Lauren Dunn",
+      "phone": null,
+      "email": "lauren@laurentaylerdunn.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Pablo Castel de Oro",
+      "phone": null,
+      "email": "pablocdo13@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Logan Hursch",
+      "phone": null,
+      "email": "logan.hursh@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "HMU",
+      "phone": "626.826.4863",
+      "email": "ahmad_anoosha@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "HMU Assistant",
+      "name": "Jo Dizon",
+      "phone": "626.806.4745",
+      "email": "jodizonmua@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Stylist",
+      "name": "Ken Lawrence",
+      "phone": "805.368.2269",
+      "email": "kenlawstyle@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Stylist Assistant",
+      "name": "Sinai Robles",
+      "phone": "424.394.7092",
+      "email": "roblessinai28@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "VTR",
+      "phone": "805.705.2695",
+      "email": "bcphillis@gmail.com",
+      "call_time": "7:30A"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "TRUCK PA",
+      "name": "Marcel Sorza",
+      "phone": "646.645.0223",
+      "email": "marcelino.sorza@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA - AD",
+      "name": "Martin Nazario",
+      "phone": "787.414.4721",
+      "email": "antonio.nazario15@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Charlie Capp",
+      "phone": "310.526.1458",
+      "email": "charlescapp410@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Joel Montgomery",
+      "phone": "619.540.9085",
+      "email": "joeljargon@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Playback PA",
+      "name": "Brayden Alms",
+      "phone": "213.407.2549",
+      "email": "braydenalms@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Dante Cotto",
+      "phone": "717.430.7209",
+      "email": "d2rod88gamefly@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "MatMen Tech",
+      "phone": "661.673.3296",
+      "email": "nazdr22@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "CCO",
+      "phone": "818.510.2870",
+      "email": "chioranjulia@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Craft Services",
+      "name": "Itan Chavira",
+      "phone": "626.383.4211",
+      "email": "craftservicebros@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Gang Boss",
+      "phone": "310.871.9912",
+      "email": "lastunts@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

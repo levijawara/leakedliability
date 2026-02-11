@@ -1,0 +1,380 @@
+{
+  "source_file": "SingleCare 11:15:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 15, 2023",
+    "production_company": "The Immigrant Film, LLC Cloudy, with showers",
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Alessia Gatti",
+      "phone": "347.393.0484",
+      "email": "alessia@theboathouse.tv",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Production Manager",
+      "name": "Hannah Pomerans",
+      "phone": "818.300.7606",
+      "email": "hpomerans12@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "1st AD",
+      "phone": "(310) 463-4874",
+      "email": "SCARMEN@MAC.COM",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "2nd AD",
+      "phone": "(818) 807-8085",
+      "email": "shanedignum@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "2nd 2nd AD",
+      "phone": "310.420.7360",
+      "email": "JasonClarkAD@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Jesse Bronstein",
+      "phone": "917.297.9408",
+      "email": "bronsteinjesse@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Steadycam Operator",
+      "name": "Quaid C De Baca",
+      "phone": "949.412.7153",
+      "email": "quaidcdebaca@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424.400.1879",
+      "email": "dzemp99@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIT",
+      "name": "Sin Cohen",
+      "phone": "(415) 305-7749",
+      "email": "sin.cohen@me.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "John Moriarty",
+      "phone": "323.397.0847",
+      "email": "jmoriarty@mac.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Steven Martinez",
+      "name": "BBE",
+      "phone": "818-849-9020",
+      "email": "stevenmartinez52@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Osha Mattei",
+      "phone": "310-245-8023",
+      "email": "ohm.corp1@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Luis Gonzalez",
+      "phone": "(818) 434-9371",
+      "email": "Whomadeyoulook@gmail.Com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Archie Ciotti",
+      "phone": "914.830.5238",
+      "email": "acaliforniagrip@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BBG",
+      "phone": "661-400-5525",
+      "email": "ruffcogrip@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Michael Moeller",
+      "phone": "213.924.6567",
+      "email": "Map.callsheet@yahoo.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Programmer",
+      "phone": "719-233-8065",
+      "email": "hschroederphoto@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Set Designer",
+      "name": "Cristobal Valecillos",
+      "phone": "786.236.5086",
+      "email": "cristobalvale@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Coordinator",
+      "name": "Alex Gallo",
+      "phone": "424.303.0042",
+      "email": "alexgallorivas@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Lead Person",
+      "name": "Felipe Restrepo",
+      "phone": "818.915.6932",
+      "email": "Feliprest@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Decorator",
+      "phone": "323.453.4456",
+      "email": "isaranguren@icloud.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "818.640.7423",
+      "email": "annakasper63@yahoo.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "323.896.3286",
+      "email": "hstello96@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Lead Carpenter",
+      "name": "Agustin Baccani",
+      "phone": "818.747.5279",
+      "email": "baccaniagus@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Jacob Clark",
+      "name": "Carpenter",
+      "phone": "971.777.4330",
+      "email": "Clark.Jacob14@yahoo.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Graphic Designer",
+      "name": "Martha Corredor",
+      "phone": "818.519.8336",
+      "email": "tikamartha@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Mario Cruz",
+      "phone": "305.813.3832",
+      "email": "cruzmariob2017@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art PA",
+      "name": "Jason Tallon",
+      "phone": "802.282.7301",
+      "email": "jk.tallon@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "HMU",
+      "phone": "312.730.0723",
+      "email": "joan@heyjoangray.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Crafty",
+      "name": "HMU Assist",
+      "phone": "(949) 466-0429",
+      "email": "emilyderemo@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "HMU Assist",
+      "phone": "424.382.2923",
+      "email": "atlantakemsleyx@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Wardrobe Stylist",
+      "name": "Aaron Crosby",
+      "phone": "904.294.3454",
+      "email": "aaronm.crosby@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Wardrobe Assist",
+      "name": "Kelsey Charter",
+      "phone": "619.578.8184",
+      "email": "Kelsey.charter@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Sound Mixer",
+      "name": "Doug Pearson",
+      "phone": "219.545.4206",
+      "email": "doug@soundmixer.biz",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Boom Op",
+      "name": "Greg Gardner",
+      "phone": "(818) 331-8540",
+      "email": "g.gardnerla@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "VTR",
+      "phone": "323.658.7878",
+      "email": "morales2@pacbell.net",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Set Medic",
+      "name": "Paul Sklar",
+      "phone": "(818) 400-4950",
+      "email": "psklar@aol.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Craft Services",
+      "name": "Eva Scott",
+      "phone": "(310) 382-0319",
+      "email": "eva@simplybeautifulfood.com",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "Key Set PA",
+      "name": "Becca McGrath",
+      "phone": "818.336.0643",
+      "email": "beccamcgrath0102@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Jahmal White",
+      "phone": "857.492.6224",
+      "email": "jahmalw@ymail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Patrick Flood",
+      "phone": "920.253.9534",
+      "email": "floodpatrick83@gmail.com",
+      "call_time": "7:20 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PA",
+      "name": "Ashley Van Kampen",
+      "phone": "(715) 225-3351",
+      "email": "ashleynvankampen@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Katie Mason",
+      "phone": "904.303.8011",
+      "email": "kmason@theboathouse.tv",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Billie-Jo Buttner",
+      "phone": "424.400.1879",
+      "email": "billie@theboathouse.tv",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Fast Glass",
+      "phone": "312.730.0723",
+      "email": "cole@oldfastglass.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

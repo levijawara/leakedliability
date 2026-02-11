@@ -1,0 +1,52 @@
+{
+  "source_file": "Nakkia Gold 8:2:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCTION CONTACTS:\nAnissa Marie973.885.9894 anissa@visionbankfilms.com",
+      "name": null,
+      "phone": "973.885.9894",
+      "email": "anissa@visionbankfilms.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "EXECUTIVE PRODUCER",
+      "name": "BenMarc",
+      "phone": "310.591.0876",
+      "email": "benmarc@visionbankfilms.com",
+      "call_time": "1:30PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIRECTOR",
+      "name": "MDOTFORMAYOR",
+      "phone": "310.341.5286",
+      "email": "mdot4mayor@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "GAFFER",
+      "name": "Brett Karr",
+      "phone": "323.847.9579",
+      "email": "Brett@BrettKerr.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,196 @@
+{
+  "source_file": "Asake:Olamide 2:14:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "February 14, 2023",
+    "production_company": null,
+    "day_info": "Day 1 of 2"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Creative Director",
+      "name": "Jamila",
+      "phone": null,
+      "email": "jamilagimba@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Luke Gilbert",
+      "phone": "973-615-1804",
+      "email": "luke.gilbert33@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "UPM",
+      "phone": "818-569-9265",
+      "email": "tali@btstudios.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "214-232-1210",
+      "email": "cinemacowboys@gmail.com",
+      "call_time": "2:30 PM @ Loc 2"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadiam",
+      "phone": "818-770-6239",
+      "email": "Steadidon@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Drone",
+      "phone": "805-769-6188",
+      "email": "Mattjangaard8@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "VFX Sup.",
+      "phone": "847-217-0149",
+      "email": "josephasperber@gmail.com",
+      "call_time": "2:00 PM @ Loc 2"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Jordan Av-Tal",
+      "phone": "818-857-1210",
+      "email": "jordan.avtal@gmail.com",
+      "call_time": "12:00 PM @ Loc 2"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBE",
+      "phone": "818-720-0682",
+      "email": "Wesleyaharoni@gmail.com",
+      "call_time": "12:00 PM @ Loc 2"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Adam Schaeffer",
+      "phone": "617-894-9085",
+      "email": "adamschaffer617@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBG",
+      "phone": "623-237-2619",
+      "email": "Biggs.ricardo@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Swing",
+      "name": "Ilay Bargil",
+      "phone": "(818) 826-1140",
+      "email": "Zakenzik1@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Nick Delgado",
+      "phone": "909-910-7088",
+      "email": "artbydelgado@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key MUA",
+      "name": "Tilomai Hill",
+      "phone": "424-298-0334",
+      "email": "tiloxhill@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "Background Stylist",
+      "name": "Aunna Khyris",
+      "phone": "318-470-4710",
+      "email": "aunna81894@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "Background Stylist Asst",
+      "name": "Vanessa Arturet",
+      "phone": "(786) 426-5128",
+      "email": "vanessa@starvnartiststudio.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": "Background Stylist Asst",
+      "name": "Maddy Parker",
+      "phone": "253-569-5235",
+      "email": "madelynnparker@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant - Truck",
+      "name": "TJ Gormley",
+      "phone": "213-588-5577",
+      "email": "tjgormley13@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant - Set",
+      "name": "Nariessa Weatherall",
+      "phone": "703-498-7482",
+      "email": "nariessa.arianna@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant - AD",
+      "name": "James Sutherlin",
+      "phone": "985-773-8931",
+      "email": "Sutherlinjames13@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant - Set",
+      "name": "Rayoni Matos",
+      "phone": "617-913-1387",
+      "email": "rayonimatos@gmail.com",
+      "call_time": "8:30 AM"
+    }
+  ],
+  "talent": []
+}

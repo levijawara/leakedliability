@@ -1,0 +1,132 @@
+{
+  "source_file": "BankrolHayden 7:12:21 .pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "JULY 12 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "DP",
+      "name": "Trevor Dean",
+      "phone": "6193025215",
+      "email": "trevor@fym.agency",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Cam Op",
+      "phone": "6199902502",
+      "email": "jonny@fym.agency",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Cam Op Asst",
+      "phone": "6193183654",
+      "email": "gabe@fym.agency",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Levi Jawara",
+      "phone": "9043038011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BTS / Photo",
+      "phone": "6303920463",
+      "email": "colinmillermedia@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Audio Engineer",
+      "phone": "9495733484",
+      "email": "tylershieldsaudio@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Styling",
+      "phone": "4245277903",
+      "email": "justlinlynnstylingla@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Management / Producer",
+      "name": "Saaya Temori",
+      "phone": "8058072630",
+      "email": "saaya@emagen.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Management",
+      "phone": "8183240805",
+      "email": "jake@druzmedia.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Creative Director",
+      "name": "Blaise Railey",
+      "phone": "2029996911",
+      "email": "blaise.railey@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "A&R",
+      "phone": null,
+      "email": "Jordan.Marsh@atlanticrecords.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Publicist",
+      "phone": null,
+      "email": "fairley.mccaskill@atlanticrecords.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Product Manager",
+      "name": "Brian Dackowski",
+      "phone": null,
+      "email": "Brian.Dackowski@atlanticrecords.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "A&R",
+      "phone": null,
+      "email": "Jeff.Levin@atlanticrecords.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Artist Relations",
+      "name": "Andres Tardio",
+      "phone": "8188099853",
+      "email": "andres.tardio@genius.com",
+      "call_time": "2:30 PM"
+    }
+  ],
+  "talent": []
+}

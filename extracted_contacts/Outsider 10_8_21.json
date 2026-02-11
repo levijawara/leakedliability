@@ -1,0 +1,68 @@
+{
+  "source_file": "Outsider 10:8:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "Oct 8, 2021",
+    "production_company": null,
+    "day_info": "Day 1 of 2"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Tom Bliss\n18053009970 thblissjr@gmail.com",
+      "phone": "1805300997",
+      "email": "thblissjr@gmail.com",
+      "call_time": "1:00pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Lei Zhou\n18053381933 lzhoulei@gmail.com",
+      "phone": "1805338193",
+      "email": "lzhoulei@gmail.com",
+      "call_time": "1:00pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer\nDirector",
+      "name": "Jaclyn Amor\n13478795251 hello@jaclynamor.com",
+      "phone": "1347879525",
+      "email": "hello@jaclynamor.com",
+      "call_time": "1:00pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Co-Producer",
+      "name": "Ben Meredith\n19492926586\nbenmeredithdp@gmail.com",
+      "phone": "1949292658",
+      "email": "benmeredithdp@gmail.com",
+      "call_time": "1:00pm"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Co-Producer",
+      "name": "Jay Royal Steinau\n15136780443 jay.royal11@gmail.com",
+      "phone": "1513678044",
+      "email": "jay.royal11@gmail.com",
+      "call_time": "1:00pm"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara\nlojawara@gmail.com",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "1:00pm"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "Ga\u0000er",
+      "phone": null,
+      "email": "dbutton1107@yahoo.com",
+      "call_time": "1:00pm"
+    }
+  ],
+  "talent": []
+}

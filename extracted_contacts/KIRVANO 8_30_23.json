@@ -1,0 +1,300 @@
+{
+  "source_file": "KIRVANO 8:30:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 30, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Lopes",
+      "phone": "781-475-7018",
+      "email": "lopes@btstudios.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Executive Producer",
+      "name": "Galileo Mondol",
+      "phone": null,
+      "email": "galileo@btstudios.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Lex Dewart",
+      "phone": "617-710-4403",
+      "email": "lex@btstudios.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Rayoni Matos",
+      "phone": "617-913-1387",
+      "email": "Rayoni@btstudios.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Production Coordinator",
+      "name": "Kristopher Taveras",
+      "phone": "646-704-2636",
+      "email": "Krispy.pro@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Office Background",
+      "name": "BTS",
+      "phone": "213-507-4706",
+      "email": "Isaak.morin@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Office Background",
+      "name": "Antoinette Abban",
+      "phone": "917-805-8684",
+      "email": "antoinetteabbn@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Office Background",
+      "name": "Anthony Pie",
+      "phone": "310-779-9336",
+      "email": "rahim.postal@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Office Background",
+      "name": "Gary Everett",
+      "phone": "323-369-5428",
+      "email": "geinvester@yahoo.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Office Background",
+      "name": "TITLE",
+      "phone": "310-456-5454",
+      "email": "constancebrenner@yahoo.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424-400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "3:30 PM"
+    },
+    {
+      "department": null,
+      "role": "Steadi-Cam Operator",
+      "name": "Travis Plante",
+      "phone": "(787) 241-1138",
+      "email": "tplante00@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": null,
+      "role": "GRIP & ELECTRIC",
+      "name": "Casting Director",
+      "phone": "813-690-1090",
+      "email": "apecastings@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Gaffer",
+      "name": "Jordan Avtal",
+      "phone": "818-857-1210",
+      "email": "Jordan.avtal@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Wesley Aharoni",
+      "phone": "(818) 720-0682",
+      "email": "Wesleyaharoni@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BBE",
+      "phone": "424-772-9801",
+      "email": "contact.ryansilver@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Key Grip",
+      "name": "Spenser Adelstein",
+      "phone": "860-575-0027",
+      "email": "Spenser.Adelstein@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Paramount Picture Car",
+      "name": "BBG",
+      "phone": "209-568-7074",
+      "email": "mpurkis4@hotmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Grip",
+      "name": "Ricardo Biggs",
+      "phone": "623-237-2619",
+      "email": "Biggs.ricardo@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Andrew Caso",
+      "phone": "520-789-6780",
+      "email": "andrewjcaso@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Devin Leary",
+      "phone": "401-744-4037",
+      "email": "devinleary95@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Assist",
+      "name": "Trevor Ritman",
+      "phone": "(908)230-6166",
+      "email": "trittman@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "PA",
+      "name": "Kim Rocha",
+      "phone": "541-901-2823",
+      "email": "kimlopesrocha99@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "PA",
+      "name": "Julio Catalana",
+      "phone": "818) 966-1540",
+      "email": "julio.c.catalan2@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "PA",
+      "name": "Quinn",
+      "phone": "(770) 639-6974",
+      "email": "quinnbiddle@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "HMU",
+      "phone": "626-712-3031",
+      "email": "Sandramarciep@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "HMU Assist",
+      "phone": "805-815-8912",
+      "email": "eddiejohnhair@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Pablo Humphrey",
+      "phone": "617-710-4403",
+      "email": "paphrey1@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Barni Rothman",
+      "phone": "617-913-1387",
+      "email": "barnir@earthlink.net",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Marcus Palmer",
+      "phone": "646-704-2636",
+      "email": "marcuspalmer101@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ian Heath",
+      "phone": "213-507-4706",
+      "email": "ianedheath@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Mario Ponce",
+      "phone": "845-240-3677",
+      "email": "dafutureisurs@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Veronica Shelby",
+      "phone": "904-303-8011",
+      "email": "veronica.j.shelby@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Car Nate",
+      "phone": "209-568-7074",
+      "email": "nate@paramountpicturecars.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,124 @@
+{
+  "source_file": "Roddy Rich (pick-up) 6:8:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "June 8, 2024",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Kajal",
+      "phone": null,
+      "email": "jmlmullins@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "EP & Producer",
+      "name": "Luke Gilbert",
+      "phone": "973-615-1804",
+      "email": "luke.gilbert33@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Orlando De La Cruz",
+      "phone": "646-597-1690",
+      "email": "nocrdntlsmedia@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director of Photography",
+      "name": "Brian Beckwith",
+      "phone": "845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Cinemacowbo",
+      "name": "1st AD",
+      "phone": "(214) 232-1210",
+      "email": "ys@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Editor / DIT",
+      "name": "Riley Lattanza",
+      "phone": "310-525-0963",
+      "email": "lattanzariley@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "G&E",
+      "phone": "619-607-9300",
+      "email": "alyssa@bling-ting.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": "(714) 686-5657",
+      "email": "Jorge@glowingambers.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Mike Long",
+      "phone": "(603) 548-2071",
+      "email": "Mikellong.la@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Art Director",
+      "name": "Mitchell Dillon",
+      "phone": "330-413-5952",
+      "email": "mitchdillon1@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Phil Batiste",
+      "phone": "(251) 235 0088",
+      "email": "Davisphil18@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Robert Blair",
+      "phone": "(904) 303-8011",
+      "email": "Cinemacowboys@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Donte Angelo",
+      "phone": "310-525-0963",
+      "email": "bookdonteangelo@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,47 @@
+{
+  "source_file": "FRAGMENT 2:27:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "February 27, 2022",
+    "production_company": "Thirsty Whale Productions Sunday, February 27, 2022",
+    "day_info": "Day 10 of 10"
+  },
+  "crew": [],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "Michelle",
+      "call_time": "1:30P"
+    },
+    {
+      "character": null,
+      "talent_name": "Adam",
+      "call_time": "2:00P"
+    },
+    {
+      "character": null,
+      "talent_name": "Woman",
+      "call_time": "1:30P"
+    },
+    {
+      "character": null,
+      "talent_name": "Man",
+      "call_time": "1:30P"
+    },
+    {
+      "character": null,
+      "talent_name": "Goddess",
+      "call_time": "1:30P"
+    },
+    {
+      "character": null,
+      "talent_name": "God",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Eve",
+      "call_time": null
+    }
+  ]
+}

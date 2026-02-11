@@ -1,0 +1,532 @@
+{
+  "source_file": "Covergirl 3:1:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "March 1, 2024",
+    "production_company": null,
+    "day_info": "Day 4 of 4"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Execu\u0000ve Producer",
+      "name": "Patricia Whaley",
+      "phone": null,
+      "email": "patricia@nowheelies.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Kelli Abraham",
+      "phone": "310.913.1895",
+      "email": "kellia1@me.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Produc\u0000on Manager",
+      "name": "Brian Buckland",
+      "phone": "714.309.8903",
+      "email": "bucklandbrian@yahoo.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Produc\u0000on Coordinator",
+      "name": "Pia Vicosio- Vila",
+      "phone": "978.394.6185",
+      "email": "pia.isabell@gmx.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Paul Treacy",
+      "name": "Senior Art Director",
+      "phone": "917.251.3669",
+      "email": "paultreacyie@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "KNOLL TEAM",
+      "phone": "917-683-4643",
+      "email": "mary_santangelo@cotyinc.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Photographer & Director",
+      "name": "Tory Rust",
+      "phone": "718-523-4759",
+      "email": "tory@toryrust.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dir. of Photography",
+      "phone": "424.302.6885",
+      "email": "rocruz@me.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "Amanda Li Page",
+      "name": "1st Asst/Ligh\u0000ng Dir",
+      "phone": "323.369.7677",
+      "email": "smgudmunson@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "2nd Assistant",
+      "name": "Cornell Agee",
+      "phone": "661.713.9725",
+      "email": "c.agee22jr@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "3rd Assistant",
+      "name": "Kevin Gray",
+      "phone": "310.729.2093",
+      "email": "gray.ks@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "India Pa\u0000erson",
+      "name": "DigiTech",
+      "phone": "415.845.3983",
+      "email": "dodge.renee7@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Bre\u0000 Graybill",
+      "phone": "717.672.4964",
+      "email": "gcine@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Kelsey Juddo",
+      "phone": "248.561.5265",
+      "email": "kelseyjuddo@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "DIT",
+      "name": "Ben Iker",
+      "phone": "818.635.3319",
+      "email": "Ben.Iker2@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "MACRO TEAM",
+      "name": "Rare Breeds",
+      "phone": "310.765.2590",
+      "email": "arron@rarebreedswest.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Photographer & Director",
+      "name": "Clara Goldfarb",
+      "phone": "781.856.5086",
+      "email": "claragoldfarb@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Dir. of Photography",
+      "phone": "646.824.1642",
+      "email": "lukaszdp@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levy Ojawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "DIT",
+      "name": "Gavin White",
+      "phone": "720.217.9510",
+      "email": "Gavinglaze.dit@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": "Gaffer",
+      "name": "Rob Padilla",
+      "phone": "760.562.0589",
+      "email": "rpadilla644@gmail.com",
+      "call_time": "8:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Hard Drives",
+      "phone": "818.450.1122",
+      "email": "richardk@filmtools.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Stylist",
+      "name": "Liz Cresci",
+      "phone": "212.920.1887",
+      "email": "liz@lizcresci.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Asst.",
+      "name": "Phoebe O’Connell",
+      "phone": "323.336.4096",
+      "email": "Phoebe.rae.oconnell@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Wardrobe Asst.",
+      "name": "Peyton Regan",
+      "phone": "323.770.4363",
+      "email": "reganpeyton@icloud.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Make Up Ar\u0000st",
+      "phone": "917.671.8022",
+      "email": "nicolas@streeters.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Make Up Asst.",
+      "phone": "626.905.9561",
+      "email": "book@makeupmilakwan.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Make Up Ar\u0000st",
+      "phone": "469.471.6885",
+      "email": "ProSupplies@quixote.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Make Up Asst.",
+      "phone": "323.708.3038",
+      "email": "frankie@frankiesegura.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Hair Stylist",
+      "name": "Ayae Yamamoto",
+      "phone": "347.705.9538",
+      "email": "ayae1208@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Hair Asst.",
+      "name": "Yuma",
+      "phone": "747.250.9415",
+      "email": "yuma.hmua@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Hair Stylist",
+      "name": "Des\u0000ny Venice",
+      "phone": "213.332.9988",
+      "email": "desvenice@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Hair Asst.",
+      "name": "Daniel",
+      "phone": "323.802.5853",
+      "email": "merakibydan@gmail.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": null,
+      "role": "Rachel Messick",
+      "name": "Manicurist",
+      "phone": "818 450 4692",
+      "email": "Rachel@RachelMessick.com",
+      "call_time": "7:15 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dec/Props",
+      "phone": "310.663.9163",
+      "email": "bruceshibley@mac.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Asst",
+      "name": "Paul Gubser",
+      "phone": "808.345.9246",
+      "email": "letsjustpretend@gmail.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Asst.",
+      "name": "Brandon Jove",
+      "phone": "661.433.6619",
+      "email": "brandon.jove@yahoo.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "LOCATIONS",
+      "role": null,
+      "name": "Malibu Modern Garden Loca\u0000on Rep",
+      "phone": "562.457.9386",
+      "email": "sam_phou@yahoo.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA Cube Driver",
+      "name": "Jonathan Jové",
+      "phone": "661.839.9620",
+      "email": "jjove75@icloud.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Eric McBrearty",
+      "phone": "201.394.0360",
+      "email": "eric.mcbrearty@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Christopher Silver",
+      "phone": "310.406.7449",
+      "email": "chris_silverm@aol.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Serena O'Connor",
+      "phone": "818.914.1966",
+      "email": "serenao@mac.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Riley Aronson",
+      "phone": "310.279.8866",
+      "email": "Rileyaronson1@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Dennis Crookes",
+      "phone": "213.804.3879",
+      "email": "crookesdennis@gmail.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Thomas Pierce Aiellos",
+      "phone": "201.250.0251",
+      "email": "Bookingthomaspierce@yahoo.com",
+      "call_time": "7:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Claire Laine",
+      "phone": "310.913.1895",
+      "email": "claire_laine@cotyinc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jodi Ulster",
+      "phone": "310.913.1895",
+      "email": "jodi_ulster@cotyinc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kaitlin Pearse",
+      "phone": "714.309.8903",
+      "email": "kaitlin_pearse@cotyinc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Mackenzie Hickey",
+      "phone": "978.394.6185",
+      "email": "mackenzie_hickey@cotyinc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Carly Hayes",
+      "phone": "917.251.3669",
+      "email": "carly_hayes@cotyinc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "ConteEvridiki Ladas",
+      "phone": "718-523-4759",
+      "email": "Evridiki_Ladas@cotyinc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Schmidli Backdrops",
+      "phone": "818.635.3319",
+      "email": "backdrops@schmidli.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "City Palate",
+      "phone": "781.856.5086",
+      "email": "hello@citypalatecatering.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Digital Inc",
+      "phone": "646.824.1642",
+      "email": "dodgerenee7@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rental Group",
+      "phone": "904.303.8011",
+      "email": "invoice@apacherentalgroup.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Cinema Cipher",
+      "phone": "760.562.0589",
+      "email": "cinemacypher@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Insurance Broke",
+      "phone": "212.920.1887",
+      "email": "mlawford@chesterfieldgroup.co.uk",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Nils Carson",
+      "phone": "323.336.4096",
+      "email": "nilscarson@mac.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Team Companies",
+      "phone": "323.770.4363",
+      "email": "info@theteamcompanies.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Film Office",
+      "phone": "917.671.8022",
+      "email": "filming@sws-inc.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Plus Bins",
+      "phone": "626.905.9561",
+      "email": "aplusbins@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Rentals STEELDECK",
+      "phone": "323.708.3038",
+      "email": "rentals@steeldeck.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Milk Studios",
+      "phone": "347.705.9538",
+      "email": "EQUIPMENT-LA@MILKSTUDIOS.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Trucks Galpin",
+      "phone": "747.250.9415",
+      "email": "gsr@galpin.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "N Roll-Off",
+      "phone": "213.332.9988",
+      "email": "werecyc@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

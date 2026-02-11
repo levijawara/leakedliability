@@ -1,0 +1,196 @@
+{
+  "source_file": "LOGIC 3:21:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "MARCH 21st 2024",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "PRODUCER",
+      "name": "Michael Newman",
+      "phone": "(248) 818-0475",
+      "email": "newmanmovies@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCTION MANAGER",
+      "name": "Daniel Rodger",
+      "phone": "(407) 460-2708",
+      "email": "djrodger13@gmail.com",
+      "call_time": "1:45 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "1st AD",
+      "phone": "(909) 609-0618",
+      "email": "giovannaltrujillo@gmail.com",
+      "call_time": "1:45 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Juan Pablo Gonzales",
+      "name": "2ND AD",
+      "phone": "(714) 603-5238",
+      "email": "Juan.p.gonzalez3179@gmail.com",
+      "call_time": "1:45 PM"
+    },
+    {
+      "department": "ART",
+      "role": "KEY PA",
+      "name": "Donte Mack",
+      "phone": null,
+      "email": "twinmusic909@gmail.com",
+      "call_time": "1:10 PM"
+    },
+    {
+      "department": "ART",
+      "role": "DIRECTOR OF PHOTOGRAPHY",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "BBTHEDP@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "2:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Fabian Pacheco",
+      "name": "BTS",
+      "phone": "551) 358-6234",
+      "email": "fabian.pacheco93@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Franco Picache",
+      "name": "BTS (VFX)",
+      "phone": "(650) 922-9344",
+      "email": "fpicache@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Saint Pablo",
+      "name": "CLT",
+      "phone": "5623916646",
+      "email": "pablo@artistespectre.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "ACLT",
+      "name": "Khashi Tahamtan",
+      "phone": "(213) 269-9431",
+      "email": "Shoot4perf@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "SLT",
+      "phone": "(562) 440 1837",
+      "email": "Josueeli11@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "SLT",
+      "phone": "310 977 3649",
+      "email": "EgilssonCole@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Paul Phou",
+      "name": "LCP",
+      "phone": "(401) 692-2422",
+      "email": "pauljphou@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "KEY GRIP",
+      "name": "Eddie Ruiz",
+      "phone": "(818)370-7913",
+      "email": "Eddie84ruiz@yahoo.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "OPS MANAGER",
+      "name": "BBG",
+      "phone": "(818) 861-4419",
+      "email": "acontreras542@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "GRIP",
+      "name": "David Martinez",
+      "phone": "(818) 394-5824",
+      "email": "martinezdavidws@yahoo.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Lee Levy",
+      "phone": "(347) 414-3214",
+      "email": "LeeLevy914@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "COSTUMER",
+      "phone": "(630) 730-9414",
+      "email": "styledbyrumsha@gmail.com",
+      "call_time": "11:55 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "WARDROBE ASSISTANT",
+      "name": "Destiny Valentine",
+      "phone": "626.377.5928",
+      "email": "Destinyvalentine222@gmail.com",
+      "call_time": "8:20 PM"
+    },
+    {
+      "department": "SOUND",
+      "role": "SOUND MIXER",
+      "name": "Blake Christian",
+      "phone": "714.290.4070",
+      "email": "blake.christian7@gmail.com",
+      "call_time": "10:45 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": "AUDIO ASSISTANT",
+      "name": "Lilo Picaso",
+      "phone": "909.525.2648",
+      "email": "leannamareep@gmail.com",
+      "call_time": "10:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Saint Pablo",
+      "phone": "5623916646",
+      "email": "5623916646pablo@artistespectre.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

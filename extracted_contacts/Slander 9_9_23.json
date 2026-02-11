@@ -1,0 +1,52 @@
+{
+  "source_file": "Slander 9:9:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Producer/Team Lead",
+      "name": "Jonathan Marroquin",
+      "phone": "(619) 990-2502",
+      "email": "jonny@fym.agency",
+      "call_time": "2:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Peter Dons",
+      "phone": "(267) 566-6948",
+      "email": "donslens@gmail.com",
+      "call_time": "2:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Sam Leabo",
+      "phone": "(707) 478-7659",
+      "email": "Sam.leabo@gmail.com",
+      "call_time": "2:30 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC Swing",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "2:30 AM"
+    },
+    {
+      "department": null,
+      "role": "Editor / DIT",
+      "name": "Scott Postl",
+      "phone": "(586) 216-1820",
+      "email": "wavy@scottpostl.com",
+      "call_time": "10:00 PM"
+    }
+  ],
+  "talent": []
+}

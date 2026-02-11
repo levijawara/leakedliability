@@ -1,0 +1,101 @@
+{
+  "source_file": "The Stairwell 8:20:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": "PRODUCTIONCOMPANY BELEntertainmentCo. BREAKFAST N/A",
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PLEASEREPORTANYNAMECHANGES/ADDITIONS/DELETIONSTO:christian@rosarx.com",
+      "name": null,
+      "phone": null,
+      "email": "christian@rosarx.com",
+      "call_time": null
+    }
+  ],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "INT.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Thecrewdiscussestheirescapeplan.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "INT.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Showdownfightsequence.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "INT.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Soldiersrundownthestairs.",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "WRAP",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "BlakeLeon",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "JaxBuresh",
+      "call_time": "6:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "SadeKatarina",
+      "call_time": "6:15AM"
+    },
+    {
+      "character": null,
+      "talent_name": "LarryHankin",
+      "call_time": "6:15AM"
+    },
+    {
+      "character": null,
+      "talent_name": "MichaelPare",
+      "call_time": "7:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "AshT",
+      "call_time": "7:00AM"
+    },
+    {
+      "character": null,
+      "talent_name": "QTY",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "GUARDS",
+      "call_time": "6:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "LOSTSOULS",
+      "call_time": "6:00AM"
+    }
+  ]
+}

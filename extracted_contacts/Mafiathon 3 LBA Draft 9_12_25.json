@@ -1,0 +1,540 @@
+{
+  "source_file": "Mafiathon 3 LBA Draft 9:12:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "September 12, 2025",
+    "production_company": null,
+    "day_info": "DAY 2 OF 3"
+  },
+  "crew": [
+    {
+      "department": "CATERING",
+      "role": "Director",
+      "name": "Henry Wolf",
+      "phone": "424-744-0710",
+      "email": "auzryno@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CATERING",
+      "role": "Executive Producer",
+      "name": "Hoss Soodie",
+      "phone": "818-224-8774",
+      "email": "d.r.catering11@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CATERING",
+      "role": "Producer",
+      "name": "Max Acrish",
+      "phone": "914-841-0914",
+      "email": "Max@acrish.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CATERING",
+      "role": "Producer",
+      "name": "Galileo Mondol",
+      "phone": "617-981-1129",
+      "email": "Galileo@btstudios.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CATERING",
+      "role": "Production Manager",
+      "name": "Natalle Jastrow",
+      "phone": "818-461-2075",
+      "email": "natallejastrow@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CATERING",
+      "role": "Production Manager",
+      "name": "Zylo Hefferan",
+      "phone": "661-394-0519",
+      "email": "Z.heff7@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CATERING",
+      "role": null,
+      "name": "1st AD",
+      "phone": "214-232-1210",
+      "email": "cinemacowboys@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CATERING",
+      "role": null,
+      "name": "2nd AD",
+      "phone": "404-704-2898",
+      "email": "BrenaePerkins@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CATERING",
+      "role": null,
+      "name": "2nd 2nd",
+      "phone": "818-256-7082",
+      "email": "ariellenzolezzi@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Matt Liang",
+      "phone": "646-339-8418",
+      "email": "mattliangdp@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Draven Kleer",
+      "phone": "678-525-9159",
+      "email": "Kleerdraven@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "LOJAWARA@GMAIL.COM",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Juan Chavez",
+      "phone": "626-409-6440",
+      "email": "juan_p_chavez@yahoo.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Chris Powers",
+      "phone": "530-470-3252",
+      "email": "chris.powers530@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Carolina Thompson",
+      "phone": "917-929-4562",
+      "email": "carolinapthompson@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Walter Watkins",
+      "phone": "619-804-1780",
+      "email": "Walterwatkinspro@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cam Op",
+      "phone": "617-899-2080",
+      "email": "bridgevisionfilms@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cam Op",
+      "phone": "541-901-2823",
+      "email": "kimlopesrocha99@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Security Gaurd",
+      "name": "Jib Op",
+      "phone": "661-578-4173",
+      "email": "Awoulfebova@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Security Gaurd",
+      "name": "Cam Op",
+      "phone": "508-596-6983",
+      "email": "officialgabrielaraujo@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cam Op",
+      "phone": null,
+      "email": "limitlessproductions@mac.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "415-680-5546",
+      "email": "garetjs@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Ray Mysterio",
+      "phone": "951-965-9197",
+      "email": "95adrianuribe@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Kai Cenat Agent",
+      "phone": "610-291-1567",
+      "email": "benfranczuszki@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "TITLE",
+      "phone": "213-800-3144",
+      "email": "greatmetaphors@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Albert Gonzalez",
+      "phone": "323-397-0433",
+      "email": "Albert@camlightingandgrip.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBE",
+      "phone": "818-822-1140",
+      "email": "Jims8a@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Board Op",
+      "phone": "727-251-0729",
+      "email": "justinsadlerfilm@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP",
+      "name": "Samuel Gold Jr.",
+      "phone": "323-218-9678",
+      "email": "valentinowilsonnyc@icloud.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Gerardo Paz",
+      "phone": "661-524-3802",
+      "email": "g.paz2395@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBG",
+      "phone": "818-207-1259",
+      "email": "Kylerimkunas24@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Lucca Liberal",
+      "phone": "321-408-0973",
+      "email": "luccatt.liberal@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "323-519-1082",
+      "email": "Monkserrellfreed@yahoo.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "321-468-3032",
+      "email": "liberaljoao11@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Set Dresser",
+      "phone": "321-468-3033",
+      "email": "fliberal14@gmail.com",
+      "call_time": "1:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Client Production Assistant",
+      "name": "Josey De Palo",
+      "phone": "469-260-0618",
+      "email": "jjdepalo@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Lucas Houser",
+      "phone": "904-402-2212",
+      "email": "lucasjameshouser@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Cameron Mack",
+      "phone": "310-590-0777",
+      "email": "cameronmack.scm@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Matthew Mack",
+      "phone": "310-590-6012",
+      "email": "matthewjmackusa@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Jay Angelo",
+      "phone": "206-833-1126",
+      "email": "Jayangelomgmt@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Jillian Helm",
+      "phone": "513-532-3044",
+      "email": "jillianhelm21@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Assistant",
+      "name": "Ziortza Morales",
+      "phone": "310-740-2319",
+      "email": "zebrafilmproductions@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "LED Tech",
+      "phone": null,
+      "email": "cosmosslv@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Tech Director",
+      "name": "Tim Guerrero",
+      "phone": "909-702-0248",
+      "email": "tim@thevideoguys.net",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Stream Technician / Stream",
+      "phone": "909-921-2795",
+      "email": "Zaqguerrero@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Art",
+      "name": "LED Graphics",
+      "phone": "909-904-3317",
+      "email": "victoria0quiroga@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Tyler Scott",
+      "phone": "909-908-2918",
+      "email": "thevirtuatyler@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dash Maguire",
+      "phone": "470-433-6594",
+      "email": "Staypuft1@icloud.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Cameron Anderson",
+      "phone": "909-231-1259",
+      "email": "andersoncamren@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Location Quixote",
+      "phone": "818-224-8774",
+      "email": "nova.stage@quixote.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Director SYMM",
+      "phone": "646-339-8418",
+      "email": "contactsymm54@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "APE Casting",
+      "phone": "678-525-9159",
+      "email": "april@apecastings.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Ryder Gava",
+      "phone": "904-303-8011",
+      "email": "gavaacting@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Magnus Young",
+      "phone": "626-409-6440",
+      "email": "info@reynaday.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Platinum Dove",
+      "phone": "530-470-3252",
+      "email": "rick@pakkard.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Bian Love",
+      "phone": "917-929-4562",
+      "email": "niceandneatbraids@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jones True",
+      "phone": "619-804-1780",
+      "email": "queenheff410@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Laguna Eselin",
+      "phone": "617-899-2080",
+      "email": "Yoyopitu@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Timofei G",
+      "phone": "541-901-2823",
+      "email": "Timgstar9@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lionel Washington",
+      "phone": "661-578-4173",
+      "email": "lionelwashingtonpro@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jyn Gittens",
+      "phone": "508-596-6983",
+      "email": "jyngittens@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Wreslter Brujito",
+      "phone": "415-680-5546",
+      "email": "brujitowrestler@gmailb.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Daniel Avila",
+      "phone": "415-680-5546",
+      "email": "dosukoimoose@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "JD Witherspoon",
+      "phone": "323-397-0433",
+      "email": "jdwbizz@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Bubba Jones",
+      "phone": "818-822-1140",
+      "email": "Chdavis2266@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Avery Friedman",
+      "phone": "727-251-0729",
+      "email": "averyf2483@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

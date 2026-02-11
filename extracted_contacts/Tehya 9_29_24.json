@@ -1,0 +1,28 @@
+{
+  "source_file": "Tehya 9:29:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "September 29, 2024",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "HAIR",
+      "role": "Hair Stylist",
+      "name": "Zuzu",
+      "phone": null,
+      "email": "ahmetova44@mail.ru",
+      "call_time": "5:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Boy Cast 2",
+      "phone": null,
+      "email": "tahjkeeton@icloud.com",
+      "call_time": "4:30 PM"
+    }
+  ],
+  "talent": []
+}

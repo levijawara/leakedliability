@@ -1,0 +1,124 @@
+{
+  "source_file": "HUNXHO 1:22:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "SockX",
+      "phone": "407-393-0364",
+      "email": "taylour@visionbankfilms.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "909 351 9877",
+      "email": "directedxgotti@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Luay Hussin",
+      "phone": "(909) 351-9877",
+      "email": "dendrobateslondon@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Andrea Brown",
+      "phone": "909 997 8026",
+      "email": "andreajb2000@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845 240 3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904 303 8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Evan Croker",
+      "phone": "805 204 7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Key Grip",
+      "name": "Samuel Diaz",
+      "phone": "916 402 6391",
+      "email": "samueldiaz019@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Swing",
+      "name": "Conner Vickers",
+      "phone": "707 294 8008",
+      "email": "mail@connervickers.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Mya Hudson",
+      "phone": "971 330 7780",
+      "email": "123myah@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BTS",
+      "phone": "951 252 4124",
+      "email": "andylopezmail@mail.com",
+      "call_time": "11:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Female Royal",
+      "phone": "909 997 8026",
+      "email": "millticketcasting@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Tashana Ventura",
+      "phone": "845 240 3677",
+      "email": "ventura@threehundred.biz",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lucas Prevost",
+      "phone": "904 303 8011",
+      "email": "lucasprevost@outlook.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,380 @@
+{
+  "source_file": "Chiquis 9:3:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "September 3, 2025",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "LUPITA",
+      "phone": null,
+      "email": "Jennifer.rocha1234@yahoo.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "FERNANDO",
+      "phone": null,
+      "email": "texisvicente9@yahoo.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "RAUL",
+      "phone": null,
+      "email": "grdemolitioninc@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Jeffrey",
+      "phone": null,
+      "email": "jefferyking.book@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "George",
+      "phone": null,
+      "email": "georgeanaya01@yahoo.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Armando",
+      "phone": null,
+      "email": "armandogarciaa@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Mat",
+      "phone": null,
+      "email": "mavicska@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Tracery",
+      "phone": null,
+      "email": "tracery90@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Carlos",
+      "phone": null,
+      "email": "cv9788997@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Deshell",
+      "phone": null,
+      "email": "Deshell.businesss@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Valerie",
+      "phone": null,
+      "email": "Velascov97@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Rachel",
+      "phone": null,
+      "email": "Racheljovonne@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Angelica",
+      "phone": null,
+      "email": "amarte.querubin@gmail.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Sophia",
+      "phone": null,
+      "email": "sophiaasoul@yahoo.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY EXTRA",
+      "name": "Jesus",
+      "phone": null,
+      "email": "Jesuslara2003@yahoo.com",
+      "call_time": "5:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "Tyler Perez",
+      "phone": "(281) 614-9091",
+      "email": "tylertperez@555productions.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER /1ST AD",
+      "name": "Ryan Silver",
+      "phone": "(424) 772-9801",
+      "email": "ryansilver@555productions.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "2nd AD",
+      "phone": "(802) 829-2732",
+      "email": "veralorenzoofficial@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "ASSOC PROD",
+      "phone": "(310) 404-1966",
+      "email": "noemivalvidia@yahoo.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIRECTOR",
+      "name": "Carlos Baez",
+      "phone": "(562) 314-8977",
+      "email": "carlos@bawwse.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIRECTOR",
+      "name": "Emilio Sanchez",
+      "phone": "(310) 503-3561",
+      "email": "Info@emiliosanchez.io",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ARTIST MGMT",
+      "name": "Richard",
+      "phone": null,
+      "email": "rbull@prajinparlay.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ARTIST ASST",
+      "name": "Kim Gonzalez",
+      "phone": "(909) 908-7169",
+      "email": "kim@planetchiquis.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Castor Gill",
+      "phone": "(407) 308-9346",
+      "email": "kgstudiocontact@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Arthur Tran",
+      "phone": "(626) 679-8386",
+      "email": "tranarthur1996@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PICTURE CAR",
+      "phone": "(805) 757-9218",
+      "email": "miguellimon10@live.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BTS",
+      "phone": "(310) 310-4281",
+      "email": "samiee.com@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCTION DESIGNER",
+      "name": "Carlos Hernandez",
+      "phone": "(925) 436-7400",
+      "email": "arteczstudios@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ART DIRECTOR",
+      "name": "Jesse Martinez",
+      "phone": "(323) 605-5998",
+      "email": "jessemartinez.artdept@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "SET DRESSER",
+      "phone": "(323) 594-4128",
+      "email": "leeyadmngz.film@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Jack Kessler",
+      "name": "SET DRESSER",
+      "phone": "(818) 219-1834",
+      "email": "jackmoseskessler@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "SET DRESSER",
+      "phone": "(310) 709-4123",
+      "email": "jamesonpropsla@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "MUA",
+      "phone": null,
+      "email": "barbarapferrer@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "HAIR STYLIST",
+      "name": "Tony",
+      "phone": null,
+      "email": "tonywonderhandsss@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Wardrobe",
+      "name": "Ricky",
+      "phone": "(323) 601-7501",
+      "email": "styledbyrich@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "DoP",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "(424) 400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIT",
+      "name": "Marshall Leming",
+      "phone": "(719) 964-8293",
+      "email": "made@by-marshall.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "JIB OP",
+      "phone": "(424) 200-9141",
+      "email": "ninobuzzu@gmail.com",
+      "call_time": "4:30 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "DRONE OP",
+      "phone": "(818) 850-8672",
+      "email": "ranen@lawefilms.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "GAFFER",
+      "name": "Evan Crocker",
+      "phone": "(805) 204-7915",
+      "email": "evancrocker93@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "KEY GRIP",
+      "name": "Mason Mclaury",
+      "phone": "(530) 503-5545",
+      "email": "mcnuggett12@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BBE",
+      "phone": "(909) 908-1258",
+      "email": "juliancross96@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BBG",
+      "phone": "(707) 294-8008",
+      "email": "mail@connorvickers.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "SWING",
+      "name": "Andre De Ocampo",
+      "phone": "(562) 674-4935",
+      "email": "drefullyy@gmail.com",
+      "call_time": "10:00 AM"
+    }
+  ],
+  "talent": []
+}

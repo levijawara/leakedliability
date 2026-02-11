@@ -1,0 +1,332 @@
+{
+  "source_file": "REVOLT 5:18:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "May 18, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": null,
+      "name": "CEO",
+      "phone": null,
+      "email": "troy@earnyourleisure.com",
+      "call_time": "11:40 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Chief Brand Officer",
+      "phone": null,
+      "email": "rashad@earnyourleisure.com",
+      "call_time": "11:40 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "SVP, PM",
+      "phone": null,
+      "email": "dandrews@revolt.tv",
+      "call_time": "11:40 AM"
+    },
+    {
+      "department": null,
+      "role": "Director, PM",
+      "name": "Michelle Lesperance",
+      "phone": null,
+      "email": "mlesperance@revolt.tv",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Alaitra McGrone",
+      "phone": "912-266-3475",
+      "email": "amcgrone@ladmm.tv",
+      "call_time": "10:45 AM"
+    },
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Jonna Algarin",
+      "phone": null,
+      "email": "jalgarin@ladmm.tv",
+      "call_time": "10:45 AM"
+    },
+    {
+      "department": null,
+      "role": "Brand Creative Director",
+      "name": "Dunnie West",
+      "phone": "617-710-4403",
+      "email": "dunnie@revolt.tv",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Brand Creative Producer",
+      "name": "Dave Shirley",
+      "phone": "617-981-1129",
+      "email": "dshirley@revolt.tv",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Associate Producer",
+      "name": "Brand Creative AP",
+      "phone": "661-394-0519",
+      "email": "jdufont@ladmm.tv",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "SVP Talent Relations & Casting",
+      "phone": null,
+      "email": "dkennedy-mccullough@revolt.tv",
+      "call_time": "11:20 AM"
+    },
+    {
+      "department": null,
+      "role": "Sr. Director, Talent Relations & Casting",
+      "name": "Allison Threadgill",
+      "phone": null,
+      "email": "athreadgill@revolt.tv",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Director of Talent Relations & Casting",
+      "name": "Ryan Lopez",
+      "phone": null,
+      "email": "rlopez@revolt.tv",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Talent Producer",
+      "name": "Jalysa Scales",
+      "phone": null,
+      "email": "jscales@ladmm.tv",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Director Of Photography",
+      "name": "Lerry Kin",
+      "phone": null,
+      "email": "lerrykin.film@gmail.com",
+      "call_time": "9:00AM - Load in\n11:30AM - Jordyn Woods Arrival\n11:30PM - Warehouse B - Roll"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cam Op",
+      "phone": "714-345-4520",
+      "email": "Tplante00@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Patrick Haynes",
+      "name": "Cam Op",
+      "phone": "323-597-6660",
+      "email": "Bpcinematics@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Cam Op",
+      "phone": null,
+      "email": "MassimoLegittimo@gmail.com",
+      "call_time": "11:40AM- Troy & Rashad Arrival"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Philip Hoang",
+      "phone": "623-302-3409",
+      "email": "philiphoangx@gmail.com",
+      "call_time": "12:00PM - Cameras up for greeting / B - Roll (Hosts & Jordyn)\n12:20PM - Interview\n1:20PM - Hero Shots\n1:30PM - Hosts & Jordyn Wrap"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "Lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Amir Rose-Aminifu",
+      "phone": "323-868-8065",
+      "email": "amirrose4@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Juan Chavez",
+      "phone": "626-409-6440",
+      "email": "juan_p_chavez@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam Op",
+      "phone": null,
+      "email": "steadifoster@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIT",
+      "name": "Kevin Perea",
+      "phone": "954-899-6490",
+      "email": "Kevin@digitalsword.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": "(714) 686-5657",
+      "email": "Jorge@glowingambers.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Israel Sandoval",
+      "phone": "(707) 486-4090",
+      "email": "israsand09@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BBG",
+      "phone": "(703) 628-0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "BBE",
+      "phone": "(310) 808-5283",
+      "email": "Pierre.planetfresh@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Swing",
+      "name": "Zachary Logounov",
+      "phone": "857-523-8925",
+      "email": "Zack626@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Art Department",
+      "name": "Andrew Caso",
+      "phone": "5107896780",
+      "email": "andrewjcaso@gmail.com",
+      "call_time": "9:30AM Pickup Shuttle 2 - REVOLT Team - Andaz Hotel - 8401 Sunset Blvd, West Hollywood, CA 90069"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Art Department Asst",
+      "name": "Devin Leary",
+      "phone": "401-744-4037",
+      "email": "devinleary95@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": null,
+      "name": "HMU",
+      "phone": null,
+      "email": "Sandramarciep@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "SOUND",
+      "role": null,
+      "name": "Sound Tech",
+      "phone": "323-229-2787",
+      "email": "Pacifist.ProductionsFilms@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Mary Gentry",
+      "phone": "773-563-5204",
+      "email": "Marymomentsfilm@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Macro Mckinnis",
+      "phone": "757-660-6202",
+      "email": "MarcoMckinnis@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Alexa Herrejon",
+      "phone": "626-497-4491",
+      "email": "Alexa.herrejon.4@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Carlos Hernandez",
+      "phone": null,
+      "email": "carlos2021hernandez@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "COO Abdoulaye",
+      "phone": null,
+      "email": "asow@earnyourleisure.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lex Dewart",
+      "phone": "617-710-4403",
+      "email": "lex@btstudios.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Galileo Mondol",
+      "phone": "617-981-1129",
+      "email": "galileo@btstudios.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Producer Zylo",
+      "phone": "617-981-1129",
+      "email": "Z.heff7@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

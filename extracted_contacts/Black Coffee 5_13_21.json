@@ -1,0 +1,137 @@
+{
+  "source_file": "Black Coffee 5:13:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "May 13, 2021",
+    "production_company": null,
+    "day_info": "DAY 1 of 2"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Production Asst.",
+      "phone": "1347369878",
+      "email": "nickybon@icloud.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Production Asst.",
+      "phone": "1904303801",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "1805509858",
+      "email": "evan@newkingdomproductions.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Derek Korogodsky\n12156052347 derek@luma-visuals.com",
+      "phone": "1215605234",
+      "email": "derek@luma-visuals.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Iliya Gegov\n16309993493 iliyagegov@gmail.com",
+      "phone": "1630999349",
+      "email": "iliyagegov@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Ionel Diaconescu\n14152725263 ionel@me.com",
+      "name": "Ga\u0000er",
+      "phone": "1415272526",
+      "email": "ionel@me.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": null,
+      "role": "G&E Swing",
+      "name": "Jamie Rosenberg\n13109947960\njarphoto.media@gmail.com",
+      "phone": "1310994796",
+      "email": "jarphoto.media@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": null,
+      "role": "G&E Swing",
+      "name": "Ryan Schwerzler\n12016697259\nryanschwerzler@gmail.com",
+      "phone": "1201669725",
+      "email": "ryanschwerzler@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Rob Padilla\n17605620589 rpadilla644@gmail.com",
+      "phone": "1760562058",
+      "email": "rpadilla644@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Costume Designer",
+      "name": "Alexandria Cianciulli\n12673398521\nalexandriacianciulli@gmail.com",
+      "phone": "1267339852",
+      "email": "alexandriacianciulli@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "HAIR",
+      "role": "Key MU",
+      "name": "Andrea Garcia\n18187956943\nandreagarciahair@gmail.com",
+      "phone": "1818795694",
+      "email": "andreagarciahair@gmail.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "HAIR",
+      "role": null,
+      "name": "H/MU",
+      "phone": "1619808108",
+      "email": "valerievonprisk@yahoo.com",
+      "call_time": "10:00am"
+    },
+    {
+      "department": "ART",
+      "role": "Prod. Designer",
+      "name": "Rian Colhoun\n14155357745 riancalhoun@gmail.com",
+      "phone": "1415535774",
+      "email": "riancalhoun@gmail.com",
+      "call_time": "10:00am"
+    }
+  ],
+  "talent": [
+    {
+      "character": "Maxine",
+      "talent_name": "AE Amanda Esquilin",
+      "call_time": "10:00am"
+    },
+    {
+      "character": "Ti\u0000any",
+      "talent_name": "SO Sigin Ojulu",
+      "call_time": "10:00am"
+    },
+    {
+      "character": "Cat Caller",
+      "talent_name": "JG Josh Garcia",
+      "call_time": "10:00am"
+    },
+    {
+      "character": "Gas Station Attendant",
+      "talent_name": "AR Allan Rodriguez",
+      "call_time": "10:00am"
+    }
+  ]
+}

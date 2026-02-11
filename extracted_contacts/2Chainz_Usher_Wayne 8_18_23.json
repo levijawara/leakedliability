@@ -1,0 +1,436 @@
+{
+  "source_file": "2Chainz:Usher:Wayne 8:18:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 18, 2023",
+    "production_company": "Allied Studios - Stage B Adventist Health Simi Valley SEE BELOW",
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Director",
+      "name": "Fabien Martorell",
+      "phone": null,
+      "email": "fabien@montiqueco.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "EP/Producer",
+      "name": "Lex Lewter",
+      "phone": "212.920.9349",
+      "email": "lewter@purplesquirrel.agency",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Vanda Lee",
+      "phone": "213.926.6664",
+      "email": "hivandalee@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Producer",
+      "name": "Julio Mata Jr.",
+      "phone": "913.593.8557",
+      "email": "juliomatajr1@gmail.com",
+      "call_time": "2:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Production Coordinator",
+      "name": "Sam Smoot",
+      "phone": "803.728.9868",
+      "email": "samuelsmoot907@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Director's Assistant",
+      "name": "Philip Skoczkowski",
+      "phone": null,
+      "email": "philipskoczkowski@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Talent Hospitality Manager",
+      "name": "Bianca Mendez",
+      "phone": "404.429.4885",
+      "email": "ms.bibimendez@gmail.com",
+      "call_time": "4:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Makeup Artist",
+      "name": "1st AD",
+      "phone": "404-805-1212",
+      "email": "getriff@gmail.com",
+      "call_time": "4:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Stylist",
+      "name": "2nd AD",
+      "phone": "818.640.0394",
+      "email": "arnav.shah.in@gmail.com",
+      "call_time": "4:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Creative Director",
+      "name": "2nd 2nd AD",
+      "phone": "424.245.9644",
+      "email": "markeithlewter1@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Frank Rodriguez",
+      "phone": "678.477.1252",
+      "email": "frankie.rodriguez5221@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Jonah Robinson",
+      "phone": "818.640.1991",
+      "email": "Jonahrrobinson@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Sage Lemyou",
+      "phone": "310.720.0104",
+      "email": "Sagelemyou@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Jose Ramos",
+      "phone": "323.907-8305",
+      "email": "Ramosss13@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PA - Set",
+      "name": "Akeira Cramer",
+      "phone": "301.266.6592",
+      "email": "Akeiracramer@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PA - Talent",
+      "name": "Jordan Beckford",
+      "phone": "213.926.8072",
+      "email": "jordancbeckford@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "PA - Talent",
+      "name": "Devin Mercadel",
+      "phone": "210.606.5687",
+      "email": "Devinmercadel@me.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": "PA - Talent",
+      "name": "Kylee Chun",
+      "phone": "323.868.4918",
+      "email": "kylee.chun7@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": null,
+      "role": "PA - Truck",
+      "name": "Nick Reynolds",
+      "phone": "757.323.7969",
+      "email": "nreynolds1386@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": null,
+      "role": "Director of Photography",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.9011",
+      "email": "lojawara@gmail.com",
+      "call_time": "6:00 PM"
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424.400.1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Artist",
+      "name": "VTR",
+      "phone": "213.840.0440",
+      "email": "kai@vibe-n-vision.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Bevis Tran",
+      "phone": "323.683.5838",
+      "email": "imbevis@hotmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Background Talent Female",
+      "name": "BBG",
+      "phone": "626.421.4108",
+      "email": "robertjulin@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Ryan Blons",
+      "phone": "818.288.6219",
+      "email": "ryanblons123@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Rob Padilla",
+      "phone": "760.562.0589",
+      "email": "rpadilla644@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Jordan Av-Tal",
+      "phone": "818.857.1210",
+      "email": "Jordan.avtal@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Background Talent Male",
+      "name": "BBE",
+      "phone": "617.894.9085",
+      "email": "adamschaffer617@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Background Talent Male",
+      "name": "Karim Dakkon",
+      "phone": "561.635.1429",
+      "email": "karimdakkon@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Background Talent Male",
+      "name": "Gavin Samples",
+      "phone": "818.620.5314",
+      "email": "gavinsmples@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Background Talent Male",
+      "name": "Ryan Silver",
+      "phone": "424.772.9801",
+      "email": "contact.ryansilver@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Electric Driver",
+      "name": "Wesley Aharoni",
+      "phone": "818.720.0682",
+      "email": "Wesleyaharoni@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Production Designer",
+      "name": "Andre Taylor",
+      "phone": "323.805.9505",
+      "email": "allcreativeswelcome@gmail.com",
+      "call_time": "5:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Art Director",
+      "name": "Julian Reed",
+      "phone": "323.533.8535",
+      "email": "jtrademarkit@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Lead Man",
+      "name": "Jereme Wood",
+      "phone": "804.585.5167",
+      "email": "woo@thewxw.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Stylist Assistant",
+      "name": "Carp",
+      "phone": "646.409.0003",
+      "email": "Moodsbyfelix@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Makeup Artist",
+      "name": "Set Dresser",
+      "phone": "323.240.4119",
+      "email": "djmccain1@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Makeup Assistant",
+      "name": "Set Dresser",
+      "phone": "323.921.6504",
+      "email": "bmmcclover@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Hair Stylist",
+      "name": "PRODUCTION SUPPORT",
+      "phone": "310.702.1497",
+      "email": "tks505@yahoo.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Location Rep",
+      "name": "Brian Gordon",
+      "phone": "717.781.5465",
+      "email": "bgordon@alliedstudios.net",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Craft Services",
+      "name": "April Qualls",
+      "phone": "951.219.8992",
+      "email": "april.o.qualls@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Motorhome Driver",
+      "name": "Los Amigos",
+      "phone": "909.413.3609",
+      "email": "losamigoswalnut@yahoo.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Motorhome Driver",
+      "name": "CASTING",
+      "phone": "818.205.3294",
+      "email": "nathanholsey@yahoo.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Casting Director",
+      "name": "Mill Ticket Casting",
+      "phone": "858.437.4713",
+      "email": "millticketcasting@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Wardrobe Trailer",
+      "name": "CHOREOGRAPHER",
+      "phone": "323.462.6646",
+      "email": "david@kingkongtrailers.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Choreographer",
+      "phone": "917.749.6942",
+      "email": "kjrosemusic@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jordan Boothe",
+      "phone": "804.585.5167",
+      "email": "jordan@jordanboothe.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Manu Horn",
+      "phone": "323.240.4119",
+      "email": "createmanulook@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Roque Romo",
+      "phone": "323.921.6504",
+      "email": "roqueromo0401@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Joel Snyder",
+      "phone": "717.781.5465",
+      "email": "stylejoel@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Kevin Kasner",
+      "phone": "909.413.3609",
+      "email": "kazmunications@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "James Beals",
+      "phone": "858.437.4713",
+      "email": "jbeals@me.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

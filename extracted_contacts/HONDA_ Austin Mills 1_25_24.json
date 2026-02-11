@@ -1,0 +1,236 @@
+{
+  "source_file": "HONDA: Austin Mills 1:25:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "Christina Alba",
+      "phone": "323-337-5566",
+      "email": "christina@sturdy.co",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "BRAND PRODUCER",
+      "name": "AJ Groy",
+      "phone": "717-644-4383",
+      "email": "aj@sturdy.co",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1st ASSISTANT DIRECTOR",
+      "name": "Evan Coniglio",
+      "phone": "908-507-5462",
+      "email": "evanconiglio@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "EDITOR/VISUALS",
+      "name": "Quantay Peoples",
+      "phone": "407-413-6177",
+      "email": "quantay@sturdy.co",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PROGRAMMER",
+      "phone": "847-322-6337",
+      "email": "max@dharmaworldwide.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424-400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIT",
+      "name": "Rob Alpine",
+      "phone": "310-433-6835",
+      "email": "robmalpine@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Per Ignacio",
+      "name": "VTR",
+      "phone": "619-250-7787",
+      "email": "productionignacio@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "TECHNO JIB",
+      "phone": "310-420-1642",
+      "email": "elidfranks@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "TECHNO JIB",
+      "phone": "818-669-9107",
+      "email": "iam32961@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "SOUND MIXER",
+      "name": "Nathan Beausoleil",
+      "phone": "979-277-2059",
+      "email": "nathanbeausoleil@icloud.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GAFFER",
+      "name": "Dimitri Christoforidis",
+      "phone": "781-771-6883",
+      "email": "dimitrios.christo@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBE",
+      "phone": "208-755-9756",
+      "email": "svenvanostrand@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Chris Ginnaven",
+      "phone": "818-536-4794",
+      "email": "cginnavenjr@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "KEY GRIP",
+      "name": "Taylor Reick",
+      "phone": "949-636-6129",
+      "email": "tjreick83@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBG",
+      "phone": "562-458-8087",
+      "email": "Valfrietabianjr@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP",
+      "name": "Hugo J Mejia Martinez",
+      "phone": "323-422-0055",
+      "email": "Hugothegrip@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCTION DESIGNER",
+      "name": "Matt Sokoler",
+      "phone": "818-259-9308",
+      "email": "mattsokoler@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "ART DIRECTOR",
+      "name": "Spencer Trent",
+      "phone": "818-792-8008",
+      "email": "spencertrentart@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "LEADMAN",
+      "name": "Jonathan \"Utah\" Clemsen",
+      "phone": "443-617-4069",
+      "email": "jonathanclemsen@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Stacy Gonzalez",
+      "name": "HMUA",
+      "phone": "562-314-7909",
+      "email": "stacymakeup97@yahoo.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Dion O'Joe",
+      "phone": "203-510-1511",
+      "email": "ojoed1990@gmail.com",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Emoni Jackson",
+      "phone": "916-817-0168",
+      "email": "emoni@sturdy.co",
+      "call_time": "7:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Agustin Filippi",
+      "phone": "562-852-2394",
+      "email": "agustino1234@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "STURDY. Intern",
+      "phone": null,
+      "email": "intern3@sturdy.co",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "STURDY. Intern",
+      "phone": "858-260-0882",
+      "email": "intern2@sturdy.co",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "LOCATION",
+      "name": "Tuxedo Warehouse - Zayne",
+      "phone": "323-594-9126",
+      "email": "tuxedowest@gmail.com",
+      "call_time": "7:45 AM"
+    }
+  ],
+  "talent": []
+}

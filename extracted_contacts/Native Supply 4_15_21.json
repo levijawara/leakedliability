@@ -1,0 +1,76 @@
+{
+  "source_file": "Native Supply 4:15:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "of 1 1990",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Prod. Coordinator",
+      "name": "Kylie Dougherty",
+      "phone": "703-955-2238",
+      "email": "doughterym.kylie@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Ty Rogers",
+      "phone": "765-427-0933",
+      "email": "ty@tyrogers.net",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:45 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Model 3",
+      "phone": "424-333-2193",
+      "email": "leizamariecabrera@gmail.com",
+      "call_time": "12:45 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Swing",
+      "name": "Chad Carlstone",
+      "phone": "847-769-0021",
+      "email": "chadcarlstone@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Stylist",
+      "name": "Katy Breslin",
+      "phone": "818-930-0133",
+      "email": "katybstyle@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Matthew Murray",
+      "phone": "765-427-0933",
+      "email": "matthewpheyman@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Aman Gupta",
+      "phone": "904-303-8011",
+      "email": "guptaman23808@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

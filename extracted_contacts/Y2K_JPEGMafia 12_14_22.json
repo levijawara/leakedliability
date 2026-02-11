@@ -1,0 +1,212 @@
+{
+  "source_file": "Y2K:JPEGMafia 12:14:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Alexander Bortz",
+      "phone": "720.284.4757",
+      "email": "alex@alexbortz.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Dylan D. Underhill",
+      "phone": "509.879.2137",
+      "email": "dylan@wavethreemedia.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Louis Moreschi",
+      "phone": "917.608.4237",
+      "email": "louis@shotclock.nyc",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Teresa Plascencia",
+      "phone": "773.401.3731",
+      "email": "teresa@shotclock.nyc",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "214.232.1210",
+      "email": "cinemacowboys@gmail.com",
+      "call_time": "11:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Mario Alvarez",
+      "phone": "213.568.7595",
+      "email": "mario.inc36@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Rafa Urbina",
+      "phone": "305.319.1486",
+      "email": "riurbinas@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Trevor Rittman",
+      "phone": "908.230.6166",
+      "email": "trittman@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Jon Davis",
+      "phone": "310.927.6822",
+      "email": "jdaviskao@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Mallory Siegenthaler",
+      "phone": "502.424.6234",
+      "email": "mallory.cine@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": "818.770.6239",
+      "email": "steadidon@gmail.com",
+      "call_time": "12:30 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Victor Pancerev",
+      "name": "JIB",
+      "phone": "814.392.3403",
+      "email": "vpancerev@gmail.com",
+      "call_time": "8:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Jordan Al Avital",
+      "phone": "818.857.1210",
+      "email": "jordan.avtal@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Bevis Tran",
+      "phone": "323.683.5838",
+      "email": "imbevis@hotmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBE",
+      "phone": "603.325.8582",
+      "email": "kulig.jeff@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Rob Padilla",
+      "name": "BBG",
+      "phone": "760.562.0589",
+      "email": "rpadilla644@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Wesley Aharoni",
+      "phone": "818.720.0682",
+      "email": "wesleyaharoni@gmail.com",
+      "call_time": "12:15 PM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Ben Healey",
+      "phone": "206.465.0941",
+      "email": "ben.d.h.healey@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Coordinator",
+      "name": "Seif Nabulsi",
+      "phone": "857.472.4822",
+      "email": "seif.nabulsi12@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Robert Page",
+      "name": "Firearms Master",
+      "phone": "323.541.7105",
+      "email": "pageprops@icloud.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "ART",
+      "role": "VFX Makeup",
+      "name": "Bella Gerbino",
+      "phone": "732.710.8118",
+      "email": "isabellagerbino@gmail.com",
+      "call_time": "10:45 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Styling Assistant",
+      "name": "Katherine Ventura",
+      "phone": "786.282.2420",
+      "email": "kath@publicoasis.com",
+      "call_time": "11:45 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Casting Agency",
+      "phone": null,
+      "email": "monicapinto@hypmosis.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

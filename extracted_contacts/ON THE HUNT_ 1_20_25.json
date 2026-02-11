@@ -1,0 +1,52 @@
+{
+  "source_file": "\"ON THE HUNT\" 1:20:25.pdf",
+  "production_info": {
+    "production_name": "ON THE HUNT",
+    "date": "January 20, 2025",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "TAMMY",
+      "call_time": "6:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "BONE",
+      "call_time": "6:30AM"
+    },
+    {
+      "character": null,
+      "talent_name": "BACKGROUND",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "QTY",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "STATUS",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "TOTAL:",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "DEPARTMENT NOTES",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "VEHICLES",
+      "call_time": null
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "source_file": "WAHL 7:20:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "July 20, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "DIRECTOR",
+      "name": "Maya Table",
+      "phone": "(678) 485-8240",
+      "email": "maya@mayatable.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "EXECUTIVE PRODUCER",
+      "name": "Elisa Morse",
+      "phone": "(323) 810.7503",
+      "email": "elisa@piecemill.co",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCER",
+      "name": "Pure Brisbon",
+      "phone": "(310) 498-0069",
+      "email": "Trulypure@icloud.com",
+      "call_time": "7:45A"
+    },
+    {
+      "department": null,
+      "role": "PROD. COORDINATOR",
+      "name": "Porcelain Brisbon",
+      "phone": "(818) 297-7030",
+      "email": "BookPorcelain@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "DP",
+      "name": "Brian BB Beckwitch",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "7:45A"
+    },
+    {
+      "department": null,
+      "role": "1ST AC",
+      "name": "Levi Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "2ND AC / Media Manager",
+      "name": "Jewel Perez",
+      "phone": "(424) 400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Freddie DiPasquale",
+      "name": "Director of Content Prod., NA",
+      "phone": "(732) 552-4498",
+      "email": "freddiedipasquale@outlook.com",
+      "call_time": "7:45A"
+    },
+    {
+      "department": null,
+      "role": "GAFFER",
+      "name": "Jordan Avtal",
+      "phone": "(818) 857-1210",
+      "email": "Jordan.avtal@gmail.com",
+      "call_time": "7:45A"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BB Electric",
+      "phone": "(424) 772-9801",
+      "email": "contact.ryansilver@gmail.com",
+      "call_time": "6:30A"
+    },
+    {
+      "department": null,
+      "role": "GRIP NAME PHONE EMAIL CALL WRAP",
+      "name": "Talent / Barber",
+      "phone": "(309) 631-1290",
+      "email": "newstylebarbershop1@gmail.com",
+      "call_time": "7:30A"
+    },
+    {
+      "department": null,
+      "role": "KEY GRIP",
+      "name": "Sebastion",
+      "phone": "(714) 673-9340",
+      "email": "sebastian.lam5@gmail.com",
+      "call_time": "7:30A"
+    },
+    {
+      "department": null,
+      "role": "BB GRIP",
+      "name": "Wesley Aharoni",
+      "phone": "(818) 720-0682",
+      "email": "Wesleyaharoni@gmail.com",
+      "call_time": "6:30A"
+    },
+    {
+      "department": null,
+      "role": "ART",
+      "name": "Sara Barnett",
+      "phone": "(859) 533-2076",
+      "email": "sara0barnett@gmail.com",
+      "call_time": "6:30A"
+    },
+    {
+      "department": null,
+      "role": "ART ASSIST",
+      "name": "David O'Connel",
+      "phone": "(937) 239-4296",
+      "email": "Connell.dav@gmail.com",
+      "call_time": "6:30A"
+    },
+    {
+      "department": null,
+      "role": "WARDROBE STYLIST",
+      "name": "Kirsti Schroder",
+      "phone": "(469) 774-8507",
+      "email": "kirstischroder@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "HMU",
+      "phone": "(310)946-6333",
+      "email": "cortcort23@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Set PA",
+      "name": "Zoe Marin",
+      "phone": "(310) 738-7823",
+      "email": "zoemar1997@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "Truck PA",
+      "name": "JC Rodriguez",
+      "phone": "(818) 731-6970",
+      "email": "Jcrod01@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PA",
+      "name": "Taylor Gerber",
+      "phone": "(248) 212-3705",
+      "email": "Gerber_taylor@icloud.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "LOCATION CONTACT",
+      "name": "Allyson Fernbach",
+      "phone": "(310) 841-6679",
+      "email": "allyson@blindbarber.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Boxer Dianne",
+      "phone": "(714) 673-9340",
+      "email": "drvannacut@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

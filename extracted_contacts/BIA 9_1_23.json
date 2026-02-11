@@ -1,0 +1,108 @@
+{
+  "source_file": "BIA 9:1:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 OF 2"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "Ben Marc",
+      "phone": null,
+      "email": "benmarc@visionbankfilms.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "SockX",
+      "phone": "407-393-0364",
+      "email": "Taylour@visionbankfilms.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Zylo Hefferan",
+      "phone": "661-394-0519",
+      "email": "z.heff7@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "D.P.",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "9:45am-10am BIA & FRIENDS Walk to Set\n10am-1pm Shoot Pool Scene\n1:15pm-3:45pm BIA GLAM OUTFIT CHANGE"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "1st A.C.",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Gaffer",
+      "name": "Erick Samayoa",
+      "phone": "323-252-6271",
+      "email": "erick11s@yahoo.com",
+      "call_time": "5:30pm – 8pm: Shoot DESERT into NIGHT"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Billy Valdivia",
+      "phone": "323-998-3990",
+      "email": "billyvprod03@aol.com",
+      "call_time": "8:15pm – 9pm: TRAVEL back LAS VEGAS STRIP\n9:30Pm – 11pm: Shoot Car on LAS VEGAS STRIP\n11pm WRAP"
+    },
+    {
+      "department": "GRIP",
+      "role": "Swing",
+      "name": "Devin Kolovich",
+      "phone": "702-204-7331",
+      "email": "devink@mgstudio.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "Car Arm",
+      "phone": "702-683-1212",
+      "email": "michaelg@mgstudio.com",
+      "call_time": "4:00 PM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Stylist",
+      "name": "Astral",
+      "phone": "267-522-7640",
+      "email": "info@formula.vision",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Stylist",
+      "name": "Sebastian",
+      "phone": "978-397-5817",
+      "email": "sebastianmejiastyle@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Chris Bruno",
+      "phone": "407-393-0364",
+      "email": "cbruno@livinfull.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

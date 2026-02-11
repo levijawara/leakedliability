@@ -1,0 +1,340 @@
+{
+  "source_file": "Becky G 1:24:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "January 24th 2022",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "PRODUCTION MANAGER",
+      "name": "Mikey Errante",
+      "phone": "760.397.3493",
+      "email": "mikey@sturdy.co",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": null,
+      "role": "PRODUCTION COORDINATOR",
+      "name": "Daniel Carroll",
+      "phone": "407.413.6177",
+      "email": "danielcarroll980@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1st AD",
+      "phone": "908.507.5462",
+      "email": "Evanconiglio@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "2nd AD",
+      "phone": "818.792.0977",
+      "email": "Lizettedls@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": null,
+      "role": "ADPA",
+      "name": "Aris Ray",
+      "phone": "513.212.5020",
+      "email": "Arisray@rocketmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "B CAM / 2nd Unit DP",
+      "name": "Lerry Kin",
+      "phone": "786.660.0184",
+      "email": "Lerrykin.film@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Zachary Stanke",
+      "name": "STEADI OP",
+      "phone": "661.644.0037",
+      "email": "zac.stanke@me.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "TECHNO CRANE",
+      "phone": "661.510.7150",
+      "email": "briankw@sbcglobal.net",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "TECHNO CRANE OP",
+      "phone": "818.618.2008",
+      "email": "dromeotmt@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Dima Shorin",
+      "phone": "213.270.5645",
+      "email": "dimashorin.films@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "B CAM 1st AC",
+      "name": "Castor Gil",
+      "phone": "407.308.9346",
+      "email": "kgstudiocontact@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Garrett Hoffmann",
+      "phone": "641.990.7081",
+      "email": "garretthoffmanndp@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIT",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BTS",
+      "phone": "818.484.1659",
+      "email": "info@digitalmoncef.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BTS",
+      "phone": "661.435.3925",
+      "email": "walterwbrady@gmail.com",
+      "call_time": "9:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GAFFER",
+      "name": "Jordan Av-Tal",
+      "phone": "818.857.1210",
+      "email": "jordan.avtal@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "RIGGING GAFFER",
+      "name": "Kenneth Marc",
+      "phone": "310.945.8565",
+      "email": "kenneth.marc@aol.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBE",
+      "phone": "603.325.8582",
+      "email": "kulig.jeff@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "SLT",
+      "phone": "949.375.1977",
+      "email": "cvgreve@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "SLT",
+      "phone": "714.749.5326",
+      "email": "randynguyen639@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BOARD OP",
+      "phone": "617.894.9085",
+      "email": "adamschaffer617@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "KEY GRIP",
+      "name": "Bevis Tran",
+      "phone": "323.683.5838",
+      "email": "imbevis@hotmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "BBG",
+      "phone": "224.567.9056",
+      "email": "collingallivan@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP",
+      "name": "Matt Purkis",
+      "phone": "209.568.7074",
+      "email": "Mpurkis4@hotmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP",
+      "name": "David Blum",
+      "phone": "310.994.7076",
+      "email": "davidstephenblum@gmail.com",
+      "call_time": "10:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP",
+      "name": "Nam Le",
+      "phone": "949.769.9472",
+      "email": "namvle24@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCTION DESIGNER",
+      "name": "Wes Dogan",
+      "phone": "818.206.5860",
+      "email": "wesleydogan@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "SET DRESSER",
+      "phone": "323.840.6899",
+      "email": "smith2320@yahoo.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "SET DRESSER",
+      "phone": "213.322.6026",
+      "email": "stevenventre13@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "SET DRESSER",
+      "phone": "949.422.3132",
+      "email": "tori.love.deckard@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "William Gerlach",
+      "name": "SET DRESSER",
+      "phone": "925.451.7395",
+      "email": "wileyfirecat@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Ari Dyrek",
+      "phone": "310.963.8894",
+      "email": "Ari.dyrek@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Lance Rico",
+      "phone": "909.720.0174",
+      "email": "Levulose48@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Bryson Pope",
+      "phone": "919.358.6219",
+      "email": "brysonpope24@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "LOCATION",
+      "name": "Nathan",
+      "phone": "310.855.4562",
+      "email": "josephstudios60@yahoo.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "CCO",
+      "phone": "760.532.3876",
+      "email": "hethh@icloud.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Max Colt",
+      "phone": null,
+      "email": "m@maxcolt.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "STUNT COORDINATOR",
+      "name": "Jahlil Wallace",
+      "phone": null,
+      "email": "jahlil.wallace.stunts@gmail.com",
+      "call_time": "3:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "CRAFTY",
+      "name": "Pedro Aguirre",
+      "phone": "626.716.7383",
+      "email": "Peter.aguirre64@gmail.com",
+      "call_time": "6:45 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Well Done Catering",
+      "phone": "213.281.1143",
+      "email": "welldonecateringla@gmail.com",
+      "call_time": "1:30 PM"
+    }
+  ],
+  "talent": []
+}

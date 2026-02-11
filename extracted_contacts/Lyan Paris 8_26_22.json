@@ -1,0 +1,84 @@
+{
+  "source_file": "Lyan Paris 8:26:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 25, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "ART",
+      "role": "Producer",
+      "name": "Michael Borgers",
+      "phone": "310-994-1889",
+      "email": "mikeyb.reelgoats@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "1st AD",
+      "phone": null,
+      "email": "michaeljoseph2161@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "D.P.",
+      "phone": null,
+      "email": "grdgrd1229@gmail.com",
+      "call_time": "11:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Charles Schaefer",
+      "phone": null,
+      "email": "info@sparkliterentals.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Cody Cook",
+      "phone": null,
+      "email": "letswork@codyjcook.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Grip",
+      "name": "Zach Garcia",
+      "phone": null,
+      "email": "zachgarcia217@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": "Trevor Rittman",
+      "phone": null,
+      "email": "trittman@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Per Stella",
+      "phone": null,
+      "email": "stella@asgcasting.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

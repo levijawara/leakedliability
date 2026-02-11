@@ -1,0 +1,184 @@
+{
+  "source_file": "Jilly 8:20:21.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "August 20th, 2021",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Production Company\nhappy I'm sad\n1012 East Acacia Ave. Suite 208\nGlendale, CA 91205\nInfo@happimsad.com\nProducer: Notion",
+      "name": "LOCATION 2 439 E 58th St, Los Angeles, CA 90011",
+      "phone": null,
+      "email": "Info@happimsad.com",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Arthur Grigoryan",
+      "phone": "(612) 770-3198",
+      "email": "ocufilms@gmail.com",
+      "call_time": "8:40 AM"
+    }
+  ],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "Director",
+      "call_time": "9:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Producer",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Dancer",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Dancer",
+      "call_time": "9:30 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "CAMERA / SOUND DEPARTMENT",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Moses",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "N/A",
+      "call_time": "9:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "ELECTRIC DEPARTMENT",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Gaffer",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Camera",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Lighting",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Prod. Trucking",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Passvan",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "GRIP DEPARTMENT",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Key Grip",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Grip",
+      "call_time": "6:00 PM"
+    },
+    {
+      "character": null,
+      "talent_name": "Lenses",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Props",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Permits",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "TALENT WARDROBE, MAKE-UP, & HAIR",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Makeup Supervisor",
+      "call_time": "6:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Hair",
+      "call_time": "6:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Wardrobe",
+      "call_time": "9:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "First Shot AM",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Film at Start",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "First Shot PM",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "PRODUCTION",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Set P.A.",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Set P.A.",
+      "call_time": "8:40 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "BTS",
+      "call_time": "9:00 AM"
+    },
+    {
+      "character": null,
+      "talent_name": "Photographer",
+      "call_time": "9:30 AM"
+    }
+  ]
+}

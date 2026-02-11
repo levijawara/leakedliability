@@ -1,0 +1,156 @@
+{
+  "source_file": "Gabi Sklar 6:5:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "June 6, 2024",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Ranchos On Site Tacos",
+      "name": "Satien Mehta",
+      "phone": "760.504.6689",
+      "email": "sat@driveintlagency.com",
+      "call_time": "4:00 PM (RTS)"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Talha Pervaiz",
+      "phone": "604.655.9921",
+      "email": "rick@sinkorswimcreative.la",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Notion",
+      "phone": "435.640.1005",
+      "email": "notion@happyimsad.com",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": "408.510.1284",
+      "email": "austintongproductions@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Line Producer",
+      "name": "Hans Boysen",
+      "phone": "805.990.3540",
+      "email": "hansboysen.89@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Lead Male",
+      "name": "Cinematographer",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Pablo Mena",
+      "name": "Lead Male",
+      "phone": "747.283.0102",
+      "email": "contact@pablomenaa.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": "714.686.5657",
+      "email": "Jorge@glowingambers.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Swing",
+      "name": "Sam Kim",
+      "phone": "703.628.0172",
+      "email": "samuel.kim5439@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "James Suter",
+      "phone": "415.324.9242",
+      "email": "suterjamespeter@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Makeup",
+      "name": "Amadora Biscette",
+      "phone": "281.222.3182",
+      "email": "aeb0523@gmail.com",
+      "call_time": "12:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Li Liu",
+      "phone": "626.808.7889",
+      "email": "liiliu0713@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Sean James",
+      "phone": "424.527.4566",
+      "email": "Seanjamesphotography@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "Nikola Orlando",
+      "phone": "213.369.9623",
+      "email": "Nikolaslorlando@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Emma Paige",
+      "name": "Intern",
+      "phone": null,
+      "email": "emuffler@iu.edu",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Site Tacos",
+      "phone": "760.504.6689",
+      "email": "ranchosonsitetacos@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Lulu Ortega",
+      "phone": "435.640.1005",
+      "email": "lulu@sinkorswimcreative.la",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

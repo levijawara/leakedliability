@@ -1,0 +1,119 @@
+{
+  "source_file": "YG:Lil Wayne 11:19:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "November 19th, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "POST",
+      "role": "Director",
+      "name": "Xavier Sotomayor",
+      "phone": null,
+      "email": "noloveoutwest@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "POST",
+      "role": "Producer",
+      "name": "Jaeheon Chung",
+      "phone": "714-717-3456",
+      "email": "chungjh4@uci.edu",
+      "call_time": null
+    },
+    {
+      "department": "POST",
+      "role": null,
+      "name": "Dir. of Photography",
+      "phone": "(845) 240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "POST",
+      "role": "Gaffer",
+      "name": "Jorge Hernandez",
+      "phone": "714-686-5657",
+      "email": "jorge@glowingambers.com",
+      "call_time": null
+    },
+    {
+      "department": "POST",
+      "role": "Key Grip",
+      "name": "Israel Sandoval",
+      "phone": "707-486-4090",
+      "email": "israsando09@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "POST",
+      "role": "Swing",
+      "name": "Mike Long",
+      "phone": "603-548-2071",
+      "email": "mikellong.la@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "POST",
+      "role": null,
+      "name": "YG MGMT",
+      "phone": "(718) 790-7496",
+      "email": "zenova@4hunnid.com",
+      "call_time": null
+    }
+  ],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "Lil Wayne",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Call Times: Director/Producer Call Time- 6pm ┃ Crew Call: 6pm┃ YG: 6pm ┃ Lil Wayne: 7pm ┃",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Crew Postion",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Director",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Producer",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Dir. of Photography",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Gaffer",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Key Grip",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "Swing",
+      "call_time": null
+    },
+    {
+      "character": null,
+      "talent_name": "YG MGMT",
+      "call_time": null
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "source_file": "Paris Jackson 7:11:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "July 11th, 2023",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "ASH DAVIS",
+      "phone": "818.720.2225",
+      "email": "ASH@DNIPRODS.NET",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIRECTOR",
+      "name": "NAS BOGADO",
+      "phone": "323.836.1220",
+      "email": "NAS@DNIPRODS.NET",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ASSISTANT DIRECTOR",
+      "name": "VIC BRANDT",
+      "phone": "818.804.6053",
+      "email": "VICTORIABRANDT4@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCTION ASSISTANT",
+      "name": "ALEX LEOMBURNO",
+      "phone": "508.370.2443",
+      "email": "ALEXANDRA.LEOMBRUNO@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DIRECTOR OF PHOTOGRAPHY",
+      "name": "JAY KAUFMAN",
+      "phone": "330.714.8609",
+      "email": "JAYKAUFMAN101@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "1ST AC",
+      "name": "LEVI JAWARA",
+      "phone": "904.303.8011",
+      "email": "LOJAWARA@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "PARIS",
+      "name": "11A",
+      "phone": "213.326.5507",
+      "email": "DELCAN.J.ADAMS@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP/TRANSPORT",
+      "name": "STEPHAN",
+      "phone": "303.669.9956",
+      "email": "STEPHANJOHNSON@LIVE.COM",
+      "call_time": null
+    },
+    {
+      "department": "ART",
+      "role": "PRODUCTION DESIGNER",
+      "name": "TENNISIA",
+      "phone": "973.919.3787",
+      "email": "OLIVE@DNIPRODS.NET",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,108 @@
+{
+  "source_file": "Nas 10:23:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "October 23, 2023",
+    "production_company": null,
+    "day_info": "Day 1 of 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "Co Producer",
+      "name": "Wyatt Whitaker",
+      "phone": "424-527-3971",
+      "email": "wyattowhitaker@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": "Production Manager",
+      "name": "Tali Weizman",
+      "phone": "818-569-9265",
+      "email": "me@taliweizman.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "1st AD",
+      "phone": "650-799-4777",
+      "email": "kws.inquiries@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845-240-3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levy Jawara",
+      "phone": "(904) 303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "(424) 400-1879",
+      "email": "jewelpz@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Projector",
+      "phone": "323-252-5428",
+      "email": "evan@projectionmappingcrew..com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Edgar Aragon",
+      "phone": "626-347-0500",
+      "email": "edgar.r.aragon2@gmail.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "GRIP",
+      "role": "Key Grip",
+      "name": "Moe Al-Kayed",
+      "phone": "954-512-9536",
+      "email": "moe@hagopstudios.com",
+      "call_time": "8:30 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Mitch Dilion",
+      "phone": "(330) 413-5952",
+      "email": "mitchdillon1@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": null,
+      "name": "Picture Car",
+      "phone": "862-437-2247",
+      "email": "erapicturecars@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "E Mills",
+      "phone": "(904) 303-8011",
+      "email": "millticketcasting@gmail.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

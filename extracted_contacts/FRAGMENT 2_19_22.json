@@ -1,0 +1,27 @@
+{
+  "source_file": "FRAGMENT 2:19:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "February 19, 2022",
+    "production_company": "Thirsty Whale Productions Saturday, February 19, 2022",
+    "day_info": "Day 3 of 11"
+  },
+  "crew": [],
+  "talent": [
+    {
+      "character": null,
+      "talent_name": "Michelle",
+      "call_time": "6:30A"
+    },
+    {
+      "character": null,
+      "talent_name": "Adam",
+      "call_time": "7:00A"
+    },
+    {
+      "character": null,
+      "talent_name": "Michelle 2.0",
+      "call_time": "6:30A"
+    }
+  ]
+}

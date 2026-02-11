@@ -1,0 +1,252 @@
+{
+  "source_file": "Stromae:Camila Cabello 6:25:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "June 25, 2022",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": null,
+      "role": "MANAGER",
+      "name": "EP/FOUNDER",
+      "phone": null,
+      "email": "boris@leftproductions.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCER (Left)",
+      "name": "Adam Armesto",
+      "phone": "734-673-5038",
+      "email": "adam@leftproductions.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCER (Left)",
+      "name": "Jean Grant",
+      "phone": "503-522-4146",
+      "email": "jean@leftproductions.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "EP (Hamlet)",
+      "phone": null,
+      "email": "jason@hamlet.tv",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PRODUCER (Hamlet)",
+      "name": "Pim Verhaert",
+      "phone": "3247854798",
+      "email": "pim@hamlet.tv",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "2nd AD / Client PA",
+      "name": "Skye Grissom",
+      "phone": "309-427-0399",
+      "email": "skyegrissom@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "PROJECT MANAGER",
+      "name": "PROD ASST - (Left)",
+      "phone": "929-484-8357",
+      "email": "francesca@leftproductions.com",
+      "call_time": "6:45A"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "PROD ASST - TRUCK",
+      "phone": "610-751-0009",
+      "email": "angelfalconbaez@gmail.com",
+      "call_time": "6:45A"
+    },
+    {
+      "department": null,
+      "role": "TALENT ASSISTANT",
+      "name": "PROD ASST - SET",
+      "phone": "912-273-8089",
+      "email": "hello@LeonardoFarjardo.com",
+      "call_time": "6:45A"
+    },
+    {
+      "department": null,
+      "role": "ARTIST MANAGER / LOCAL PRODUCER",
+      "name": "CCO",
+      "phone": "818-203-4166",
+      "email": "leafyolive@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "SVP / HEAD OF CREATIVE CONTENT",
+      "phone": null,
+      "email": "michelle.An@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "SR. DIRECTOR OF CREATIVE CONTENT",
+      "name": "Marissa Ramirez",
+      "phone": null,
+      "email": "marissa.Ramirez@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "DIR OF PHOTOGRAPHY",
+      "phone": "3368336267",
+      "email": "xavdol@hotmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904-303-8011",
+      "email": "lojawara@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": "424-400-1879",
+      "email": "Jewelpz@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "GAFFER",
+      "name": "Daniel Button",
+      "phone": "213-399-7890",
+      "email": "buttonupproductions.info@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "KEY GRIP",
+      "name": "Brad Powers",
+      "phone": "208-691-4774",
+      "email": "contact@bradpowersdp.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "SWING",
+      "name": "Valfrie Tabian",
+      "phone": "562-458-8087",
+      "email": "valfrietabianjr@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "Patrick Ta",
+      "name": "LOYAL",
+      "phone": "818-845-5123",
+      "email": "marissa@theprtnrs.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "GRIP",
+      "role": "HAIR",
+      "name": "Dimitiros Giannoudis",
+      "phone": "503-522-4146",
+      "email": "ruby@thewallgroup.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "GRIP",
+      "role": "STYLIST",
+      "name": "Rob Zangadi / Mariel Haenn",
+      "phone": null,
+      "email": "tara@forwardartists.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "NAILS",
+      "phone": null,
+      "email": "natalie@opusbeauty.com",
+      "call_time": "9:30A"
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BTS PHOTOGRAPHER",
+      "phone": "551-358-6820",
+      "email": "joesph@wolfeandvon.com",
+      "call_time": "9:45A"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Van Haver",
+      "phone": "309-427-0399",
+      "email": "luc@mosaert.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Gaëlle Mosaert",
+      "phone": "929-484-8357",
+      "email": "gaelle@mosaert.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "David Weiszfeld",
+      "phone": null,
+      "email": "david@weiszfeld.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Alexandra Baker",
+      "phone": "912-273-8089",
+      "email": "alexandra@highrisepr.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Deborah Fenstermacher",
+      "phone": "818-203-4166",
+      "email": "deb@defendmgmt.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Hanan Cher",
+      "phone": "3368336267",
+      "email": "hanan.Cher@umusic.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Brady LOYAL",
+      "phone": null,
+      "email": "kristyn@forwardartists.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

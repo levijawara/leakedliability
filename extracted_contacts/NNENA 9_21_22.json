@@ -1,0 +1,212 @@
+{
+  "source_file": "NNENA 9:21:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "SEPTEMBER 21st, 2022",
+    "production_company": null,
+    "day_info": "DAY 1 OF 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Executive Producer",
+      "name": "BenMarc",
+      "phone": null,
+      "email": "benmarc@visionbankfilms.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Lacey Gabrielle",
+      "phone": "916.717.2332",
+      "email": "laceyfree@artclb.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Jay Tauzin",
+      "phone": "504.481.8635",
+      "email": "jay@visionbankfilms.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Sunterrah Palmer",
+      "phone": "951.334.8244",
+      "email": "sunterrah@visionbankfilms.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Dutch Vannette",
+      "phone": "818.916.9946",
+      "email": "Tallsound27@yahoo.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Site Rep",
+      "phone": "310.709.8339",
+      "email": "enayati.becky@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Editor",
+      "name": "Stefano Lee",
+      "phone": "213.218.1808",
+      "email": "stefano@downtomars.tv",
+      "call_time": null
+    },
+    {
+      "department": "CAMERA",
+      "role": "DP",
+      "name": "Brian Beckwith",
+      "phone": "845.240.3677",
+      "email": "bbthedp@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": "904.303.8011",
+      "email": "lojawara@gmail.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jose Lucatero",
+      "phone": "951.497.5644",
+      "email": "Joseemerica@gmail.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "GRIP AND ELECTRIC",
+      "name": "DJ Donald",
+      "phone": "334.430.9779",
+      "email": "djdonald@vernacular-vision.com",
+      "call_time": "7:30 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Gaffer",
+      "name": "Evan Cocker",
+      "phone": "805.214.7915",
+      "email": "evancroker93@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Key Grip",
+      "name": "Mason Maury",
+      "phone": "530.503.5545",
+      "email": "Mcnuggett12@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "Swing",
+      "name": "Andre de Ocampo",
+      "phone": "562.674.4935",
+      "email": "topkeydre4@gmail.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Set PA",
+      "name": null,
+      "phone": "424.312.3241",
+      "email": "Cjharden@icloud.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Office Assist",
+      "phone": "619.534.1852",
+      "email": "alesandrafl@gmail.com",
+      "call_time": "6:30 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Myles Williams",
+      "phone": "916.717.2332",
+      "email": "myleswilliams@wolfandrothstein.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Jamila Wright",
+      "phone": "504.481.8635",
+      "email": "jamila.wright@rcarecords.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Nicky Berger",
+      "phone": "951.334.8244",
+      "email": "nicky@badrobot.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "McKee Floyd",
+      "phone": "818.916.9946",
+      "email": "mckee@badrobot.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Chris Clavadetscher",
+      "phone": "310.709.8339",
+      "email": "chrisclav@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Karina Lopez",
+      "phone": "213.218.1808",
+      "email": "karina.lopez@rcarecords.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Leonardo Chaparro",
+      "phone": "845.240.3677",
+      "email": "leo.chaparrobeauty@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Renee Dixon",
+      "phone": "904.303.8011",
+      "email": "rdixon88@yahoo.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Tatiana Wise",
+      "phone": "951.497.5644",
+      "email": "contact@styledbytati.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

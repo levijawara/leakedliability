@@ -1,0 +1,180 @@
+{
+  "source_file": "Sueco - LOSER 1:23:22.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "January 23rd, 2022",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Director",
+      "name": "Jake Mckenna",
+      "phone": null,
+      "email": "jake@shooterco.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Production Manager",
+      "name": "Chase Moran",
+      "phone": "302-299-7278",
+      "email": "business.chase18@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st AD",
+      "phone": null,
+      "email": "jchrisrouse@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "D.P.",
+      "phone": null,
+      "email": "grdgrd1229@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "1st AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": "2nd AC",
+      "name": "Jewel Perez",
+      "phone": null,
+      "email": "jewelpz@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "CAMERA",
+      "role": null,
+      "name": "Steadicam",
+      "phone": null,
+      "email": "donaldturnerdp@gmail.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Gaffer",
+      "name": "Charles Schaefer",
+      "phone": null,
+      "email": "Info@sparkliterentals.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Key Grip / Swing",
+      "name": "Zachary Garcia",
+      "phone": null,
+      "email": "zachgarcia217@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ELECTRIC",
+      "role": "Best Boy Electric / Grip",
+      "name": "Caleb Czuszak",
+      "phone": null,
+      "email": "honoraryfilm@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Production Designer",
+      "name": "Jesus Alvarado",
+      "phone": null,
+      "email": "alvarado_jesus77@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Director",
+      "name": "Mikey Avina",
+      "phone": null,
+      "email": "Mikey_avina15@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "ART",
+      "role": "Art Assistant",
+      "name": "Alondra Lopez",
+      "phone": null,
+      "email": "alopez643@student.mtsac.edu",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Makeup",
+      "name": "Alyssa Sawan",
+      "phone": null,
+      "email": "alyssa.makeuphabibi@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Wardrobe/Stylist",
+      "name": "Lucas Handling",
+      "phone": null,
+      "email": "suecomgmt@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Key PA",
+      "name": "Darryl Milana",
+      "phone": null,
+      "email": "darrylmilana@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "Key PA",
+      "name": "Michael Joseph",
+      "phone": null,
+      "email": "michaeljoseph2161@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": "PA",
+      "name": "Haya",
+      "phone": null,
+      "email": "Hayatello30@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "jared@barethegrind.biz",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "WARDROBE",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "justus@justusworldwide.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "VFX",
+      "role": null,
+      "name": "LUCAS RFX",
+      "phone": null,
+      "email": "LUCAS.CLARK@OUTLOOK.COM",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

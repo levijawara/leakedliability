@@ -1,0 +1,180 @@
+{
+  "source_file": "Alo Yoga 3:8:23.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": "March 8, 2023",
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "Producer",
+      "name": "Vanessa Amador",
+      "phone": "310.721.4547",
+      "email": "vanessa.amador@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Art Director",
+      "name": "Production Co.",
+      "phone": "435.640.1918",
+      "email": "alix.margolis@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "PHOTO",
+      "phone": null,
+      "email": "gabby.smith@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Photographer",
+      "phone": null,
+      "email": "blake.sinclair@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1st Ast",
+      "phone": null,
+      "email": "iahbearproductions@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Patrick Kim",
+      "name": "2nd Ast",
+      "phone": null,
+      "email": "info@patrickkimstudio.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Digi Tech",
+      "phone": null,
+      "email": "jules_bates@yahoo.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Jr. Photogrpaher",
+      "name": "Sam Nava",
+      "phone": null,
+      "email": "sam.nava@aloyoga.com",
+      "call_time": "8:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DP",
+      "name": "Justin Cattran",
+      "phone": null,
+      "email": "justin.cattran@aloyoga.com",
+      "call_time": "11:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "AC",
+      "name": "Levi Jawara",
+      "phone": null,
+      "email": "lojawara@gmail.com",
+      "call_time": "1:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Video Editor",
+      "name": "Kyle Blaich",
+      "phone": null,
+      "email": "kyle.blaich@aloyoga.com",
+      "call_time": "7:00 PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Hair",
+      "name": "Andrea Martin",
+      "phone": null,
+      "email": "beautybnyc@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Makeup",
+      "name": "Afton Williams",
+      "phone": null,
+      "email": "aftonwilliamsmakeup@gmail.com",
+      "call_time": "9:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist",
+      "name": "Alex Violante",
+      "phone": null,
+      "email": "alex.violante@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "Stylist Assist",
+      "name": "Kameryn Evans",
+      "phone": null,
+      "email": "kameryn.evans@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "Sample Co.",
+      "phone": null,
+      "email": "Kandy.villafuerte@aloyoga.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PROPS",
+      "role": "Prop Stylist",
+      "name": "Natalia Diaz",
+      "phone": null,
+      "email": "ccooqquu@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": "PROPS",
+      "role": "Carl De Paolo",
+      "name": "Prop Assist",
+      "phone": null,
+      "email": "cdepaolo@gmail.com",
+      "call_time": "10:00 AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Zoe Weber",
+      "phone": "310.721.4547",
+      "email": "zoe.weber@aloyoga.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Sara Kim",
+      "phone": "435.640.1918",
+      "email": "sara.kim@aloyoga.com",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "Marlee Lions",
+      "phone": null,
+      "email": "nancy@thelionsmanagement.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

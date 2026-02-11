@@ -1,0 +1,372 @@
+{
+  "source_file": "INK 4:22:25.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": "DAY 1 of 1"
+  },
+  "crew": [
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCER",
+      "name": "MARK SCHROEDER",
+      "phone": "917.600.9888",
+      "email": "VIDEOPRODUCERMARCO@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCTION SUPERVISOR",
+      "name": "ALLY LOZANO",
+      "phone": "619.534.1852",
+      "email": "ALESANDRAFLWORK@GMAIL.COM",
+      "call_time": "3:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "1ST AD",
+      "phone": "678.704.7358",
+      "email": "INFO.SHOWTIMESHOWTIME@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "2ND AD",
+      "phone": "424.653.0174",
+      "email": "WCURRY26@PROTONMAIL.COM",
+      "call_time": "10:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "2ND 2ND",
+      "phone": "909.351.9877",
+      "email": "DIRECTEDXGOTTI@GMAIL.COM",
+      "call_time": "10:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "WATERBOY #1",
+      "phone": null,
+      "email": "MILLTICKETCASTING@GMAIL.COM",
+      "call_time": "2:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "DIRECTOR OF PHOTOGRAPHY",
+      "name": "BRIAN BECKWITH",
+      "phone": "845.240.3677",
+      "email": "BBTHEDP@GMAIL.COM",
+      "call_time": "3:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1ST AC - A-CAM",
+      "name": "LUCA TURNER",
+      "phone": "424.877.5223",
+      "email": "HELLO@LUCATURNER.COM",
+      "call_time": "3:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "1ST AC - B-CAM",
+      "name": "LEVI JAWARA",
+      "phone": "904.303.8011",
+      "email": "LOJAWARA@GMAIL.COM",
+      "call_time": "3:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "2ND AC",
+      "name": "JEWEL PEREZ",
+      "phone": "424.400.1879",
+      "email": "JEWELPZ@GMAIL.COM",
+      "call_time": "3:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PARTY DJ",
+      "name": "STEADICAM",
+      "phone": "714.345.4520",
+      "email": "TPLANTE00@GMAIL.COM",
+      "call_time": "3:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "ERIC MILLER",
+      "phone": "310.781.0684",
+      "email": "TRUETOTHESOUND@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "DRONE",
+      "phone": "562.394.5868",
+      "email": "COMPLEXAERIAL@GMAIL.COM",
+      "call_time": "9:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "GAFFER",
+      "name": "JORDAN AV-TAL",
+      "phone": "818.857.1210",
+      "email": "JORDAN.AVTAL@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ACLT",
+      "name": "COLE EGILSSON",
+      "phone": "310.977.3649",
+      "email": "EGILSSONCOLE@GMAIL.COM",
+      "call_time": "8:00am"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "FORSBERG RANCH & COMPANY",
+      "name": "SLT",
+      "phone": "818.720.0682",
+      "email": "WESLEYAHARONI@GMAIL.COM",
+      "call_time": "7:30am"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "TACO MAN",
+      "name": "SLT",
+      "phone": "818.861.4419",
+      "email": "ACONTRERAS542@GMAIL.COM",
+      "call_time": "7:30PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "BALOON TECH",
+      "phone": "909.413.3609",
+      "email": "ERIK@ONELIGHTBALOONS.COM",
+      "call_time": "1:00PM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "KEY GRIP",
+      "name": "JAKE POOLE",
+      "phone": "818.726.2618",
+      "email": "80JAKEPOOLE@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "BEST BOY GRIP",
+      "name": "DAVID GONZALEZ",
+      "phone": "310.913.9103",
+      "email": "DAVIDOSUNA310@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "GRIP",
+      "name": "TORREY SCHOERNER",
+      "phone": "310.748.1204",
+      "email": "SCHOERNER@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "GRIP",
+      "name": "WILL HASWELL",
+      "phone": "213.654.7480",
+      "email": "HASWELL1776@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PRODUCTION DESIGNER",
+      "name": "KEATON BROWNLOW",
+      "phone": "626.898.0388",
+      "email": "KEATON.BROWNLOW@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "LEADMAN",
+      "name": "ANTHONY ESCOBEDO",
+      "phone": "619.302.8648",
+      "email": "TESCOBEDOIR@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "SET DRESSER",
+      "phone": "973.747.6487",
+      "email": "DDIFILIA@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "ART PA",
+      "name": "MAC HENDRIX",
+      "phone": "719.433.5050",
+      "email": "MACHENDRIX7@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "STYLIST / WARDROBE",
+      "name": "LIZZY ARROYO",
+      "phone": "323.214.6066",
+      "email": "LIZZYBEESBEAUTY@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": null,
+      "name": "INK - MUA",
+      "phone": "404.396.0670",
+      "email": "NEWKIRKTAY926@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "VANITIES",
+      "role": "INK - STYLIST",
+      "name": "MIQUELLE WEST",
+      "phone": "323.760.1864",
+      "email": "MPETEMAYS@YAHOO.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "KEY PA",
+      "name": "ANDRE DOTTEN",
+      "phone": "857.869.8151",
+      "email": "ANDREDOTTEN44@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "TRUCK PA",
+      "name": "ALEX WAXENBAUM",
+      "phone": "201.394.7431",
+      "email": "ALEXHWAX@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "AARON BRUMBACK",
+      "phone": "714.661.6857",
+      "email": "AARONYOURFRIEND@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "CELINA THOMAS",
+      "phone": "614.769.1121",
+      "email": "CELINA.CT2599@GMAIL.COM",
+      "call_time": "7:30AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": "PA",
+      "name": "ALEX GIBBONS",
+      "phone": "516.965.7792",
+      "email": "ALEXGIBBS24@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": "PRODUCTION",
+      "role": null,
+      "name": "CHOREOGRAPHER",
+      "phone": "931.607.7374",
+      "email": "JUSTINLEE8716@GMAIL.COM",
+      "call_time": "8:00AM"
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "BUTCH LEE",
+      "phone": "678.704.7358",
+      "email": "TUMUHUTTU@HOTMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "AISCHA SMITH",
+      "phone": "845.240.3677",
+      "email": "DSMITH4833@YAHOO.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "SHAUNA DAVIS",
+      "phone": "424.877.5223",
+      "email": "SHAUNAYDAVIS@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "RYAN WHITE",
+      "phone": "904.303.8011",
+      "email": "BOOKTAIRYAN@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "DJ FAUCET",
+      "phone": "714.345.4520",
+      "email": "BOOKFAUCET@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "CAR DEP",
+      "phone": "310.977.3649",
+      "email": "COLORTEK2025@GMAIL.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "TODD FORSBERG",
+      "phone": "818.720.0682",
+      "email": "FORSBERGRANCH@YAHOO.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "MAN MARIA",
+      "phone": "818.861.4419",
+      "email": "CONTACT@TACOMAN.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "AMIGOS LUIS",
+      "phone": "909.413.3609",
+      "email": "LOUIANGEL24@ME.COM",
+      "call_time": null
+    },
+    {
+      "department": null,
+      "role": null,
+      "name": "MIKE BOSSEN",
+      "phone": "818.726.2618",
+      "email": "MBOSSEN71@ICLOUD.COM",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}

@@ -1,0 +1,44 @@
+{
+  "source_file": "Tash Blake 6:7:24.pdf",
+  "production_info": {
+    "production_name": null,
+    "date": null,
+    "production_company": null,
+    "day_info": null
+  },
+  "crew": [
+    {
+      "department": "GRIP",
+      "role": "Hairstyling",
+      "name": "EMILYSINCLAIRSNIFFEN",
+      "phone": null,
+      "email": "sniffene@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": "MAKEUP",
+      "name": "ASHLEYSIMMONS",
+      "phone": null,
+      "email": "makeupbyashsimmons@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "photosbymilolee@gmail.com",
+      "call_time": null
+    },
+    {
+      "department": "GRIP",
+      "role": null,
+      "name": "BTS",
+      "phone": null,
+      "email": "joshx@whileyouresleeping.com",
+      "call_time": null
+    }
+  ],
+  "talent": []
+}
