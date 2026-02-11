@@ -98,15 +98,11 @@ export default function ParseReview() {
           parsed_contacts: parsedContacts,
         });
 
-        // Auto-exclude contacts without email AND phone (they need manual review)
+        // Start with all contacts excluded (none selected)
         if (parsedContacts && !hasInitializedExclusions) {
           const toExclude = new Set<number>();
-          parsedContacts.forEach((contact, idx) => {
-            const hasEmail = contact.emails && contact.emails.length > 0;
-            const hasPhone = contact.phones && contact.phones.length > 0;
-            if (!hasEmail && !hasPhone) {
-              toExclude.add(idx);
-            }
+          parsedContacts.forEach((_, idx) => {
+            toExclude.add(idx);
           });
           setExcludedIndices(toExclude);
           setHasInitializedExclusions(true);
