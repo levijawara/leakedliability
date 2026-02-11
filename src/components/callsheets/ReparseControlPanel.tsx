@@ -45,6 +45,7 @@ export function ReparseControlPanel({
   const [batchSize, setBatchSize] = useState<string>("10");
   const [isQueueing, setIsQueueing] = useState(false);
   const [isRetryingErrors, setIsRetryingErrors] = useState(false);
+  const [isResettingAll, setIsResettingAll] = useState(false);
 
   const totalPending = statusCounts.pending;
   const totalErrors = statusCounts.error;
@@ -140,9 +141,45 @@ export function ReparseControlPanel({
     }
   };
 
-  if (!hasWork && statusCounts.queued === 0 && statusCounts.parsing === 0) {
-    return null;
-  }
+  // Reset ALL global_call_sheets to pending
+  const handleResetAllToPending = async () => {
+    setIsResettingAll(true);
+    try {
+      // Reset all non-pending sheets to pending
+      const { error: updateError } = await supabase
+        .from('global_call_sheets')
+        .update({
+          status: 'pending',
+          error_message: null,
+          retry_count: 0,
+          parsing_started_at: null,
+          parsed_contacts: null,
+          contacts_extracted: null,
+          parsed_date: null,
+        })
+        .neq('status', 'pending');
+
+      if (updateError) throw updateError;
+
+      toast({
+        title: "All sheets reset",
+        description: "Every call sheet has been reset to pending status.",
+      });
+
+      onQueueComplete();
+    } catch (error: any) {
+      console.error('[ReparseControlPanel] Reset error:', error);
+      toast({
+        title: "Reset failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsResettingAll(false);
+    }
+  };
+
+  // Always show panel so reset button is accessible
 
   return (
     <Card className="mb-6 border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20">
@@ -232,9 +269,23 @@ export function ReparseControlPanel({
                 ) : (
                   <RefreshCw className="h-4 w-4" />
                 )}
-                Retry {totalErrors} Failed
+              Retry {totalErrors} Failed
               </Button>
             )}
+
+            <Button
+              variant="ghost"
+              onClick={handleResetAllToPending}
+              disabled={isResettingAll}
+              className="gap-2 text-muted-foreground"
+            >
+              {isResettingAll ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              Reset All to Pending
+            </Button>
           </div>
         </div>
       </CardContent>
