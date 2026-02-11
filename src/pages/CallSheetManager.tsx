@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CallSheetUploader } from "@/components/callsheets/CallSheetUploader";
 import { CallSheetList } from "@/components/callsheets/CallSheetList";
-import { FileSpreadsheet, Users } from "lucide-react";
+import { JsonImportUploader } from "@/components/callsheets/JsonImportUploader";
+import { FileSpreadsheet, Users, FileJson } from "lucide-react";
 
 export default function CallSheetManager() {
   const [searchParams] = useSearchParams();
@@ -52,17 +53,37 @@ export default function CallSheetManager() {
             </TabsList>
 
             <TabsContent value="upload" className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Upload Call Sheet</CardTitle>
-                  <CardDescription>
-                    Upload a PDF call sheet to automatically extract crew contact information using AI
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <CallSheetUploader />
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileSpreadsheet className="h-5 w-5" />
+                      Upload Call Sheet PDFs
+                    </CardTitle>
+                    <CardDescription>
+                      Upload PDF call sheets to automatically extract crew contacts using AI
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <CallSheetUploader />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileJson className="h-5 w-5" />
+                      Import Parsed JSON
+                    </CardTitle>
+                    <CardDescription>
+                      Bulk import Claude-extracted JSON files to populate existing call sheet records
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <JsonImportUploader />
+                  </CardContent>
+                </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="sheets" className="space-y-6">
