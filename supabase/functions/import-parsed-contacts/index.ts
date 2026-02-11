@@ -19,6 +19,22 @@ function normalizeFilename(name: string): string {
     .replace(/\.[^.]+$/, ""); // strip .pdf / .json
 }
 
+/** Try to parse human-readable date strings into YYYY-MM-DD */
+function tryParseDate(raw: string | null | undefined): string | null {
+  if (!raw || !raw.trim()) return null;
+  // Strip ordinal suffixes: 1st, 2nd, 3rd, 4th, 15th, etc.
+  const cleaned = raw.trim().replace(/(\d+)(st|nd|rd|th)/gi, "$1");
+  const d = new Date(cleaned);
+  if (isNaN(d.getTime())) {
+    console.log(`[import-parsed-contacts] Could not parse date: "${raw}"`);
+    return null;
+  }
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+
 /** Common single-word role labels that are NOT real names */
 const ROLE_KEYWORDS = new Set([
   "video", "photo", "photographer", "audio", "grip", "electric",
@@ -193,6 +209,7 @@ serve(async (req) => {
       // Extract metadata
       const parsedDate = claudeData.production_info?.date || null;
       const projectTitle = claudeData.production_info?.production_name || null;
+      const safeParsedDate = tryParseDate(parsedDate);
 
       // Update the row
       const { error: updateErr } = await supabase
@@ -201,7 +218,7 @@ serve(async (req) => {
           parsed_contacts: parsedContacts,
           contacts_extracted: parsedContacts.length,
           status: "parsed",
-          parsed_date: parsedDate,
+          parsed_date: safeParsedDate,
           project_title: projectTitle,
           updated_at: new Date().toISOString(),
         })
