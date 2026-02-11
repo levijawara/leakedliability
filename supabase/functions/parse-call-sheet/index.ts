@@ -390,16 +390,17 @@ const MULTIMODAL_SYSTEM_PROMPT = `You are an expert call sheet parser. You will 
 
 # CRITICAL RULES - ANCHORS ARE YOUR LEASH
 
-**PHONES AND EMAILS MUST COME FROM ANCHORS**
-- You will receive a list of pre-extracted phones and emails
-- ONLY output phones/emails that exist in the anchors list
-- If you see a phone/email in the image but it's NOT in anchors, add it to "unverified_candidates"
-- NEVER invent or hallucinate phone numbers or emails
+**PREFER ANCHORS, BUT TRUST YOUR VISION**
+- You will receive a list of pre-extracted phones and emails (anchors)
+- PREFER phones/emails from the anchors list — these are high-confidence
+- If you see a phone/email clearly visible in the document but it's NOT in anchors, you MAY include it — set confidence lower (0.70-0.80) and add it to "unverified_candidates" too
+- NEVER invent or hallucinate phone numbers or emails — only output what you can SEE
 
-**USE THE IMAGE FOR LAYOUT**
-- The image shows the actual table structure - USE IT
-- Row alignment, column boundaries, section headers - all visible in the image
+**USE THE DOCUMENT FOR LAYOUT**
+- The document shows the actual table structure - USE IT
+- Row alignment, column boundaries, section headers - all visible
 - Match each anchor phone/email to the correct person by their visual row position
+- For multi-page documents, extract contacts from ALL pages
 
 # 12 CANONICAL DEPARTMENTS (USE ONLY THESE)
 1. Agency/Production
@@ -446,10 +447,11 @@ Also return:
 
 const TEXT_FALLBACK_PROMPT = `You are an expert call sheet parser. Extract ALL contacts using these rules:
 
-# CRITICAL: ANCHORS ARE GROUND TRUTH
+# ANCHORS ARE HIGH-CONFIDENCE DATA
 - Pre-extracted phones/emails will be provided as "anchors"
-- ONLY output phones/emails that exist in the anchors list
-- Never hallucinate contact information
+- PREFER phones/emails from the anchors list
+- If you find additional phones/emails clearly present in the text, include them with lower confidence (0.70-0.80)
+- Never hallucinate contact information — only output what is explicitly in the text
 
 # EXTRACTION METHOD
 1. Find each person's name and role
@@ -583,77 +585,39 @@ serve(async (req) => {
     // STEP 2: GET FIRECRAWL SCREENSHOT (multimodal input)
     // =========================================================================
     
-    let screenshots: string[] = [];
-    let firecrawlText = "";
-    let firecrawlQuality: ExtractionQuality | null = null;
+    // Convert PDF to base64 for direct AI model upload (replaces Firecrawl single-page screenshot)
+    let pdfBase64 = "";
     let extractionMethod = "unpdf_text_only";
-
-    if (firecrawlApiKey) {
-      const firecrawlStart = Date.now();
-      try {
-        // Create signed URL for Firecrawl
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from("call_sheets")
-          .createSignedUrl(callSheet.master_file_path, 300);
-        
-        if (signedUrlError || !signedUrlData?.signedUrl) {
-          throw new Error("Failed to create signed URL");
-        }
-
-        // Request BOTH screenshot AND markdown from Firecrawl
-        const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${firecrawlApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url: signedUrlData.signedUrl,
-            formats: ["screenshot", "markdown"],
-            onlyMainContent: false,
-          }),
-        });
-
-        if (!firecrawlResponse.ok) {
-          const errText = await firecrawlResponse.text();
-          throw new Error(`Firecrawl API error: ${firecrawlResponse.status} - ${errText}`);
-        }
-
-        const firecrawlData = await firecrawlResponse.json();
-        
-        // Extract screenshot (base64)
-        const screenshotBase64 = firecrawlData.data?.screenshot || firecrawlData.screenshot;
-        if (screenshotBase64) {
-          screenshots.push(screenshotBase64);
-          extractionMethod = "multimodal_vision";
-          console.log(`[parse-call-sheet] Got screenshot from Firecrawl (${screenshotBase64.length} chars base64)`);
-        }
-        
-        // Also get markdown as backup/supplement
-        firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
-        firecrawlQuality = scoreExtraction(firecrawlText, isPriorityMode);
-        
-        logAction(`Firecrawl: screenshot=${screenshots.length > 0 ? 'yes' : 'no'}, markdown=${firecrawlText.length} chars`, firecrawlStart);
-      } catch (firecrawlError) {
-        console.warn("[parse-call-sheet] Firecrawl failed:", firecrawlError);
-        logAction(`Firecrawl failed: ${firecrawlError instanceof Error ? firecrawlError.message : 'unknown'}`);
+    
+    const pdfConvertStart = Date.now();
+    try {
+      const arrayBuffer = await fileData.arrayBuffer();
+      // Convert to base64 for Gemini PDF upload
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
       }
-    } else {
-      console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, using text-only mode");
+      pdfBase64 = btoa(binary);
+      extractionMethod = "direct_pdf_upload";
+      logAction(`PDF converted to base64 (${(pdfBase64.length / 1024).toFixed(1)} KB base64)`, pdfConvertStart);
+    } catch (pdfErr) {
+      console.warn("[parse-call-sheet] PDF base64 conversion failed:", pdfErr);
+      logAction(`PDF base64 conversion failed: ${pdfErr instanceof Error ? pdfErr.message : 'unknown'}`);
     }
 
     // =========================================================================
     // STEP 3: QUALITY GATE - Determine best extraction path
     // =========================================================================
     
-    const hasScreenshot = screenshots.length > 0;
-    const bestTextQuality = firecrawlQuality?.passed ? firecrawlQuality : unpdfQuality;
-    const bestText = firecrawlQuality?.passed ? firecrawlText : unpdfText;
+    const hasPdfDirect = pdfBase64.length > 0;
+    const bestTextQuality = unpdfQuality;
+    const bestText = unpdfText;
     
     // Minimum anchor threshold
     const minAnchors = anchors.phones.length >= 1 || anchors.emails.length >= 1;
     
-    if (!minAnchors && !hasScreenshot && !bestTextQuality.passed) {
+    if (!minAnchors && !hasPdfDirect && !bestTextQuality.passed) {
       const errorDetails = `No anchors (phones: ${anchors.phones.length}, emails: ${anchors.emails.length}), no screenshot, quality check failed`;
       console.error(`[parse-call-sheet] Quality too low: ${errorDetails}`);
       await markAsError(supabase, call_sheet_id, 
@@ -671,30 +635,30 @@ serve(async (req) => {
     
     const aiStart = Date.now();
     let parseResult: ParseResult;
-    let modelUsed = "google/gemini-2.5-flash";
+    let modelUsed = "google/gemini-2.5-pro"; // Single-pass with strongest model
     let escalated = false;
 
-    if (hasScreenshot) {
-      // PRIMARY PATH: Multimodal with screenshot + anchors
-      console.log("[parse-call-sheet] Using multimodal vision path (screenshot + anchors)");
-      parseResult = await parseWithMultimodal(
-        screenshots,
+    if (hasPdfDirect) {
+      // PRIMARY PATH: Direct PDF upload to Gemini (full visual context, all pages)
+      console.log("[parse-call-sheet] Using direct PDF upload path (all pages, full context)");
+      parseResult = await parseWithDirectPdf(
+        pdfBase64,
         anchors,
-        bestText.slice(0, 20000), // Text as supplemental context
+        bestText.slice(0, 30000), // Text as supplemental context (increased from 10k)
         lovableApiKey,
-        "google/gemini-2.5-flash"
+        "google/gemini-2.5-pro"
       );
-      modelUsed = "google/gemini-2.5-flash";
+      modelUsed = "google/gemini-2.5-pro";
     } else {
       // FALLBACK PATH: Text-only with anchors
-      console.log("[parse-call-sheet] Using text-only path with anchors (no screenshot available)");
+      console.log("[parse-call-sheet] Using text-only path with anchors (no PDF available)");
       parseResult = await parseWithTextOnly(
         bestText,
         anchors,
         lovableApiKey,
-        "google/gemini-2.5-flash"
+        "google/gemini-2.5-pro" // Use strongest model even for text-only
       );
-      modelUsed = "google/gemini-2.5-flash";
+      modelUsed = "google/gemini-2.5-pro";
     }
 
     if (!parseResult || !parseResult.contacts) {
@@ -718,54 +682,10 @@ serve(async (req) => {
     
     console.log(`[parse-call-sheet] Verification metrics: unassignedRatio=${metrics.unassignedRatio.toFixed(2)}, unknownNameRatio=${metrics.unknownNameRatio.toFixed(2)}`);
 
-    // =========================================================================
-    // STEP 6: ESCALATION (if metrics are bad, retry with stronger model)
-    // =========================================================================
-    
-    const shouldEscalate = 
-      metrics.unassignedRatio > 0.15 || 
-      metrics.unknownNameRatio > 0.20 ||
-      (verified.length < 3 && anchors.phones.length >= 5);
-
-    if (shouldEscalate && !escalated) {
-      console.log(`[parse-call-sheet] ESCALATING to GPT-5 (unassignedRatio=${metrics.unassignedRatio.toFixed(2)}, unknownNameRatio=${metrics.unknownNameRatio.toFixed(2)})`);
-      logAction("Escalating to GPT-5");
-      
-      const escalateStart = Date.now();
-      let escalateResult: ParseResult;
-      
-      if (hasScreenshot) {
-        escalateResult = await parseWithMultimodal(
-          screenshots,
-          anchors,
-          bestText.slice(0, 20000),
-          lovableApiKey,
-          "openai/gpt-5-mini" // Escalate to GPT-5 mini
-        );
-      } else {
-        escalateResult = await parseWithTextOnly(
-          bestText,
-          anchors,
-          lovableApiKey,
-          "openai/gpt-5-mini"
-        );
-      }
-      
-      if (escalateResult && escalateResult.contacts) {
-        const { verified: escalatedVerified, metrics: escalatedMetrics } = verifyAndRepairContacts(escalateResult, anchors);
-        
-        // Use escalated result if it's better
-        if (escalatedMetrics.unassignedRatio < metrics.unassignedRatio || 
-            escalatedVerified.length > verified.length) {
-          parseResult = escalateResult;
-          modelUsed = "openai/gpt-5-mini";
-          escalated = true;
-          logAction(`Escalation successful: ${escalatedVerified.length} contacts (was ${verified.length})`, escalateStart);
-        } else {
-          logAction(`Escalation did not improve results, keeping original`, escalateStart);
-        }
-      }
-    }
+    // STEP 6: ESCALATION REMOVED — Single-pass with strongest model (gemini-2.5-pro)
+    // Previous architecture used triple-pass (flash → GPT escalation → GPT correction)
+    // which added latency and mutation risk. Now using one strong model pass.
+    logAction(`Single-pass complete, skipping escalation (using ${modelUsed})`);
 
     // =========================================================================
     // STEP 7: FINAL SANITIZATION + VALIDATION
@@ -775,8 +695,8 @@ serve(async (req) => {
     const sanitizedContacts = sanitizePhones(parseResult.contacts);
     const validatedContacts = validateAndNormalizeContacts(sanitizedContacts);
     
-    // Final anchor verification pass
-    const finalContacts = enforceAnchorConstraint(validatedContacts, anchors);
+    // Anchor scoring pass: lower confidence for non-anchor data instead of deleting
+    const finalContacts = scoreByAnchorMatch(validatedContacts, anchors);
     logAction(`Final: ${finalContacts.length} contacts after sanitization`, sanitizeStart);
 
     // =========================================================================
@@ -794,13 +714,12 @@ serve(async (req) => {
       total_elapsed_formatted: `${(totalElapsedMs / 1000).toFixed(2)}s`,
       model_used: modelUsed,
       extraction_method: extractionMethod,
-      has_screenshot: hasScreenshot,
+      has_pdf_direct: hasPdfDirect,
       escalated: escalated,
       gpt52_correction: true,
       anchors_found: { phones: anchors.phones.length, emails: anchors.emails.length },
       verification_metrics: metrics,
-      unpdf_quality: unpdfQuality,
-      firecrawl_quality: firecrawlQuality
+      unpdf_quality: unpdfQuality
     };
 
     console.log(`[parse-call-sheet] Complete: ${correctedContacts.length} contacts, ${totalElapsedMs}ms, method=${extractionMethod}, model=${modelUsed}`);
@@ -965,8 +884,66 @@ async function extractTextFromPdf(pdfBlob: Blob): Promise<string> {
 }
 
 // ============================================================================
-// MULTIMODAL AI PARSING (screenshot + anchors)
+// DIRECT PDF UPLOAD AI PARSING (Change 1: full visual context, all pages)
 // ============================================================================
+
+async function parseWithDirectPdf(
+  pdfBase64: string,
+  anchors: Anchors,
+  textHint: string,
+  apiKey: string,
+  model: string
+): Promise<ParseResult> {
+  const content: any[] = [];
+  
+  // Send PDF directly as a file (Gemini supports inline_data for PDFs)
+  content.push({
+    type: "image_url",
+    image_url: { url: `data:application/pdf;base64,${pdfBase64}` }
+  });
+  
+  content.push({
+    type: "text",
+    text: `Parse this call sheet PDF. The FULL document is attached — extract contacts from ALL pages.
+
+## HIGH-CONFIDENCE ANCHORS (prefer these)
+Phones: ${JSON.stringify(anchors.phones)}
+Emails: ${JSON.stringify(anchors.emails)}
+IG Handles: ${JSON.stringify(anchors.igHandles)}
+
+## RULES
+- PREFER phones/emails from the anchors above — these are verified by OCR
+- If you see a phone/email clearly in the PDF but NOT in anchors, include it with lower confidence (0.70-0.80) and also add to unverified_candidates
+- Match each anchor to the correct person by their row position in the document
+- Extract contacts from ALL pages
+
+## SUPPLEMENTAL TEXT (for name verification)
+${textHint.slice(0, 30000)}`
+  });
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: "system", content: MULTIMODAL_SYSTEM_PROMPT },
+        { role: "user", content: content }
+      ],
+      max_completion_tokens: 16000,
+      tools: [buildContactExtractionTool()],
+      tool_choice: { type: "function", function: { name: "extract_contacts" } }
+    }),
+  });
+
+  return handleAIResponse(response);
+}
+
+// ============================================================================
+// MULTIMODAL AI PARSING (screenshot + anchors — legacy fallback)
 
 async function parseWithMultimodal(
   screenshots: string[],
@@ -993,18 +970,19 @@ async function parseWithMultimodal(
     type: "text",
     text: `Parse this call sheet. USE THE IMAGE to see the table layout.
 
-## GROUND TRUTH ANCHORS (use ONLY these)
+## HIGH-CONFIDENCE ANCHORS (prefer these)
 Phones: ${JSON.stringify(anchors.phones)}
 Emails: ${JSON.stringify(anchors.emails)}
 IG Handles: ${JSON.stringify(anchors.igHandles)}
 
 ## RULES
-- ONLY output phones/emails from the anchors above
-- Match each anchor to the correct person by their row position in the image
-- If you see a phone/email NOT in anchors, put it in unverified_candidates
+- PREFER phones/emails from the anchors above — these are high-confidence
+- If you see a phone/email clearly in the document but NOT in anchors, include it with lower confidence (0.70-0.80) and also add to unverified_candidates
+- Match each anchor to the correct person by their row position in the document
+- Extract contacts from ALL pages of the document
 
 ## SUPPLEMENTAL TEXT (for name verification)
-${textHint.slice(0, 10000)}`
+${textHint.slice(0, 30000)}`
   });
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -1040,18 +1018,19 @@ async function parseWithTextOnly(
 ): Promise<ParseResult> {
   const prompt = `Parse this call sheet text. Extract ALL contacts.
 
-## GROUND TRUTH ANCHORS (use ONLY these)
+## HIGH-CONFIDENCE ANCHORS (prefer these)
 Phones: ${JSON.stringify(anchors.phones)}
 Emails: ${JSON.stringify(anchors.emails)}
 IG Handles: ${JSON.stringify(anchors.igHandles)}
 
 ## RULES
-- ONLY output phones/emails from the anchors above
+- PREFER phones/emails from the anchors above — these are high-confidence
+- If you find additional phones/emails clearly present in the text, include them with lower confidence (0.70-0.80)
 - Match anchors to people by proximity in the text
 - If uncertain, leave the anchor unassigned
 
 ## CALL SHEET TEXT
-${text.slice(0, 50000)}`;
+${text.slice(0, 100000)}`;
 
   const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
@@ -1271,8 +1250,8 @@ Review the parsed contacts against the raw text. Fix any OCR errors, misspelling
     const validated = corrected.filter(c => {
       const hasName = c.name && c.name.trim().length > 0;
       const hasContact = (c.emails && c.emails.length > 0) || (c.phones && c.phones.length > 0);
-      const hasRoles = c.roles && c.roles.length > 0;
-      return hasName && hasContact && hasRoles;
+      // CHANGED: No longer require roles. A contact with name + phone/email is valid.
+      return hasName && hasContact;
     });
 
     const dropped = corrected.length - validated.length;
@@ -1405,21 +1384,41 @@ function verifyAndRepairContacts(
 }
 
 // ============================================================================
-// FINAL ANCHOR CONSTRAINT ENFORCEMENT
+// ANCHOR SCORING (prefer, don't enforce — Change 2)
 // ============================================================================
 
-function enforceAnchorConstraint(contacts: ParsedContact[], anchors: Anchors): ParsedContact[] {
+function scoreByAnchorMatch(contacts: ParsedContact[], anchors: Anchors): ParsedContact[] {
   const anchorPhoneSet = new Set(anchors.phones);
   const anchorEmailSet = new Set(anchors.emails.map(e => e.toLowerCase()));
   
-  return contacts.map(contact => ({
-    ...contact,
-    phones: (contact.phones || []).filter(p => {
+  return contacts.map(contact => {
+    const phones = (contact.phones || []).map(p => {
       const normalized = p.replace(/\D/g, '').slice(0, 10);
-      return anchorPhoneSet.has(normalized);
-    }),
-    emails: (contact.emails || []).filter(e => anchorEmailSet.has(e.toLowerCase()))
-  }));
+      return normalized.length === 10 ? normalized : null;
+    }).filter((p): p is string => p !== null);
+    
+    const emails = (contact.emails || []).map(e => e.toLowerCase().trim()).filter(e => e.includes('@'));
+    
+    // Check if contact data matches anchors
+    const phonesInAnchors = phones.filter(p => anchorPhoneSet.has(p));
+    const phonesNotInAnchors = phones.filter(p => !anchorPhoneSet.has(p));
+    const emailsInAnchors = emails.filter(e => anchorEmailSet.has(e));
+    const emailsNotInAnchors = emails.filter(e => !anchorEmailSet.has(e));
+    
+    // Lower confidence for non-anchor data
+    let confidence = contact.confidence || 0.85;
+    if (phonesNotInAnchors.length > 0 || emailsNotInAnchors.length > 0) {
+      confidence = Math.min(confidence, 0.75);
+    }
+    
+    return {
+      ...contact,
+      phones: [...phonesInAnchors, ...phonesNotInAnchors], // Keep all, anchors first
+      emails: [...emailsInAnchors, ...emailsNotInAnchors],
+      confidence,
+      needs_review: confidence < 0.80 || contact.needs_review === true
+    };
+  });
 }
 
 // ============================================================================
