@@ -1,41 +1,62 @@
 
-## Fix: Auto-Save Contacts for Already-Complete Call Sheets
+## Add Email Preview to Manual Email Sender
 
-### Root Cause
+### Problem
+Currently, clicking "Send Email" in the Manual Email Sender fires immediately with no preview. You want to see exactly what the recipient will receive -- populated with real producer data -- before confirming the send.
 
-When the auto-save code was deployed, the `auto_save_reviewed` batch action only processed call sheets with `status = 'parsed'`. However, many sheets were already `status = 'complete'` from earlier JSON imports that ran BEFORE auto-save existed. Those contacts were written to `parsed_contacts` on the sheet but never inserted into `crew_contacts` or linked via `contact_call_sheets`.
+### Approach
+Add a preview step to `ManualEmailSender.tsx` that renders the actual email template component with real producer data inline, plus a confirm/cancel flow.
 
-This is why you see "5 unsaved contacts" and "9 unsaved contacts" -- those people exist in the call sheet's `parsed_contacts` array but have no matching record in `crew_contacts`.
+### Changes (1 file)
 
-### Fix (1 file, ~20 lines)
+**File: `src/components/admin/ManualEmailSender.tsx`**
 
-**File: `supabase/functions/import-parsed-contacts/index.ts`**
+1. **Add preview state**: New `showPreview` boolean and `previewData` object state
+2. **Change "Send Email" button behavior**: Instead of calling the edge function directly, it now builds the template data locally (mirroring the `buildTemplateData` logic from the edge function) and shows a preview panel
+3. **Render the preview**: When `showPreview` is true, display the actual React email template component (e.g., `LiabilityNotification`) with the real producer's data (name, amount owed, project, days overdue, etc.) in a styled preview container showing From/To/Subject headers -- same layout as the existing EmailPreview on the sitemap page
+4. **Confirm/Cancel buttons**: Below the preview, show "Confirm Send" (triggers the actual edge function call) and "Cancel" (returns to the form)
+5. **Import the template components**: Import the same template components already used in `EmailPreview.tsx` (they are already importable from the supabase functions path)
 
-Add a new action `backfill_complete` that:
+### Data Flow
 
-1. Fetches all `status = 'complete'` call sheets that have `parsed_contacts`
-2. For each sheet, counts how many `contact_call_sheets` links exist
-3. If the link count is less than `contacts_extracted`, runs `autoSaveContacts` to insert any missing contacts
-4. This is idempotent -- existing contacts get matched by email/phone and merged, truly new ones get inserted
+```text
+Select template + producer
+        |
+   Click "Preview Email"
+        |
+   Build template data locally (from producer record)
+        |
+   Render actual React email component with real data
+        |
+   Show From / To / Subject header + rendered template
+        |
+   "Confirm & Send" --> calls edge function as before
+   "Back to Edit"   --> hides preview, returns to form
+```
 
-This reuses the existing `autoSaveContacts` function with zero changes to it.
-
-### Secondary Fix: Strip "(empty)" Placeholder Strings
-
-The Claude JSON files sometimes include `"(empty)"` as a literal string for missing phone/email fields. The edge function currently stores these verbatim. Add a small sanitization step in the default import flow to treat `"(empty)"` as absent data (empty array) instead of storing it as a real value.
+### What fetches the real data
+The `producers` array is already passed as a prop with `id`, `name`, `email`, `company`. For the liability notification specifically, we also need `total_amount_owed`, `oldest_debt_days`, and the latest report's `project_name` and `report_id`. These are already fetched by the edge function, but for the preview we need them client-side. We will:
+- Expand the `Producer` interface to include `total_amount_owed`, `oldest_debt_days` (these fields already exist on the producers table)
+- When preview is triggered, do a quick Supabase query for the latest `payment_reports` row for that producer to get `project_name`, `report_id`, and `invoice_date`
 
 ### What Will NOT Change
-
-- No frontend/UI changes
+- No layout or CSS changes to existing components
 - No schema changes
-- No existing file creation
-- No changes to merge logic or dedup logic
-- The `autoSaveContacts` function itself stays untouched
+- No edge function changes
+- No new files created
+- The `EmailPreview.tsx` component on the sitemap page is untouched
+- The actual send logic remains identical
+
+### Technical Details
+- Template components are imported from `../../../supabase/functions/send-email/_templates/` (same pattern as `EmailPreview.tsx`)
+- The `buildTemplateData` function logic is duplicated client-side (only for preview rendering -- the edge function still builds its own data server-side for the actual send)
+- Preview container uses existing Card, Badge, and Button components
+- Only the templates that are commonly sent manually need full preview support; others can fall back to showing the template name and data as JSON
 
 ### Verification
-
-1. Deploy the updated edge function
-2. Call the `backfill_complete` action via curl
-3. Check that "unsaved contacts" count drops to 0 on the PUMA x Snipes and Lil Nas X sheets
-4. Confirm total crew_contacts count increased appropriately
-5. Confirm no `"(empty)"` strings in newly created contacts
+1. Go to /admin, expand Producer Notification Emails
+2. Select "Initial Liability Notification" template
+3. Select Serena de Comarmond as producer
+4. Click "Preview Email" -- should see the full rendered email with her real data (name, $1,400, project "Cheaters", 168 days overdue)
+5. Click "Confirm & Send" to actually send
+6. Or click "Back to Edit" to return to form
