@@ -1,28 +1,30 @@
 
+## Fix: Show Contacts Count on Complete Call Sheets
 
-# Fix: Parse Human-Readable Dates in import-parsed-contacts
+### Problem
+The call sheet cards are not displaying the extracted contacts count because the UI only shows it when `status === 'parsed'`. Since the JSON import now sets status directly to `'complete'`, the count is hidden even though the data exists in the database.
 
-## Problem
-The `parsed_date` column in `global_call_sheets` is a `date` type, but Claude's JSON files contain human-readable date strings like `"MARCH 15th, 2024"` which PostgreSQL rejects with error `22007`.
+### Changes (2 files, ~4 lines each)
 
-## Solution
-Add a date-parsing helper in the edge function that normalizes these strings into ISO date format (`YYYY-MM-DD`) before writing to the database. If parsing fails, store `null` instead of crashing the update.
+**1. `src/components/callsheets/CallSheetCard.tsx`** (line ~206)
+- Change condition from `sheet.status === 'parsed'` to include `'complete'`:
+  ```
+  {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null && (
+  ```
 
-## What Changes
-- **1 file**: `supabase/functions/import-parsed-contacts/index.ts`
-- Add a `tryParseDate(raw: string): string | null` helper that:
-  - Strips ordinal suffixes (`st`, `nd`, `rd`, `th`)
-  - Attempts `new Date(cleaned)` parsing
-  - Returns `YYYY-MM-DD` string on success, `null` on failure
-- Replace the direct assignment `parsed_date: parsedDate` with `parsed_date: tryParseDate(parsedDate)`
+**2. `src/components/callsheets/CallSheetList.tsx`** (line ~1098)
+- Same fix for the table/list view:
+  ```
+  {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null ? (
+  ```
 
-## What Will NOT Change
-- No frontend changes
+### What Will NOT Change
+- No layout, CSS, or component structure changes
 - No schema changes
-- No other edge functions modified
+- No edge function changes
+- No other files touched
 
-## Verification
-- Re-upload the XZIBIT JSON that previously failed
-- Confirm the row updates successfully with `parsed_date = '2024-03-15'`
-- Confirm other JSONs with unusual date formats gracefully fall back to `null`
-
+### Verification
+1. Navigate to /call-sheets
+2. Confirm call sheet cards now show the contacts count (e.g., "24") next to a user icon
+3. Confirm both card view and list view display correctly
