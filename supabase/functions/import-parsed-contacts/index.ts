@@ -45,6 +45,13 @@ const ROLE_KEYWORDS = new Set([
   "pa", "ac", "dit", "hmua", "mua",
 ]);
 
+/** Returns true if the value is a placeholder like "(empty)" */
+function isPlaceholder(v: string | null | undefined): boolean {
+  if (!v) return true;
+  const t = v.trim().toLowerCase();
+  return !t || t === "(empty)" || t === "empty" || t === "n/a" || t === "none" || t === "tbd";
+}
+
 function looksLikeRoleLabel(name: string): boolean {
   const trimmed = name.trim();
   if (!trimmed) return true;
@@ -331,7 +338,6 @@ serve(async (req) => {
         const uploaderId = sheet.first_uploaded_by || user.id;
 
         if (contacts.length === 0) {
-          // No contacts, just mark complete
           await supabase
             .from("global_call_sheets")
             .update({ status: "complete", updated_at: new Date().toISOString() })
@@ -341,11 +347,7 @@ serve(async (req) => {
         }
 
         const result = await autoSaveContacts(
-          supabase,
-          sheet.id,
-          contacts,
-          uploaderId,
-          sheet.project_title,
+          supabase, sheet.id, contacts, uploaderId, sheet.project_title,
         );
 
         if (result.error) {
@@ -353,13 +355,10 @@ serve(async (req) => {
         } else {
           totalSaved += result.saved;
           totalMerged += result.merged;
-
-          // Mark as complete
           await supabase
             .from("global_call_sheets")
             .update({ status: "complete", updated_at: new Date().toISOString() })
             .eq("id", sheet.id);
-
           totalProcessed++;
         }
       }
@@ -370,6 +369,90 @@ serve(async (req) => {
         JSON.stringify({
           success: true,
           sheets_processed: totalProcessed,
+          contacts_saved: totalSaved,
+          contacts_merged: totalMerged,
+          errors: errors.slice(0, 20),
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // ── ACTION: backfill_complete ───────────────────────────────
+    // Re-run autoSaveContacts on already-complete sheets that have unsaved contacts
+    if (body.action === "backfill_complete") {
+      console.log("[import-parsed-contacts] backfill_complete action");
+
+      const { data: sheets, error: fetchErr } = await supabase
+        .from("global_call_sheets")
+        .select("id, parsed_contacts, project_title, first_uploaded_by, contacts_extracted")
+        .eq("status", "complete")
+        .not("parsed_contacts", "is", null);
+
+      if (fetchErr) {
+        console.error("[backfill_complete] fetch error:", fetchErr);
+        throw fetchErr;
+      }
+
+      if (!sheets || sheets.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, message: "No complete sheets with parsed_contacts found", processed: 0 }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      console.log(`[backfill_complete] Checking ${sheets.length} complete sheets`);
+
+      let totalSaved = 0;
+      let totalMerged = 0;
+      let sheetsBackfilled = 0;
+      let sheetsSkipped = 0;
+      const errors: string[] = [];
+
+      for (const sheet of sheets) {
+        const contacts = (sheet.parsed_contacts || []) as ParsedContact[];
+        if (contacts.length === 0) { sheetsSkipped++; continue; }
+
+        // Count existing links for this sheet
+        const { count, error: countErr } = await supabase
+          .from("contact_call_sheets")
+          .select("id", { count: "exact", head: true })
+          .eq("call_sheet_id", sheet.id);
+
+        if (countErr) {
+          errors.push(`${sheet.id}: count error: ${countErr.message}`);
+          continue;
+        }
+
+        const linkedCount = count || 0;
+        const expectedCount = sheet.contacts_extracted || contacts.length;
+
+        if (linkedCount >= expectedCount) {
+          sheetsSkipped++;
+          continue;
+        }
+
+        console.log(`[backfill_complete] Sheet ${sheet.id}: ${linkedCount}/${expectedCount} linked, backfilling`);
+
+        const uploaderId = sheet.first_uploaded_by || user.id;
+        const result = await autoSaveContacts(supabase, sheet.id, contacts, uploaderId, sheet.project_title);
+
+        if (result.error) {
+          errors.push(`${sheet.id}: ${result.error}`);
+        } else {
+          totalSaved += result.saved;
+          totalMerged += result.merged;
+          sheetsBackfilled++;
+        }
+      }
+
+      console.log(`[backfill_complete] Done: ${sheetsBackfilled} backfilled, ${sheetsSkipped} skipped, ${totalSaved} saved, ${totalMerged} merged`);
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          sheets_checked: sheets.length,
+          sheets_backfilled: sheetsBackfilled,
+          sheets_skipped: sheetsSkipped,
           contacts_saved: totalSaved,
           contacts_merged: totalMerged,
           errors: errors.slice(0, 20),
@@ -452,10 +535,10 @@ serve(async (req) => {
 
         parsedContacts.push({
           name: c.name.trim(),
-          roles: c.role ? [c.role.trim()] : [],
-          departments: c.department ? [c.department.trim()] : [],
-          phones: c.phone ? [c.phone.trim()] : [],
-          emails: c.email ? [c.email.trim().toLowerCase()] : [],
+          roles: c.role && !isPlaceholder(c.role) ? [c.role.trim()] : [],
+          departments: c.department && !isPlaceholder(c.department) ? [c.department.trim()] : [],
+          phones: c.phone && !isPlaceholder(c.phone) ? [c.phone.trim()] : [],
+          emails: c.email && !isPlaceholder(c.email) ? [c.email.trim().toLowerCase()] : [],
           confidence: 1.0,
           needs_review: needsReview,
           ig_handle: null,
