@@ -1,30 +1,32 @@
 
-## Fix: Show Contacts Count on Complete Call Sheets
+## Ensure Merge Stacks All Data (Source Files Gap Fix)
 
-### Problem
-The call sheet cards are not displaying the extracted contacts count because the UI only shows it when `status === 'parsed'`. Since the JSON import now sets status directly to `'complete'`, the count is hidden even though the data exists in the database.
+### Current State (What's Already Working)
+- **Call sheet appearances**: The merge already transfers all `contact_call_sheets` links from duplicates to the primary contact before deletion. Since call sheet counts are derived from this table, appearances already stack correctly.
+- **YouTube views**: Views are computed client-side from `contact_call_sheets` links -> projects -> `youtube_videos`. Since the links are transferred, YouTube views already aggregate correctly after a merge.
+- **Array fields**: Phones, emails, roles, departments, and IG handles are already merged via union (no data loss).
 
-### Changes (2 files, ~4 lines each)
+### The One Gap
+The `source_files` array on the `crew_contacts` record is **not** being included in the merge update. The `mergeContactData()` function already computes the merged `source_files`, but the database update and local state update both omit it.
 
-**1. `src/components/callsheets/CallSheetCard.tsx`** (line ~206)
-- Change condition from `sheet.status === 'parsed'` to include `'complete'`:
-  ```
-  {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null && (
-  ```
+### Fix (1 file, ~2 lines changed)
 
-**2. `src/components/callsheets/CallSheetList.tsx`** (line ~1098)
-- Same fix for the table/list view:
-  ```
-  {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null ? (
-  ```
+**File: `src/components/contacts/DuplicateMergeModal.tsx`**
+
+1. Add `source_files: mergedData.source_files` to the Supabase `.update()` call (around line 164, alongside the other merged fields).
+2. Add `source_files: mergedData.source_files` to the local state object pushed into `updatedContacts` (around line 263).
+
+That's it. No other files, no schema changes, no edge function changes.
 
 ### What Will NOT Change
-- No layout, CSS, or component structure changes
+- No layout, CSS, or UI changes
 - No schema changes
 - No edge function changes
-- No other files touched
+- No other files
 
 ### Verification
-1. Navigate to /call-sheets
-2. Confirm call sheet cards now show the contacts count (e.g., "24") next to a user icon
-3. Confirm both card view and list view display correctly
+1. Find two contacts that share data (same person, different spellings)
+2. Merge them via the Duplicate Merge modal
+3. Confirm the merged contact retains all call sheet appearances (count should be the sum of unique sheets)
+4. Confirm YouTube views reflect the combined total
+5. Confirm `source_files` array contains entries from both contacts
