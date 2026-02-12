@@ -161,6 +161,7 @@ export function DuplicateMergeModal({
             roles: mergedData.roles,
             departments: mergedData.departments,
             ig_handle: mergedData.ig_handle,
+            source_files: mergedData.source_files,
             is_favorite: isFavorite
           })
           .eq('id', primaryId)
@@ -260,6 +261,7 @@ export function DuplicateMergeModal({
           roles: mergedData.roles,
           departments: mergedData.departments,
           ig_handle: mergedData.ig_handle,
+          source_files: mergedData.source_files,
           is_favorite: isFavorite
         });
       }

@@ -175,11 +175,13 @@ export function mergeContactData<T extends ContactForMatching>(
   roles: string[];
   departments: string[];
   ig_handle: string | null;
+  source_files: string[];
 } {
   const allPhones = new Set<string>();
   const allEmails = new Set<string>();
   const allRoles = new Set<string>();
   const allDepartments = new Set<string>();
+  const allSourceFiles = new Set<string>();
   let igHandle = primary.ig_handle;
   
   // Add primary contact data
@@ -189,6 +191,9 @@ export function mergeContactData<T extends ContactForMatching>(
   if ('departments' in primary) {
     ((primary as any).departments || []).forEach((d: string) => allDepartments.add(d));
   }
+  if ('source_files' in primary) {
+    ((primary as any).source_files || []).forEach((s: string) => allSourceFiles.add(s));
+  }
   
   // Add duplicate contact data
   for (const dup of duplicates) {
@@ -197,6 +202,9 @@ export function mergeContactData<T extends ContactForMatching>(
     (dup.roles || []).forEach(r => allRoles.add(r));
     if ('departments' in dup) {
       ((dup as any).departments || []).forEach((d: string) => allDepartments.add(d));
+    }
+    if ('source_files' in dup) {
+      ((dup as any).source_files || []).forEach((s: string) => allSourceFiles.add(s));
     }
     if (!igHandle && dup.ig_handle) {
       igHandle = dup.ig_handle;
@@ -208,6 +216,7 @@ export function mergeContactData<T extends ContactForMatching>(
     emails: Array.from(allEmails),
     roles: Array.from(allRoles),
     departments: Array.from(allDepartments),
-    ig_handle: igHandle
+    ig_handle: igHandle,
+    source_files: Array.from(allSourceFiles)
   };
 }
