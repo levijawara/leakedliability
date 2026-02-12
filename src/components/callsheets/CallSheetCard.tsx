@@ -203,7 +203,7 @@ export function CallSheetCard({
               </Tooltip>
             )}
           </div>
-          {sheet.status === 'parsed' && sheet.contacts_extracted !== null && (
+          {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null && (
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <Users className="h-3 w-3" />
               <span>{sheet.contacts_extracted}</span>
@@ -279,7 +279,7 @@ export function CallSheetCard({
         {/* Action buttons */}
         <div className="flex items-center gap-1 pt-1 border-t">
           <TooltipProvider delayDuration={300}>
-            {sheet.status === 'parsed' && (
+            {(sheet.status === 'parsed' || sheet.status === 'complete') && (
               <>
                 <Tooltip>
                   <TooltipTrigger asChild>

@@ -1095,7 +1095,7 @@ export function CallSheetList({}: CallSheetListProps) {
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    {sheet.status === 'parsed' && sheet.contacts_extracted !== null ? (
+                    {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null ? (
                       <div className="flex items-center justify-center gap-1">
                         <Users className="h-3 w-3 text-muted-foreground" />
                         <span>{sheet.contacts_extracted}</span>
@@ -1126,7 +1126,7 @@ export function CallSheetList({}: CallSheetListProps) {
                   <TableCell className="text-right">
                     <TooltipProvider delayDuration={300}>
                       <div className="flex items-center justify-end gap-1">
-                        {sheet.status === 'parsed' && (
+                        {(sheet.status === 'parsed' || sheet.status === 'complete') && (
                           <>
                             <Tooltip>
                               <TooltipTrigger asChild>
