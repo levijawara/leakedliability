@@ -1,32 +1,41 @@
 
-## Ensure Merge Stacks All Data (Source Files Gap Fix)
+## Fix: Auto-Save Contacts for Already-Complete Call Sheets
 
-### Current State (What's Already Working)
-- **Call sheet appearances**: The merge already transfers all `contact_call_sheets` links from duplicates to the primary contact before deletion. Since call sheet counts are derived from this table, appearances already stack correctly.
-- **YouTube views**: Views are computed client-side from `contact_call_sheets` links -> projects -> `youtube_videos`. Since the links are transferred, YouTube views already aggregate correctly after a merge.
-- **Array fields**: Phones, emails, roles, departments, and IG handles are already merged via union (no data loss).
+### Root Cause
 
-### The One Gap
-The `source_files` array on the `crew_contacts` record is **not** being included in the merge update. The `mergeContactData()` function already computes the merged `source_files`, but the database update and local state update both omit it.
+When the auto-save code was deployed, the `auto_save_reviewed` batch action only processed call sheets with `status = 'parsed'`. However, many sheets were already `status = 'complete'` from earlier JSON imports that ran BEFORE auto-save existed. Those contacts were written to `parsed_contacts` on the sheet but never inserted into `crew_contacts` or linked via `contact_call_sheets`.
 
-### Fix (1 file, ~2 lines changed)
+This is why you see "5 unsaved contacts" and "9 unsaved contacts" -- those people exist in the call sheet's `parsed_contacts` array but have no matching record in `crew_contacts`.
 
-**File: `src/components/contacts/DuplicateMergeModal.tsx`**
+### Fix (1 file, ~20 lines)
 
-1. Add `source_files: mergedData.source_files` to the Supabase `.update()` call (around line 164, alongside the other merged fields).
-2. Add `source_files: mergedData.source_files` to the local state object pushed into `updatedContacts` (around line 263).
+**File: `supabase/functions/import-parsed-contacts/index.ts`**
 
-That's it. No other files, no schema changes, no edge function changes.
+Add a new action `backfill_complete` that:
+
+1. Fetches all `status = 'complete'` call sheets that have `parsed_contacts`
+2. For each sheet, counts how many `contact_call_sheets` links exist
+3. If the link count is less than `contacts_extracted`, runs `autoSaveContacts` to insert any missing contacts
+4. This is idempotent -- existing contacts get matched by email/phone and merged, truly new ones get inserted
+
+This reuses the existing `autoSaveContacts` function with zero changes to it.
+
+### Secondary Fix: Strip "(empty)" Placeholder Strings
+
+The Claude JSON files sometimes include `"(empty)"` as a literal string for missing phone/email fields. The edge function currently stores these verbatim. Add a small sanitization step in the default import flow to treat `"(empty)"` as absent data (empty array) instead of storing it as a real value.
 
 ### What Will NOT Change
-- No layout, CSS, or UI changes
+
+- No frontend/UI changes
 - No schema changes
-- No edge function changes
-- No other files
+- No existing file creation
+- No changes to merge logic or dedup logic
+- The `autoSaveContacts` function itself stays untouched
 
 ### Verification
-1. Find two contacts that share data (same person, different spellings)
-2. Merge them via the Duplicate Merge modal
-3. Confirm the merged contact retains all call sheet appearances (count should be the sum of unique sheets)
-4. Confirm YouTube views reflect the combined total
-5. Confirm `source_files` array contains entries from both contacts
+
+1. Deploy the updated edge function
+2. Call the `backfill_complete` action via curl
+3. Check that "unsaved contacts" count drops to 0 on the PUMA x Snipes and Lil Nas X sheets
+4. Confirm total crew_contacts count increased appropriately
+5. Confirm no `"(empty)"` strings in newly created contacts
