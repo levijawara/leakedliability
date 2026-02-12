@@ -106,6 +106,18 @@ export function ProjectFolderCard({
           </div>
         </div>
 
+        {/* Video titles & views */}
+        {videoCount > 0 && (
+          <div className="border-t pt-2 space-y-1">
+            {project.videos.map((video) => (
+              <div key={video.id} className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+                <Youtube className="h-3 w-3 text-destructive flex-shrink-0" />
+                <span className="truncate">{video.title || video.video_id}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Video count & views */}
         <div className="flex items-center justify-between pt-2 border-t">
           <div className="flex items-center gap-1 text-xs text-muted-foreground">

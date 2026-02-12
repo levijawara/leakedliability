@@ -159,6 +159,13 @@ export function CallSheetCard({
             Complete
           </Badge>
         );
+      case 'complete':
+        return (
+          <Badge className="gap-1 bg-green-500 hover:bg-green-600">
+            <CheckCircle className="h-3 w-3" />
+            Complete
+          </Badge>
+        );
       case 'error':
         return (
           <Badge variant="destructive" className="gap-1">
