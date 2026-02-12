@@ -437,7 +437,7 @@ export default function Admin() {
     // Load all producers for the create user form dropdown
     const { data: producersList } = await supabase
       .from('producers')
-      .select('id, name, company, email')
+      .select('id, name, company, email, total_amount_owed, oldest_debt_days')
       .order('name', { ascending: true });
     setProducers(producersList || []);
 
