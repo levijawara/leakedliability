@@ -113,7 +113,7 @@ function mergeArrays(existing: string[] | null, incoming: string[]): string[] {
  * merging duplicates by email or phone, and linking via contact_call_sheets.
  */
 async function autoSaveContacts(
-  supabase: ReturnType<typeof createClient>,
+  supabase: any,
   sheetId: string,
   parsedContacts: ParsedContact[],
   userId: string,
