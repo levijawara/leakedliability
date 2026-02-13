@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "test:integration": "vitest run",
     "enrich:ig": "tsx scripts/enrich-crew-contacts-ig.ts",
-    "enrich:ig:dry-run": "DRY_RUN=true tsx scripts/enrich-crew-contacts-ig.ts"
+    "enrich:ig:dry-run": "DRY_RUN=true tsx scripts/enrich-crew-contacts-ig.ts",
+    "backfill:contacts": "tsx scripts/run-backfill-contacts.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

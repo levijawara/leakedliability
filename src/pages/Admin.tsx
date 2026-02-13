@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload, Youtube, RefreshCw } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload, Youtube, RefreshCw, Users } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,6 +94,7 @@ export default function Admin() {
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
   const [notificationPanelExpanded, setNotificationPanelExpanded] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
+  const [backfillContactsLoading, setBackfillContactsLoading] = useState(false);
   const [verifyingSubmissionId, setVerifyingSubmissionId] = useState<string | null>(null);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
@@ -540,6 +541,34 @@ export default function Admin() {
       });
     } finally {
       setBackfillLoading(false);
+    }
+  };
+
+  const handleBackfillUnsavedContacts = async () => {
+    setBackfillContactsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('import-parsed-contacts', {
+        body: { action: 'backfill_complete' },
+      });
+
+      if (error) throw error;
+
+      const msg = data?.sheets_backfilled
+        ? `✅ Backfilled ${data.sheets_backfilled} sheets. Saved: ${data.contacts_saved || 0}, Merged: ${data.contacts_merged || 0}. Run again if you see more unsaved contacts (idempotent).`
+        : `✅ All complete sheets already have contacts saved. (${data?.sheets_skipped || 0} skipped)`;
+      toast({ title: "Backfill Complete", description: msg });
+    } catch (error: any) {
+      console.error('Backfill contacts error:', error);
+      const isTimeout = error?.message?.includes('timeout') || error?.message?.includes('504');
+      toast({
+        title: isTimeout ? "Partial complete (timeout)" : "Error",
+        description: isTimeout
+          ? "Some sheets were processed. Click again to continue — it's idempotent."
+          : `⚠️ ${error?.message || 'Backfill failed'}`,
+        variant: isTimeout ? "default" : "destructive",
+      });
+    } finally {
+      setBackfillContactsLoading(false);
     }
   };
 
@@ -1941,6 +1970,35 @@ export default function Admin() {
                   </>
                 ) : (
                   `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
+                )}
+              </Button>
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="space-y-1">
+                <Label className="text-lg font-semibold flex items-center gap-2">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  Backfill Unsaved Contacts
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  Save parsed contacts from complete call sheets into crew_contacts. Fixes &quot;5 unsaved contacts&quot; etc.
+                </p>
+              </div>
+              <Button
+                onClick={handleBackfillUnsavedContacts}
+                disabled={backfillContactsLoading}
+                variant="outline"
+              >
+                {backfillContactsLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Backfilling...
+                  </>
+                ) : (
+                  <>
+                    <Users className="mr-2 h-4 w-4" />
+                    Backfill Unsaved Contacts
+                  </>
                 )}
               </Button>
             </div>
