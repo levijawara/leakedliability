@@ -56,13 +56,17 @@ export function FilterModal({
   const [callSheets, setCallSheets] = useState<CallSheetOption[]>([]);
   const [loadingSheets, setLoadingSheets] = useState(false);
 
-  // Reset local filters when modal opens
-  const handleOpenChange = (open: boolean) => {
-    if (open) {
+  // Fetch call sheets when modal opens
+  useEffect(() => {
+    if (isOpen && userId) {
       setLocalFilters(filters);
       setRoleSearch("");
-      if (userId) fetchCallSheets();
-    } else {
+      fetchCallSheets();
+    }
+  }, [isOpen, userId]);
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
       onClose();
     }
   };
