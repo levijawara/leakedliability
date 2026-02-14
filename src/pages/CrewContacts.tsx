@@ -45,6 +45,7 @@ const defaultFilters: ContactFilters = {
   favoritesOnly: false,
   sortByAppearances: null,
   sortByYouTubeViews: null,
+  selectedCallSheetIds: [],
 };
 
 export default function CrewContacts() {
@@ -486,19 +487,64 @@ export default function CrewContacts() {
     ).sort();
   }, [contacts]);
 
+  // Fetch contact IDs for selected call sheets
+  const [callSheetContactIds, setCallSheetContactIds] = useState<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (filters.selectedCallSheetIds.length === 0) {
+      setCallSheetContactIds(null);
+      return;
+    }
+
+    const fetchContactIds = async () => {
+      try {
+        const PAGE_SIZE = 1000;
+        let allRows: { contact_id: string }[] = [];
+        let from = 0;
+
+        while (true) {
+          const { data, error } = await supabase
+            .from('contact_call_sheets')
+            .select('contact_id')
+            .in('call_sheet_id', filters.selectedCallSheetIds)
+            .range(from, from + PAGE_SIZE - 1);
+
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+          allRows = [...allRows, ...data];
+          if (data.length < PAGE_SIZE) break;
+          from += PAGE_SIZE;
+        }
+
+        setCallSheetContactIds(new Set(allRows.map(r => r.contact_id)));
+      } catch (err) {
+        console.error('[CrewContacts] Failed to fetch call sheet contact IDs:', err);
+        setCallSheetContactIds(new Set());
+      }
+    };
+
+    fetchContactIds();
+  }, [filters.selectedCallSheetIds]);
+
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     return (
       filters.selectedRoles.length +
       filters.selectedDepartments.length +
       (filters.contactInfoFilter !== 'all' ? 1 : 0) +
-      (filters.favoritesOnly ? 1 : 0)
+      (filters.favoritesOnly ? 1 : 0) +
+      filters.selectedCallSheetIds.length
     );
   }, [filters]);
 
   // OPTIMIZED: Use useMemo instead of useEffect + setState for filtered contacts
   const filteredContacts = useMemo(() => {
     let result = [...contacts];
+
+    // Call sheet source filter
+    if (callSheetContactIds) {
+      result = result.filter(c => callSheetContactIds.has(c.id));
+    }
 
     // Recently Added filter
     if (recentlyAddedActive) {
@@ -583,7 +629,7 @@ export default function CrewContacts() {
     }
 
     return result;
-  }, [contacts, debouncedSearchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts, youtubeViewCounts]);
+  }, [contacts, debouncedSearchQuery, filters, recentlyAddedActive, recentlyAddedContacts, callSheetCounts, youtubeViewCounts, callSheetContactIds]);
 
   // Clear selection when exiting select mode
   useEffect(() => {
@@ -979,6 +1025,7 @@ export default function CrewContacts() {
         onFiltersChange={setFilters}
         availableRoles={availableRoles}
         availableDepartments={availableDepartments}
+        userId={user?.id}
       />
 
       {/* Duplicate Merge Modal */}
