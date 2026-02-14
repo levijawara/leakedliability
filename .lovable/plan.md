@@ -1,33 +1,51 @@
 
 
-## Fix: Edge Function Build Errors Blocking Backfill Button
+## Fix: Reflect Contact Edits in Parse Review Table
 
 ### Problem
-The "Backfill Unsaved Contacts" button calls the `import-parsed-contacts` edge function with `{"action": "backfill_complete"}`, but that function cannot deploy due to 20 TypeScript build errors. All 20 errors originate from one root cause: the `autoSaveContacts` function signature types `supabase` as `ReturnType<typeof createClient>`, which resolves all table queries to `never` because the esm.sh import has no schema generics.
+When you edit a parsed contact (e.g., adding Massimo's last name) via the pencil icon and click Save, the contact is saved to your Crew Contacts database, but the Parse Review table still shows the original parsed data. This is because the edit modal saves to the database but never communicates the amended fields back to the parent page's local state.
 
-### Fix (1 file, 1 line)
+### Root Cause
+- `SaveContactModal` calls `onSave()` with no arguments after saving
+- `ParseReview.handleSaveComplete` just closes the modal (`setSelectedContact(null)`)
+- The local `callSheet.parsed_contacts` array is never updated with the user's edits
 
-**File: `supabase/functions/import-parsed-contacts/index.ts`**
+### Fix (2 files)
 
-Change line 116:
-```typescript
-// FROM:
-supabase: ReturnType<typeof createClient>,
+**File 1: `src/components/callsheets/SaveContactModal.tsx`**
+- Change the `onSave` prop type from `() => void` to `(updatedContact: ParsedContact) => void`
+- In `handleSave`, after a successful save, call `onSave(...)` with the edited contact data (edited name, selected roles, emails, phones, departments, IG handle, original confidence)
 
-// TO:
-supabase: any,
-```
-
-This is purely a type annotation change. Zero logic changes. Zero behavior changes. It matches the pattern used in every other edge function in this project.
+**File 2: `src/pages/ParseReview.tsx`**
+- Update `handleSaveComplete` to accept the updated contact data and the index (from `selectedContact.index`)
+- Mutate the local `callSheet` state so `parsed_contacts[index]` reflects the amended fields
+- This instantly updates the table row without a page reload or database re-fetch
 
 ### What Will NOT Change
-- No logic changes anywhere
-- No frontend changes
+- No layout, CSS, or copy changes
 - No schema changes
 - No new files
+- No changes to bulk Save All logic
+- No changes to the SaveContactModal UI or form behavior
+- The save-to-database logic remains identical
+
+### Technical Detail
+
+```text
+Current flow:
+  User edits contact --> Modal saves to DB --> onSave() --> close modal
+  (table still shows original parsed data)
+
+Fixed flow:
+  User edits contact --> Modal saves to DB --> onSave(editedContact) --> update local state --> close modal
+  (table row instantly reflects edits)
+```
 
 ### Verification
-1. All 20 build errors resolve (they all trace to this one type)
-2. Edge function deploys successfully
-3. Click "Backfill Unsaved Contacts" on /admin -- should return a JSON result with sheets backfilled count
+1. Open a Parse Review page for any call sheet
+2. Click the pencil icon on a contact (e.g., "Massimo")
+3. Edit the name (e.g., add last name "Legittimo")
+4. Click Save
+5. Confirm the table row now shows "Massimo Legittimo" immediately
+6. Confirm bulk Save All still works as before
 
