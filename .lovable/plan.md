@@ -1,111 +1,63 @@
 
 
-## Feature: Combined "From..." + Filter Modal (Split-Panel Layout)
+## Fix: Two Issues with Call Sheet Filter Modal
 
-### What It Does
-Expands the existing Filter Contacts modal to double-width with a two-panel layout:
-- **Left panel**: Scrollable list of the user's parsed call sheets (multi-selectable)
-- **Right panel**: The existing filter UI (roles, departments, contact info, etc.)
+### Issue 1: LAFC Still Shows "Needs Review"
 
-Users can combine call sheet source filtering with all existing filters in one place. Select one or more call sheets on the left, set department/role/contact-info filters on the right, hit Apply -- and the contacts list shows only matching results.
+**Root Cause**: The LAFC call sheet has `status = 'parsed'` in `global_call_sheets`. When you save contacts individually (via the pencil icon on the Parse Review page), nothing updates the sheet's status to `'complete'`. The "Needs Review" badge appears when `status === 'parsed' && savedContactCount === 0`.
 
-### Layout
+The JSON import pipeline correctly sets status to `'complete'`, but the individual save paths (`SaveContactModal`, `ParseReview` bulk save) do not update the parent sheet's status.
 
-```text
-+-------------------------------------------------------+
-|              Filter Contacts        [3 active]     [X] |
-+------------------------+------------------------------+
-| From Call Sheets       | Search Roles                 |
-|                        | [Search roles...]            |
-| [ ] LAFC 2024 Shoot   |                              |
-|     Jan 15, 2024       | Sort by Appearances  Sort YT |
-|                        | Favorites only               |
-| [x] BTS - Drake MV    |                              |
-|     Dec 3, 2023        | Filter by Contact Info       |
-|                        | [Phone] [Email] [IG] ...     |
-| [ ] crew_list_v3.pdf   |                              |
-|     Nov 20, 2023       | Departments                  |
-|                        | [Camera] [Sound] [Art] ...   |
-| ...                    |                              |
-|                        | Roles                        |
-|                        | [DoP (17)] [1st AC (12)] ... |
-+------------------------+------------------------------+
-| Clear All              |        [Cancel] [Apply]      |
-+-------------------------------------------------------+
+**Fix**: After saving contacts from a parsed sheet (in `ParseReview.tsx`), update the `global_call_sheets.status` from `'parsed'` to `'complete'`. This is a small addition to the existing save logic -- after successfully saving one or more contacts, run:
+
+```sql
+UPDATE global_call_sheets SET status = 'complete' WHERE id = <sheet_id> AND status = 'parsed';
 ```
 
-### Data Source for Left Panel
+This only transitions `parsed` to `complete`, never touching other statuses.
 
-Query path: `user_call_sheets` (user's sheets) joined to `global_call_sheets` (file name, status, youtube_video_id) joined to `youtube_videos` (video title).
+**File**: `src/pages/ParseReview.tsx` (1 file, small change in the save handler)
 
-Display name per row: `youtube_videos.title` if linked, otherwise `global_call_sheets.original_file_name`.
+---
 
-Only sheets with `status = 'complete'` are shown. Ordered by `created_at DESC`.
+### Issue 2: Filter Modal Shows "No Parsed Call Sheets Yet"
 
-### Filtering Logic
+**Root Cause**: The `fetchCallSheets()` function is only called inside `handleOpenChange(open)` when `open === true`. However, Radix Dialog's `onOpenChange` callback is NOT triggered when the `open` prop changes from `false` to `true` externally (via the parent setting `isOpen={true}`). It only fires on user-initiated close actions (clicking overlay, pressing Escape, etc.).
 
-When call sheets are selected, the system fetches all `contact_call_sheets` rows for the selected `call_sheet_id`(s) and filters the contacts list to only those IDs. This stacks with all existing filters (search, role, department, favorites, etc.).
+Result: `fetchCallSheets()` never runs, so the left panel always shows "No parsed call sheets yet."
 
-When no call sheets are selected, filtering works exactly as it does today -- no regression.
-
-### State Changes
-
-The `ContactFilters` interface gets a new field:
+**Fix**: Add a `useEffect` that watches `isOpen` and `userId`. When the modal opens (and userId is available), fetch the call sheets:
 
 ```typescript
-export interface ContactFilters {
-  // ... existing fields unchanged ...
-  selectedCallSheetIds: string[];  // NEW
-}
+useEffect(() => {
+  if (isOpen && userId) {
+    setLocalFilters(filters);
+    setRoleSearch("");
+    fetchCallSheets();
+  }
+}, [isOpen, userId]);
 ```
 
-The `defaultFilters` in `CrewContacts.tsx` adds `selectedCallSheetIds: []`.
+This ensures the data loads every time the modal opens, regardless of how it was triggered.
 
-The `filteredContacts` useMemo in `CrewContacts.tsx` adds a filter step: if `selectedCallSheetIds.length > 0`, fetch matching contact IDs from `contact_call_sheets` and filter.
+**File**: `src/components/contacts/FilterModal.tsx` (1 file, adding a useEffect, ~5 lines)
 
-### Active Filter Chip
+---
 
-When call sheets are selected, a chip appears in the toolbar area: "From: [sheet name] (+N more) X" -- clicking X clears the call sheet selection.
+### Summary
 
-### Files Modified
-
-1. **`src/components/contacts/FilterModal.tsx`** -- Major update:
-   - Widen modal from `max-w-2xl` to `max-w-5xl`
-   - Split content into two-column grid layout (`grid grid-cols-[1fr_1.5fr]`)
-   - Left column: new call sheet list with checkboxes, fetched on modal open
-   - Right column: all existing filter UI (moved into right pane, zero logic changes)
-   - Add `selectedCallSheetIds` to `ContactFilters` interface and `localFilters` state
-   - Add `userId` prop to fetch the user's call sheets
-
-2. **`src/pages/CrewContacts.tsx`** -- Minor update:
-   - Update `defaultFilters` to include `selectedCallSheetIds: []`
-   - Add a new `useEffect` or inline fetch to get contact IDs for selected call sheets
-   - Add call sheet filter step in `filteredContacts` useMemo
-   - Pass `userId` to FilterModal
-   - Update `activeFilterCount` to include call sheet selections
+| Issue | Root Cause | Fix | File |
+|-------|-----------|-----|------|
+| LAFC "Needs Review" | `status` stays `'parsed'` after saving contacts | Update to `'complete'` after save | `ParseReview.tsx` |
+| Empty call sheet list | `fetchCallSheets` never called on modal open | Add `useEffect` triggered by `isOpen` | `FilterModal.tsx` |
 
 ### What Will NOT Change
-- No schema changes, no new tables, no migrations
-- No new files created (all changes in existing FilterModal.tsx and CrewContacts.tsx)
-- No edge functions
-- No changes to contact cards, table rows, export, duplicate merge, or any other feature
-- The right-side filter UI is identical -- just relocated into a grid column
-- All existing filter logic continues to work exactly as before
-
-### Edge Cases
-- User has no parsed call sheets: left panel shows "No parsed call sheets yet" message
-- A selected call sheet has 0 contacts linked: those contacts simply produce an empty intersection (works naturally with existing filter logic)
-- Clearing "Clear All" resets both panels (call sheets + filters)
+- No schema changes or migrations
+- No new files
+- No layout, CSS, or copy changes
+- No changes to the right-side filter panel behavior
+- No changes to bulk save, export, or duplicate detection
 
 ### Verification
-1. Open Crew Contacts, click Filter button
-2. Modal is now wider with two panels
-3. Left panel shows parsed call sheets with correct display names (video title or file name)
-4. Select one or more call sheets -- checkmarks appear
-5. Set some role/department filters on the right side
-6. Click Apply Filters
-7. Contacts list shows only contacts matching BOTH the call sheet source AND the role/department filters
-8. Active filter count badge reflects call sheet selections
-9. Click Filter again, click Clear All -- both sides reset
-10. Apply with nothing selected -- all contacts shown (no regression)
-
+1. Open Crew Contacts, click Filter -- left panel should now show 187 call sheets
+2. Navigate to the LAFC Parse Review page, save a contact -- status should update from "Needs Review" to "Complete" on the Call Sheet Manager page
