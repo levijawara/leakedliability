@@ -288,6 +288,15 @@ export default function ParseReview() {
         description: parts.join(', ') || 'Done.',
       });
 
+      // Mark the call sheet as complete if it was in parsed status
+      if (savedCount > 0 || mergedCount > 0) {
+        await supabase
+          .from('global_call_sheets')
+          .update({ status: 'complete' })
+          .eq('id', id)
+          .eq('status', 'parsed');
+      }
+
       // Show navigation prompt instead of auto-navigating
       setSaveResult({ savedCount, mergedCount: mergedCount });
     } catch (error: any) {
