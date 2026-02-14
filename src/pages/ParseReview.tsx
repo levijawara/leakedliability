@@ -179,9 +179,16 @@ export default function ParseReview() {
     setSelectedContact({ contact, index });
   };
 
-  const handleSaveComplete = () => {
-    // After editing a single contact, just close the modal
-    // The contact is already saved
+  const handleSaveComplete = (updatedContact: ParsedContact) => {
+    // Update local state so the table row reflects the edit immediately
+    if (selectedContact) {
+      setCallSheet(prev => {
+        if (!prev || !prev.parsed_contacts) return prev;
+        const newContacts = [...prev.parsed_contacts];
+        newContacts[selectedContact.index] = updatedContact;
+        return { ...prev, parsed_contacts: newContacts };
+      });
+    }
     setSelectedContact(null);
   };
 

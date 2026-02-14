@@ -57,7 +57,7 @@ interface SaveContactModalProps {
   callSheetId: string;
   userId: string;
   existingContacts: ExistingContact[];
-  onSave: () => void;
+  onSave: (updatedContact: ParsedContact) => void;
   onSkip?: () => void;
 }
 
@@ -409,7 +409,15 @@ export function SaveContactModal({
       });
 
       onOpenChange(false);
-      onSave();
+      onSave({
+        name: editableName.trim() || contact.name,
+        roles: Array.from(selectedRoles),
+        departments: Array.from(selectedDepartments),
+        phones: Array.from(selectedPhones),
+        emails: Array.from(selectedEmails),
+        ig_handle: extraIgHandle.replace(/^@/, '') || null,
+        confidence: contact.confidence,
+      });
     } catch (error: any) {
       console.error('[SaveContactModal] Save error:', error);
       toast({
