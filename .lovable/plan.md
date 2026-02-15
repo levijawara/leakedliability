@@ -1,35 +1,34 @@
 
 
-## Fix Build Error and Remove Placeholder Text
+## Move Green Checkmark to End of Disclaimer and Confirm Tropicana Status
 
-### 1. Database Migration (resolves build error)
-Add the two missing columns to `user_call_sheets`:
+### 1. Move checkmark icon (CallSheetManager.tsx, 1 line change)
 
-```sql
-ALTER TABLE public.user_call_sheets
-  ADD COLUMN IF NOT EXISTS project_type TEXT,
-  ADD COLUMN IF NOT EXISTS project_subject TEXT;
+Current (line 47-50):
+```
+<p className="text-sm text-green-600 flex items-center gap-1.5 mt-2">
+  <Check className="h-4 w-4 shrink-0" />
+  Relax. We safeguard crew member and vendor privacy, always. Your personal information is NEVER made public.
+</p>
 ```
 
-This will update the auto-generated Supabase types so the `.update({ project_type, project_subject })` call in `CallSheetUploader.tsx` passes type checking.
+Updated -- move the `<Check>` icon after the text:
+```
+<p className="text-sm text-green-600 flex items-center gap-1.5 mt-2">
+  Relax. We safeguard crew member and vendor privacy, always. Your personal information is NEVER made public.
+  <Check className="h-4 w-4 shrink-0" />
+</p>
+```
 
-### 2. Remove "e.g." placeholder (1 line change)
-In `src/components/callsheets/ProjectDetailsModal.tsx`, line 113, change:
+### 2. Tropicana call sheet -- still exists
 
-```
-placeholder="e.g. Drake, Target, StarTalk, Kai Cenat"
-```
-to:
-```
-placeholder="Drake, Target, StarTalk, Kai Cenat"
-```
+The Tropicana record (`2a155735`, status `complete`) is still in the `global_call_sheets` table. If you want it deleted, let me know and I can run a SQL delete in the next step. That would be a separate action since it is a data operation, not a code change.
 
 ### What will NOT change
 - No other files touched
-- No schema removals or renames
-- No frontend layout or styling changes
+- No schema changes
+- No layout or styling changes (just icon position swap within the same flex row)
 
 ### Verification
-- Build errors resolve (the `project_type` TS error disappears)
-- Placeholder text no longer shows "e.g."
-
+- Green checkmark appears at the end of the disclaimer text instead of the beginning
+- No build errors
