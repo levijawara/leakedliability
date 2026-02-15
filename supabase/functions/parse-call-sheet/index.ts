@@ -733,13 +733,11 @@ serve(async (req) => {
       console.log(`[parse-call-sheet] LOCKED ${canonicalProducers.length} canonical producers`);
     }
 
-    // Update database
+    // Update database - no parsed_contacts (PDF is source of truth; production_instance gets canonical_producers)
     const { error: updateError } = await supabase
       .from("global_call_sheets")
       .update({
-        status: "parsed",
-        parsed_contacts: correctedContacts,
-        contacts_extracted: correctedContacts.length,
+        status: "complete",
         project_title: parseResult.project_title,
         parsed_date: parseResult.parsed_date,
         parse_timing: parseTiming,
@@ -753,7 +751,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error("[parse-call-sheet] Failed to update call sheet:", updateError);
-      await markAsError(supabase, call_sheet_id, "Failed to save parsed contacts");
+      await markAsError(supabase, call_sheet_id, "Failed to save parse results");
       return new Response(
         JSON.stringify({ error: "Failed to save results" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

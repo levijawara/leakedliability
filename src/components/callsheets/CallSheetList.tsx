@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { 
   FileText, 
   Clock, 
@@ -7,14 +7,8 @@ import {
   CheckCircle, 
   AlertCircle, 
   Trash2, 
-  Eye,
-  RefreshCw,
-  Users,
   Search,
-  X,
-  FileType,
-  List,
-  PlayCircle
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,37 +40,17 @@ import { SortToggle, SortField, SortDirection } from "./SortToggle";
 import { ViewToggle } from "@/components/contacts/ViewToggle";
 import { CallSheetCard } from "./CallSheetCard";
 import { PDFViewerModal } from "./PDFViewerModal";
-import { CreditsModal } from "./CreditsModal";
-import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
-import { PaymentStatusRadio } from "./PaymentStatusRadio";
 import { ReparseControlPanel } from "./ReparseControlPanel";
-import { ProjectFolderCard, Project } from "./ProjectFolderCard";
-import { ProjectDetailModal } from "./ProjectDetailModal";
-import { usePortalBase } from "@/contexts/PortalContext";
+import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
 
 interface GlobalCallSheet {
   id: string;
   original_file_name: string;
   master_file_path: string;
   status: string;
-  contacts_extracted: number | null;
   error_message: string | null;
   created_at: string;
-  parsed_contacts: unknown;
   parsed_date: string | null;
-  youtube_url: string | null;
-  youtube_view_count: number | null;
-  youtube_last_synced: string | null;
-  youtube_video_id?: string | null;
-}
-
-interface YouTubeVideo {
-  id: string;
-  video_id: string | null;
-  title: string | null;
-  // canonical_title exists in DB but not yet in types - will be available at runtime
-  canonical_title?: string | null;
-  source_count?: number | null;
 }
 
 interface UserCallSheetLink {
@@ -85,12 +59,6 @@ interface UserCallSheetLink {
   created_at: string;
   global_call_sheet_id: string;
   global_call_sheets: GlobalCallSheet;
-  payment_status: string;
-  payment_status_locked: boolean;
-  // Joined project data
-  project?: YouTubeVideo | null;
-  // Computed: has saved contacts?
-  savedContactCount?: number;
 }
 
 interface CallSheetListProps {}
@@ -111,10 +79,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function CallSheetList({}: CallSheetListProps) {
-  const portalBase = usePortalBase();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const contactIdFilter = searchParams.get('contact_id');
   
   // Get userId from session to prevent RLS race conditions
   const [userId, setUserId] = useState<string | null>(null);
@@ -136,9 +101,6 @@ export function CallSheetList({}: CallSheetListProps) {
   
   // PDF viewer modal state
   const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
-  
-  // Credits modal state
-  const [creditsSheet, setCreditsSheet] = useState<{ id: string; fileName: string } | null>(null);
 
   // Selection state for bulk operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -146,10 +108,6 @@ export function CallSheetList({}: CallSheetListProps) {
   
   // Admin state
   const [isAdmin, setIsAdmin] = useState(false);
-
-  // Project state
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   // Initialize search from URL param
   useEffect(() => {
@@ -165,107 +123,7 @@ export function CallSheetList({}: CallSheetListProps) {
     setSortDirection(direction);
   }, []);
 
-  // Fetch projects for user
-  const fetchProjects = async () => {
-    if (!userId) return;
-    
-    try {
-      // Step 1: Get user's projects
-      const { data: projectsData, error: projectsError } = await supabase
-        .from('projects')
-        .select('id, name, created_at, updated_at')
-        .eq('user_id', userId)
-        .order('updated_at', { ascending: false });
-      
-      if (projectsError) throw projectsError;
-      
-      if (!projectsData || projectsData.length === 0) {
-        setProjects([]);
-        return;
-      }
-      
-      const projectIds = projectsData.map(p => p.id);
-      
-      // Step 2: Get call sheets for each project
-      const { data: projectSheets } = await supabase
-        .from('project_call_sheets')
-        .select(`
-          project_id,
-          user_call_sheet_id,
-          user_call_sheets (
-            id,
-            user_label,
-            global_call_sheet_id,
-            global_call_sheets (
-              id,
-              original_file_name,
-              status
-            )
-          )
-        `)
-        .in('project_id', projectIds);
-      
-      // Step 3: Get videos for each project
-      const { data: projectVideos } = await supabase
-        .from('project_videos')
-        .select(`
-          project_id,
-          video_id,
-          youtube_url,
-          youtube_videos (
-            id,
-            video_id,
-            title,
-            view_count,
-            thumbnail_url
-          )
-        `)
-        .in('project_id', projectIds);
-      
-      // Build project objects with aggregated data
-      const builtProjects: Project[] = projectsData.map(p => {
-        const sheets = (projectSheets || [])
-          .filter(ps => ps.project_id === p.id && ps.user_call_sheets)
-          .map(ps => ({
-            id: ps.user_call_sheets!.id,
-            user_label: ps.user_call_sheets!.user_label,
-            global_call_sheets: ps.user_call_sheets!.global_call_sheets as {
-              id: string;
-              original_file_name: string;
-              status: string;
-            }
-          }));
-        
-        const videos = (projectVideos || [])
-          .filter(pv => pv.project_id === p.id && pv.youtube_videos)
-          .map(pv => ({
-            id: pv.youtube_videos!.id,
-            video_id: pv.youtube_videos!.video_id,
-            title: pv.youtube_videos!.title,
-            view_count: pv.youtube_videos!.view_count,
-            thumbnail_url: pv.youtube_videos!.thumbnail_url
-          }));
-        
-        const totalViews = videos.reduce((sum, v) => sum + (v.view_count || 0), 0);
-        
-        return {
-          id: p.id,
-          name: p.name,
-          created_at: p.created_at,
-          updated_at: p.updated_at,
-          callSheets: sheets,
-          videos,
-          totalViews
-        };
-      });
-      
-      setProjects(builtProjects);
-    } catch (error: any) {
-      console.error('[CallSheetList] Fetch projects error:', error);
-    }
-  };
-
-  // Fetch user's call sheet links with global call sheet data and joined project
+  // Fetch user's call sheet links with global call sheet data
   const fetchUserCallSheets = async () => {
     // GUARD: Abort if userId is not yet available (prevents stale closure errors)
     if (!userId) {
@@ -275,109 +133,29 @@ export function CallSheetList({}: CallSheetListProps) {
     
     try {
       // Step 1: Fetch user call sheets with global data
-      let query = supabase
+      const { data, error } = await supabase
         .from('user_call_sheets')
         .select(`
           id,
           user_label,
           created_at,
           global_call_sheet_id,
-          payment_status,
-          payment_status_locked,
           global_call_sheets (
             id,
             original_file_name,
             master_file_path,
             status,
-            contacts_extracted,
             error_message,
             created_at,
-            parsed_contacts,
-            parsed_date,
-            youtube_url,
-            youtube_view_count,
-            youtube_last_synced,
-            youtube_video_id
+            parsed_date
           )
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
-      // If filtering by contact_id, get call sheets linked to that contact
-      if (contactIdFilter) {
-        const { data: contactLinks, error: contactError } = await supabase
-          .from('contact_call_sheets')
-          .select('call_sheet_id')
-          .eq('contact_id', contactIdFilter);
-
-        if (contactError) throw contactError;
-
-        if (contactLinks && contactLinks.length > 0) {
-          const callSheetIds = contactLinks.map(cl => cl.call_sheet_id);
-          query = query.in('global_call_sheet_id', callSheetIds);
-        } else {
-          // No call sheets for this contact
-          setUserLinks([]);
-          setLoading(false);
-          return;
-        }
-      }
-
-      const { data, error } = await query;
-
       if (error) throw error;
       
-      // Filter out any links where global_call_sheets is null
-      const validData = (data || []).filter(link => link.global_call_sheets);
-      
-      // Step 2: Fetch project data for all linked projects
-      const projectIds = validData
-        .map(link => link.global_call_sheets?.youtube_video_id)
-        .filter((id): id is string => !!id);
-      
-      let projectMap = new Map<string, YouTubeVideo>();
-      
-      if (projectIds.length > 0) {
-        // Note: canonical_title added via migration but may not be in types yet
-        const { data: projectsData } = await supabase
-          .from('youtube_videos')
-          .select('id, video_id, title')
-          .in('id', projectIds);
-        
-        if (projectsData) {
-          for (const p of projectsData) {
-            projectMap.set(p.id, p);
-          }
-        }
-      }
-      
-      // Step 3: Fetch saved contact counts per call sheet
-      const callSheetIds = validData.map(link => link.global_call_sheet_id);
-      const savedCountMap = new Map<string, number>();
-      
-      if (callSheetIds.length > 0) {
-        const { data: savedLinks } = await supabase
-          .from('contact_call_sheets')
-          .select('call_sheet_id')
-          .in('call_sheet_id', callSheetIds);
-        
-        if (savedLinks) {
-          for (const row of savedLinks) {
-            savedCountMap.set(row.call_sheet_id, (savedCountMap.get(row.call_sheet_id) || 0) + 1);
-          }
-        }
-      }
-      
-      // Step 4: Merge project data and saved counts into links
-      const validLinks = validData.map(link => ({
-        ...link,
-        payment_status: link.payment_status || 'unanswered',
-        payment_status_locked: link.payment_status_locked ?? false,
-        project: link.global_call_sheets?.youtube_video_id 
-          ? projectMap.get(link.global_call_sheets.youtube_video_id) || null
-          : null,
-        savedContactCount: savedCountMap.get(link.global_call_sheet_id) || 0
-      })) as UserCallSheetLink[];
+      const validLinks = (data || []).filter(link => link.global_call_sheets) as UserCallSheetLink[];
       
       setUserLinks(validLinks);
     } catch (error: any) {
@@ -408,7 +186,6 @@ export function CallSheetList({}: CallSheetListProps) {
     if (!userId) return;
     
     fetchUserCallSheets();
-    fetchProjects();
     
     // Check if user is admin
     const checkAdmin = async () => {
@@ -467,7 +244,7 @@ export function CallSheetList({}: CallSheetListProps) {
       supabase.removeChannel(userChannel);
       supabase.removeChannel(globalChannel);
     };
-  }, [userId, contactIdFilter]);
+  }, [userId]);
 
   // Delete handler - Only removes user's personal link (Library of Alexandria model)
   const handleDelete = async () => {
@@ -632,163 +409,15 @@ export function CallSheetList({}: CallSheetListProps) {
     return sorted;
   }, [userLinks, sortField, sortDirection]);
 
-  // Compute which user_call_sheet IDs are grouped into projects
-  const groupedSheetIds = useMemo(() => {
-    const ids = new Set<string>();
-    projects.forEach(p => {
-      p.callSheets.forEach(cs => ids.add(cs.id));
-    });
-    return ids;
-  }, [projects]);
-
-  // Filter out grouped sheets from the main view (they appear inside project folders)
-  const ungroupedSheets = useMemo(() => {
-    return sortedSheets.filter(link => !groupedSheetIds.has(link.id));
-  }, [sortedSheets, groupedSheetIds]);
-
-  // Search/filter logic - apply to ungrouped sheets only
+  // Search/filter - filename only
   const filteredSheets = useMemo(() => {
-    if (!debouncedSearch.trim()) return ungroupedSheets;
-    
+    if (!debouncedSearch.trim()) return sortedSheets;
     const query = debouncedSearch.toLowerCase().trim();
-    
-    return ungroupedSheets.filter(link => {
-      const sheet = link.global_call_sheets;
-      const displayName = link.user_label || sheet.original_file_name;
-      
-      // 1. Filename match
-      if (displayName.toLowerCase().includes(query)) return true;
-      
-      // 2. Parsed contacts match
-      if (sheet.parsed_contacts && Array.isArray(sheet.parsed_contacts)) {
-        const hasMatch = (sheet.parsed_contacts as any[]).some((contact: any) => {
-          const nameMatch = contact.name?.toLowerCase().includes(query);
-          const roleMatch = contact.roles?.some((r: string) => 
-            r.toLowerCase().includes(query)
-          );
-          const deptMatch = contact.departments?.some((d: string) => 
-            d.toLowerCase().includes(query)
-          );
-          return nameMatch || roleMatch || deptMatch;
-        });
-        if (hasMatch) return true;
-      }
-      
-      return false;
+    return sortedSheets.filter(link => {
+      const displayName = link.user_label || link.global_call_sheets.original_file_name;
+      return displayName.toLowerCase().includes(query);
     });
-  }, [ungroupedSheets, debouncedSearch]);
-
-  // Filter projects by search query
-  const filteredProjects = useMemo(() => {
-    if (!debouncedSearch.trim()) return projects;
-    
-    const query = debouncedSearch.toLowerCase().trim();
-    
-    return projects.filter(project => {
-      // Match project name
-      if (project.name.toLowerCase().includes(query)) return true;
-      
-      // Match any call sheet filename in the project
-      const sheetMatch = project.callSheets.some(cs => {
-        const name = cs.user_label || cs.global_call_sheets.original_file_name;
-        return name.toLowerCase().includes(query);
-      });
-      if (sheetMatch) return true;
-      
-      // Match any video title
-      const videoMatch = project.videos.some(v => 
-        v.title?.toLowerCase().includes(query)
-      );
-      if (videoMatch) return true;
-      
-      return false;
-    });
-  }, [projects, debouncedSearch]);
-
-  // Type for combined grid items
-  type GridItem = 
-    | { type: 'project'; project: Project; anchorDate: Date }
-    | { type: 'sheet'; link: UserCallSheetLink };
-
-  // Compute anchor dates for projects and create combined interleaved grid items
-  const combinedGridItems = useMemo(() => {
-    // Build project items with anchor dates
-    const projectItems: GridItem[] = filteredProjects.map(project => {
-      // Find dates from grouped call sheets
-      const sheetDates = project.callSheets
-        .map(cs => {
-          // Find the full link data to get created_at and parsed_date
-          const link = userLinks.find(l => l.id === cs.id);
-          if (!link) return null;
-          
-          // Use parsed_date for shootDate sort, created_at for uploadDate sort
-          if (sortField === 'shootDate') {
-            return link.global_call_sheets.parsed_date 
-              ? new Date(link.global_call_sheets.parsed_date) 
-              : null;
-          }
-          return link.created_at ? new Date(link.created_at) : null;
-        })
-        .filter((d): d is Date => d !== null);
-      
-      // For desc sort: use LATEST date (appears first)
-      // For asc sort: use EARLIEST date (appears first)
-      let anchorDate: Date;
-      if (sheetDates.length > 0) {
-        if (sortDirection === 'desc') {
-          anchorDate = new Date(Math.max(...sheetDates.map(d => d.getTime())));
-        } else {
-          anchorDate = new Date(Math.min(...sheetDates.map(d => d.getTime())));
-        }
-      } else {
-        anchorDate = new Date(project.created_at);
-      }
-      
-      return { type: 'project' as const, project, anchorDate };
-    });
-    
-    // Build sheet items
-    const sheetItems: GridItem[] = filteredSheets.map(link => ({
-      type: 'sheet' as const,
-      link
-    }));
-    
-    // Combine and sort
-    const items = [...projectItems, ...sheetItems];
-    
-    items.sort((a, b) => {
-      let dateA: Date;
-      let dateB: Date;
-      
-      if (sortField === 'shootDate') {
-        if (a.type === 'project') {
-          dateA = a.anchorDate;
-        } else {
-          dateA = a.link.global_call_sheets.parsed_date 
-            ? new Date(a.link.global_call_sheets.parsed_date)
-            : new Date(0); // Sheets without date go to end
-        }
-        
-        if (b.type === 'project') {
-          dateB = b.anchorDate;
-        } else {
-          dateB = b.link.global_call_sheets.parsed_date 
-            ? new Date(b.link.global_call_sheets.parsed_date)
-            : new Date(0);
-        }
-      } else {
-        // uploadDate
-        dateA = a.type === 'project' ? a.anchorDate : new Date(a.link.created_at);
-        dateB = b.type === 'project' ? b.anchorDate : new Date(b.link.created_at);
-      }
-      
-      return sortDirection === 'desc' 
-        ? dateB.getTime() - dateA.getTime()
-        : dateA.getTime() - dateB.getTime();
-    });
-    
-    return items;
-  }, [filteredProjects, filteredSheets, userLinks, sortField, sortDirection]);
+  }, [sortedSheets, debouncedSearch]);
 
   // Selection helpers with Shift-click range support
   const handleSelectOne = useCallback((linkId: string, selected: boolean, event?: React.MouseEvent) => {
@@ -841,17 +470,8 @@ export function CallSheetList({}: CallSheetListProps) {
   const handleBulkComplete = useCallback(() => {
     setSelectedIds(new Set());
     fetchUserCallSheets();
-    fetchProjects();
   }, []);
 
-  // Payment status change handler
-  const handlePaymentStatusChange = useCallback((linkId: string, newStatus: string, locked: boolean) => {
-    setUserLinks(prev => prev.map(link => 
-      link.id === linkId 
-        ? { ...link, payment_status: newStatus, payment_status_locked: locked }
-        : link
-    ));
-  }, []);
 
   // Get global IDs for selected links (for re-parse)
   const selectedGlobalIds = useMemo(() => {
@@ -898,13 +518,10 @@ export function CallSheetList({}: CallSheetListProps) {
       <div className="text-center py-12">
         <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
         <p className="text-lg font-medium">
-          {contactIdFilter ? "No call sheets for this contact" : "No call sheets yet"}
+          No call sheets yet
         </p>
         <p className="text-sm text-muted-foreground">
-          {contactIdFilter 
-            ? "This contact hasn't been linked to any call sheets"
-            : "Upload your first call sheet to get started"
-          }
+          Upload your first call sheet to get started
         </p>
       </div>
     );
@@ -912,18 +529,6 @@ export function CallSheetList({}: CallSheetListProps) {
 
   return (
     <>
-      {/* Filter banner for contact filter */}
-      {contactIdFilter && (
-        <div className="mb-4 p-3 bg-muted/50 rounded-lg">
-          <p className="text-sm text-muted-foreground">
-            {searchParams.get('contact_name') 
-              ? `Showing call sheets for ${decodeURIComponent(searchParams.get('contact_name')!)}`
-              : "Showing call sheets linked to selected contact"
-            }
-          </p>
-        </div>
-      )}
-
       {/* Sticky Toolbar Container */}
       <div className="sticky top-[73px] z-10 bg-background pb-4 pt-2 -mx-4 px-4 md:-mx-6 md:px-6">
         {/* Reparse Control Panel - shows when pending/error sheets exist */}
@@ -984,7 +589,7 @@ export function CallSheetList({}: CallSheetListProps) {
       )}
 
       {/* No results message */}
-      {combinedGridItems.length === 0 && debouncedSearch && (
+      {filteredSheets.length === 0 && debouncedSearch && (
         <div className="text-center py-8">
           <Search className="h-8 w-8 mx-auto text-muted-foreground mb-3" />
           <p className="text-sm text-muted-foreground">
@@ -993,49 +598,24 @@ export function CallSheetList({}: CallSheetListProps) {
         </div>
       )}
 
-      {combinedGridItems.length > 0 && viewMode === 'cards' && (
+      {filteredSheets.length > 0 && viewMode === 'cards' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {/* Render interleaved projects and ungrouped sheets based on anchor dates */}
-          {combinedGridItems.map((item) => {
-            if (item.type === 'project') {
-              return (
-                <ProjectFolderCard
-                  key={item.project.id}
-                  project={item.project}
-                  onClick={(p) => setSelectedProject(p)}
-                />
-              );
-            }
-            
-            // Sheet item
-            const link = item.link;
-            const needsReview = link.global_call_sheets.status === 'parsed' && 
-              (link.savedContactCount === undefined || link.savedContactCount === 0);
-            
-            return (
-              <CallSheetCard
-                key={link.id}
-                link={link}
-                sortField={sortField}
-                isSelected={selectedIds.has(link.id)}
-                isAdmin={isAdmin}
-                needsReview={needsReview}
-                onSelect={handleSelectOne}
-                onView={(sheet) => navigate(`${portalBase}/call-sheets/${sheet.id}/review`)}
-                onViewPdf={(sheet) => setViewingPdf({ 
-                  filePath: sheet.master_file_path, 
-                  fileName: sheet.original_file_name 
-                })}
-                onCredits={(sheet) => setCreditsSheet({ 
-                  id: sheet.id, 
-                  fileName: sheet.original_file_name 
-                })}
-                onRetry={handleRetry}
-                onDelete={(link) => setDeleteLink(link)}
-                onPaymentStatusChange={handlePaymentStatusChange}
-              />
-            );
-          })}
+          {filteredSheets.map((link) => (
+            <CallSheetCard
+              key={link.id}
+              link={link}
+              sortField={sortField}
+              isSelected={selectedIds.has(link.id)}
+              isAdmin={isAdmin}
+              onSelect={handleSelectOne}
+              onViewPdf={(sheet) => setViewingPdf({ 
+                filePath: sheet.master_file_path, 
+                fileName: sheet.original_file_name 
+              })}
+              onRetry={handleRetry}
+              onDelete={(l) => setDeleteLink(l)}
+            />
+          ))}
         </div>
       )}
 
@@ -1052,8 +632,6 @@ export function CallSheetList({}: CallSheetListProps) {
                 </TableHead>
                 <TableHead>File Name</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-center">Contacts</TableHead>
-                <TableHead>Have you been paid yet?</TableHead>
                 <TableHead>{sortField === 'shootDate' ? 'Shoot Date' : 'Added'}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -1062,9 +640,6 @@ export function CallSheetList({}: CallSheetListProps) {
               {filteredSheets.map((link) => {
                 const sheet = link.global_call_sheets;
                 const displayName = link.user_label || sheet.original_file_name;
-                // Needs review if parsed but no contacts saved yet
-                const needsReview = sheet.status === 'parsed' && 
-                  (link.savedContactCount === undefined || link.savedContactCount === 0);
               
               return (
                 <TableRow key={link.id} className={selectedIds.has(link.id) ? 'bg-muted/50' : ''}>
@@ -1086,34 +661,13 @@ export function CallSheetList({}: CallSheetListProps) {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      {getStatusBadge(sheet.status, needsReview)}
+                      {getStatusBadge(sheet.status, false)}
                       {sheet.status === 'error' && sheet.error_message && (
                         <p className="text-xs text-destructive truncate max-w-[200px]" title={sheet.error_message}>
                           {sheet.error_message}
                         </p>
                       )}
                     </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    {(sheet.status === 'parsed' || sheet.status === 'complete') && sheet.contacts_extracted !== null ? (
-                      <div className="flex items-center justify-center gap-1">
-                        <Users className="h-3 w-3 text-muted-foreground" />
-                        <span>{sheet.contacts_extracted}</span>
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </TableCell>
-                  {/* Payment Status Column */}
-                  <TableCell>
-                    {!link.payment_status_locked ? (
-                      <PaymentStatusRadio
-                        linkId={link.id}
-                        currentStatus={link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor'}
-                        isLocked={link.payment_status_locked}
-                        onStatusChange={(newStatus, locked) => handlePaymentStatusChange(link.id, newStatus, locked)}
-                      />
-                    ) : null}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {sortField === 'shootDate' && sheet.parsed_date
@@ -1127,52 +681,21 @@ export function CallSheetList({}: CallSheetListProps) {
                     <TooltipProvider delayDuration={300}>
                       <div className="flex items-center justify-end gap-1">
                         {(sheet.status === 'parsed' || sheet.status === 'complete') && (
-                          <>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => navigate(`${portalBase}/call-sheets/${sheet.id}/review`)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>View contacts</TooltipContent>
-                            </Tooltip>
-                            
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setViewingPdf({ 
-                                    filePath: sheet.master_file_path, 
-                                    fileName: sheet.original_file_name 
-                                  })}
-                                >
-                                  <FileType className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>View PDF</TooltipContent>
-                            </Tooltip>
-                            
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setCreditsSheet({ 
-                                    id: sheet.id, 
-                                    fileName: sheet.original_file_name 
-                                  })}
-                                >
-                                  <List className="h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Generate credits</TooltipContent>
-                            </Tooltip>
-                          </>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setViewingPdf({ 
+                                  filePath: sheet.master_file_path, 
+                                  fileName: sheet.original_file_name 
+                                })}
+                              >
+                                <FileText className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View PDF</TooltipContent>
+                          </Tooltip>
                         )}
                         {sheet.status === 'error' && (
                           <Tooltip>
@@ -1219,13 +742,6 @@ export function CallSheetList({}: CallSheetListProps) {
         fileName={viewingPdf?.fileName || ''}
       />
 
-      {/* Credits Modal */}
-      <CreditsModal
-        open={!!creditsSheet}
-        onOpenChange={(open) => !open && setCreditsSheet(null)}
-        callSheetId={creditsSheet?.id || ''}
-        fileName={creditsSheet?.fileName || ''}
-      />
       {/* Remove from Library Confirmation - preserves global artifact */}
       <AlertDialog open={!!deleteLink} onOpenChange={() => setDeleteLink(null)}>
         <AlertDialogContent>
@@ -1259,18 +775,6 @@ export function CallSheetList({}: CallSheetListProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Project Detail Modal */}
-      <ProjectDetailModal
-        open={!!selectedProject}
-        onOpenChange={(open) => !open && setSelectedProject(null)}
-        project={selectedProject}
-        userLinks={userLinks}
-        onProjectChange={() => {
-          fetchProjects();
-          fetchUserCallSheets();
-        }}
-        onDeleteLink={(link) => setDeleteLink(link)}
-      />
     </>
   );
 }

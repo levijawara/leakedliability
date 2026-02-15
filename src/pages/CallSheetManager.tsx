@@ -1,24 +1,14 @@
-import { Link, useSearchParams } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { usePortalMode, usePortalBase } from "@/contexts/PortalContext";
+import { usePortalMode } from "@/contexts/PortalContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { CallSheetUploader } from "@/components/callsheets/CallSheetUploader";
 import { CallSheetList } from "@/components/callsheets/CallSheetList";
-import { JsonImportUploader } from "@/components/callsheets/JsonImportUploader";
-import { FileSpreadsheet, Users, FileJson } from "lucide-react";
+import { FileSpreadsheet } from "lucide-react";
 
 export default function CallSheetManager() {
-  const [searchParams] = useSearchParams();
-  const contactIdFilter = searchParams.get('contact_id');
   const isPortal = usePortalMode();
-  const portalBase = usePortalBase();
-
-  // No need for local user state - RequireAuth wrapper guarantees authentication
-  // Components get userId from session directly to prevent RLS race conditions
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -27,63 +17,38 @@ export default function CallSheetManager() {
       <main className="flex-1 container mx-auto px-4 py-8 md:pt-24">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <FileSpreadsheet className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight">Call Sheet Manager</h1>
-                <p className="text-muted-foreground">
-                  Upload, parse, and manage your call sheets to extract crew contacts
-                </p>
-              </div>
+          <div className="flex items-center gap-3">
+            <FileSpreadsheet className="h-8 w-8 text-primary" />
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Call Sheet Manager</h1>
+              <p className="text-muted-foreground">
+                Submit call sheets. The timer starts.
+              </p>
             </div>
-            <Button variant="outline" size="sm" asChild className="gap-2">
-              <Link to={`${portalBase}/crew-contacts`}>
-                <Users className="h-4 w-4" />
-                Crew Contacts
-              </Link>
-            </Button>
           </div>
 
           {/* Main Content */}
-          <Tabs defaultValue={contactIdFilter ? "sheets" : "upload"} className="space-y-6">
+          <Tabs defaultValue="upload" className="space-y-6">
             <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="upload">Upload</TabsTrigger>
               <TabsTrigger value="sheets">My Call Sheets</TabsTrigger>
             </TabsList>
 
             <TabsContent value="upload" className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileSpreadsheet className="h-5 w-5" />
-                      Upload Call Sheet PDFs
-                    </CardTitle>
-                    <CardDescription>
-                      Upload PDF call sheets to automatically extract crew contacts using AI
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <CallSheetUploader />
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileJson className="h-5 w-5" />
-                      Import Parsed JSON
-                    </CardTitle>
-                    <CardDescription>
-                      Bulk import Claude-extracted JSON files to populate existing call sheet records
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <JsonImportUploader />
-                  </CardContent>
-                </Card>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-5 w-5" />
+                    Upload Call Sheet PDFs
+                  </CardTitle>
+                  <CardDescription>
+                    Submit PDF call sheets. Duplicate files are detected by hash and linked automatically.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <CallSheetUploader />
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="sheets" className="space-y-6">

@@ -17,7 +17,7 @@ export function usePortalMode(): boolean {
 /**
  * Returns the path prefix for portal-aware links.
  * In portal mode: "/extra-credit". Otherwise: "".
- * Use: to={`${portalBase}/call-sheets`} or navigate(`${portalBase}/crew-contacts`)
+ * Use: to={`${portalBase}/call-sheets`} or navigate(`${portalBase}/...`)
  */
 export function usePortalBase(): string {
   const isPortal = useContext(PortalContext);

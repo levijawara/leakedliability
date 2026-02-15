@@ -6,8 +6,7 @@ import {
   CheckSquare,
   Square,
   Loader2,
-  RefreshCw,
-  FolderPlus
+  RefreshCw
 } from "lucide-react";
 import {
   AlertDialog,
@@ -21,7 +20,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CreateProjectModal } from "./CreateProjectModal";
 
 interface SelectedSheet {
   id: string;
@@ -51,7 +49,6 @@ export function CallSheetBulkActionsBar({
 }: CallSheetBulkActionsBarProps) {
   const { toast } = useToast();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showCreateProject, setShowCreateProject] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isReparsing, setIsReparsing] = useState(false);
 
@@ -159,19 +156,6 @@ export function CallSheetBulkActionsBar({
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Create Project - show when 1+ selected */}
-          {selectedIds.length >= 1 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCreateProject(true)}
-              className="h-8"
-            >
-              <FolderPlus className="h-4 w-4 mr-2" />
-              Create Project
-            </Button>
-          )}
-
           <Button
             variant="outline"
             size="sm"
@@ -241,15 +225,6 @@ export function CallSheetBulkActionsBar({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Create Project Modal */}
-      <CreateProjectModal
-        open={showCreateProject}
-        onOpenChange={setShowCreateProject}
-        selectedSheets={selectedSheets}
-        userId={userId}
-        onProjectCreated={onBulkComplete}
-      />
     </>
   );
 }

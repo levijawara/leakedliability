@@ -84,14 +84,6 @@ export function PortalNavigation() {
                 <FileSpreadsheet className="h-4 w-4 mr-2" />
                 Call Sheets
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate(`${PORTAL_BASE}/crew-contacts`)}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Crew Contacts
-              </Button>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -112,10 +104,6 @@ export function PortalNavigation() {
                   <DropdownMenuItem onClick={() => navigate(`${PORTAL_BASE}/call-sheets`)}>
                     <FileSpreadsheet className="h-4 w-4 mr-2" />
                     Call Sheets
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate(`${PORTAL_BASE}/crew-contacts`)}>
-                    <Users className="h-4 w-4 mr-2" />
-                    Crew Contacts
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate("/")}>

@@ -54,14 +54,9 @@ import Results from "./pages/Results";
 import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
 import CallSheetManager from "./pages/CallSheetManager";
-import CrewContacts from "./pages/CrewContacts";
-import ParseReview from "./pages/ParseReview";
-import IGMatching from "./pages/IGMatching";
-import NOVAMatching from "./pages/NOVAMatching";
 import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
 import AdminNetworkGraph from "./pages/AdminNetworkGraph";
 import BetaUnlock from "./pages/BetaUnlock";
-import ContactYouTubePortfolio from "./pages/ContactYouTubePortfolio";
 import { FailureIndicator } from "./components/FailureIndicator";
 import { PortalLayout } from "./components/PortalLayout";
 
@@ -447,11 +442,6 @@ const AppContent = () => {
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
         <Route path="/call-sheets" element={<RequireAuth requireBeta><CallSheetManager /></RequireAuth>} />
-        <Route path="/call-sheets/:id/review" element={<RequireAuth requireBeta><ParseReview /></RequireAuth>} />
-        <Route path="/call-sheets/:id/ig-matching" element={<RequireAuth requireBeta><IGMatching /></RequireAuth>} />
-        <Route path="/call-sheets/:id/nova-matching" element={<RequireAuth requireBeta><NOVAMatching /></RequireAuth>} />
-        <Route path="/crew-contacts" element={<RequireAuth requireBeta><CrewContacts /></RequireAuth>} />
-        <Route path="/crew-contacts/:contactId/youtube" element={<RequireAuth requireBeta><ContactYouTubePortfolio /></RequireAuth>} />
         <Route path="/admin/call-sheet-reservoir" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
         <Route path="/admin/intelligence/network-graph" element={<RequireAuth requireAdmin><AdminNetworkGraph /></RequireAuth>} />
         <Route path="/admin/intelligence/heat-map" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
@@ -463,11 +453,6 @@ const AppContent = () => {
         <Route path="/extra-credit/verify-email" element={<PortalLayout><VerifyEmail /></PortalLayout>} />
         <Route path="/extra-credit/ban/:banId" element={<PortalLayout><BanPage /></PortalLayout>} />
         <Route path="/extra-credit/call-sheets" element={<PortalLayout><RequireAuth requireBeta><CallSheetManager /></RequireAuth></PortalLayout>} />
-        <Route path="/extra-credit/call-sheets/:id/review" element={<PortalLayout><RequireAuth requireBeta><ParseReview /></RequireAuth></PortalLayout>} />
-        <Route path="/extra-credit/call-sheets/:id/ig-matching" element={<PortalLayout><RequireAuth requireBeta><IGMatching /></RequireAuth></PortalLayout>} />
-        <Route path="/extra-credit/call-sheets/:id/nova-matching" element={<PortalLayout><RequireAuth requireBeta><NOVAMatching /></RequireAuth></PortalLayout>} />
-        <Route path="/extra-credit/crew-contacts" element={<PortalLayout><RequireAuth requireBeta><CrewContacts /></RequireAuth></PortalLayout>} />
-        <Route path="/extra-credit/crew-contacts/:contactId/youtube" element={<PortalLayout><RequireAuth requireBeta><ContactYouTubePortfolio /></RequireAuth></PortalLayout>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
         </Routes>

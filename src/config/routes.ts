@@ -35,8 +35,6 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/suggestions", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
   { path: "/confirm", component: "ConfirmReport", name: "Confirm Report", icon: "FileCheck", description: "Corroborate debts", category: "authenticated", requiresAuth: true },
   { path: "/call-sheets", component: "CallSheetManager", name: "Call Sheets", icon: "FileSpreadsheet", description: "Upload and manage call sheets", category: "authenticated", requiresAuth: true },
-  { path: "/crew-contacts", component: "CrewContacts", name: "Crew Contacts", icon: "Users", description: "View and manage extracted crew contacts", category: "authenticated", requiresAuth: true },
-  { path: "/crew-contacts/:contactId/youtube", component: "ContactYouTubePortfolio", name: "YouTube Portfolio", icon: "Youtube", description: "Contact's YouTube project portfolio", category: "authenticated", requiresAuth: true },
 
   // Leaderboard Routes
   { path: "/leaderboard", component: "Leaderboard", name: "Leaderboard", icon: "TrendingUp", description: "Producer ranking board", category: "leaderboard" },
@@ -78,11 +76,6 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/extra-credit", component: "Redirect", name: "Extra Credit Portal", icon: "Sparkles", description: "Portal redirect to call sheets", category: "portal" },
   { path: "/extra-credit/auth", component: "Auth", name: "Portal Auth", icon: "LogIn", description: "Portal authentication", category: "portal" },
   { path: "/extra-credit/call-sheets", component: "CallSheetManager", name: "Portal Call Sheets", icon: "FileSpreadsheet", description: "Call sheet management (portal)", category: "portal" },
-  { path: "/extra-credit/call-sheets/:id/review", component: "ParseReview", name: "Portal Parse Review", icon: "FileSearch", description: "Review parsed call sheet (portal)", category: "portal" },
-  { path: "/extra-credit/call-sheets/:id/ig-matching", component: "IGMatching", name: "Portal IG Matching", icon: "Instagram", description: "Instagram matching (portal)", category: "portal" },
-  { path: "/extra-credit/call-sheets/:id/nova-matching", component: "NOVAMatching", name: "Portal NOVA Matching", icon: "Star", description: "NOVA matching (portal)", category: "portal" },
-  { path: "/extra-credit/crew-contacts", component: "CrewContacts", name: "Portal Crew Contacts", icon: "Users", description: "Crew contacts (portal)", category: "portal" },
-  { path: "/extra-credit/crew-contacts/:contactId/youtube", component: "ContactYouTubePortfolio", name: "Portal YouTube Portfolio", icon: "Youtube", description: "Contact YouTube portfolio (portal)", category: "portal" },
 ];
 
 export const ROUTE_CATEGORIES = ['public', 'authenticated', 'leaderboard', 'admin', 'system', 'portal'] as const;
