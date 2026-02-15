@@ -1,7 +1,6 @@
-import { FileText, Trash2, Clock, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -46,46 +45,10 @@ export function CallSheetCard({
   const sheet = link.global_call_sheets;
   const displayName = link.user_label || sheet.original_file_name;
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'queued':
-        return (
-          <Badge variant="outline" className="gap-1">
-            <Clock className="h-3 w-3" />
-            Queued
-          </Badge>
-        );
-      case 'parsing':
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Parsing
-          </Badge>
-        );
-      case 'parsed':
-      case 'complete':
-        return (
-          <Badge className="gap-1 bg-green-500 hover:bg-green-600">
-            <CheckCircle className="h-3 w-3" />
-            Complete
-          </Badge>
-        );
-      case 'error':
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Error
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
   return (
     <Card className={`hover:border-primary/50 transition-colors ${isSelected ? 'border-primary ring-1 ring-primary' : ''}`}>
       <CardContent className="p-4 space-y-3">
-        {/* Header: Checkbox + Status */}
+        {/* Header: Checkbox */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {onSelect && (
@@ -98,7 +61,6 @@ export function CallSheetCard({
                 }}
               />
             )}
-            {getStatusBadge(sheet.status)}
           </div>
         </div>
 
