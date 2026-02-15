@@ -1148,6 +1148,7 @@ async function handleAIResponse(response: Response): Promise<ParseResult> {
         parsed_date: parsed.parsed_date || null,
         unassigned_emails: parsed.unassigned_emails || [],
         unassigned_phones: parsed.unassigned_phones || [],
+        production_company: parsed.production_company || null,
       };
     } catch (e) {
       console.error("[parse-call-sheet] Failed to parse AI response:", e);
@@ -1168,6 +1169,7 @@ async function handleAIResponse(response: Response): Promise<ParseResult> {
           parsed_date: parsed.parsed_date || null,
           unassigned_emails: parsed.unassigned_emails || [],
           unassigned_phones: parsed.unassigned_phones || [],
+          production_company: parsed.production_company || null,
         };
       }
     } catch (e) {
