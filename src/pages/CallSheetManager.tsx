@@ -45,8 +45,8 @@ export default function CallSheetManager() {
                     Submit your call sheet. We'll let you know if it's already in our system.
                   </CardDescription>
                   <p className="text-sm text-green-600 flex items-center gap-1.5 mt-2">
-                    <Check className="h-4 w-4 shrink-0" />
                     Relax. We safeguard crew member and vendor privacy, always. Your personal information is NEVER made public.
+                    <Check className="h-4 w-4 shrink-0" />
                   </p>
                 </CardHeader>
                 <CardContent>
