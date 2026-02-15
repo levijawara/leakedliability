@@ -60,7 +60,6 @@ export const ROUTES: RouteMetadata[] = [
   
   // Intelligence Tools
   { path: "/admin/intelligence/network-graph", component: "AdminNetworkGraph", name: "Network Graph", icon: "Share2", description: "Relationship visualization", category: "admin", requiresAuth: true, requiresAdmin: true },
-  { path: "/admin/intelligence/heat-map", component: "AdminCallSheetReservoir", name: "Payment Heat Map", icon: "Flame", description: "Payment risk analysis", category: "admin", requiresAuth: true, requiresAdmin: true },
 
   // System Routes
   { path: "/sitemap", component: "Sitemap", name: "Platform Sitemap", icon: "Map", description: "Complete navigation map", category: "system", requiresAuth: true, requiresAdmin: true },

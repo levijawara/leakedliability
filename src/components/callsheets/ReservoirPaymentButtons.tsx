@@ -16,7 +16,6 @@ interface UserPaymentInfo {
 
 export interface PaymentStatusCounts {
   paid: { count: number; users: UserPaymentInfo[] };
-  waiting: { count: number; users: UserPaymentInfo[] };
   unpaid: { count: number; users: UserPaymentInfo[] };
   unanswered: { count: number; users: UserPaymentInfo[] };
 }
@@ -25,22 +24,17 @@ interface ReservoirPaymentButtonsProps {
   paymentCounts: PaymentStatusCounts;
 }
 
-type StatusKey = 'paid' | 'waiting' | 'unpaid' | 'unanswered';
+type StatusKey = 'paid' | 'unpaid' | 'unanswered';
 
 const statusConfig: Record<StatusKey, { label: string; modalTitle: string; colorClasses: string }> = {
   paid: {
-    label: "Yup!",
-    modalTitle: "Users who answered 'Yup!'",
+    label: "Yes",
+    modalTitle: "Users who answered Yes (paid)",
     colorClasses: "bg-green-500/20 border-green-500/40 hover:bg-green-500/30 text-green-700 dark:text-green-300"
   },
-  waiting: {
-    label: "Still waiting...",
-    modalTitle: "Users who answered 'Still waiting...'",
-    colorClasses: "bg-yellow-500/20 border-yellow-500/40 hover:bg-yellow-500/30 text-yellow-700 dark:text-yellow-300"
-  },
   unpaid: {
-    label: "Never.",
-    modalTitle: "Users who answered 'Never.'",
+    label: "No",
+    modalTitle: "Users who answered No (unpaid)",
     colorClasses: "bg-red-500/20 border-red-500/40 hover:bg-red-500/30 text-red-700 dark:text-red-300"
   },
   unanswered: {

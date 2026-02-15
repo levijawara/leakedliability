@@ -446,7 +446,6 @@ const AppContent = () => {
         <Route path="/admin/call-sheet-reservoir" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
         <Route path="/admin/payment-reversals-other" element={<RequireAuth requireAdmin><AdminPaymentReversalsOther /></RequireAuth>} />
         <Route path="/admin/intelligence/network-graph" element={<RequireAuth requireAdmin><AdminNetworkGraph /></RequireAuth>} />
-        <Route path="/admin/intelligence/heat-map" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
         <Route path="/beta-unlock" element={<RequireAuth><BetaUnlock /></RequireAuth>} />
         {/* Extra Credit portal routes — same pages, portal-only layout */}
         <Route path="/extra-credit" element={<Navigate to="/extra-credit/call-sheets" replace />} />

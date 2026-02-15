@@ -5,7 +5,6 @@ import { Flame, ThermometerSun, Snowflake, AlertTriangle } from "lucide-react";
 interface HeatScoreIndicatorProps {
   heatScore: number | null;
   paidCount?: number;
-  waitingCount?: number;
   neverPaidCount?: number;
   compact?: boolean;
 }
@@ -13,7 +12,6 @@ interface HeatScoreIndicatorProps {
 export function HeatScoreIndicator({ 
   heatScore, 
   paidCount = 0, 
-  waitingCount = 0, 
   neverPaidCount = 0,
   compact = false 
 }: HeatScoreIndicatorProps) {
@@ -73,8 +71,7 @@ export function HeatScoreIndicator({
             <div className="text-xs space-y-1">
               <p className="font-medium">{label}</p>
               <p>🟢 Paid: {paidCount}</p>
-              <p>🟡 Waiting: {waitingCount}</p>
-              <p>🔴 Never Paid: {neverPaidCount}</p>
+              <p>🔴 Unpaid: {neverPaidCount}</p>
             </div>
           </TooltipContent>
         </Tooltip>
@@ -95,11 +92,10 @@ export function HeatScoreIndicator({
         <TooltipContent>
           <div className="text-xs space-y-1">
             <p className="font-medium">Heat Score: {formattedScore}</p>
-            <p>Formula: (waiting×0.5 + never×1.0 - paid×0.25) / total</p>
+            <p>Formula: (unpaid×1.0 - paid×0.25) / total</p>
             <div className="mt-2 pt-2 border-t">
               <p>🟢 Paid: {paidCount}</p>
-              <p>🟡 Waiting: {waitingCount}</p>
-              <p>🔴 Never Paid: {neverPaidCount}</p>
+              <p>🔴 Unpaid: {neverPaidCount}</p>
             </div>
           </div>
         </TooltipContent>
