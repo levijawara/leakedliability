@@ -49,6 +49,7 @@ import {
 import { format } from "date-fns";
 import { ReservoirPaymentButtons, PaymentStatusCounts } from "@/components/callsheets/ReservoirPaymentButtons";
 import { HeatScoreIndicator } from "@/components/callsheets/HeatScoreIndicator";
+import { PDFViewerModal } from "@/components/callsheets/PDFViewerModal";
 
 interface UserPaymentInfo {
   userId: string;
@@ -105,6 +106,7 @@ export default function AdminCallSheetReservoir() {
   const [deleting, setDeleting] = useState(false);
   
   // User submission count modal state
+  const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
   const [showUserCountModal, setShowUserCountModal] = useState(false);
   const [userSubmissionCounts, setUserSubmissionCounts] = useState<UserSubmissionCount[]>([]);
   const [loadingUserCounts, setLoadingUserCounts] = useState(false);
@@ -613,6 +615,14 @@ export default function AdminCallSheetReservoir() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => setViewingPdf({ filePath: sheet.master_file_path, fileName: sheet.original_file_name })}
+                              title="View PDF"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleDownload(sheet)}
                               title="Download PDF"
                             >
@@ -641,6 +651,14 @@ export default function AdminCallSheetReservoir() {
       </main>
 
       <Footer />
+
+      {/* PDF Viewer Modal */}
+      <PDFViewerModal
+        open={!!viewingPdf}
+        onOpenChange={() => setViewingPdf(null)}
+        filePath={viewingPdf?.filePath ?? ""}
+        fileName={viewingPdf?.fileName ?? ""}
+      />
 
       {/* True Delete Confirmation */}
       <AlertDialog open={!!deleteSheet} onOpenChange={() => setDeleteSheet(null)}>
