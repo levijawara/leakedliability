@@ -2349,6 +2349,56 @@ export type Database = {
         }
         Relationships: []
       }
+      production_instances: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          extracted_date: string | null
+          global_call_sheet_id: string | null
+          id: string
+          metadata: Json | null
+          primary_contacts: Json | null
+          production_name: string | null
+          shoot_start_date: string | null
+          updated_at: string
+          verification_status: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          extracted_date?: string | null
+          global_call_sheet_id?: string | null
+          id?: string
+          metadata?: Json | null
+          primary_contacts?: Json | null
+          production_name?: string | null
+          shoot_start_date?: string | null
+          updated_at?: string
+          verification_status?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          extracted_date?: string | null
+          global_call_sheet_id?: string | null
+          id?: string
+          metadata?: Json | null
+          primary_contacts?: Json | null
+          production_name?: string | null
+          shoot_start_date?: string | null
+          updated_at?: string
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_instances_global_call_sheet_id_fkey"
+            columns: ["global_call_sheet_id"]
+            isOneToOne: true
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_status: string | null
