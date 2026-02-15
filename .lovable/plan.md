@@ -1,17 +1,23 @@
 
 
-## Clear Production Instances Table
+## Fix Build Error: Add `crew_size` Column to `production_instances`
 
-### What will happen
-Run `DELETE FROM public.production_instances;` directly against the database to clear all 188 rows.
+### Root Cause
+The Supabase types file reflects the actual database schema, which does not yet have a `crew_size` column on `production_instances`. The code in `Leaderboard.tsx` queries for `crew_size`, causing a `SelectQueryError` that cascades to every field access.
+
+### Fix (1 step, 0 code files changed)
+1. **Run database migration** to add the missing column:
+   ```sql
+   ALTER TABLE public.production_instances
+     ADD COLUMN IF NOT EXISTS crew_size INTEGER;
+   ```
+   Once applied, the auto-generated Supabase types will update and all 24 type errors resolve.
 
 ### What will NOT change
-- `user_call_sheets` (user libraries) -- untouched
-- `global_call_sheets` (Alexandria/Reservoir) -- untouched
 - No code files modified
-- No schema changes
+- No frontend changes
+- No other tables affected
 
 ### Verification
-- After execution, the Project Timeline on `/leaderboard` will show an empty state
-- Users' call sheet libraries remain intact
-
+- Build errors disappear (all 24 TS errors trace back to the single missing column)
+- `/leaderboard` Project Timeline table renders without errors
