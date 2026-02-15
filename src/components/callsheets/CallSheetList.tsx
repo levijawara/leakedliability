@@ -8,8 +8,7 @@ import {
   AlertCircle, 
   Trash2, 
   Search,
-  X,
-  RefreshCw
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +40,6 @@ import { SortToggle, SortField, SortDirection } from "./SortToggle";
 import { ViewToggle } from "@/components/contacts/ViewToggle";
 import { CallSheetCard } from "./CallSheetCard";
 import { PDFViewerModal } from "./PDFViewerModal";
-import { ReparseControlPanel } from "./ReparseControlPanel";
 import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
 
 interface GlobalCallSheet {
@@ -287,40 +285,6 @@ export function CallSheetList({}: CallSheetListProps) {
   };
 
   // Retry parsing - updates the global artifact
-  const handleRetry = async (sheet: GlobalCallSheet) => {
-    try {
-      // Reset status to queued
-      const { error: updateError } = await supabase
-        .from('global_call_sheets')
-        .update({ 
-          status: 'queued', 
-          error_message: null,
-          retry_count: 0,
-          parsing_started_at: null
-        })
-        .eq('id', sheet.id);
-
-      if (updateError) throw updateError;
-
-      // Trigger parsing
-      await supabase.functions.invoke('parse-call-sheet', {
-        body: { call_sheet_id: sheet.id }
-      });
-
-      toast({
-        title: "Retry initiated",
-        description: "The call sheet has been queued for re-processing."
-      });
-    } catch (error: any) {
-      console.error('[CallSheetList] Retry error:', error);
-      toast({
-        title: "Retry failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
   // Status badge renderer - includes "Needs Review" logic
   const getStatusBadge = (status: string, needsReview: boolean) => {
     // Check for "Needs Review" first - parsed but unsaved
@@ -474,38 +438,6 @@ export function CallSheetList({}: CallSheetListProps) {
   }, []);
 
 
-  // Get global IDs for selected links (for re-parse)
-  const selectedGlobalIds = useMemo(() => {
-    return filteredSheets
-      .filter(link => selectedIds.has(link.id))
-      .map(link => link.global_call_sheet_id);
-  }, [filteredSheets, selectedIds]);
-
-  // Calculate status counts for reparse panel
-  const statusCounts = useMemo(() => {
-    const counts = { pending: 0, queued: 0, parsing: 0, parsed: 0, error: 0 };
-    userLinks.forEach(link => {
-      const status = link.global_call_sheets.status;
-      if (status in counts) {
-        counts[status as keyof typeof counts]++;
-      }
-    });
-    return counts;
-  }, [userLinks]);
-
-  // Get pending and error sheet IDs for reparse panel
-  const pendingSheetIds = useMemo(() => {
-    return userLinks
-      .filter(link => link.global_call_sheets.status === 'pending')
-      .map(link => link.global_call_sheet_id);
-  }, [userLinks]);
-
-  const errorSheetIds = useMemo(() => {
-    return userLinks
-      .filter(link => link.global_call_sheets.status === 'error')
-      .map(link => link.global_call_sheet_id);
-  }, [userLinks]);
-
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -532,20 +464,12 @@ export function CallSheetList({}: CallSheetListProps) {
     <>
       {/* Sticky Toolbar Container */}
       <div className="sticky top-[73px] z-10 bg-background pb-4 pt-2 -mx-4 px-4 md:-mx-6 md:px-6">
-        {/* Reparse Control Panel - shows when pending/error sheets exist */}
-        <ReparseControlPanel
-          statusCounts={statusCounts}
-          pendingSheetIds={pendingSheetIds}
-          errorSheetIds={errorSheetIds}
-          onQueueComplete={fetchUserCallSheets}
-        />
-
         {/* Search and Sort Controls */}
         <div className="flex flex-col sm:flex-row gap-3 mt-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search by filename or contact..."
+              placeholder="Search by filename..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-9"
@@ -574,13 +498,6 @@ export function CallSheetList({}: CallSheetListProps) {
       {selectedIds.size > 0 && userId && (
         <CallSheetBulkActionsBar
           selectedIds={Array.from(selectedIds)}
-          selectedGlobalIds={selectedGlobalIds}
-          selectedSheets={filteredSheets
-            .filter(link => selectedIds.has(link.id))
-            .map(link => ({
-              id: link.id,
-              fileName: link.user_label || link.global_call_sheets.original_file_name
-            }))}
           totalCount={filteredSheets.length}
           onSelectAll={handleSelectAll}
           onDeselectAll={handleDeselectAll}
@@ -613,7 +530,6 @@ export function CallSheetList({}: CallSheetListProps) {
                 filePath: sheet.master_file_path, 
                 fileName: sheet.original_file_name 
               })}
-              onRetry={handleRetry}
               onDelete={(l) => setDeleteLink(l)}
             />
           ))}
@@ -681,7 +597,7 @@ export function CallSheetList({}: CallSheetListProps) {
                   <TableCell className="text-right">
                     <TooltipProvider delayDuration={300}>
                       <div className="flex items-center justify-end gap-1">
-                        {(sheet.status === 'parsed' || sheet.status === 'complete') && (
+                        {sheet.master_file_path && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -696,20 +612,6 @@ export function CallSheetList({}: CallSheetListProps) {
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>View PDF</TooltipContent>
-                          </Tooltip>
-                        )}
-                        {sheet.status === 'error' && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRetry(sheet)}
-                              >
-                                <RefreshCw className="h-4 w-4" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Retry parsing</TooltipContent>
                           </Tooltip>
                         )}
                         <Tooltip>

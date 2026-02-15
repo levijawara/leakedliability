@@ -1,4 +1,4 @@
-import { FileText, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { FileText, Trash2, Clock, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,7 +31,6 @@ interface CallSheetCardProps {
   isAdmin?: boolean;
   onSelect?: (linkId: string, selected: boolean, event?: React.MouseEvent) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
-  onRetry: (sheet: GlobalCallSheet) => void;
   onDelete: (link: UserCallSheetLink) => void;
 }
 
@@ -42,7 +41,6 @@ export function CallSheetCard({
   isAdmin = false,
   onSelect,
   onViewPdf, 
-  onRetry, 
   onDelete
 }: CallSheetCardProps) {
   const sheet = link.global_call_sheets;
@@ -132,7 +130,7 @@ export function CallSheetCard({
         {/* Action buttons */}
         <div className="flex items-center gap-1 pt-1 border-t">
           <TooltipProvider delayDuration={300}>
-            {(sheet.status === 'parsed' || sheet.status === 'complete') && (
+            {sheet.master_file_path && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="sm" onClick={() => onViewPdf(sheet)}>
@@ -140,17 +138,6 @@ export function CallSheetCard({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>View PDF</TooltipContent>
-              </Tooltip>
-            )}
-            
-            {sheet.status === 'error' && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => onRetry(sheet)}>
-                    <RefreshCw className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Retry parsing</TooltipContent>
               </Tooltip>
             )}
             

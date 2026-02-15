@@ -5,8 +5,7 @@ import {
   X, 
   CheckSquare,
   Square,
-  Loader2,
-  RefreshCw
+  Loader2
 } from "lucide-react";
 import {
   AlertDialog,
@@ -21,15 +20,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-interface SelectedSheet {
-  id: string;
-  fileName: string;
-}
-
 interface CallSheetBulkActionsBarProps {
-  selectedIds: string[]; // user_call_sheets IDs
-  selectedGlobalIds: string[]; // global_call_sheets IDs for re-parse
-  selectedSheets: SelectedSheet[]; // For project creation
+  selectedIds: string[];
   totalCount: number;
   onSelectAll: () => void;
   onDeselectAll: () => void;
@@ -39,8 +31,6 @@ interface CallSheetBulkActionsBarProps {
 
 export function CallSheetBulkActionsBar({
   selectedIds,
-  selectedGlobalIds,
-  selectedSheets,
   totalCount,
   onSelectAll,
   onDeselectAll,
@@ -50,7 +40,6 @@ export function CallSheetBulkActionsBar({
   const { toast } = useToast();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isReparsing, setIsReparsing] = useState(false);
 
   const handleBulkDelete = async () => {
     if (selectedIds.length === 0) return;
@@ -80,48 +69,6 @@ export function CallSheetBulkActionsBar({
       });
     } finally {
       setIsDeleting(false);
-    }
-  };
-
-  const handleBulkReparse = async () => {
-    if (selectedGlobalIds.length === 0) return;
-    
-    setIsReparsing(true);
-    try {
-      // Reset status to queued for all selected global sheets
-      const { error: updateError } = await supabase
-        .from('global_call_sheets')
-        .update({ 
-          status: 'queued', 
-          error_message: null,
-          retry_count: 0,
-          parsing_started_at: null
-        })
-        .in('id', selectedGlobalIds);
-
-      if (updateError) throw updateError;
-
-      // Trigger parsing for each (sequentially to avoid overwhelming the function)
-      for (const globalId of selectedGlobalIds) {
-        await supabase.functions.invoke('parse-call-sheet', {
-          body: { call_sheet_id: globalId }
-        });
-      }
-
-      toast({
-        title: "Re-parse initiated",
-        description: `${selectedGlobalIds.length} call sheet(s) queued for re-processing.`
-      });
-      onBulkComplete();
-    } catch (error: any) {
-      console.error('[CallSheetBulkActionsBar] Re-parse error:', error);
-      toast({
-        title: "Failed to re-parse call sheets",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsReparsing(false);
     }
   };
 
@@ -156,21 +103,6 @@ export function CallSheetBulkActionsBar({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBulkReparse}
-            disabled={selectedIds.length === 0 || isReparsing}
-            className="h-8"
-          >
-            {isReparsing ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            Re-parse
-          </Button>
-
           <Button
             variant="outline"
             size="sm"
