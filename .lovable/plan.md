@@ -1,63 +1,65 @@
 
 
-## Fix: Two Issues with Call Sheet Filter Modal
+## Fix: Two Build Errors from Cursor's LL 2.0 Push
 
-### Issue 1: LAFC Still Shows "Needs Review"
+### Error 1: `ParseResult.production_company` does not exist
+**File**: `supabase/functions/parse-call-sheet/index.ts` (line 776)
 
-**Root Cause**: The LAFC call sheet has `status = 'parsed'` in `global_call_sheets`. When you save contacts individually (via the pencil icon on the Parse Review page), nothing updates the sheet's status to `'complete'`. The "Needs Review" badge appears when `status === 'parsed' && savedContactCount === 0`.
+**Cause**: Cursor's code references `parseResult.production_company`, but the `ParseResult` interface (line 185) only has: `contacts`, `project_title`, `parsed_date`, `unassigned_emails`, `unassigned_phones`. There is no `production_company` field.
 
-The JSON import pipeline correctly sets status to `'complete'`, but the individual save paths (`SaveContactModal`, `ParseReview` bulk save) do not update the parent sheet's status.
-
-**Fix**: After saving contacts from a parsed sheet (in `ParseReview.tsx`), update the `global_call_sheets.status` from `'parsed'` to `'complete'`. This is a small addition to the existing save logic -- after successfully saving one or more contacts, run:
-
-```sql
-UPDATE global_call_sheets SET status = 'complete' WHERE id = <sheet_id> AND status = 'parsed';
+**Fix**: Add `production_company` to the `ParseResult` interface as an optional field:
+```typescript
+interface ParseResult {
+  contacts: ParsedContact[];
+  project_title: string | null;
+  parsed_date: string | null;
+  unassigned_emails: string[];
+  unassigned_phones: string[];
+  production_company: string | null;  // ADD THIS
+}
 ```
 
-This only transitions `parsed` to `complete`, never touching other statuses.
+This is safe because: the AI model parsing the call sheet may or may not return this field. If the model doesn't return it, it defaults to `null` via the `??` operator on line 776.
 
-**File**: `src/pages/ParseReview.tsx` (1 file, small change in the save handler)
+**File touched**: `supabase/functions/parse-call-sheet/index.ts` (1 line added to interface)
 
 ---
 
-### Issue 2: Filter Modal Shows "No Parsed Call Sheets Yet"
+### Error 2: `production_instances` table not in Supabase types
+**File**: `src/pages/Leaderboard.tsx` (lines 159, 769, 773)
 
-**Root Cause**: The `fetchCallSheets()` function is only called inside `handleOpenChange(open)` when `open === true`. However, Radix Dialog's `onOpenChange` callback is NOT triggered when the `open` prop changes from `false` to `true` externally (via the parent setting `isOpen={true}`). It only fires on user-initiated close actions (clicking overlay, pressing Escape, etc.).
+**Cause**: The `production_instances` table does not exist in the database yet. The migration file exists in `supabase/migrations/` but was never applied. The generated TypeScript types don't include `production_instances`, so the Supabase client rejects it at compile time.
 
-Result: `fetchCallSheets()` never runs, so the left panel always shows "No parsed call sheets yet."
+**Fix**: Run the migration to create the `production_instances` table. This will:
+1. Create the table with the correct schema (id, global_call_sheet_id, production_name, company_name, shoot_start_date, etc.)
+2. Set up RLS policies (public read, service role write)
+3. Backfill from existing parsed call sheets
+4. Auto-regenerate TypeScript types so `supabase.from("production_instances")` compiles
 
-**Fix**: Add a `useEffect` that watches `isOpen` and `userId`. When the modal opens (and userId is available), fetch the call sheets:
+The migration SQL should match what Cursor defined:
+- Table `production_instances` with columns: `id`, `global_call_sheet_id` (unique FK), `production_name`, `company_name`, `primary_contacts` (jsonb), `shoot_start_date` (date), `extracted_date` (date), `verification_status` (text), `metadata` (jsonb), `created_at`, `updated_at`
+- RLS: anyone can SELECT, service role / admins can INSERT/UPDATE
+- Backfill from `global_call_sheets` where status in ('parsed', 'complete')
 
-```typescript
-useEffect(() => {
-  if (isOpen && userId) {
-    setLocalFilters(filters);
-    setRoleSearch("");
-    fetchCallSheets();
-  }
-}, [isOpen, userId]);
-```
-
-This ensures the data loads every time the modal opens, regardless of how it was triggered.
-
-**File**: `src/components/contacts/FilterModal.tsx` (1 file, adding a useEffect, ~5 lines)
+**Action**: Database migration (creates 1 new table)
 
 ---
 
 ### Summary
 
-| Issue | Root Cause | Fix | File |
-|-------|-----------|-----|------|
-| LAFC "Needs Review" | `status` stays `'parsed'` after saving contacts | Update to `'complete'` after save | `ParseReview.tsx` |
-| Empty call sheet list | `fetchCallSheets` never called on modal open | Add `useEffect` triggered by `isOpen` | `FilterModal.tsx` |
+| Error | Root Cause | Fix | Scope |
+|-------|-----------|-----|-------|
+| `production_company` not on `ParseResult` | Missing interface field | Add optional field to interface | 1 line in edge function |
+| `production_instances` not valid table | Migration not applied | Run migration to create table | Database migration |
 
 ### What Will NOT Change
-- No schema changes or migrations
-- No new files
 - No layout, CSS, or copy changes
-- No changes to the right-side filter panel behavior
-- No changes to bulk save, export, or duplicate detection
+- No changes to existing leaderboard logic
+- No changes to any other edge function
+- No changes to FilterModal or CrewContacts
 
 ### Verification
-1. Open Crew Contacts, click Filter -- left panel should now show 187 call sheets
-2. Navigate to the LAFC Parse Review page, save a contact -- status should update from "Needs Review" to "Complete" on the Call Sheet Manager page
+1. Build should pass with no TS errors
+2. Active Productions tab on Leaderboard should load backfilled data
+3. Parse function should successfully upsert production instances after parsing
+
