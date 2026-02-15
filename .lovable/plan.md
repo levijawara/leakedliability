@@ -1,42 +1,24 @@
 
+## Add "View PDF" Button to Call Sheet Reservoir
 
-## Fix: Add Missing `production_company` to ParseResult Returns
+### What changes
+**1 file modified**: `src/pages/AdminCallSheetReservoir.tsx`
 
-### Problem
-The `ParseResult` interface (line 191) requires `production_company: string | null`, but two return statements (lines 1145 and 1165) omit it, causing build errors.
+### Details
 
-### Fix
-Add `production_company: parsed.production_company || null,` to both return objects in `supabase/functions/parse-call-sheet/index.ts`:
+- Add `import { PDFViewerModal } from "@/components/callsheets/PDFViewerModal"` to the imports
+- Add state: `const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null)`
+- In the Actions column (around line 613-620), add a new "View PDF" button right before the existing Download button, using the `Eye` icon (already imported)
+- Add the `PDFViewerModal` component at the bottom of the JSX (before the delete AlertDialog)
+- The button opens the same in-app PDF viewer modal used on the Call Sheet Manager page
 
-**Return 1 (line 1145-1151)** -- after the tool_call parse:
-```typescript
-return {
-  contacts: parsed.contacts || [],
-  project_title: parsed.project_title || null,
-  parsed_date: parsed.parsed_date || null,
-  unassigned_emails: parsed.unassigned_emails || [],
-  unassigned_phones: parsed.unassigned_phones || [],
-  production_company: parsed.production_company || null,
-};
-```
-
-**Return 2 (line 1165-1171)** -- content fallback parse:
-```typescript
-return {
-  contacts: parsed.contacts || [],
-  project_title: parsed.project_title || null,
-  parsed_date: parsed.parsed_date || null,
-  unassigned_emails: parsed.unassigned_emails || [],
-  unassigned_phones: parsed.unassigned_phones || [],
-  production_company: parsed.production_company || null,
-};
-```
-
-### Scope
-- 1 file: `supabase/functions/parse-call-sheet/index.ts`
-- 2 lines added (one per return block)
-- No behavior change -- just passes through what the AI already returns
+### What does NOT change
+- No frontend layout, CSS, or styling changes
+- No schema changes
+- CallSheetList / Call Sheet Manager page remains untouched (it already has a view button and no download button to remove)
+- No new files created
 
 ### Verification
-- Build passes with no errors
-- Edge function deploys successfully
+- Navigate to `/admin/call-sheet-reservoir`
+- Each row should now show an Eye icon button next to the Download button
+- Clicking it opens the PDF viewer modal with zoom, page navigation, and the file name in the header
