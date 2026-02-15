@@ -20,6 +20,10 @@ interface UserCallSheetLink {
   user_label: string | null;
   created_at: string;
   global_call_sheet_id: string;
+  payment_status: string | null;
+  payment_status_confirmed_at: string | null;
+  payment_reversal_reason: string | null;
+  payment_reversal_reason_other: string | null;
   global_call_sheets: GlobalCallSheet;
 }
 
@@ -30,6 +34,10 @@ interface CallSheetCardProps {
   isAdmin?: boolean;
   onSelect?: (linkId: string, selected: boolean, event?: React.MouseEvent) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
+  onMarkPaid: (link: UserCallSheetLink, status: 'paid') => void;
+  onRequestNo: (link: UserCallSheetLink) => void;
+  canReverse: (link: UserCallSheetLink) => boolean;
+  getNextReversalDate: (link: UserCallSheetLink) => string | null;
   onDelete: (link: UserCallSheetLink) => void;
 }
 
@@ -39,7 +47,11 @@ export function CallSheetCard({
   isSelected = false,
   isAdmin = false,
   onSelect,
-  onViewPdf, 
+  onViewPdf,
+  onMarkPaid,
+  onRequestNo,
+  canReverse,
+  getNextReversalDate,
   onDelete
 }: CallSheetCardProps) {
   const sheet = link.global_call_sheets;
@@ -102,9 +114,43 @@ export function CallSheetCard({
                 <TooltipContent>View PDF</TooltipContent>
               </Tooltip>
             )}
-            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
+              onClick={() => onMarkPaid(link, 'paid')}
+            >
+              Yes
+            </Button>
+            {canReverse(link) ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
+                onClick={() => onRequestNo(link)}
+              >
+                No
+              </Button>
+            ) : (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-block">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 px-2 text-muted-foreground cursor-not-allowed"
+                      disabled
+                    >
+                      No
+                    </Button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  You can change your answer on {getNextReversalDate(link) ?? 'the next business day'}
+                </TooltipContent>
+              </Tooltip>
+            )}
             <div className="flex-1" />
-            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="sm" onClick={() => onDelete(link)}>

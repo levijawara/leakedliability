@@ -29,14 +29,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { addBusinessDays, isDateOnOrAfter } from "@/lib/utils";
 import { SortToggle, SortField, SortDirection } from "./SortToggle";
 import { ViewToggle } from "@/components/contacts/ViewToggle";
 import { CallSheetCard } from "./CallSheetCard";
 import { PDFViewerModal } from "./PDFViewerModal";
 import { CallSheetBulkActionsBar } from "./CallSheetBulkActionsBar";
+import { ReversalReasonModal, type ReversalReason } from "./ReversalReasonModal";
 
 interface GlobalCallSheet {
   id: string;
@@ -53,6 +56,10 @@ interface UserCallSheetLink {
   user_label: string | null;
   created_at: string;
   global_call_sheet_id: string;
+  payment_status: string | null;
+  payment_status_confirmed_at: string | null;
+  payment_reversal_reason: string | null;
+  payment_reversal_reason_other: string | null;
   global_call_sheets: GlobalCallSheet;
 }
 
@@ -96,6 +103,8 @@ export function CallSheetList({}: CallSheetListProps) {
   
   // PDF viewer modal state
   const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
+  const [reversalLink, setReversalLink] = useState<UserCallSheetLink | null>(null);
+  const [reversalSubmitting, setReversalSubmitting] = useState(false);
 
   // Selection state for bulk operations
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -135,6 +144,10 @@ export function CallSheetList({}: CallSheetListProps) {
           user_label,
           created_at,
           global_call_sheet_id,
+          payment_status,
+          payment_status_confirmed_at,
+          payment_reversal_reason,
+          payment_reversal_reason_other,
           global_call_sheets (
             id,
             original_file_name,
@@ -280,7 +293,143 @@ export function CallSheetList({}: CallSheetListProps) {
     }
   };
 
-  // Retry parsing - removed (admin-only now)
+  const handleMarkPaid = useCallback(async (link: UserCallSheetLink, status: 'paid' | 'unpaid_needs_proof') => {
+    if (!userId) return;
+    try {
+      const updates: Record<string, unknown> = { payment_status: status };
+      if (status === 'paid') {
+        updates.payment_status_confirmed_at = new Date().toISOString();
+      } else {
+        updates.payment_status_confirmed_at = null;
+        updates.payment_reversal_reason = null;
+        updates.payment_reversal_reason_other = null;
+      }
+      const { error } = await supabase
+        .from('user_call_sheets')
+        .update(updates)
+        .eq('id', link.id)
+        .eq('user_id', userId);
+      if (error) throw error;
+      setUserLinks(prev =>
+        prev.map(l =>
+          l.id === link.id
+            ? { ...l, payment_status: status, payment_status_confirmed_at: status === 'paid' ? new Date().toISOString() : null, payment_reversal_reason: null, payment_reversal_reason_other: null }
+            : l
+        )
+      );
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    }
+  }, [userId, toast]);
+
+  const handleMarkAllYes = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const confirmedAt = new Date().toISOString();
+      const { error } = await supabase
+        .from('user_call_sheets')
+        .update({
+          payment_status: 'paid',
+          payment_status_confirmed_at: confirmedAt,
+          payment_reversal_reason: null,
+          payment_reversal_reason_other: null,
+        })
+        .eq('user_id', userId);
+      if (error) throw error;
+      setUserLinks(prev => prev.map(l => ({ ...l, payment_status: 'paid', payment_status_confirmed_at: confirmedAt, payment_reversal_reason: null, payment_reversal_reason_other: null })));
+      toast({ title: "All marked as Yes", description: "Payment status updated." });
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    }
+  }, [userId, toast]);
+
+  const handleMarkAllNo = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const { error } = await supabase
+        .from('user_call_sheets')
+        .update({
+          payment_status: 'unpaid_needs_proof',
+          payment_status_confirmed_at: null,
+          payment_reversal_reason: null,
+          payment_reversal_reason_other: null,
+        })
+        .eq('user_id', userId);
+      if (error) throw error;
+      setUserLinks(prev => prev.map(l => ({ ...l, payment_status: 'unpaid_needs_proof', payment_status_confirmed_at: null, payment_reversal_reason: null, payment_reversal_reason_other: null })));
+      toast({ title: "All marked as No", description: "Payment status updated." });
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    }
+  }, [userId, toast]);
+
+  /** True if user can change from Yes to No (past 1 business day cooldown). */
+  const canReverse = useCallback((link: UserCallSheetLink): boolean => {
+    if (link.payment_status !== 'paid') return true;
+    const confirmedAt = link.payment_status_confirmed_at;
+    if (!confirmedAt) return true;
+    const confirmed = new Date(confirmedAt);
+    const nextBusinessDay = addBusinessDays(confirmed, 1);
+    const today = new Date();
+    return isDateOnOrAfter(today, nextBusinessDay);
+  }, []);
+
+  const getNextReversalDate = useCallback((link: UserCallSheetLink): string | null => {
+    if (link.payment_status !== 'paid') return null;
+    const confirmedAt = link.payment_status_confirmed_at;
+    if (!confirmedAt) return null;
+    const confirmed = new Date(confirmedAt);
+    const next = addBusinessDays(confirmed, 1);
+    return format(next, 'EEE, MMM d, yyyy');
+  }, []);
+
+  const handleRequestNo = useCallback((link: UserCallSheetLink) => {
+    if (link.payment_status !== 'paid') {
+      handleMarkPaid(link, 'unpaid_needs_proof');
+      return;
+    }
+    if (!canReverse(link)) {
+      const dateStr = getNextReversalDate(link);
+      toast({
+        title: "Cooldown active",
+        description: dateStr ? `You can change your answer on ${dateStr}.` : "You can change your answer the following business day.",
+        variant: "default",
+      });
+      return;
+    }
+    setReversalLink(link);
+  }, [handleMarkPaid, canReverse, getNextReversalDate, toast]);
+
+  const handleReversalSubmit = useCallback(async (reason: ReversalReason, reasonOther?: string) => {
+    if (!userId || !reversalLink) return;
+    setReversalSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('user_call_sheets')
+        .update({
+          payment_status: 'unpaid_needs_proof',
+          payment_status_confirmed_at: null,
+          payment_reversal_reason: reason,
+          payment_reversal_reason_other: reasonOther || null,
+        })
+        .eq('id', reversalLink.id)
+        .eq('user_id', userId);
+      if (error) throw error;
+      setUserLinks(prev =>
+        prev.map(l =>
+          l.id === reversalLink.id
+            ? { ...l, payment_status: 'unpaid_needs_proof', payment_status_confirmed_at: null, payment_reversal_reason: reason, payment_reversal_reason_other: reasonOther || null }
+            : l
+        )
+      );
+      toast({ title: "Status updated", description: "Your answer has been changed." });
+    } catch (err: any) {
+      toast({ title: "Update failed", description: err.message, variant: "destructive" });
+    } finally {
+      setReversalSubmitting(false);
+      setReversalLink(null);
+    }
+  }, [userId, reversalLink, toast]);
 
   // Sorting logic
   const sortedSheets = useMemo(() => {
@@ -392,20 +541,54 @@ export function CallSheetList({}: CallSheetListProps) {
 
   if (userLinks.length === 0) {
     return (
-      <div className="text-center py-12">
-        <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-        <p className="text-lg font-medium">
-          No call sheets yet
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Upload your first call sheet to get started
-        </p>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-12">
+            <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <p className="text-lg font-medium">No call sheets yet</p>
+            <p className="text-sm text-muted-foreground">
+              Upload your first call sheet to get started
+            </p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <>
+    <Card>
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4">
+        <div>
+          <CardTitle>Your Call Sheets ({userLinks.length})</CardTitle>
+          <CardDescription>
+            View and manage your uploaded call sheets
+          </CardDescription>
+        </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <span className="text-sm font-medium text-muted-foreground">
+            Have you been paid yet?
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-green-600/20 text-green-600 hover:bg-green-600/30 border-green-600/50"
+              onClick={handleMarkAllYes}
+            >
+              Yes
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="bg-red-600/20 text-red-600 hover:bg-red-600/30 border-red-600/50"
+              onClick={handleMarkAllNo}
+            >
+              No
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
       {/* Sticky Toolbar Container */}
       <div className="sticky top-[73px] z-10 bg-background pb-4 pt-2 -mx-4 px-4 md:-mx-6 md:px-6">
         {/* Search and Sort Controls */}
@@ -474,6 +657,10 @@ export function CallSheetList({}: CallSheetListProps) {
                 filePath: sheet.master_file_path, 
                 fileName: sheet.original_file_name 
               })}
+              onMarkPaid={handleMarkPaid}
+              onRequestNo={handleRequestNo}
+              canReverse={canReverse}
+              getNextReversalDate={getNextReversalDate}
               onDelete={(l) => setDeleteLink(l)}
             />
           ))}
@@ -547,6 +734,42 @@ export function CallSheetList({}: CallSheetListProps) {
                             <TooltipContent>View PDF</TooltipContent>
                           </Tooltip>
                         )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
+                          onClick={() => handleMarkPaid(link, 'paid')}
+                        >
+                          Yes
+                        </Button>
+                        {canReverse(link) ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
+                            onClick={() => handleRequestNo(link)}
+                          >
+                            No
+                          </Button>
+                        ) : (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-block">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-muted-foreground cursor-not-allowed"
+                                  disabled
+                                >
+                                  No
+                                </Button>
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              You can change your answer on {getNextReversalDate(link) ?? 'the next business day'}
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -611,6 +834,14 @@ export function CallSheetList({}: CallSheetListProps) {
         </AlertDialogContent>
       </AlertDialog>
 
-    </>
+      <ReversalReasonModal
+        open={!!reversalLink}
+        onOpenChange={(open) => !open && setReversalLink(null)}
+        onSubmit={handleReversalSubmit}
+        loading={reversalSubmitting}
+      />
+
+      </CardContent>
+    </Card>
   );
 }

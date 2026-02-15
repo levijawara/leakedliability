@@ -55,6 +55,7 @@ import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
 import CallSheetManager from "./pages/CallSheetManager";
 import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
+import AdminPaymentReversalsOther from "./pages/AdminPaymentReversalsOther";
 import AdminNetworkGraph from "./pages/AdminNetworkGraph";
 import BetaUnlock from "./pages/BetaUnlock";
 import { FailureIndicator } from "./components/FailureIndicator";
@@ -443,6 +444,7 @@ const AppContent = () => {
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
         <Route path="/call-sheets" element={<RequireAuth requireBeta><CallSheetManager /></RequireAuth>} />
         <Route path="/admin/call-sheet-reservoir" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
+        <Route path="/admin/payment-reversals-other" element={<RequireAuth requireAdmin><AdminPaymentReversalsOther /></RequireAuth>} />
         <Route path="/admin/intelligence/network-graph" element={<RequireAuth requireAdmin><AdminNetworkGraph /></RequireAuth>} />
         <Route path="/admin/intelligence/heat-map" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
         <Route path="/beta-unlock" element={<RequireAuth><BetaUnlock /></RequireAuth>} />

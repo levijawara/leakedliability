@@ -2160,6 +2160,9 @@ export default function Admin() {
           <TabsTrigger value="ig_master" className="text-xs sm:text-sm px-2 py-1.5">
             IG Master
           </TabsTrigger>
+          <TabsTrigger value="reversal_other" className="text-xs sm:text-sm px-2 py-1.5">
+            Reversal Other
+          </TabsTrigger>
         </TabsList>
 
         {/* Payments Due Tab */}
@@ -4238,6 +4241,21 @@ export default function Admin() {
                   </div>
                 </div>
               </div>
+            </div>
+          </Card>
+        </TabsContent>
+
+        {/* Payment Reversals — "Other" Responses Tab */}
+        <TabsContent value="reversal_other">
+          <Card className="p-6">
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-1">Payment Reversals — &quot;Other&quot; Responses</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Call sheets where users changed Yes → No and selected &quot;Other&quot; with a free-text explanation.
+              </p>
+              <Button onClick={() => navigate("/admin/payment-reversals-other")}>
+                View All &quot;Other&quot; Responses
+              </Button>
             </div>
           </Card>
         </TabsContent>

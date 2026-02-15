@@ -56,6 +56,7 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/admin-submit-new", component: "AdminSubmitNew", name: "Submit for New User", icon: "UserPlus", description: "Admin proxy submission (new user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/leaderboard-analytics", component: "LeaderboardAnalytics", name: "Leaderboard Analytics", icon: "BarChart3", description: "Leaderboard performance metrics", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/call-sheet-reservoir", component: "AdminCallSheetReservoir", name: "Call Sheet Reservoir", icon: "Archive", description: "Complete call sheet archive", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin/payment-reversals-other", component: "AdminPaymentReversalsOther", name: "Reversal Other", icon: "MessageSquare", description: "Payment reversal 'Other' explanations", category: "admin", requiresAuth: true, requiresAdmin: true },
   
   // Intelligence Tools
   { path: "/admin/intelligence/network-graph", component: "AdminNetworkGraph", name: "Network Graph", icon: "Share2", description: "Relationship visualization", category: "admin", requiresAuth: true, requiresAdmin: true },
