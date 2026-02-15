@@ -308,6 +308,18 @@ export default function AdminCallSheetReservoir() {
         .delete()
         .eq('call_sheet_id', deleteSheet.id);
 
+      // Delete production_instances (FK to global_call_sheets)
+      await supabase
+        .from('production_instances')
+        .delete()
+        .eq('global_call_sheet_id', deleteSheet.id);
+
+      // Delete call_sheet_heat_metrics (FK to global_call_sheets)
+      await supabase
+        .from('call_sheet_heat_metrics')
+        .delete()
+        .eq('global_call_sheet_id', deleteSheet.id);
+
       // Delete the global record
       const { error } = await supabase
         .from('global_call_sheets')
