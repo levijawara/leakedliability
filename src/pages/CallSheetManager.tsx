@@ -56,7 +56,7 @@ export default function CallSheetManager() {
                 <CardHeader>
                   <CardTitle>Your Call Sheets</CardTitle>
                   <CardDescription>
-                    View and manage your uploaded call sheets with real-time parsing status
+                    View and manage your uploaded call sheets
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

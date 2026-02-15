@@ -2,16 +2,12 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { 
   FileText, 
-  Clock, 
   Loader2, 
-  CheckCircle, 
-  AlertCircle, 
   Trash2, 
   Search,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -284,59 +280,7 @@ export function CallSheetList({}: CallSheetListProps) {
     }
   };
 
-  // Retry parsing - updates the global artifact
-  // Status badge renderer - includes "Needs Review" logic
-  const getStatusBadge = (status: string, needsReview: boolean) => {
-    // Check for "Needs Review" first - parsed but unsaved
-    if (status === 'parsed' && needsReview) {
-      return (
-        <Badge variant="outline" className="gap-1 border-amber-500 text-amber-600 dark:border-amber-400 dark:text-amber-400">
-          <AlertCircle className="h-3 w-3" />
-          Needs Review
-        </Badge>
-      );
-    }
-    
-    switch (status) {
-      case 'pending':
-        return (
-          <Badge variant="outline" className="gap-1 border-amber-500 text-amber-600">
-            <Clock className="h-3 w-3" />
-            Pending
-          </Badge>
-        );
-      case 'queued':
-        return (
-          <Badge variant="outline" className="gap-1">
-            <Clock className="h-3 w-3" />
-            Queued
-          </Badge>
-        );
-      case 'parsing':
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Parsing
-          </Badge>
-        );
-      case 'parsed':
-        return (
-          <Badge className="gap-1 bg-green-500 hover:bg-green-600">
-            <CheckCircle className="h-3 w-3" />
-            Complete
-          </Badge>
-        );
-      case 'error':
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Error
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  // Retry parsing - removed (admin-only now)
 
   // Sorting logic
   const sortedSheets = useMemo(() => {
@@ -548,7 +492,6 @@ export function CallSheetList({}: CallSheetListProps) {
                   />
                 </TableHead>
                 <TableHead>File Name</TableHead>
-                <TableHead>Status</TableHead>
                 <TableHead>{sortField === 'shootDate' ? 'Shoot Date' : 'Added'}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -574,16 +517,6 @@ export function CallSheetList({}: CallSheetListProps) {
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                       <span className="truncate max-w-[200px]">{displayName}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      {getStatusBadge(sheet.status, false)}
-                      {sheet.status === 'error' && sheet.error_message && (
-                        <p className="text-xs text-destructive truncate max-w-[200px]" title={sheet.error_message}>
-                          {sheet.error_message}
-                        </p>
-                      )}
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
