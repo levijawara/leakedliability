@@ -1,40 +1,38 @@
 
 
-## Improve Duplicate Call Sheet UX: Confirm Before Linking
+## Fix Build Errors: Add Missing Columns to `user_call_sheets`
 
-### Current State
-Duplicate detection already works via SHA-256 content hashing (byte-level fingerprint). Renamed files with identical content are correctly caught. No parsing is needed -- this is purely a hash comparison.
+Cursor's code references three columns on `user_call_sheets` that do not exist in the database. The TypeScript type generator rejects the queries, causing the build to fail.
 
-### Problem
-When a duplicate is detected, the system silently links it to the user's account and shows a passive toast. The user has no opportunity to cancel or even understand what happened.
+### Root Cause
 
-### Proposed Change
+The `user_call_sheets` table currently has `payment_status` and `payment_status_locked`, but Cursor's code also references:
+- `payment_status_confirmed_at` (timestamptz) -- used in CallSheetList.tsx line 148, and for the business-day cooldown logic
+- `payment_reversal_reason` (text) -- used in the reversal modal submit handler
+- `payment_reversal_reason_other` (text) -- used in AdminPaymentReversalsOther.tsx and reversal submit
 
-**File**: `src/components/callsheets/CallSheetUploader.tsx` (1 file, ~20 lines added)
+### Fix
 
-When a duplicate hash is found (line 54), instead of immediately upserting the link, show a confirmation dialog:
+**One database migration** adding the three missing columns:
 
-- Use an `AlertDialog` (already available from Radix) to prompt the user:
-  - Title: "This call sheet already exists"
-  - Description: "A call sheet with identical content has already been uploaded (possibly under a different filename). Would you like to add it to your list anyway?"
-  - Two buttons: "Cancel" and "Add to My Sheets"
-- Only if the user confirms, perform the `user_call_sheets` upsert and call `onUploadComplete`
-- If they cancel, do nothing -- just reset the processing state
+```sql
+ALTER TABLE public.user_call_sheets
+  ADD COLUMN IF NOT EXISTS payment_status_confirmed_at timestamptz,
+  ADD COLUMN IF NOT EXISTS payment_reversal_reason text,
+  ADD COLUMN IF NOT EXISTS payment_reversal_reason_other text;
+```
+
+No code changes needed. Once the migration runs, the auto-generated Supabase types will include these columns, and both build errors resolve:
+- `CallSheetList.tsx` select query will match the schema
+- `AdminPaymentReversalsOther.tsx` select query will match the schema
 
 ### What Will NOT Change
-- No schema changes
-- No changes to hashing logic, upload flow, or storage paths
-- No layout or CSS changes to the drop zone
-- No changes to CallSheetList, CallSheetCard, or CallSheetManager
-
-### How Duplicates Are Detected (for reference)
-1. Browser reads the PDF bytes and computes SHA-256
-2. Hash is sent to `lookup_global_call_sheet_by_hash` RPC
-3. If a matching `global_call_sheets` row exists, it is a duplicate -- regardless of filename
-4. No parsing, no text comparison, no AI involved
+- No code file modifications
+- No schema removals or renames
+- No RLS policy changes (existing policies already cover UPDATE for own rows)
 
 ### Verification
-1. Upload a PDF that already exists under a different name -- confirmation dialog appears
-2. Click "Cancel" -- nothing is added, no toast
-3. Click "Add to My Sheets" -- sheet is linked, success toast shown
-4. Upload a truly new PDF -- no dialog, uploads normally
+1. Migration runs without error
+2. Build passes (no more "column does not exist" type errors)
+3. Yes/No payment buttons work on call sheet cards
+4. Reversal modal stores reason fields correctly
