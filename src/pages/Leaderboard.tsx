@@ -442,7 +442,7 @@ export default function Leaderboard() {
           </h1>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <p className="text-xl md:text-2xl font-bold text-muted-foreground">
-              {leaderboardSide === "active" ? "Active Productions" : "Producer Debt Leaderboard"}
+              {leaderboardSide === "active" ? "Project Timeline" : "Producer Debt Leaderboard"}
             </p>
             <span className="text-muted-foreground">|</span>
             <a 
@@ -485,7 +485,7 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* LL 2.0 Leaderboard Toggle: Active Productions (front) vs Verified Liabilities (back) */}
+        {/* LL 2.0 Leaderboard Toggle: Project Timeline (front) vs Verified Liabilities (back) */}
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-lg border-2 border-primary/30 bg-card p-1">
             <button
@@ -498,7 +498,7 @@ export default function Leaderboard() {
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              Active Productions
+              Project Timeline
             </button>
             <button
               type="button"
@@ -532,12 +532,11 @@ export default function Leaderboard() {
           </Card>
         )}
 
-        {/* Active Productions notice - gentle, no accusations */}
+        {/* Project Timeline notice - gentle, no accusations */}
         {leaderboardSide === "active" && (
           <Card className="mb-8 p-6 border-l-4 border-primary/50 bg-primary/5">
             <p className="text-sm text-muted-foreground">
-              Productions tracked from call sheet uploads. Day counter = days since shoot start.
-              Producers are expected to pay crew directly.
+              Productions tracked from call sheet uploads. Producers are expected to pay crew directly.
             </p>
           </Card>
         )}
@@ -762,16 +761,13 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Active Productions View (Front Side) */}
+        {/* Project Timeline View (Front Side) */}
         {leaderboardSide === "active" && (() => {
-          const today = new Date();
-          const list = (activeProductions ?? []).map((p) => {
-            const shootStart = p.shoot_start_date ? new Date(p.shoot_start_date) : null;
-            const dayCounter = shootStart
-              ? Math.floor((today.getTime() - shootStart.getTime()) / (24 * 60 * 60 * 1000))
-              : null;
-            return { ...p, day_counter: dayCounter };
-          }).sort((a, b) => (b.day_counter ?? -1) - (a.day_counter ?? -1));
+          const list = [...(activeProductions ?? [])].sort((a, b) => {
+            const dateA = a.extracted_date ? new Date(a.extracted_date).getTime() : 0;
+            const dateB = b.extracted_date ? new Date(b.extracted_date).getTime() : 0;
+            return dateB - dateA;
+          });
           const filtered = !searchTerm.trim()
             ? list
             : list.filter((p) => {
@@ -794,15 +790,10 @@ export default function Leaderboard() {
                       <div key={p.id} className="p-4 flex flex-col gap-2">
                         <div className="font-semibold">{p.production_name || "—"}</div>
                         {p.company_name && <div className="text-sm text-muted-foreground">{p.company_name}</div>}
-                        <div className="flex items-center justify-between">
-                          <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
-                            {p.verification_status}
-                          </Badge>
-                          <span className={cn("px-3 py-1 rounded font-bold text-sm", getDaysColor(p.day_counter ?? 0))}>
-                            {p.day_counter ?? "—"} days
-                          </span>
-                        </div>
-                        {p.extracted_date && <div className="text-xs text-muted-foreground">Extracted: {format(new Date(p.extracted_date), "MM/dd/yyyy")}</div>}
+                        <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
+                          {p.verification_status}
+                        </Badge>
+                        {p.extracted_date && <div className="text-xs text-muted-foreground">Submitted: {format(new Date(p.extracted_date), "MM/dd/yyyy")}</div>}
                       </div>
                     ))}
                   </div>
@@ -825,11 +816,10 @@ export default function Leaderboard() {
                     <Table>
                       <TableHeader>
                         <TableRow className="bg-primary hover:bg-primary">
-                          <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION AUTHORITY</TableHead>
                           <TableHead className="text-primary-foreground font-black text-sm">COMPANY</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm">KEY CONTACTS</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm text-center">EXTRACTED</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm text-center">DAYS SINCE START</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm">CREW SIZE</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm text-center">SUBMITTED</TableHead>
                           <TableHead className="text-primary-foreground font-black text-sm text-center">STATUS</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -847,11 +837,6 @@ export default function Leaderboard() {
                                 : "—"}
                             </TableCell>
                             <TableCell className="text-center">{p.extracted_date ? format(new Date(p.extracted_date), "MM/dd/yy") : "—"}</TableCell>
-                            <TableCell className="text-center">
-                              <span className={cn("inline-block px-3 py-1 rounded font-bold", getDaysColor(p.day_counter ?? 0))}>
-                                {p.day_counter ?? "—"}
-                              </span>
-                            </TableCell>
                             <TableCell className="text-center">
                               <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
                                 {p.verification_status}
