@@ -12,6 +12,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { ProjectDetailsModal } from "./ProjectDetailsModal";
 
 interface CallSheetUploaderProps {
   onUploadComplete?: () => void;
@@ -31,6 +32,7 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [duplicateInfo, setDuplicateInfo] = useState<{ id: string; status: string; fileName: string } | null>(null);
+  const [pendingProjectDetails, setPendingProjectDetails] = useState<{ globalCallSheetId: string } | null>(null);
   const { toast } = useToast();
 
   const processFile = async (file: File): Promise<void> => {
@@ -109,6 +111,7 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
 
       toast({ title: "Upload complete", description: "Call sheet queued for parsing." });
       onUploadComplete?.();
+      setPendingProjectDetails({ globalCallSheetId: newSheet.id });
     } catch (error: any) {
       console.error('[Uploader] Error:', error);
       toast({ title: "Upload failed", description: error.message || 'Something went wrong.', variant: "destructive" });
@@ -145,6 +148,8 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
         }, { onConflict: 'user_id,global_call_sheet_id' });
       toast({ title: "Added", description: "Call sheet added to your list." });
       onUploadComplete?.();
+      setDuplicateInfo(null);
+      setPendingProjectDetails({ globalCallSheetId: duplicateInfo.id });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -152,8 +157,34 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
     }
   };
 
+  const handleProjectDetailsSubmit = async (projectType: string | null, projectSubject: string | null) => {
+    if (!pendingProjectDetails) return;
+    const { data: { session } } = await supabase!.auth.getSession();
+    if (!session?.user?.id) return;
+
+    const { error } = await supabase!
+      .from('user_call_sheets')
+      .update({
+        project_type: projectType,
+        project_subject: projectSubject,
+      })
+      .eq('user_id', session.user.id)
+      .eq('global_call_sheet_id', pendingProjectDetails.globalCallSheetId);
+
+    if (error) {
+      toast({ title: "Could not save details", description: error.message, variant: "destructive" });
+      throw error;
+    }
+    setPendingProjectDetails(null);
+  };
+
   return (
     <div className="space-y-4">
+      <ProjectDetailsModal
+        open={!!pendingProjectDetails}
+        onOpenChange={(open) => { if (!open) setPendingProjectDetails(null); }}
+        onSubmit={handleProjectDetailsSubmit}
+      />
       <AlertDialog open={!!duplicateInfo} onOpenChange={(open) => { if (!open) setDuplicateInfo(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
