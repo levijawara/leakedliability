@@ -1,38 +1,42 @@
 
 
-## Fix: Remove Status Badges and Parsing References from Call Sheets UI
+## Two Changes to Call Sheet Manager
 
-Based on the screenshot, status badges ("pending") are still visible on every card, and the subtitle still references "real-time parsing status." Cursor's intent was to remove all status indicators since parsing is now admin-only.
+### 1. Show call sheet count next to "Your Call Sheets"
 
-### Changes
+**File**: `src/pages/CallSheetManager.tsx`
 
-**File 1: `src/pages/CallSheetManager.tsx`** (1 line)
+Currently the tab title is hardcoded as `"Your Call Sheets"` (line 57). To show a live count, the page needs to query the `user_call_sheets` table for the current user's row count and display it in the CardTitle.
 
-- Change line 59 from `"View and manage your uploaded call sheets with real-time parsing status"` to `"View and manage your uploaded call sheets"`
+- Add state for `sheetCount` and a `useEffect` that fetches `supabase.from('user_call_sheets').select('id', { count: 'exact', head: true })` filtered by the authenticated user
+- Update line 57 from `Your Call Sheets` to `Your Call Sheets ({count})`
+- The count refreshes when the component mounts or when the user switches to the "sheets" tab
 
-**File 2: `src/components/callsheets/CallSheetCard.tsx`** (~20 lines removed)
+### 2. Single-file upload only
 
-- Remove the entire `getStatusBadge` function (lines 49-83)
-- Remove the status badge rendering from the header section (line 101: `{getStatusBadge(sheet.status)}`)
-- Remove unused imports: `Clock`, `Loader2`, `CheckCircle`, `AlertCircle` from lucide-react and `Badge` from ui/badge
-- Keep the checkbox in the header area; just remove the badge next to it
+**File**: `src/components/callsheets/CallSheetUploader.tsx`
 
-**File 3: `src/components/callsheets/CallSheetList.tsx`** (~50 lines removed)
+Currently supports drag-and-drop of up to 50 files with a bulk queue UI. This will be simplified to single-file upload:
 
-- Remove the entire `getStatusBadge` function (lines 288-339)
-- Remove the "Status" column header from the table (line 551)
-- Remove the Status table cell that renders the badge (lines 579-588)
-- Remove unused imports: `Clock`, `CheckCircle`, `AlertCircle` from lucide-react and `Badge` from ui/badge
-- Keep `Loader2` (used for loading spinner)
+- Remove `MAX_FILES` constant (line 20)
+- Remove bulk queue state (`uploadQueue`, `currentIndex`, `processingRef`)
+- Remove `processBulkUpload` and `handleBulkUpload` functions
+- Remove the entire "upload queue" progress/list UI (the `ScrollArea` block showing per-file status)
+- Simplify to: user picks ONE file, it uploads directly via `processFile`, shows a toast on success/duplicate/error
+- Remove `multiple` attribute from the file input (line 233)
+- Update drop handler to only take the first file: `files[0]`
+- Update copy from "up to 50 files at once" to just "PDF files only, max 10MB"
+- Keep the hashing, duplicate detection, and single-file `processFile` logic intact
 
 ### What Will NOT Change
 - No schema changes
-- No changes to selection, bulk delete, search, sort, PDF viewing, or upload
-- No layout or spacing changes beyond removing the badge elements
-- No changes to CallSheetBulkActionsBar (already clean)
+- No changes to hashing or duplicate detection logic
+- No changes to CallSheetList, CallSheetCard, or bulk actions bar
+- No layout/CSS changes beyond described text updates
 
 ### Verification
 1. Build passes
-2. Cards show: checkbox, filename, date, View PDF button, Delete button -- no status badge
-3. List view shows: checkbox, filename, date, actions -- no Status column
-4. Subtitle reads "View and manage your uploaded call sheets" (no parsing mention)
+2. "Your Call Sheets" tab header shows count in parentheses matching total sheets
+3. Upload zone accepts only one file at a time (no multi-select, no queue UI)
+4. Single file uploads with hash check, duplicate detection, and toast feedback
+
