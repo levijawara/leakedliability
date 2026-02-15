@@ -2,6 +2,16 @@ import { useState, useCallback } from "react";
 import { Upload, FileText, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface CallSheetUploaderProps {
   onUploadComplete?: () => void;
@@ -20,6 +30,7 @@ async function computeFileHash(file: File): Promise<string> {
 export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [duplicateInfo, setDuplicateInfo] = useState<{ id: string; status: string; fileName: string } | null>(null);
   const { toast } = useToast();
 
   const processFile = async (file: File): Promise<void> => {
@@ -52,19 +63,8 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
       const existing = existingData as { id: string; status: string } | null;
 
       if (existing) {
-        await supabase!
-          .from('user_call_sheets')
-          .upsert({
-            user_id: userId,
-            global_call_sheet_id: existing.id,
-            user_label: file.name
-          }, { onConflict: 'user_id,global_call_sheet_id' });
-
-        toast({
-          title: "Duplicate detected",
-          description: existing.status === 'parsed' ? 'This call sheet was already parsed.' : 'This call sheet is already queued.',
-        });
-        onUploadComplete?.();
+        setDuplicateInfo({ id: existing.id, status: existing.status, fileName: file.name });
+        setIsProcessing(false);
         return;
       }
 
@@ -131,8 +131,43 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
     e.target.value = '';
   };
 
+  const confirmDuplicate = async () => {
+    if (!duplicateInfo) return;
+    try {
+      const { data: { session } } = await supabase!.auth.getSession();
+      if (!session?.user?.id) return;
+      await supabase!
+        .from('user_call_sheets')
+        .upsert({
+          user_id: session.user.id,
+          global_call_sheet_id: duplicateInfo.id,
+          user_label: duplicateInfo.fileName
+        }, { onConflict: 'user_id,global_call_sheet_id' });
+      toast({ title: "Added", description: "Call sheet added to your list." });
+      onUploadComplete?.();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setDuplicateInfo(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
+      <AlertDialog open={!!duplicateInfo} onOpenChange={(open) => { if (!open) setDuplicateInfo(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>This call sheet already exists</AlertDialogTitle>
+            <AlertDialogDescription>
+              A call sheet with identical content has already been uploaded (possibly under a different filename). Would you like to add it to your list anyway?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDuplicate}>Add to My Sheets</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
           isDragging
