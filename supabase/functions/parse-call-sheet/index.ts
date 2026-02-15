@@ -188,6 +188,7 @@ interface ParseResult {
   parsed_date: string | null;
   unassigned_emails: string[];
   unassigned_phones: string[];
+  production_company: string | null;
 }
 
 // ============================================================================
