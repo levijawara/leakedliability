@@ -87,7 +87,11 @@ export function ProjectTimelineJsonUploader({ variant = "default", onSuccess }: 
           continue;
         }
 
-        const crewSize = json.crew_size ?? (Array.isArray(json.crew) ? json.crew.length : 0);
+        // Crew size: only set when we have crew identity data. No crew list = leave blank (null).
+        const hasCrewList = Array.isArray(json.crew) && json.crew.length > 0;
+        const crewSize = hasCrewList
+          ? (json.crew_size ?? json.crew.length)
+          : null;
         const jobDate = json.production_info?.date
           ? parseJobDate(json.production_info.date)
           : null;
@@ -95,7 +99,7 @@ export function ProjectTimelineJsonUploader({ variant = "default", onSuccess }: 
         const { error } = await supabase.from("production_instances").insert({
           production_name: json.production_info.production_name,
           company_name: json.production_info.company_name ?? null,
-          primary_contacts: Array.isArray(json.crew) ? json.crew.slice(0, 5).map((c) => ({ name: c.name, role: c.role })) : [],
+          primary_contacts: Array.isArray(json.crew) && json.crew.length > 0 ? json.crew.slice(0, 5).map((c) => ({ name: c.name, role: c.role })) : [],
           shoot_start_date: jobDate,
           extracted_date: jobDate,
           crew_size: crewSize,
@@ -111,7 +115,9 @@ export function ProjectTimelineJsonUploader({ variant = "default", onSuccess }: 
       if (added > 0) {
         toast({
           title: "Added to Project Timeline",
-          description: added === 1 ? `${lastName} (crew: ${lastCrewSize})` : `${added} productions added`,
+          description: added === 1
+            ? (lastCrewSize != null ? `${lastName} (crew: ${lastCrewSize})` : lastName)
+            : `${added} productions added`,
         });
         onSuccess?.();
       }

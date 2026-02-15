@@ -22,6 +22,7 @@ When parsing call sheets into JSON, **always** use this exact structure. See `do
 }
 ```
 
-- `crew_size` MUST equal `crew.length` (tally of roles/identities)
-- `production_info.date` = Job Date (e.g. "June 10, 2025")
-- `crew` = one object per person with name, role, department, phone, email
+- When crew identities exist: include `crew_size` (tally of crew.length) and `crew` array.
+- When call sheet has NO crew identity information: omit `crew_size`, use `crew: []`. Blank CREW SIZE on leaderboard is valid.
+- `production_info.date` = Job Date when known (e.g. "June 10, 2025"); omit if unknown.
+- `crew` = one object per person (name, role, department, phone, email), or [] when no names listed.

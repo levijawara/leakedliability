@@ -25,6 +25,8 @@
 }
 ```
 
+**When there is no crew identity information** (call sheet omits names / crew grid), omit `crew_size` and use an empty `crew` array. Leaving crew_size blank is valid. The leaderboard will show a blank; we still record the production. Some values may be left blank.
+
 ## Field Rules
 
 | Field | Type | Required | Notes |
@@ -32,10 +34,10 @@
 | `source_file` | string | Yes | Original PDF filename |
 | `production_info` | object | Yes | |
 | `production_info.production_name` | string | Yes | Canonical production name |
-| `production_info.date` | string | Yes | Job/shoot date in "Month DD, YYYY" (e.g. "June 10, 2025") |
+| `production_info.date` | string | No | Job/shoot date in "Month DD, YYYY". Omit if unknown. |
 | `production_info.company_name` | string | No | Production company if known |
-| `crew_size` | number | Yes | **Tally of crew array length** — used for CREW SIZE column on leaderboard |
-| `crew` | array | Yes | One object per person |
+| `crew_size` | number | No | **Tally of crew array length** — used for CREW SIZE. **Omit or leave blank when call sheet has no crew identities.** |
+| `crew` | array | Yes | One object per person. Use `[]` when no crew names are listed. |
 
 ## Crew Member Object
 
@@ -66,5 +68,21 @@
 
 ## Validation
 
-- `crew_size` MUST equal `crew.length`
-- `production_info.date` MUST be parseable (Month DD, YYYY or M/D/YY)
+- When crew identities exist: `crew_size` SHOULD equal `crew.length`
+- When no crew identities: omit `crew_size` (or omit the key); use `crew: []`. Leaderboard CREW SIZE stays blank.
+- `production_info.date` when present MUST be parseable (Month DD, YYYY or M/D/YY)
+
+## No-Crew-Identity Example
+
+Call sheets that list departments/call times but no names get empty crew and no crew_size:
+
+```json
+{
+  "source_file": "Tropicana x AE CS 02:16:2026.pdf",
+  "production_info": {
+    "production_name": "Tropicana x AE - Rickie Fowler",
+    "date": "February 16, 2026"
+  },
+  "crew": []
+}
+```
