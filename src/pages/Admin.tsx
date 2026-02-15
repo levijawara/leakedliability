@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -1606,6 +1606,15 @@ export default function Admin() {
                 variant="status"
               />
             </div>
+
+            <Button
+              onClick={() => navigate("/admin/call-sheet-reservoir")}
+              size="lg"
+              className="w-full mt-4 py-6 text-lg font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-amber-50 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <BookOpen className="h-6 w-6 mr-2" />
+              ALEXANDRIA
+            </Button>
 
           </div>
         </div>
