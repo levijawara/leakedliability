@@ -133,12 +133,15 @@ function AdminEditableCell({
   );
 }
 
+type LeaderboardSide = "active" | "liabilities";
+
 export default function Leaderboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [managingBilling, setManagingBilling] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'admin' | 'public'>('admin');
+  const [leaderboardSide, setLeaderboardSide] = useState<LeaderboardSide>("active"); // Front side = default
   const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [expandedPenalty, setExpandedPenalty] = useState<'age' | 'amount' | 'repeat' | null>(null);
   
@@ -148,7 +151,21 @@ export default function Leaderboard() {
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const [isAccessBlocked, setIsAccessBlocked] = useState(false);
 
-  const { data: producers, isLoading, refetch: refetchProducers, error: queryError } = useQuery({
+  const { data: activeProductions, isLoading: isLoadingActive, refetch: refetchActive, error: activeError } = useQuery({
+    queryKey: ["production_instances"],
+    queryFn: async () => {
+      if (!supabase) throw new Error("Database connection unavailable");
+      const { data, error } = await supabase
+        .from("production_instances")
+        .select("id, production_name, company_name, primary_contacts, shoot_start_date, extracted_date, verification_status")
+        .order("shoot_start_date", { ascending: true, nullsFirst: true });
+      if (error) throw error;
+      return data ?? [];
+    },
+    retry: false,
+  });
+
+  const { data: producers, isLoading: isLoadingLiabilities, refetch: refetchProducers, error: queryError } = useQuery({
     queryKey: ["public_leaderboard"],
     queryFn: async () => {
       if (!supabase) {
@@ -425,7 +442,7 @@ export default function Leaderboard() {
           </h1>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <p className="text-xl md:text-2xl font-bold text-muted-foreground">
-              Producer Debt Leaderboard
+              {leaderboardSide === "active" ? "Active Productions" : "Producer Debt Leaderboard"}
             </p>
             <span className="text-muted-foreground">|</span>
             <a 
@@ -468,22 +485,65 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Alert Banner */}
-        <Card className="mb-8 p-6 border-l-4 border-status-critical bg-status-critical/10">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-6 w-6 text-status-critical mt-1 flex-shrink-0" />
-            <div>
-              <h3 className="font-bold text-lg mb-2">Public Accountability Notice</h3>
-              <p className="text-sm text-muted-foreground">
-                This leaderboard tracks producers who owe payments to freelance crew members and vendors. 
-                All data is verified through our review process. Scores update daily and include 
-                time-based forgiveness after debts are closed.
-              </p>
-            </div>
+        {/* LL 2.0 Leaderboard Toggle: Active Productions (front) vs Verified Liabilities (back) */}
+        <div className="mb-6 flex justify-center">
+          <div className="inline-flex rounded-lg border-2 border-primary/30 bg-card p-1">
+            <button
+              type="button"
+              onClick={() => setLeaderboardSide("active")}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-semibold transition-colors",
+                leaderboardSide === "active"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Active Productions
+            </button>
+            <button
+              type="button"
+              onClick={() => setLeaderboardSide("liabilities")}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-semibold transition-colors",
+                leaderboardSide === "liabilities"
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Verified Liabilities
+            </button>
           </div>
-        </Card>
+        </div>
 
-        {/* Legend */}
+        {/* Alert Banner - Liabilities only */}
+        {leaderboardSide === "liabilities" && (
+          <Card className="mb-8 p-6 border-l-4 border-status-critical bg-status-critical/10">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-status-critical mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-lg mb-2">Public Accountability Notice</h3>
+                <p className="text-sm text-muted-foreground">
+                  This leaderboard tracks producers who owe payments to freelance crew members and vendors.
+                  All data is verified through our review process. Scores update daily and include
+                  time-based forgiveness after debts are closed.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* Active Productions notice - gentle, no accusations */}
+        {leaderboardSide === "active" && (
+          <Card className="mb-8 p-6 border-l-4 border-primary/50 bg-primary/5">
+            <p className="text-sm text-muted-foreground">
+              Productions tracked from call sheet uploads. Day counter = days since shoot start.
+              Producers are expected to pay crew directly.
+            </p>
+          </Card>
+        )}
+
+        {/* Legend - Liabilities only */}
+        {leaderboardSide === "liabilities" && (
         <Card className="mb-8 p-6">
           <h3 className="font-bold text-lg mb-4">Days-Since-Wrap color coding:</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -509,8 +569,10 @@ export default function Leaderboard() {
             </div>
           </div>
         </Card>
+        )}
 
-        {/* PSCS Formula - Redesigned */}
+        {/* PSCS Formula - Redesigned - Liabilities only */}
+        {leaderboardSide === "liabilities" && (
         <Card className="mb-8 p-4 md:p-5 bg-gradient-to-br from-primary/5 to-accent/5 border-2 max-w-5xl mx-auto">
           {/* Tier 1: Title, Subtitle, Formula Banner */}
           <div className="mb-4">
@@ -648,13 +710,14 @@ export default function Leaderboard() {
             </div>
           </div>
         </Card>
+        )}
 
-        {/* Producer Search Filter + View Toggle */}
+        {/* Search Filter + View Toggle */}
         <div className="mb-4 flex items-center gap-3">
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder="Search by producer name or company..."
+              placeholder={leaderboardSide === "active" ? "Search by production or company..." : "Search by producer name or company..."}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
@@ -670,8 +733,8 @@ export default function Leaderboard() {
             )}
           </div>
           
-          {/* Admin View Toggle - Only visible to admins */}
-          {isAdmin && (
+          {/* Admin View Toggle - Only visible to admins on liabilities */}
+          {isAdmin && leaderboardSide === "liabilities" && (
             <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
               <Label htmlFor="view-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
                 {viewMode === 'admin' ? 'Admin View' : 'Public View'}
@@ -684,8 +747,8 @@ export default function Leaderboard() {
             </div>
           )}
           
-          {/* Delinquent Toggle - Only visible to admins */}
-          {isAdmin && (
+          {/* Delinquent Toggle - Only visible to admins on liabilities */}
+          {isAdmin && leaderboardSide === "liabilities" && (
             <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
               <Label htmlFor="delinquent-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
                 {showDelinquentOnly ? 'Delinquent' : 'All'}
@@ -699,9 +762,121 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Mobile Accordion View */}
+        {/* Active Productions View (Front Side) */}
+        {leaderboardSide === "active" && (() => {
+          const today = new Date();
+          const list = (activeProductions ?? []).map((p) => {
+            const shootStart = p.shoot_start_date ? new Date(p.shoot_start_date) : null;
+            const dayCounter = shootStart
+              ? Math.floor((today.getTime() - shootStart.getTime()) / (24 * 60 * 60 * 1000))
+              : null;
+            return { ...p, day_counter: dayCounter };
+          }).sort((a, b) => (b.day_counter ?? -1) - (a.day_counter ?? -1));
+          const filtered = !searchTerm.trim()
+            ? list
+            : list.filter((p) => {
+                const s = searchTerm.trim().toLowerCase();
+                return (p.production_name || "").toLowerCase().includes(s) || (p.company_name || "").toLowerCase().includes(s);
+              });
+          return (
+            <>
+              <Card className="overflow-hidden md:hidden mb-4">
+                {isLoadingActive ? (
+                  <div className="text-center py-12 text-muted-foreground">Loading...</div>
+                ) : activeError ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Unable to load active productions.</p>
+                    <Button variant="outline" size="sm" onClick={() => refetchActive()} className="mt-2">Try Again</Button>
+                  </div>
+                ) : filtered.length > 0 ? (
+                  <div className="divide-y">
+                    {filtered.map((p) => (
+                      <div key={p.id} className="p-4 flex flex-col gap-2">
+                        <div className="font-semibold">{p.production_name || "—"}</div>
+                        {p.company_name && <div className="text-sm text-muted-foreground">{p.company_name}</div>}
+                        <div className="flex items-center justify-between">
+                          <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
+                            {p.verification_status}
+                          </Badge>
+                          <span className={cn("px-3 py-1 rounded font-bold text-sm", getDaysColor(p.day_counter ?? 0))}>
+                            {p.day_counter ?? "—"} days
+                          </span>
+                        </div>
+                        {p.extracted_date && <div className="text-xs text-muted-foreground">Extracted: {format(new Date(p.extracted_date), "MM/dd/yyyy")}</div>}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    {searchTerm ? "No matching productions." : "No active productions yet. Call sheet uploads will appear here."}
+                  </div>
+                )}
+              </Card>
+              <Card className="overflow-hidden hidden md:block">
+                {isLoadingActive ? (
+                  <div className="text-center py-12 text-muted-foreground">Loading...</div>
+                ) : activeError ? (
+                  <div className="text-center py-12">
+                    <p className="text-muted-foreground">Unable to load active productions.</p>
+                    <Button variant="outline" size="sm" onClick={() => refetchActive()} className="mt-2">Try Again</Button>
+                  </div>
+                ) : filtered.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-primary hover:bg-primary">
+                          <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm">COMPANY</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm">KEY CONTACTS</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm text-center">EXTRACTED</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm text-center">DAYS SINCE START</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm text-center">STATUS</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filtered.map((p) => (
+                          <TableRow key={p.id} className="hover:bg-muted/50">
+                            <TableCell className="font-semibold">{p.production_name || "—"}</TableCell>
+                            <TableCell>{p.company_name || "—"}</TableCell>
+                            <TableCell className="text-sm">
+                              {Array.isArray(p.primary_contacts) && (p.primary_contacts as { name?: string; emails?: string[] }[]).length > 0
+                                ? (p.primary_contacts as { name?: string; emails?: string[] }[])
+                                    .slice(0, 2)
+                                    .map((c) => c.name || c.emails?.[0] || "—")
+                                    .join(", ")
+                                : "—"}
+                            </TableCell>
+                            <TableCell className="text-center">{p.extracted_date ? format(new Date(p.extracted_date), "MM/dd/yy") : "—"}</TableCell>
+                            <TableCell className="text-center">
+                              <span className={cn("inline-block px-3 py-1 rounded font-bold", getDaysColor(p.day_counter ?? 0))}>
+                                {p.day_counter ?? "—"}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
+                                {p.verification_status}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    {searchTerm ? "No matching productions." : "No active productions yet. Call sheet uploads will appear here."}
+                  </div>
+                )}
+              </Card>
+            </>
+          );
+        })()}
+
+        {/* Liabilities View - Mobile Accordion + Desktop Table */}
+        {leaderboardSide === "liabilities" && (
+        <>
         <Card className="overflow-hidden md:hidden">
-          {isLoading ? (
+          {isLoadingLiabilities ? (
             <div className="text-center py-12 text-muted-foreground">
               Loading producers...
             </div>
@@ -940,7 +1115,7 @@ export default function Leaderboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {isLoadingLiabilities ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                       Loading producers...
@@ -1182,6 +1357,8 @@ export default function Leaderboard() {
             </Table>
           </div>
         </Card>
+        </>
+        )}
 
         </div>
       </div>

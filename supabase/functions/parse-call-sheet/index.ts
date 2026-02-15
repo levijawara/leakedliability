@@ -760,6 +760,36 @@ serve(async (req) => {
     }
 
     // =========================================================================
+    // LL 2.0: Create/update production_instance for Active Productions leaderboard
+    // =========================================================================
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const shootStartDate = parseResult.parsed_date || todayStr;
+    const canonicalProducersForContacts = canonicalProducersUpdate.canonical_producers
+      ?? (callSheet.canonical_producers as CanonicalProducer[] | null)
+      ?? extractCanonicalProducers(correctedContacts);
+    const { error: piError } = await supabase
+      .from("production_instances")
+      .upsert(
+        {
+          global_call_sheet_id: call_sheet_id,
+          production_name: parseResult.project_title || callSheet.original_file_name || "Unknown Production",
+          company_name: parseResult.production_company ?? null,
+          primary_contacts: canonicalProducersForContacts,
+          shoot_start_date: shootStartDate,
+          extracted_date: todayStr,
+          verification_status: "unverified",
+          metadata: {},
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "global_call_sheet_id" }
+      );
+    if (piError) {
+      console.warn("[parse-call-sheet] Failed to upsert production_instance (non-fatal):", piError);
+    } else {
+      console.log("[parse-call-sheet] Upserted production_instance for Active Productions board");
+    }
+
+    // =========================================================================
     // PROJECT FINGERPRINT MATCHING
     // =========================================================================
     
