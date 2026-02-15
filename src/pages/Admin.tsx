@@ -2389,7 +2389,8 @@ export default function Admin() {
           </Table>
         </TabsContent>
 
-          {['crew_report', 'vendor_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
+          {/* Note: crew_report and vendor_report have explicit TabsContent above; map only handles types without dedicated tabs */}
+          {['payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
           const leadingUser = leadingUsers[type];
           
