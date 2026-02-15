@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallSheetUploader } from "@/components/callsheets/CallSheetUploader";
 import { CallSheetList } from "@/components/callsheets/CallSheetList";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Check } from "lucide-react";
 
 export default function CallSheetManager() {
   const isPortal = usePortalMode();
@@ -22,7 +22,7 @@ export default function CallSheetManager() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Call Sheet Manager</h1>
               <p className="text-muted-foreground">
-                Submit call sheets to document your own work timeline, and to keep us informed. Think of us as a form of 'invoice insurance'.
+                Submit call sheets to document your own work timeline, and to keep us informed. Think of us as a form of "invoice insurance".
               </p>
             </div>
           </div>
@@ -44,6 +44,10 @@ export default function CallSheetManager() {
                   <CardDescription>
                     Submit your call sheet. We'll let you know if it's already in our system.
                   </CardDescription>
+                  <p className="text-sm text-green-600 flex items-center gap-1.5 mt-2">
+                    <Check className="h-4 w-4 shrink-0" />
+                    Relax. We safeguard crew member and vendor privacy, always. Your personal information is NEVER made public.
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <CallSheetUploader />

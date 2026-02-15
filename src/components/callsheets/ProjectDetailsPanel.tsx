@@ -9,6 +9,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 export const PROJECT_TYPES = [
   "Commercial",
@@ -86,7 +93,25 @@ export function ProjectDetailsPanel({
             <span className="text-xs">Telling us is optional, but it helps us help you.</span>
           </>
         ) : (
-          <span className="text-xs">Upload a call sheet to optionally add project details.</span>
+          <span className="text-xs inline-flex items-center gap-1">
+            Upload a call sheet to optionally add project details.
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline-flex text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="More info"
+                  >
+                    <Info className="h-3.5 w-3.5 shrink-0" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="max-w-[240px]">
+                  Project details (job type, talent, client, etc.) help you organize and find your submissions later.
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </span>
         )}
       </p>
       <div className="space-y-4 flex-1">
