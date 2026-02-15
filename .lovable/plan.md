@@ -1,38 +1,58 @@
 
 
-## Fix Build Errors: Add Missing Columns to `user_call_sheets`
+## Admin.tsx Dead Code Cleanup + Remove Parse Queue
 
-Cursor's code references three columns on `user_call_sheets` that do not exist in the database. The TypeScript type generator rejects the queries, causing the build to fail.
+Remove all orphaned state, functions, data fetches, UI blocks, and imports from `src/pages/Admin.tsx` that are no longer referenced after Cursor's feature removals. Also remove the Call Sheet Parse Queue section as requested.
 
-### Root Cause
+### File: `src/pages/Admin.tsx` (1 file changed)
 
-The `user_call_sheets` table currently has `payment_status` and `payment_status_locked`, but Cursor's code also references:
-- `payment_status_confirmed_at` (timestamptz) -- used in CallSheetList.tsx line 148, and for the business-day cooldown logic
-- `payment_reversal_reason` (text) -- used in the reversal modal submit handler
-- `payment_reversal_reason_other` (text) -- used in AdminPaymentReversalsOther.tsx and reversal submit
+### Removals
 
-### Fix
+**Dead State Variables (lines 96-97, 115-135)**
+- `backfillContactsLoading` -- backfill unsaved contacts removed
+- `identityClaims`, `processingClaimId` -- Identity Claims tab removed
+- `callSheetRateLimitEnabled`, `callSheetRateLimitPerHour`, `callSheetConfigId` -- rate limit UI removed
+- `processingQueue`, `queuedCallSheetsCount` -- parse queue being removed
+- `syncingYouTube` -- YouTube sync removed
+- `igMasterImporting`, `igMasterStats`, `igMasterFile`, `igIdentities`, `igIdentitiesLoading`, `igSearchTerm` -- IG Master removed
+- `novaMasterImporting`, `novaMasterStats`, `novaMasterFile` -- NOVA Master removed
 
-**One database migration** adding the three missing columns:
+**Dead Data Fetches in `loadAdminData` (lines 259-276, 430-436)**
+- `call_sheet_config` fetch (rate limit config)
+- `global_call_sheets` queued count fetch
+- Identity claims fetch from `producers` table
 
-```sql
-ALTER TABLE public.user_call_sheets
-  ADD COLUMN IF NOT EXISTS payment_status_confirmed_at timestamptz,
-  ADD COLUMN IF NOT EXISTS payment_reversal_reason text,
-  ADD COLUMN IF NOT EXISTS payment_reversal_reason_other text;
-```
+**Dead Functions**
+- `handleBackfillUnsavedContacts` (lines 532-558)
+- `toggleCallSheetRateLimit` (lines 1279-1312)
+- `updateCallSheetRateLimit` (lines 1314-1336)
+- `triggerQueueProcessor` (lines 1338-1367)
+- `triggerYouTubeSync` (lines 1369-1404)
+- `handleApproveIdentityClaim` (lines 1623-1647)
+- `handleRejectIdentityClaim` (lines 1649-1682)
 
-No code changes needed. Once the migration runs, the auto-generated Supabase types will include these columns, and both build errors resolve:
-- `CallSheetList.tsx` select query will match the schema
-- `AdminPaymentReversalsOther.tsx` select query will match the schema
+**Dead UI: Call Sheet Parse Queue (lines 1869-1895)**
+- The entire parse queue block in the right column
+
+**Dead Imports (line 10, 47)**
+- Unused icons: `Shield`, `Upload`, `Youtube`, `RefreshCw`, `Users`
+- Unused component: `BetaAccessPanel`
 
 ### What Will NOT Change
-- No code file modifications
-- No schema removals or renames
-- No RLS policy changes (existing policies already cover UPDATE for own rows)
+- No schema changes, no new files, no other files touched
+- Producer Notification Emails section stays (just restored by Cursor)
+- ManualEmailSender + ProducerNotificationSelector imports stay (actively used)
+- Maintenance Mode toggle, Global Free Leaderboard Access, Database Export -- all stay
+- All tabs (Payments Due, Paid, Users, Broadcast, All Submissions, Suggestions, Reversal Other) untouched
+- No layout or CSS changes beyond removing the parse queue block
 
 ### Verification
-1. Migration runs without error
-2. Build passes (no more "column does not exist" type errors)
-3. Yes/No payment buttons work on call sheet cards
-4. Reversal modal stores reason fields correctly
+1. Build passes with no new errors
+2. `/admin` page renders identically minus the parse queue section
+3. Network tab shows fewer queries on load (no more call_sheet_config or queued count fetches)
+4. All remaining tabs and actions still work
+
+### Risks
+- None. Pure dead code removal. All removed code has no references in the current render tree.
+- Fully reversible by reverting `Admin.tsx`.
+
