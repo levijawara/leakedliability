@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload, Youtube, RefreshCw, Users } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +44,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
-import { BetaAccessPanel } from "@/components/admin/BetaAccessPanel";
+
 import { BroadcastEmailSender } from "@/components/admin/BroadcastEmailSender";
 import { DatabaseExportPanel } from "@/components/admin/DatabaseExportPanel";
 import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
@@ -94,7 +94,7 @@ export default function Admin() {
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
   const [notificationPanelExpanded, setNotificationPanelExpanded] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
-  const [backfillContactsLoading, setBackfillContactsLoading] = useState(false);
+  
   const [verifyingSubmissionId, setVerifyingSubmissionId] = useState<string | null>(null);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
@@ -112,27 +112,6 @@ export default function Admin() {
     new_producer_email: ''
   });
   const [producers, setProducers] = useState<any[]>([]);
-  const [identityClaims, setIdentityClaims] = useState<any[]>([]);
-  const [processingClaimId, setProcessingClaimId] = useState<string | null>(null);
-  const [callSheetRateLimitEnabled, setCallSheetRateLimitEnabled] = useState(false);
-  const [callSheetRateLimitPerHour, setCallSheetRateLimitPerHour] = useState(20);
-  const [callSheetConfigId, setCallSheetConfigId] = useState<string | null>(null);
-  const [processingQueue, setProcessingQueue] = useState(false);
-  const [queuedCallSheetsCount, setQueuedCallSheetsCount] = useState(0);
-  const [syncingYouTube, setSyncingYouTube] = useState(false);
-  
-  // IG Master List state
-  const [igMasterImporting, setIgMasterImporting] = useState(false);
-  const [igMasterStats, setIgMasterStats] = useState<{ total: number } | null>(null);
-  const [igMasterFile, setIgMasterFile] = useState<File | null>(null);
-  const [igIdentities, setIgIdentities] = useState<Array<{ raw_name: string; instagram: string }>>([]);
-  const [igIdentitiesLoading, setIgIdentitiesLoading] = useState(false);
-  const [igSearchTerm, setIgSearchTerm] = useState("");
-  
-  // NOVA Master List state
-  const [novaMasterImporting, setNovaMasterImporting] = useState(false);
-  const [novaMasterStats, setNovaMasterStats] = useState<{ total: number } | null>(null);
-  const [novaMasterFile, setNovaMasterFile] = useState<File | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -256,24 +235,6 @@ export default function Admin() {
         setLeaderboardConfigId(leaderboardConfig.id);
       }
 
-      // Load call sheet config for rate limiting
-      const { data: callSheetConfig } = await supabase
-        .from("call_sheet_config")
-        .select("*")
-        .single();
-      
-      if (callSheetConfig) {
-        setCallSheetRateLimitEnabled(callSheetConfig.rate_limit_enabled ?? false);
-        setCallSheetRateLimitPerHour(callSheetConfig.rate_limit_per_hour ?? 20);
-        setCallSheetConfigId(callSheetConfig.id);
-      }
-
-      // Load queued call sheets count
-      const { count: queuedCount } = await supabase
-        .from("global_call_sheets")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "queued");
-      setQueuedCallSheetsCount(queuedCount || 0);
 
       // Load queued notifications count
       const { data: queued } = await supabase
@@ -427,13 +388,6 @@ export default function Admin() {
       .order('name', { ascending: true });
     setProducers(producersList || []);
 
-    // Load identity claims pending admin review
-    const { data: claims } = await supabase
-      .from('producers')
-      .select('id, name, company, email, stripe_verification_status, claimed_by_user_id, stripe_verification_session_id')
-      .eq('stripe_verification_status', 'pending_admin')
-      .order('updated_at', { ascending: false });
-    setIdentityClaims(claims || []);
 
     // Load leading users for each submission type
     await loadLeadingUsers();
@@ -529,33 +483,6 @@ export default function Admin() {
     }
   };
 
-  const handleBackfillUnsavedContacts = async () => {
-    setBackfillContactsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('import-parsed-contacts', {
-        body: { action: 'backfill_complete' },
-      });
-
-      if (error) throw error;
-
-      const msg = data?.sheets_backfilled
-        ? `✅ Backfilled ${data.sheets_backfilled} sheets. Saved: ${data.contacts_saved || 0}, Merged: ${data.contacts_merged || 0}. Run again if you see more unsaved contacts (idempotent).`
-        : `✅ All complete sheets already have contacts saved. (${data?.sheets_skipped || 0} skipped)`;
-      toast({ title: "Backfill Complete", description: msg });
-    } catch (error: any) {
-      console.error('Backfill contacts error:', error);
-      const isTimeout = error?.message?.includes('timeout') || error?.message?.includes('504');
-      toast({
-        title: isTimeout ? "Partial complete (timeout)" : "Error",
-        description: isTimeout
-          ? "Some sheets were processed. Click again to continue — it's idempotent."
-          : `⚠️ ${error?.message || 'Backfill failed'}`,
-        variant: isTimeout ? "default" : "destructive",
-      });
-    } finally {
-      setBackfillContactsLoading(false);
-    }
-  };
 
   const loadAllUsers = async () => {
     const { data: profiles } = await supabase
@@ -1276,132 +1203,6 @@ export default function Admin() {
     });
   };
 
-  const toggleCallSheetRateLimit = async () => {
-    if (!callSheetConfigId) return;
-
-    const newEnabled = !callSheetRateLimitEnabled;
-    const { error } = await supabase
-      .from("call_sheet_config")
-      .update({ rate_limit_enabled: newEnabled })
-      .eq("id", callSheetConfigId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: mapDatabaseError(error),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCallSheetRateLimitEnabled(newEnabled);
-
-    await supabase.functions.invoke('log-event', {
-      body: {
-        event_type: 'call_sheet_rate_limit_toggled',
-        payload: { enabled: newEnabled, limit: callSheetRateLimitPerHour }
-      }
-    });
-
-    toast({
-      title: newEnabled ? "Rate Limiting Enabled" : "Rate Limiting Disabled",
-      description: newEnabled 
-        ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
-        : "No upload limits (seeding mode)",
-    });
-  };
-
-  const updateCallSheetRateLimit = async (newLimit: number) => {
-    if (!callSheetConfigId || newLimit < 1) return;
-
-    const { error } = await supabase
-      .from("call_sheet_config")
-      .update({ rate_limit_per_hour: newLimit })
-      .eq("id", callSheetConfigId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: mapDatabaseError(error),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCallSheetRateLimitPerHour(newLimit);
-    toast({
-      title: "Rate Limit Updated",
-      description: `Users now limited to ${newLimit} uploads/hour`,
-    });
-  };
-
-  const triggerQueueProcessor = async () => {
-    setProcessingQueue(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("queue-processor", {
-        body: { triggered_by: "admin" },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Queue Processor Triggered",
-        description: `Processing ${data?.processed || 0} call sheets. ${data?.remaining || 0} remaining.`,
-      });
-
-      // Refresh the queued count
-      const { count } = await supabase
-        .from("global_call_sheets")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "queued");
-      setQueuedCallSheetsCount(count || 0);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to trigger queue processor",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingQueue(false);
-    }
-  };
-
-  const triggerYouTubeSync = async () => {
-    setSyncingYouTube(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-youtube-views`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ syncAll: true, staleOnly: false }),
-        }
-      );
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "YouTube Sync Complete",
-          description: `Synced ${result.videosUpserted || 0} videos, linked ${result.sheetsLinked || 0} call sheets`,
-        });
-      } else {
-        throw new Error(result.error || "Sync failed");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Sync Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSyncingYouTube(false);
-    }
-  };
 
   const handleGenerateEscrowLink = async (reportId: string) => {
     setGeneratingEscrowLink(reportId);
@@ -1620,66 +1421,6 @@ export default function Admin() {
     }
   };
 
-  const handleApproveIdentityClaim = async (producerId: string) => {
-    setProcessingClaimId(producerId);
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-approve-claim', {
-        body: { producer_id: producerId, approved: true }
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: "✅ Identity Claim Approved",
-        description: "Producer profile has been verified and claimed.",
-      });
-      await loadAdminData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve claim",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingClaimId(null);
-    }
-  };
-
-  const handleRejectIdentityClaim = async (producerId: string, reason: string) => {
-    if (!reason.trim()) {
-      toast({
-        title: "Reason Required",
-        description: "Please provide a reason for rejection",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setProcessingClaimId(producerId);
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-approve-claim', {
-        body: { producer_id: producerId, approved: false, rejection_reason: reason }
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: "Identity Claim Rejected",
-        description: "The claim has been rejected and the user notified.",
-      });
-      await loadAdminData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reject claim",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingClaimId(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -1864,34 +1605,6 @@ export default function Admin() {
                 onCheckedChange={toggleFreeAccess}
                 variant="status"
               />
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="space-y-1">
-                <Label className="text-lg font-semibold flex items-center gap-2">
-                  <Loader2 className={`h-5 w-5 text-muted-foreground ${processingQueue ? 'animate-spin' : ''}`} />
-                  Call Sheet Parse Queue
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {queuedCallSheetsCount > 0 
-                    ? `${queuedCallSheetsCount} call sheets waiting to be parsed` 
-                    : "No call sheets in queue"}
-                </p>
-              </div>
-              <Button
-                onClick={triggerQueueProcessor}
-                disabled={processingQueue || queuedCallSheetsCount === 0}
-                variant={queuedCallSheetsCount > 0 ? "default" : "outline"}
-              >
-                {processingQueue ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
-                )}
-              </Button>
             </div>
 
           </div>
