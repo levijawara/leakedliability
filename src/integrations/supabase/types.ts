@@ -2902,6 +2902,8 @@ export type Database = {
           payment_status: string | null
           payment_status_confirmed_at: string | null
           payment_status_locked: boolean | null
+          project_subject: string | null
+          project_type: string | null
           user_id: string
           user_label: string | null
         }
@@ -2914,6 +2916,8 @@ export type Database = {
           payment_status?: string | null
           payment_status_confirmed_at?: string | null
           payment_status_locked?: boolean | null
+          project_subject?: string | null
+          project_type?: string | null
           user_id: string
           user_label?: string | null
         }
@@ -2926,6 +2930,8 @@ export type Database = {
           payment_status?: string | null
           payment_status_confirmed_at?: string | null
           payment_status_locked?: boolean | null
+          project_subject?: string | null
+          project_type?: string | null
           user_id?: string
           user_label?: string | null
         }
