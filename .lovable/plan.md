@@ -1,24 +1,36 @@
 
-## Add "View PDF" Button to Call Sheet Reservoir
+
+## Fix: Add Missing ALEXANDRIA Button to Admin Dashboard
+
+### Problem
+The ALEXANDRIA button code (added via Cursor) is not present in the current `src/pages/Admin.tsx` file. The diff showed it being inserted after the Global Free Leaderboard Access toggle (after line 1608), but the file currently jumps straight from the toggle's closing `</div>` to the Database Export section.
 
 ### What changes
-**1 file modified**: `src/pages/AdminCallSheetReservoir.tsx`
+**1 file modified**: `src/pages/Admin.tsx`
 
 ### Details
+Re-add the ALEXANDRIA button in the right column of the admin dashboard, immediately after the Global Free Leaderboard Access toggle (after line 1608, before the closing `</div>` on line 1610):
 
-- Add `import { PDFViewerModal } from "@/components/callsheets/PDFViewerModal"` to the imports
-- Add state: `const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null)`
-- In the Actions column (around line 613-620), add a new "View PDF" button right before the existing Download button, using the `Eye` icon (already imported)
-- Add the `PDFViewerModal` component at the bottom of the JSX (before the delete AlertDialog)
-- The button opens the same in-app PDF viewer modal used on the Call Sheet Manager page
+```tsx
+<Button
+  onClick={() => navigate("/admin/call-sheet-reservoir")}
+  size="lg"
+  className="w-full mt-4 py-6 text-lg font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-amber-50 shadow-lg hover:shadow-xl transition-all duration-200"
+>
+  <BookOpen className="h-6 w-6 mr-2" />
+  ALEXANDRIA
+</Button>
+```
+
+- `BookOpen` icon is already imported (confirmed in the diff)
+- `navigate` is already available in scope
 
 ### What does NOT change
-- No frontend layout, CSS, or styling changes
-- No schema changes
-- CallSheetList / Call Sheet Manager page remains untouched (it already has a view button and no download button to remove)
-- No new files created
+- No layout, CSS, schema, or other file changes
+- No new files
 
 ### Verification
-- Navigate to `/admin/call-sheet-reservoir`
-- Each row should now show an Eye icon button next to the Download button
-- Clicking it opens the PDF viewer modal with zoom, page navigation, and the file name in the header
+- Navigate to `/admin`
+- The amber/gold ALEXANDRIA button should appear below the Global Free Leaderboard Access toggle in the right column
+- Clicking it should route to `/admin/call-sheet-reservoir`
+
