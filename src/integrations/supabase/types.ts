@@ -2353,6 +2353,7 @@ export type Database = {
         Row: {
           company_name: string | null
           created_at: string
+          crew_size: number | null
           extracted_date: string | null
           global_call_sheet_id: string | null
           id: string
@@ -2366,6 +2367,7 @@ export type Database = {
         Insert: {
           company_name?: string | null
           created_at?: string
+          crew_size?: number | null
           extracted_date?: string | null
           global_call_sheet_id?: string | null
           id?: string
@@ -2379,6 +2381,7 @@ export type Database = {
         Update: {
           company_name?: string | null
           created_at?: string
+          crew_size?: number | null
           extracted_date?: string | null
           global_call_sheet_id?: string | null
           id?: string
