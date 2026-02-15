@@ -49,6 +49,7 @@ import { BroadcastEmailSender } from "@/components/admin/BroadcastEmailSender";
 import { DatabaseExportPanel } from "@/components/admin/DatabaseExportPanel";
 import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
 import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
+import { ProjectTimelineJsonUploader } from "@/components/admin/ProjectTimelineJsonUploader";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -1615,6 +1616,9 @@ export default function Admin() {
               <BookOpen className="h-6 w-6 mr-2" />
               ALEXANDRIA
             </Button>
+            <div className="mt-3">
+              <ProjectTimelineJsonUploader variant="default" />
+            </div>
 
           </div>
         </div>

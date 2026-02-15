@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, Instagram, ChevronDown, ChevronUp } from "lucide-react";
-import { format } from "date-fns";
+import { formatPacific, nowPacific } from "@/lib/dateUtils";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect, useRef } from "react";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { ProjectTimelineJsonUploader } from "@/components/admin/ProjectTimelineJsonUploader";
 
 const getDaysColor = (days: number | null) => {
   if (!days || days < 0) return "bg-background text-foreground";
@@ -157,7 +158,7 @@ export default function Leaderboard() {
       if (!supabase) throw new Error("Database connection unavailable");
       const { data, error } = await supabase
         .from("production_instances")
-        .select("id, production_name, company_name, primary_contacts, shoot_start_date, extracted_date, verification_status")
+        .select("id, production_name, company_name, primary_contacts, shoot_start_date, extracted_date, verification_status, crew_size")
         .order("shoot_start_date", { ascending: true, nullsFirst: true });
       if (error) throw error;
       return data ?? [];
@@ -456,7 +457,7 @@ export default function Leaderboard() {
             </a>
           </div>
           <p className="text-sm text-muted-foreground">
-            Last Updated: {format(new Date(), "MM/dd/yy")}
+            Last Updated: {formatPacific(nowPacific(), "MM/dd/yy")}
           </p>
           
           {/* Access Status Badge */}
@@ -485,8 +486,11 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* LL 2.0 Leaderboard Toggle: Project Timeline (front) vs Verified Liabilities (back) */}
-        <div className="mb-6 flex justify-center">
+        {/* LL 2.0 Leaderboard Toggle + Admin JSON upload */}
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
+          {isAdmin && (
+            <ProjectTimelineJsonUploader variant="compact" onSuccess={() => refetchActive()} />
+          )}
           <div className="inline-flex rounded-lg border-2 border-primary/30 bg-card p-1">
             <button
               type="button"
@@ -793,7 +797,8 @@ export default function Leaderboard() {
                         <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
                           {p.verification_status}
                         </Badge>
-                        {p.extracted_date && <div className="text-xs text-muted-foreground">Submitted: {format(new Date(p.extracted_date), "MM/dd/yyyy")}</div>}
+                        {p.crew_size != null && <div className="text-xs text-muted-foreground">Crew: {p.crew_size}</div>}
+                        {p.extracted_date && <div className="text-xs text-muted-foreground">Job Date: {formatPacific(p.extracted_date, "MM/dd/yyyy")}</div>}
                       </div>
                     ))}
                   </div>
@@ -818,8 +823,8 @@ export default function Leaderboard() {
                          <TableRow className="bg-primary hover:bg-primary">
                            <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION AUTHORITY</TableHead>
                            <TableHead className="text-primary-foreground font-black text-sm">COMPANY</TableHead>
-                           <TableHead className="text-primary-foreground font-black text-sm">CREW SIZE</TableHead>
-                           <TableHead className="text-primary-foreground font-black text-sm text-center">SUBMITTED</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm">CREW SIZE</TableHead>
+                          <TableHead className="text-primary-foreground font-black text-sm text-center">JOB DATE</TableHead>
                            <TableHead className="text-primary-foreground font-black text-sm text-center">STATUS</TableHead>
                          </TableRow>
                        </TableHeader>
@@ -828,15 +833,8 @@ export default function Leaderboard() {
                            <TableRow key={p.id} className="hover:bg-muted/50">
                              <TableCell className="font-semibold">{p.production_name || "—"}</TableCell>
                              <TableCell>{p.company_name || "—"}</TableCell>
-                             <TableCell className="text-sm">
-                               {Array.isArray(p.primary_contacts) && (p.primary_contacts as { name?: string; emails?: string[] }[]).length > 0
-                                 ? (p.primary_contacts as { name?: string; emails?: string[] }[])
-                                     .slice(0, 2)
-                                     .map((c) => c.name || c.emails?.[0] || "—")
-                                     .join(", ")
-                                 : "—"}
-                             </TableCell>
-                             <TableCell className="text-center">{p.extracted_date ? format(new Date(p.extracted_date), "MM/dd/yy") : "—"}</TableCell>
+                            <TableCell className="text-center">{p.crew_size ?? "—"}</TableCell>
+                            <TableCell className="text-center">{p.extracted_date ? formatPacific(p.extracted_date, "MM/dd/yy") : "—"}</TableCell>
                              <TableCell className="text-center">
                                <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
                                  {p.verification_status}
@@ -988,7 +986,7 @@ export default function Leaderboard() {
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground">Oldest Debt:</span>
                           <span className="text-sm font-medium">
-                            {producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'MM/dd/yyyy') : '—'}
+                            {producer.oldest_debt_date ? formatPacific(producer.oldest_debt_date, 'MM/dd/yyyy') : '—'}
                           </span>
                         </div>
                         
@@ -1271,7 +1269,7 @@ export default function Leaderboard() {
                       isMoney={true}
                     />
                     <AdminEditableCell
-                      value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'MM/dd/yyyy') : null}
+                      value={producer.oldest_debt_date ? formatPacific(producer.oldest_debt_date, 'MM/dd/yyyy') : null}
                       onSave={(v) => updateProducer(producer.producer_id, { oldest_debt_date: v as string | null })}
                       className="text-center"
                       isAdmin={isAdmin}
