@@ -1,23 +1,35 @@
 
 
-## Fix Build Error: Add `crew_size` Column to `production_instances`
+## Fix Build Error and Remove Placeholder Text
 
-### Root Cause
-The Supabase types file reflects the actual database schema, which does not yet have a `crew_size` column on `production_instances`. The code in `Leaderboard.tsx` queries for `crew_size`, causing a `SelectQueryError` that cascades to every field access.
+### 1. Database Migration (resolves build error)
+Add the two missing columns to `user_call_sheets`:
 
-### Fix (1 step, 0 code files changed)
-1. **Run database migration** to add the missing column:
-   ```sql
-   ALTER TABLE public.production_instances
-     ADD COLUMN IF NOT EXISTS crew_size INTEGER;
-   ```
-   Once applied, the auto-generated Supabase types will update and all 24 type errors resolve.
+```sql
+ALTER TABLE public.user_call_sheets
+  ADD COLUMN IF NOT EXISTS project_type TEXT,
+  ADD COLUMN IF NOT EXISTS project_subject TEXT;
+```
+
+This will update the auto-generated Supabase types so the `.update({ project_type, project_subject })` call in `CallSheetUploader.tsx` passes type checking.
+
+### 2. Remove "e.g." placeholder (1 line change)
+In `src/components/callsheets/ProjectDetailsModal.tsx`, line 113, change:
+
+```
+placeholder="e.g. Drake, Target, StarTalk, Kai Cenat"
+```
+to:
+```
+placeholder="Drake, Target, StarTalk, Kai Cenat"
+```
 
 ### What will NOT change
-- No code files modified
-- No frontend changes
-- No other tables affected
+- No other files touched
+- No schema removals or renames
+- No frontend layout or styling changes
 
 ### Verification
-- Build errors disappear (all 24 TS errors trace back to the single missing column)
-- `/leaderboard` Project Timeline table renders without errors
+- Build errors resolve (the `project_type` TS error disappears)
+- Placeholder text no longer shows "e.g."
+
