@@ -22,7 +22,7 @@ export default function CallSheetManager() {
             <div>
               <h1 className="text-3xl font-bold tracking-tight">Call Sheet Manager</h1>
               <p className="text-muted-foreground">
-                Submit call sheets. The timer starts.
+                Submit call sheets to document your own work timeline, and to keep us informed. Think of us as a form of 'invoice insurance'.
               </p>
             </div>
           </div>
@@ -39,10 +39,10 @@ export default function CallSheetManager() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileSpreadsheet className="h-5 w-5" />
-                    Upload Call Sheet PDF
+                    Upload Call Sheet File
                   </CardTitle>
                   <CardDescription>
-                    Submit a PDF call sheet. Duplicate files are detected by hash and linked automatically.
+                    Submit your call sheet. We'll let you know if it's already in our system.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

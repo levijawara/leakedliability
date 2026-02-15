@@ -734,7 +734,7 @@ export function CallSheetList({}: CallSheetListProps) {
                                 <FileText className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>View PDF</TooltipContent>
+                            <TooltipContent>View</TooltipContent>
                           </Tooltip>
                         )}
                         {(() => {

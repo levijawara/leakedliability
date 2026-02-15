@@ -12,13 +12,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { ProjectDetailsModal } from "./ProjectDetailsModal";
+import { ProjectDetailsPanel } from "./ProjectDetailsPanel";
 
 interface CallSheetUploaderProps {
   onUploadComplete?: () => void;
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+const ACCEPTED_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.csv', '.txt', '.doc', '.docx', '.xlsx'];
+const ACCEPT_STRING = '.pdf,.png,.jpg,.jpeg,.csv,.txt,.doc,.docx,.xlsx';
+
+function hasAcceptedExtension(fileName: string): boolean {
+  const ext = '.' + fileName.toLowerCase().split('.').pop();
+  return ACCEPTED_EXTENSIONS.includes(ext);
+}
 
 // Compute SHA-256 hash of file bytes
 async function computeFileHash(file: File): Promise<string> {
@@ -36,8 +44,12 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
   const { toast } = useToast();
 
   const processFile = async (file: File): Promise<void> => {
-    if (!file.name.toLowerCase().endsWith('.pdf')) {
-      toast({ title: "Invalid file", description: "Only PDF files are accepted.", variant: "destructive" });
+    if (!hasAcceptedExtension(file.name)) {
+      toast({
+        title: "Invalid file",
+        description: `Accepted formats: PDF, PNG, JPG, CSV, TXT, DOC, DOCX, XLSX. Max 10MB.`,
+        variant: "destructive",
+      });
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -175,16 +187,12 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
       toast({ title: "Could not save details", description: error.message, variant: "destructive" });
       throw error;
     }
+    toast({ title: "Details saved", description: "Project summary updated." });
     setPendingProjectDetails(null);
   };
 
   return (
     <div className="space-y-4">
-      <ProjectDetailsModal
-        open={!!pendingProjectDetails}
-        onOpenChange={(open) => { if (!open) setPendingProjectDetails(null); }}
-        onSubmit={handleProjectDetailsSubmit}
-      />
       <AlertDialog open={!!duplicateInfo} onOpenChange={(open) => { if (!open) setDuplicateInfo(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -199,43 +207,54 @@ export function CallSheetUploader({ onUploadComplete }: CallSheetUploaderProps) 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <div
-        className={`border-2 border-dashed rounded-lg p-8 text-center transition-all ${
-          isDragging
-            ? "border-primary bg-primary/5"
-            : "border-muted-foreground/25 hover:border-primary/50"
-        } ${isProcessing ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
-        onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-        onDragLeave={() => setIsDragging(false)}
-        onDrop={handleDrop}
-        onClick={() => !isProcessing && document.getElementById('call-sheet-upload')?.click()}
-      >
-        {isProcessing ? (
-          <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
-        ) : (
-          <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-        )}
-        <p className="text-lg font-medium">
-          {isProcessing ? 'Uploading...' : 'Drag & drop a call sheet here'}
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {isProcessing ? 'Please wait' : 'or click to browse'}
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-4">
-          <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs text-muted-foreground">
-            PDF files only, max 10MB
-          </span>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Left: submission bin */}
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-all min-h-[200px] flex flex-col items-center justify-center ${
+            isDragging
+              ? "border-primary bg-primary/5"
+              : "border-muted-foreground/25 hover:border-primary/50"
+          } ${isProcessing ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
+          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+          onClick={() => !isProcessing && document.getElementById('call-sheet-upload')?.click()}
+        >
+          {isProcessing ? (
+            <Loader2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground animate-spin" />
+          ) : (
+            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          )}
+          <p className="text-lg font-medium">
+            {isProcessing ? 'Uploading...' : 'Drag & drop a call sheet here'}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            {isProcessing ? 'Please wait' : 'or click to browse'}
+          </p>
+          <div className="flex items-center justify-center gap-2 mt-4">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs text-muted-foreground">
+              PDF, PNG, JPG, CSV, TXT, DOC, DOCX, XLSX • max 10MB
+            </span>
+          </div>
 
-        <input
-          type="file"
-          id="call-sheet-upload"
-          accept=".pdf"
-          onChange={handleFileSelect}
-          className="hidden"
-          disabled={isProcessing}
-        />
+          <input
+            type="file"
+            id="call-sheet-upload"
+            accept={ACCEPT_STRING}
+            onChange={handleFileSelect}
+            className="hidden"
+            disabled={isProcessing}
+          />
+        </div>
+        {/* Right: Project summary panel */}
+        <div className="border rounded-lg p-6 bg-muted/30 flex flex-col">
+          <ProjectDetailsPanel
+            hasPendingUpload={!!pendingProjectDetails}
+            onSubmit={handleProjectDetailsSubmit}
+            onSkip={() => setPendingProjectDetails(null)}
+          />
+        </div>
       </div>
     </div>
   );

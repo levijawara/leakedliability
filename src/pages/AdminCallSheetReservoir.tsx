@@ -616,7 +616,7 @@ export default function AdminCallSheetReservoir() {
                               variant="ghost"
                               size="sm"
                               onClick={() => setViewingPdf({ filePath: sheet.master_file_path, fileName: sheet.original_file_name })}
-                              title="View PDF"
+                              title="View"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>

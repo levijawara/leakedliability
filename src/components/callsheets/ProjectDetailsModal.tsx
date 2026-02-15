@@ -23,6 +23,7 @@ export const PROJECT_TYPES = [
   "Documentary",
   "Editorial",
   "Feature Film",
+  "Interview",
   "Live Performance",
   "Live Stream",
   "Music Video",
