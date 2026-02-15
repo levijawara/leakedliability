@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface GlobalCallSheet {
@@ -56,6 +58,10 @@ export function CallSheetCard({
 }: CallSheetCardProps) {
   const sheet = link.global_call_sheets;
   const displayName = link.user_label || sheet.original_file_name;
+
+  const hasResponded = link.payment_status === 'paid' || link.payment_status === 'unpaid_needs_proof';
+  const isPaid = link.payment_status === 'paid';
+  const toggleDisabled = isPaid && !canReverse(link); // Can't flip Yes→No during cooldown
 
   return (
     <Card className={`hover:border-primary/50 transition-colors ${isSelected ? 'border-primary ring-1 ring-primary' : ''}`}>
@@ -114,41 +120,53 @@ export function CallSheetCard({
                 <TooltipContent>View PDF</TooltipContent>
               </Tooltip>
             )}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
-              onClick={() => onMarkPaid(link, 'paid')}
-            >
-              Yes
-            </Button>
-            {canReverse(link) ? (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
-                onClick={() => onRequestNo(link)}
-              >
-                No
-              </Button>
-            ) : (
+            {hasResponded ? (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-block">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 px-2 text-muted-foreground cursor-not-allowed"
-                      disabled
-                    >
-                      No
-                    </Button>
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">Paid?</span>
+                    <Switch
+                      variant="status"
+                      checked={isPaid}
+                      disabled={toggleDisabled}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          onMarkPaid(link, 'paid');
+                        } else {
+                          onRequestNo(link);
+                        }
+                      }}
+                    />
+                    <span className={cn("text-xs font-medium", isPaid ? "text-green-600" : "text-red-600")}>
+                      {isPaid ? "Yes" : "No"}
+                    </span>
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  You can change your answer on {getNextReversalDate(link) ?? 'the next business day'}
+                  {toggleDisabled
+                    ? `Saved. You can change on ${getNextReversalDate(link) ?? 'the next business day'}`
+                    : 'Saved. Click to change.'}
                 </TooltipContent>
               </Tooltip>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
+                  onClick={() => onMarkPaid(link, 'paid')}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
+                  onClick={() => onRequestNo(link)}
+                >
+                  No
+                </Button>
+              </>
             )}
             <div className="flex-1" />
             <Tooltip>

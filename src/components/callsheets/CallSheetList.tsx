@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
@@ -317,6 +319,7 @@ export function CallSheetList({}: CallSheetListProps) {
             : l
         )
       );
+      toast({ title: "Response saved", description: status === 'paid' ? "Marked as paid." : "Marked as unpaid." });
     } catch (err: any) {
       toast({ title: "Update failed", description: err.message, variant: "destructive" });
     }
@@ -734,42 +737,56 @@ export function CallSheetList({}: CallSheetListProps) {
                             <TooltipContent>View PDF</TooltipContent>
                           </Tooltip>
                         )}
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
-                          onClick={() => handleMarkPaid(link, 'paid')}
-                        >
-                          Yes
-                        </Button>
-                        {canReverse(link) ? (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
-                            onClick={() => handleRequestNo(link)}
-                          >
-                            No
-                          </Button>
-                        ) : (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-block">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-7 px-2 text-muted-foreground cursor-not-allowed"
-                                  disabled
-                                >
-                                  No
-                                </Button>
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              You can change your answer on {getNextReversalDate(link) ?? 'the next business day'}
-                            </TooltipContent>
-                          </Tooltip>
-                        )}
+                        {(() => {
+                          const hasResponded = link.payment_status === 'paid' || link.payment_status === 'unpaid_needs_proof';
+                          const isPaid = link.payment_status === 'paid';
+                          const toggleDisabled = isPaid && !canReverse(link);
+                          return hasResponded ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <div className="flex items-center gap-2 justify-end">
+                                  <span className="text-xs text-muted-foreground">Paid?</span>
+                                  <Switch
+                                    variant="status"
+                                    checked={isPaid}
+                                    disabled={toggleDisabled}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) handleMarkPaid(link, 'paid');
+                                      else handleRequestNo(link);
+                                    }}
+                                  />
+                                  <span className={cn("text-xs font-medium w-6", isPaid ? "text-green-600" : "text-red-600")}>
+                                    {isPaid ? "Yes" : "No"}
+                                  </span>
+                                </div>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {toggleDisabled
+                                  ? `Saved. Change on ${getNextReversalDate(link) ?? 'next business day'}`
+                                  : 'Saved. Click to change.'}
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
+                                onClick={() => handleMarkPaid(link, 'paid')}
+                              >
+                                Yes
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
+                                onClick={() => handleRequestNo(link)}
+                              >
+                                No
+                              </Button>
+                            </>
+                          );
+                        })()}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
