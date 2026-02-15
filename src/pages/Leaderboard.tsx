@@ -811,47 +811,49 @@ export default function Leaderboard() {
                     <p className="text-muted-foreground">Unable to load active productions.</p>
                     <Button variant="outline" size="sm" onClick={() => refetchActive()} className="mt-2">Try Again</Button>
                   </div>
-                ) : filtered.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow className="bg-primary hover:bg-primary">
-                          <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION AUTHORITY</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm">COMPANY</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm">CREW SIZE</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm text-center">SUBMITTED</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm text-center">STATUS</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filtered.map((p) => (
-                          <TableRow key={p.id} className="hover:bg-muted/50">
-                            <TableCell className="font-semibold">{p.production_name || "—"}</TableCell>
-                            <TableCell>{p.company_name || "—"}</TableCell>
-                            <TableCell className="text-sm">
-                              {Array.isArray(p.primary_contacts) && (p.primary_contacts as { name?: string; emails?: string[] }[]).length > 0
-                                ? (p.primary_contacts as { name?: string; emails?: string[] }[])
-                                    .slice(0, 2)
-                                    .map((c) => c.name || c.emails?.[0] || "—")
-                                    .join(", ")
-                                : "—"}
-                            </TableCell>
-                            <TableCell className="text-center">{p.extracted_date ? format(new Date(p.extracted_date), "MM/dd/yy") : "—"}</TableCell>
-                            <TableCell className="text-center">
-                              <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
-                                {p.verification_status}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
                 ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    {searchTerm ? "No matching productions." : "No active productions yet. Call sheet uploads will appear here."}
-                  </div>
-                )}
+                   <div className="overflow-x-auto">
+                     <Table>
+                       <TableHeader>
+                         <TableRow className="bg-primary hover:bg-primary">
+                           <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION AUTHORITY</TableHead>
+                           <TableHead className="text-primary-foreground font-black text-sm">COMPANY</TableHead>
+                           <TableHead className="text-primary-foreground font-black text-sm">CREW SIZE</TableHead>
+                           <TableHead className="text-primary-foreground font-black text-sm text-center">SUBMITTED</TableHead>
+                           <TableHead className="text-primary-foreground font-black text-sm text-center">STATUS</TableHead>
+                         </TableRow>
+                       </TableHeader>
+                       <TableBody>
+                         {filtered.length > 0 ? filtered.map((p) => (
+                           <TableRow key={p.id} className="hover:bg-muted/50">
+                             <TableCell className="font-semibold">{p.production_name || "—"}</TableCell>
+                             <TableCell>{p.company_name || "—"}</TableCell>
+                             <TableCell className="text-sm">
+                               {Array.isArray(p.primary_contacts) && (p.primary_contacts as { name?: string; emails?: string[] }[]).length > 0
+                                 ? (p.primary_contacts as { name?: string; emails?: string[] }[])
+                                     .slice(0, 2)
+                                     .map((c) => c.name || c.emails?.[0] || "—")
+                                     .join(", ")
+                                 : "—"}
+                             </TableCell>
+                             <TableCell className="text-center">{p.extracted_date ? format(new Date(p.extracted_date), "MM/dd/yy") : "—"}</TableCell>
+                             <TableCell className="text-center">
+                               <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
+                                 {p.verification_status}
+                               </Badge>
+                             </TableCell>
+                           </TableRow>
+                         )) : (
+                           <TableRow>
+                             <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                               {searchTerm ? "No matching productions." : "No active productions yet. Call sheet uploads will appear here."}
+                             </TableCell>
+                           </TableRow>
+                         )}
+                       </TableBody>
+                     </Table>
+                   </div>
+                 )}
               </Card>
             </>
           );
