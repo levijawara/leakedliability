@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { usePortalMode } from "@/contexts/PortalContext";
@@ -6,9 +7,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CallSheetUploader } from "@/components/callsheets/CallSheetUploader";
 import { CallSheetList } from "@/components/callsheets/CallSheetList";
 import { FileSpreadsheet } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function CallSheetManager() {
   const isPortal = usePortalMode();
+  const [sheetCount, setSheetCount] = useState<number | null>(null);
+
+  const fetchCount = async () => {
+    if (!supabase) return;
+    const { count, error } = await supabase
+      .from('user_call_sheets')
+      .select('id', { count: 'exact', head: true });
+    if (!error && count !== null) {
+      setSheetCount(count);
+    }
+  };
+
+  useEffect(() => {
+    fetchCount();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -28,7 +45,7 @@ export default function CallSheetManager() {
           </div>
 
           {/* Main Content */}
-          <Tabs defaultValue="upload" className="space-y-6">
+          <Tabs defaultValue="upload" className="space-y-6" onValueChange={(v) => { if (v === 'sheets') fetchCount(); }}>
             <TabsList className="grid w-full grid-cols-2 max-w-md">
               <TabsTrigger value="upload">Upload</TabsTrigger>
               <TabsTrigger value="sheets">My Call Sheets</TabsTrigger>
@@ -39,14 +56,14 @@ export default function CallSheetManager() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileSpreadsheet className="h-5 w-5" />
-                    Upload Call Sheet PDFs
+                    Upload Call Sheet PDF
                   </CardTitle>
                   <CardDescription>
-                    Submit PDF call sheets. Duplicate files are detected by hash and linked automatically.
+                    Submit a PDF call sheet. Duplicate files are detected by hash and linked automatically.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <CallSheetUploader />
+                  <CallSheetUploader onUploadComplete={fetchCount} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -54,7 +71,9 @@ export default function CallSheetManager() {
             <TabsContent value="sheets" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Your Call Sheets</CardTitle>
+                  <CardTitle>
+                    Your Call Sheets{sheetCount !== null ? ` (${sheetCount})` : ''}
+                  </CardTitle>
                   <CardDescription>
                     View and manage your uploaded call sheets
                   </CardDescription>
