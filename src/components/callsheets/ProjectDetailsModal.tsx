@@ -122,7 +122,7 @@ export function ProjectDetailsModal({
             </Label>
             <Input
               id="project-subject"
-              placeholder="e.g. Drake, Target, StarTalk, Kai Cenat"
+              placeholder="Drake, Target, StarTalk, Kai Cenat"
               value={projectSubject}
               onChange={(e) => setProjectSubject(e.target.value)}
             />
