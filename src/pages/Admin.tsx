@@ -47,6 +47,8 @@ import { Footer } from "@/components/Footer";
 import { BetaAccessPanel } from "@/components/admin/BetaAccessPanel";
 import { BroadcastEmailSender } from "@/components/admin/BroadcastEmailSender";
 import { DatabaseExportPanel } from "@/components/admin/DatabaseExportPanel";
+import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
+import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -1805,6 +1807,41 @@ export default function Admin() {
               </Button>
             </div>
 
+            <div className="pt-4 border-t">
+              <div 
+                className="flex items-start justify-between cursor-pointer"
+                onClick={() => setNotificationPanelExpanded(!notificationPanelExpanded)}
+              >
+                <div className="space-y-0.5">
+                  <Label className="text-lg font-semibold flex items-center gap-2 cursor-pointer">
+                    <Bell className="h-5 w-5 text-muted-foreground" />
+                    Producer Notification Emails
+                    <ChevronDown 
+                      className={cn(
+                        "h-4 w-4 text-muted-foreground transition-transform",
+                        notificationPanelExpanded && "rotate-180"
+                      )} 
+                    />
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {queuedNotifications.length} queued notification{queuedNotifications.length !== 1 ? 's' : ''} • Manual send only
+                  </p>
+                </div>
+              </div>
+              
+              {notificationPanelExpanded && (
+                <div className="mt-4 pt-4 border-t space-y-4">
+                  <ManualEmailSender 
+                    producers={producers}
+                    onEmailSent={loadAdminData}
+                  />
+                  <ProducerNotificationSelector 
+                    queuedNotifications={queuedNotifications}
+                    onEmailsSent={loadAdminData}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* RIGHT COLUMN */}
