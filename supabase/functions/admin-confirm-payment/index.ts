@@ -66,7 +66,7 @@ serve(async (req) => {
         payment_report_id: report.id,
         producer_id: report.producer_id,
         confirmer_id: user.id,
-        confirmation_type: 'admin_confirmation',
+        confirmation_type: 'admin_verification',
         amount_paid: report.amount_owed,
         verified: true,
         confirmed_by_admin: true,
