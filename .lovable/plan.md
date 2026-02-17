@@ -1,34 +1,23 @@
 
 
-## Fix: Admin Payment Confirmation Failing
+## Consolidate Search Insights: Merge Top 10 into Total Searches Card
 
-### Root Cause
+### What Changes
 
-The `admin-confirm-payment` edge function inserts `confirmation_type: 'admin_confirmation'` into the `payment_confirmations` table, but the database enum `confirmation_type_enum` only allows these values:
+**File:** `src/pages/AdminSearchInsights.tsx` (1 file, ~30 lines changed)
 
-- `crew_confirmation`
-- `producer_documentation`
-- `admin_verification`
+1. **Limit top searches to 10** -- slice `topSearches` to the first 10 entries when rendering (the RPC may return more, we just display 10)
+2. **Remove the standalone "Most Searched Producers" Card** (lines 168-223)
+3. **Expand the "Total Searches" Card** to include the Top 10 table directly below the total count number
+4. **Update card title/description** to reflect combined content (e.g. "Total Searches" header stays, description becomes "All-time searches with Top 10 most searched")
 
-### Fix (1 file, 1 line)
+The resulting layout:
+- **Card 1**: Total Searches count + Top 10 table (combined)
+- **Card 2**: Recent Searches (unchanged)
 
-**File:** `supabase/functions/admin-confirm-payment/index.ts`
-
-Change line 72:
-```
-confirmation_type: 'admin_confirmation',
-```
-to:
-```
-confirmation_type: 'admin_verification',
-```
-
-### What will NOT change
-- No schema changes
-- No frontend changes
-- No other files touched
-
-### Verification
-- After deploying, retry confirming Report ID CR-20260206-78651 as paid
-- Expected: success, payment confirmation recorded, status updated to paid
-
+### What Will NOT Change
+- No schema or RPC changes
+- No new files
+- No styling or layout changes beyond merging the two cards
+- Recent Searches card stays exactly as-is
+- Data fetching logic unchanged
