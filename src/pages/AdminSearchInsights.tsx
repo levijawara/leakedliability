@@ -154,24 +154,14 @@ export default function AdminSearchInsights() {
             </Button>
           </div>
 
-          {/* Total Searches Card */}
+          {/* Total Searches + Top 10 Card */}
           <Card>
             <CardHeader>
               <CardTitle>Total Searches</CardTitle>
-              <CardDescription>All-time leaderboard searches</CardDescription>
+              <CardDescription>All-time searches with Top 10 most searched</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-bold text-foreground">{totalSearches.toLocaleString()}</div>
-            </CardContent>
-          </Card>
-
-          {/* Top Searches Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Most Searched Producers</CardTitle>
-              <CardDescription>Ranked by total searches (trending in last 7 days)</CardDescription>
-            </CardHeader>
-            <CardContent>
+              <div className="text-4xl font-bold text-foreground mb-6">{totalSearches.toLocaleString()}</div>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -186,7 +176,7 @@ export default function AdminSearchInsights() {
                   </TableHeader>
                   <TableBody>
                     {topSearches.length > 0 ? (
-                      topSearches.map((stat, index) => (
+                      topSearches.slice(0, 10).map((stat, index) => (
                         <TableRow key={stat.searched_name + index}>
                           <TableCell className="font-medium">#{index + 1}</TableCell>
                           <TableCell className="font-mono">{stat.searched_name}</TableCell>
