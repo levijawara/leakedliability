@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -258,7 +258,35 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   "dispute-closed-unresolved.tsx": "Dispute Closed: Unresolved",
   "subscription-payment-failed.tsx": "Payment Failed - Action Required",
   "subscription-canceled.tsx": "Subscription Canceled - Resubscribe Anytime",
+  "ll-cta-email.html": "Leaked Liability™ — The Numbers Don't Lie",
 };
+
+/** Thin wrapper: fetches standalone HTML email and renders in iframe for catalogue preview. */
+function CtaEmailHtmlPreview() {
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    fetch("/emails/ll-cta-email.html")
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error("Not found"))))
+      .then(setHtml)
+      .catch(() => setError(true));
+  }, []);
+  if (error || !html) {
+    return (
+      <div className="p-8 text-center text-muted-foreground min-h-[400px] flex items-center justify-center">
+        {error ? "Could not load CTA email preview." : "Loading…"}
+      </div>
+    );
+  }
+  return (
+    <iframe
+      title="CTA - Crew Outreach"
+      srcDoc={html}
+      className="w-full min-h-[800px] border-0 rounded-lg bg-[#0A0A0A]"
+      sandbox="allow-same-origin"
+    />
+  );
+}
 
 interface EmailPreviewProps {
   templateFile: string;
@@ -579,7 +607,9 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
         return <SubscriptionPaymentFailed {...mockData} />;
       case 'subscription-canceled.tsx':
         return <SubscriptionCanceled {...mockData} />;
-      
+      case 'll-cta-email.html':
+        return <CtaEmailHtmlPreview />;
+
       default:
         return (
           <div className="p-8 text-center text-muted-foreground">

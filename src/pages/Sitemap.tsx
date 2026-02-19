@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Navigation } from "@/components/Navigation";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Code, Zap, User, Boxes, Info, UserCircle, FileText, RefreshCw, DollarSign, AlertTriangle, CreditCard, Shield, LayoutList, LayoutGrid } from "lucide-react";
+import { Loader2, Mail, Code, Zap, User, Boxes, Info, UserCircle, FileText, RefreshCw, DollarSign, AlertTriangle, CreditCard, Shield, LayoutList, LayoutGrid, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,7 +40,7 @@ interface EmailTemplateInfo {
   edgeFunction: string;
   purpose: string;
   status: 'implemented' | 'pending';
-  category: 'account' | 'reports' | 'liability' | 'payment' | 'disputes' | 'subscriptions' | 'admin';
+  category: 'account' | 'reports' | 'liability' | 'payment' | 'disputes' | 'subscriptions' | 'admin' | 'marketing';
 }
 
 const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
@@ -336,6 +336,18 @@ const EMAIL_CATALOGUE: EmailTemplateInfo[] = [
     purpose: "Alert admins to events requiring review or action, including new report submissions",
     status: "implemented",
     category: "admin"
+  },
+
+  // Marketing / Outreach (standalone HTML, not Edge-triggered)
+  {
+    name: "CTA - Crew Outreach",
+    templateFile: "ll-cta-email.html",
+    trigger: "Manual send / bulk outreach",
+    recipient: "Crew members & potential users",
+    edgeFunction: "—",
+    purpose: "Dark-themed CTA email for crew outreach; drives report submissions. Used in Mailchimp, Resend, etc.",
+    status: "implemented",
+    category: "marketing"
   },
 ];
 
@@ -1223,6 +1235,60 @@ const Sitemap = () => {
                 <AccordionContent>
                   <div className="grid gap-4 pt-4">
                     {EMAIL_CATALOGUE.filter(e => e.category === 'admin').map((email, idx) => (
+                      <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
+                        <div className="flex justify-between items-start mb-3">
+                          <h3 className="font-bold text-lg">{email.name}</h3>
+                          <Badge variant={email.status === 'implemented' ? 'default' : 'secondary'}>
+                            {email.status === 'implemented' ? '✅ Live' : '🚧 Pending'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-start gap-2">
+                            <Code className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <code className="text-xs bg-muted px-2 py-1 rounded">{email.templateFile}</code>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Zap className="h-4 w-4 mt-0.5 text-yellow-600 flex-shrink-0" />
+                            <span><strong>Trigger:</strong> {email.trigger}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <User className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+                            <span><strong>Recipient:</strong> {email.recipient}</span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Boxes className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
+                            <span><strong>Function:</strong> <code className="text-xs bg-muted px-1.5 py-0.5 rounded">{email.edgeFunction}</code></span>
+                          </div>
+                          
+                          <div className="flex items-start gap-2">
+                            <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground">{email.purpose}</span>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Marketing / Outreach */}
+              <AccordionItem value="marketing" className="border rounded-lg px-4">
+                <AccordionTrigger>
+                  <div className="flex items-center gap-2">
+                    <Megaphone className="h-5 w-5 text-gray-600" />
+                    <span className="font-semibold">Marketing</span>
+                    <Badge variant="secondary" className="ml-2">
+                      {EMAIL_CATALOGUE.filter(e => e.category === 'marketing').length} emails
+                    </Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="grid gap-4 pt-4">
+                    {EMAIL_CATALOGUE.filter(e => e.category === 'marketing').map((email, idx) => (
                       <Card key={idx} className="p-4 hover:border-primary/50 transition-colors">
                         <div className="flex justify-between items-start mb-3">
                           <h3 className="font-bold text-lg">{email.name}</h3>
