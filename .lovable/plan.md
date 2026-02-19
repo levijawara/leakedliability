@@ -1,23 +1,36 @@
 
 
-## Consolidate Search Insights: Merge Top 10 into Total Searches Card
+## Skip Search Logging and Email Notifications for Admin Accounts
 
-### What Changes
+### Goal
+When an admin searches a name (on the leaderboard or homepage), the system should **not** insert a row into `search_logs` and **not** send an email notification. Only non-admin searches trigger these actions.
 
-**File:** `src/pages/AdminSearchInsights.tsx` (1 file, ~30 lines changed)
+### Current State
+- **Leaderboard (`src/pages/Leaderboard.tsx`)**: Already has `isAdmin` state via `has_role` RPC. Currently skips the email notification for hardcoded admin emails, but still inserts into `search_logs` for everyone.
+- **Homepage autocomplete (`src/components/ProducerSearchAutocomplete.tsx`)**: Has no admin awareness. Uses hardcoded `ADMIN_EMAILS` list to skip email only. Still inserts into `search_logs` for everyone.
 
-1. **Limit top searches to 10** -- slice `topSearches` to the first 10 entries when rendering (the RPC may return more, we just display 10)
-2. **Remove the standalone "Most Searched Producers" Card** (lines 168-223)
-3. **Expand the "Total Searches" Card** to include the Top 10 table directly below the total count number
-4. **Update card title/description** to reflect combined content (e.g. "Total Searches" header stays, description becomes "All-time searches with Top 10 most searched")
+### Changes (2 files, ~20 lines)
 
-The resulting layout:
-- **Card 1**: Total Searches count + Top 10 table (combined)
-- **Card 2**: Recent Searches (unchanged)
+**File 1: `src/pages/Leaderboard.tsx`**
+- In the search logging `useEffect` (line ~304), wrap the entire block (both `search_logs` insert and `send-email` call) in an `if (!isAdmin)` guard.
+- Remove the now-redundant hardcoded `ADMIN_EMAILS` check since the `isAdmin` state (from `has_role` RPC) is the proper gate.
+- Add `isAdmin` to the `useEffect` dependency array.
+
+**File 2: `src/components/ProducerSearchAutocomplete.tsx`**
+- Add an `isAdmin` state and check it on mount using `supabase.rpc('has_role', ...)`.
+- In the debounced search logging callback (line ~140), wrap the entire block (both insert and email) in `if (!isAdmin)`.
+- In the `handleSelect` function (line ~192), also guard the `search_logs` insert with `if (!isAdmin)`.
+- Remove the hardcoded `ADMIN_EMAILS` list.
 
 ### What Will NOT Change
-- No schema or RPC changes
+- No schema changes
 - No new files
-- No styling or layout changes beyond merging the two cards
-- Recent Searches card stays exactly as-is
-- Data fetching logic unchanged
+- No UI or layout changes
+- Non-admin search behavior is completely unchanged
+- The `get_top_searches` RPC and Search Insights dashboard are unaffected
+
+### Verification
+1. Log in as admin (Levi's account) and search a name on the leaderboard -- confirm no new row in `search_logs` and no email received.
+2. Log in as a non-admin and search a name -- confirm the row is inserted and the email is sent as before.
+3. Search from the homepage (unauthenticated) -- confirm the row is inserted and the email is sent as before.
+
