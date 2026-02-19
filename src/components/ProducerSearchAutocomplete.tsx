@@ -37,10 +37,30 @@ export function ProducerSearchAutocomplete({
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isAdmin, setIsAdmin] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const logTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check admin status on mount
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.rpc('has_role', {
+            _user_id: user.id,
+            _role: 'admin'
+          });
+          setIsAdmin(!!data);
+        }
+      } catch {
+        // Not admin, fail silently
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -133,29 +153,28 @@ export function ProducerSearchAutocomplete({
       }
     }, 300);
 
-    // Debounced search logging with admin notification
+    // Debounced search logging with admin notification (skip for admins)
     if (logTimeoutRef.current) {
       clearTimeout(logTimeoutRef.current);
     }
-    logTimeoutRef.current = setTimeout(async () => {
-      try {
-        // Get current user info
-        const { data: { user } } = await supabase.auth.getUser();
-        const userEmail = user?.email || null;
-        const userId = user?.id || null;
-        
-        // Log search with user info
-        await supabase.from('search_logs').insert({
-          searched_name: searchTerm.trim(),
-          matched_producer_id: null,
-          source,
-          user_id: userId,
-          user_email: userEmail
-        });
-        
-        // Send admin notification (skip for admin accounts)
-        const ADMIN_EMAILS = ['leakedliability@gmail.com', 'lojawara@gmail.com'];
-        if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+    if (!isAdmin) {
+      logTimeoutRef.current = setTimeout(async () => {
+        try {
+          // Get current user info
+          const { data: { user } } = await supabase.auth.getUser();
+          const userEmail = user?.email || null;
+          const userId = user?.id || null;
+          
+          // Log search with user info
+          await supabase.from('search_logs').insert({
+            searched_name: searchTerm.trim(),
+            matched_producer_id: null,
+            source,
+            user_id: userId,
+            user_email: userEmail
+          });
+          
+          // Send admin notification
           await supabase.functions.invoke('send-email', {
             body: {
               type: 'admin_notification',
@@ -170,17 +189,17 @@ export function ProducerSearchAutocomplete({
               },
             },
           });
+        } catch {
+          // Fail silently
         }
-      } catch {
-        // Fail silently
-      }
-    }, 1500);
+      }, 1500);
+    }
 
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
       if (logTimeoutRef.current) clearTimeout(logTimeoutRef.current);
     };
-  }, [searchTerm, source]);
+  }, [searchTerm, source, isAdmin]);
 
   // Notify parent of search changes
   useEffect(() => {
@@ -188,15 +207,17 @@ export function ProducerSearchAutocomplete({
   }, [searchTerm, onSearchChange]);
 
   const handleSelect = async (producer: ProducerSearchResult) => {
-    // Log the matched producer (fire and forget)
-    try {
-      await supabase.from('search_logs').insert({
-        searched_name: searchTerm.trim(),
-        matched_producer_id: producer.producer_id,
-        source
-      });
-    } catch {
-      // Fail silently
+    // Log the matched producer (fire and forget, skip for admins)
+    if (!isAdmin) {
+      try {
+        await supabase.from('search_logs').insert({
+          searched_name: searchTerm.trim(),
+          matched_producer_id: producer.producer_id,
+          source
+        });
+      } catch {
+        // Fail silently
+      }
     }
 
     // If already claimed/verified by someone else, just navigate to leaderboard
