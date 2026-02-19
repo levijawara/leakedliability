@@ -306,7 +306,7 @@ export default function Leaderboard() {
       clearTimeout(searchLogTimeoutRef.current);
     }
     
-    if (searchTerm.trim().length >= 2) {
+    if (searchTerm.trim().length >= 2 && !isAdmin) {
       searchLogTimeoutRef.current = setTimeout(async () => {
         try {
           // Get current user info
@@ -332,24 +332,21 @@ export default function Leaderboard() {
             user_email: userEmail
           });
           
-          // Send admin notification (skip for admin accounts)
-          const ADMIN_EMAILS = ['leakedliability@gmail.com', 'lojawara@gmail.com'];
-          if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
-            await supabase.functions.invoke('send-email', {
-              body: {
-                type: 'admin_notification',
-                to: 'leakedliability@gmail.com',
-                data: {
-                  eventType: 'search',
-                  searchTerm: searchTerm.trim(),
-                  source: 'leaderboard',
-                  userEmail: userEmail || null,
-                  timestamp: new Date().toISOString(),
-                  adminDashboardUrl: 'https://leakedliability.com/admin',
-                },
+          // Send admin notification
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'admin_notification',
+              to: 'leakedliability@gmail.com',
+              data: {
+                eventType: 'search',
+                searchTerm: searchTerm.trim(),
+                source: 'leaderboard',
+                userEmail: userEmail || null,
+                timestamp: new Date().toISOString(),
+                adminDashboardUrl: 'https://leakedliability.com/admin',
               },
-            });
-          }
+            },
+          });
         } catch (error) {
           // Fail silently - don't disrupt user experience
           console.debug('Search logging failed:', error);
@@ -362,7 +359,7 @@ export default function Leaderboard() {
         clearTimeout(searchLogTimeoutRef.current);
       }
     };
-  }, [searchTerm, producers]);
+  }, [searchTerm, producers, isAdmin]);
 
   const handleManageBilling = async () => {
     try {
