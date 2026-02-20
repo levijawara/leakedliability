@@ -3201,7 +3201,6 @@ export type Database = {
           producer_id: string | null
           project_name: string | null
           report_id: string | null
-          reporter_id: string | null
           reporter_type: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
           updated_at: string | null
@@ -3219,7 +3218,6 @@ export type Database = {
           producer_id?: string | null
           project_name?: string | null
           report_id?: string | null
-          reporter_id?: string | null
           reporter_type?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           updated_at?: string | null
@@ -3237,7 +3235,6 @@ export type Database = {
           producer_id?: string | null
           project_name?: string | null
           report_id?: string | null
-          reporter_id?: string | null
           reporter_type?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           updated_at?: string | null
