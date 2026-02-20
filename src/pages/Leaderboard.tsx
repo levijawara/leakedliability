@@ -524,9 +524,9 @@ export default function Leaderboard() {
               <div>
                 <h3 className="font-bold text-lg mb-2">Public Accountability Notice</h3>
                 <p className="text-sm text-muted-foreground">
-                  This leaderboard tracks producers who owe payments to freelance crew members and vendors.
-                  All data is verified through our review process. Scores update daily and include
-                  time-based forgiveness after debts are closed.
+                  This leaderboard displays producers with user-submitted reports of late or unpaid payments from crew members and vendors.
+                  Reports are reviewed for format and legitimacy before display. Scores update daily and include
+                  time-based forgiveness after reports are marked paid.
                 </p>
               </div>
             </div>
@@ -1036,7 +1036,7 @@ export default function Leaderboard() {
                   </p>
                   {!searchTerm && (
                     <p className="text-sm text-muted-foreground">
-                      Producer information will appear here once verified payment reports are submitted.
+                      Producer information will appear here once user-submitted payment reports are reviewed and displayed.
                     </p>
                   )}
                 </div>
@@ -1327,7 +1327,7 @@ export default function Leaderboard() {
                           </p>
                           {!searchTerm && (
                             <p className="text-sm text-muted-foreground">
-                              Producer information will appear here once verified payment reports are submitted.
+                              Producer information will appear here once user-submitted payment reports are reviewed and displayed.
                             </p>
                           )}
                         </div>

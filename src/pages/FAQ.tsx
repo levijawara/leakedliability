@@ -27,7 +27,7 @@ export default function FAQ() {
               <AccordionItem value="what-is">
                 <AccordionTrigger>What is Leaked Liability™?</AccordionTrigger>
                 <AccordionContent>
-                  Leaked Liability™ is a transparency platform built to track delayed payments in film and production. Crew, vendors, and freelancers can submit reports about outstanding payments, and LL™ publicly displays producer payment behavior on the Leaderboard. Our goal is simple: encourage faster, more reliable payment across the industry.
+                  Leaked Liability™ is a transparency platform where crew, vendors, and freelancers submit reports about late or unpaid payments. LL™ displays these user-submitted reports on the Leaderboard. Our goal is simple: encourage faster, more reliable payment across the industry.
                 </AccordionContent>
               </AccordionItem>
 
@@ -43,7 +43,7 @@ export default function FAQ() {
                 <AccordionContent>
                   No. Leaked Liability™ is <strong>not</strong> a debt collection agency. We do <strong>not</strong> purchase debts, chase debtors, or take legal action on behalf of users.
                   <br /><br />
-                  LL™ simply tracks verified payment delays and provides an optional <strong>neutral escrow settlement system</strong>. Producers may choose to resolve a debt through our secure Stripe-backed escrow portal, but all payments are voluntary and processed anonymously on both sides.
+                  LL™ displays user-submitted reports of payment delays and provides an optional <strong>neutral escrow settlement system</strong>. Producers may choose to resolve a reported debt through our secure Stripe-backed escrow portal, but all payments are voluntary and processed anonymously on both sides.
                 </AccordionContent>
               </AccordionItem>
 
@@ -80,7 +80,7 @@ export default function FAQ() {
                     <li>Purchase orders (if vendor)</li>
                   </ul>
                   <br />
-                  The more documentation you attach, the faster we can verify and publish the report.
+                  The more documentation you attach, the faster we can review and display the report.
                 </AccordionContent>
               </AccordionItem>
 
@@ -92,23 +92,23 @@ export default function FAQ() {
               </AccordionItem>
 
               <AccordionItem value="report-verification">
-                <AccordionTrigger>How are reports verified?</AccordionTrigger>
+                <AccordionTrigger>How are reports reviewed?</AccordionTrigger>
                 <AccordionContent>
-                  Our admin team checks timestamps, communication logs, submitted documents, and rate confirmations. If anything is unclear, we contact you for clarification before adding the report to the Leaderboard.
+                  Our admin team reviews timestamps, communication logs, submitted documents, and rate confirmations for format and legitimacy. If anything is unclear, we contact you for clarification before displaying the report on the Leaderboard.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="verification-time">
-                <AccordionTrigger>How long does verification take?</AccordionTrigger>
+                <AccordionTrigger>How long does review take?</AccordionTrigger>
                 <AccordionContent>
-                  Verification typically takes 1-3 business days, depending on the completeness of your submission. Clear documentation and communication records help speed up the process.
+                  Review typically takes 1-3 business days, depending on the completeness of your submission. Clear documentation and communication records help speed up the process.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="after-filing">
                 <AccordionTrigger>What happens after I file a report?</AccordionTrigger>
                 <AccordionContent>
-                  Once verified, your report appears on the public leaderboard under the producer's name. The producer receives a notification about the outstanding payment. If they resolve the debt through our escrow system or provide proof of payment, the report status is updated automatically.
+                  Once reviewed, your report appears on the public leaderboard under the producer's name. The producer receives a notification about the reported payment. If they resolve it through our escrow system or provide proof of payment, the report status is updated automatically.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -134,7 +134,7 @@ export default function FAQ() {
               <AccordionItem value="why-name-appears">
                 <AccordionTrigger>Why does my name appear on the leaderboard?</AccordionTrigger>
                 <AccordionContent>
-                  Your name appears only after a delayed-payment report has been <strong>verified</strong>. We do not publish unverified or speculative reports.
+                  Your name appears only after a delayed-payment report has been <strong>reviewed</strong> for format and legitimacy. We do not publish unreviewed or speculative reports.
                 </AccordionContent>
               </AccordionItem>
 
@@ -148,23 +148,23 @@ export default function FAQ() {
               <AccordionItem value="pscs-score">
                 <AccordionTrigger>What is the Producing Social Credit Score (PSCS)?</AccordionTrigger>
                 <AccordionContent>
-                  The PSCS is a scoring model that reflects payment reliability. It considers:
+                  The PSCS is a scoring model that reflects payment reliability based on user-submitted reports. It considers:
                   <ul className="list-disc ml-6 mt-2 space-y-1">
-                    <li>Total amount owed</li>
-                    <li>Days overdue</li>
-                    <li>Number of outstanding reports</li>
+                    <li>Total reported amount</li>
+                    <li>Days since wrap (per report)</li>
+                    <li>Number of open reports</li>
                     <li>Number of paid/cleared reports</li>
                     <li>Repeat offenses across multiple jobs or locations</li>
                   </ul>
                   <br />
-                  Scores update automatically when debts are paid or verified. The system includes a forgiveness curve that allows producers to recover their score within 30 days after resolving past debts.
+                  Scores update automatically when reports are marked paid or updated. The system includes a forgiveness curve that allows producers to recover their score within 30 days after resolving reported payments.
                 </AccordionContent>
               </AccordionItem>
 
               <AccordionItem value="improve-score">
                 <AccordionTrigger>How can I improve my PSCS score?</AccordionTrigger>
                 <AccordionContent>
-                  Pay outstanding debts promptly and maintain consistent payment practices. Your score improves as you resolve reports and demonstrate reliable payment behavior over time.
+                  Resolve reported payments promptly and maintain consistent payment practices. Your score improves as you resolve reports and demonstrate reliable payment behavior over time.
                 </AccordionContent>
               </AccordionItem>
 
@@ -191,7 +191,7 @@ export default function FAQ() {
               <AccordionItem value="how-escrow-works">
                 <AccordionTrigger>How does LL™ Escrow work?</AccordionTrigger>
                 <AccordionContent>
-                  LL™ creates a secure payment link for a verified report. When paid:
+                  LL™ creates a secure payment link for a reviewed report. When paid:
                   <ul className="list-disc ml-6 mt-2 space-y-1">
                     <li>Stripe processes the payment</li>
                     <li>LL™ marks the report as "Paid"</li>

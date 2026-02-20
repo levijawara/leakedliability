@@ -17,7 +17,7 @@ const PrivacyPolicy = () => {
           </CardHeader>
           <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-8">
             <p>
-              Leaked Liability™ ("LL™," "we," "our," or "us") operates a public accountability system designed to increase transparency around late payments in film, TV, commercial, live event, and digital production.
+              Leaked Liability™ ("LL™," "we," "our," or "us") operates a user-generated public accountability platform designed to increase transparency around late payments in film, TV, commercial, live event, and digital production. All payment reports, timelines, and related data displayed on this platform are submitted by individual crew members and vendors. Leaked Liability™ is an interactive computer service that hosts and organizes this user-submitted content within the meaning of Section 230 of the Communications Decency Act (47 U.S.C. § 230).
             </p>
             <p>
               This Privacy Policy explains how we collect, use, store, and protect your information when you use the Leaked Liability platform or related services.
@@ -49,6 +49,9 @@ const PrivacyPolicy = () => {
                 <li>Uploaded receipts or payment confirmations</li>
                 <li>Report comments, explanations, disputes, or resolutions</li>
               </ul>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3">1.2.1 Source of Report Data</h3>
+              <p>All report data listed in Section 1.2 is provided voluntarily by the submitting user. Leaked Liability™ does not independently generate, fabricate, or editorially author report content. Reports reflect the experiences and claims of the individual submitting user.</p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">1.3 Producer Payment History</h3>
               <p>For purposes of public accountability:</p>
@@ -105,12 +108,12 @@ const PrivacyPolicy = () => {
             {/* Section 3 */}
             <section>
               <h2 className="text-2xl font-bold mt-8 mb-4">3. What Information Becomes Public</h2>
-              <p>Leaked Liability publishes data that is directly relevant to financial accountability:</p>
+              <p>Leaked Liability displays user-submitted data that is directly relevant to financial accountability. All publicly visible information originates from crew and vendor reports. The display, organization, and scoring of this data does not constitute editorial authorship of that content.</p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">Publicly Displayed:</h3>
               <ul className="list-disc pl-6 space-y-1">
                 <li>Producer and company names</li>
-                <li>Total outstanding debt</li>
+                <li>Total reported amount</li>
                 <li>Days past due</li>
                 <li>Project names</li>
                 <li>PSCS and leaderboard ranking</li>
@@ -244,7 +247,21 @@ const PrivacyPolicy = () => {
 
             {/* Section 12 */}
             <section>
-              <h2 className="text-2xl font-bold mt-8 mb-4">12. Contact Us</h2>
+              <h2 className="text-2xl font-bold mt-8 mb-4">12. Platform Status Under Federal Law</h2>
+              <p>
+                Leaked Liability™ operates as an interactive computer service under Section 230 of the Communications Decency Act (47 U.S.C. § 230). User-submitted reports, reviews, disputes, and related content are provided by third-party users, not by Leaked Liability™. As such, Leaked Liability™ is not the publisher or speaker of user-generated content hosted on this platform.
+              </p>
+              <p>
+                Leaked Liability™ may moderate, organize, categorize, score, or decline to publish user-submitted content in good faith, consistent with the protections afforded under Section 230(c)(2).
+              </p>
+              <p>
+                Producers and production companies identified in user-submitted reports may respond to, dispute, or provide context for any claims made about them through the platform's built-in dispute process.
+              </p>
+            </section>
+
+            {/* Section 13 */}
+            <section>
+              <h2 className="text-2xl font-bold mt-8 mb-4">13. Contact Us</h2>
               <p>For any questions about this Privacy Policy or your data:</p>
               <p className="mt-2 font-semibold">Leaked Liability™ Support</p>
               <p>

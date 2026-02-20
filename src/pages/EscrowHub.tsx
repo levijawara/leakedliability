@@ -21,8 +21,8 @@ export default function EscrowHub() {
           </span>
         </h1>
         <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
-          Producers send money into escrow; Leaked Liability tracks, verifies, 
-          and confirms when crew have been paid. No excuses. No "lost invoices". Never again.
+          Producers send money into escrow; Leaked Liability hosts the flow, confirms 
+          receipt of payment, and updates report status when crew have been paid. No excuses. No "lost invoices". Never again.
         </p>
       </header>
 
@@ -65,11 +65,11 @@ export default function EscrowHub() {
           </li>
           <li className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-            <span>Funds sit in a neutral account while we verify the claim.</span>
+            <span>Funds sit in a neutral account while we process the payment and update the report.</span>
           </li>
           <li className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-            <span>Once crew confirms payment, the debt is cleared in our system.</span>
+            <span>Once crew confirms payment, the report status is updated in our system.</span>
           </li>
           <li className="flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
