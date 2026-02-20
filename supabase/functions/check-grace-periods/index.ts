@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { requireInternalSecret, internalHeaders } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +16,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Require internal secret (cron-only function)
+  const denied = requireInternalSecret(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     logStep("Cron job started");
@@ -89,7 +94,8 @@ serve(async (req) => {
                 resubscribeUrl: `${Deno.env.get("SUPABASE_URL")}/subscribe`,
                 reason: 'grace_period_expired',
               }
-            }
+            },
+            headers: internalHeaders(),
           });
 
           logStep("Cancellation email sent", { userId: entitlement.user_id });

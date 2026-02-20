@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireInternalSecret } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -143,9 +144,10 @@ Deno.serve(async (req) => {
 
     let userId: string | null = null;
 
-    // Allow unauthenticated cron-triggered syncs
-    if (cronTrigger && syncAll) {
-      console.log("[sync-youtube-views] Cron-triggered sync (no auth required)");
+    // Auth: internal secret (cron) or JWT (admin)
+    const internalSecret = req.headers.get("x-internal-secret");
+    if (internalSecret && internalSecret === Deno.env.get("INTERNAL_SECRET")) {
+      console.log("[sync-youtube-views] Internal secret validated (cron)");
       userId = "cron-service";
     } else {
       const authHeader = req.headers.get("Authorization");

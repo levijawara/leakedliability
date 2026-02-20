@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireInternalSecret } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -30,6 +31,10 @@ serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Require internal secret (cron/internal function)
+  const denied = requireInternalSecret(req, corsHeaders);
+  if (denied) return denied;
 
   try {
     logStep("Starting continuous queue processor");
@@ -259,7 +264,7 @@ serve(async (req) => {
       logStep("Self-invoking for next sheet", { remaining: remainingCount });
       
       // Fire-and-forget: trigger next invocation
-      supabase.functions.invoke("continuous-queue-processor", {}).catch((err) => {
+      supabase.functions.invoke("continuous-queue-processor", { headers: { "x-internal-secret": Deno.env.get("INTERNAL_SECRET") || "" } }).catch((err) => {
         logStep("Self-invoke error (non-fatal)", { error: err?.message });
       });
     }

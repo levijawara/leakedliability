@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
+import { internalHeaders } from "../_shared/auth.ts";
+import { rateLimitByIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +67,10 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Rate limit: 15 requests per IP per minute
+  const limited = rateLimitByIp(req, 15, 60000, corsHeaders);
+  if (limited) return limited;
 
   try {
     logStep('Starting liability claim processing');

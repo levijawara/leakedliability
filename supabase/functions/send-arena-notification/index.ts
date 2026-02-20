@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
+import { requireInternalSecretOrJwt, internalHeaders } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,6 +20,10 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Auth: require JWT or internal secret
+  const auth = await requireInternalSecretOrJwt(req, corsHeaders);
+  if (!auth.authorized) return auth.response!;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
@@ -100,6 +105,7 @@ serve(async (req: Request) => {
     // Send email to all participants
     const emailPromises = uniqueEmails.map(email => 
       supabase.functions.invoke('send-email', {
+        headers: internalHeaders(),
         body: {
           type: 'admin_notification', // Using admin notification template as fallback
           to: email,
