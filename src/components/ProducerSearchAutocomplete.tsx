@@ -186,11 +186,114 @@ export function ProducerSearchAutocomplete({
     performSearch(term, true, "producer_name");
   };
 
-  const handleCompanySearch = () => {
+  const handleCompanySearch = async () => {
     const term = productionCompany.trim();
     if (!term) return;
     setSearchTerm(term);
-    performSearch(term, true, "company_name");
+    setLoading(true);
+    setSearchError(null);
+    try {
+      // Three parallel queries: reference list, producer search view, active-debt sub_name
+      const [refResult, viewResult, debtResult] = await Promise.all([
+        supabase
+          .from("production_companies")
+          .select("name")
+          .ilike("name", `%${term}%`)
+          .limit(10),
+        supabase
+          .from("public_producer_search")
+          .select("*")
+          .ilike("company_name", `%${term}%`)
+          .order("producer_name")
+          .limit(10),
+        supabase
+          .from("producers")
+          .select("id, name, company, sub_name, total_amount_owed")
+          .ilike("sub_name", `%${term}%`)
+          .gt("total_amount_owed", 0)
+          .limit(10),
+      ]);
+
+      // Build merged results: start with producer search view matches
+      const merged = new Map<string, ProducerSearchResult>();
+
+      // Add view results (already in the right shape)
+      for (const r of viewResult.data || []) {
+        merged.set(r.producer_id, r);
+      }
+
+      // Add active-debt producers matched by sub_name
+      for (const r of debtResult.data || []) {
+        if (!merged.has(r.id)) {
+          merged.set(r.id, {
+            producer_id: r.id,
+            producer_name: r.name,
+            company_name: r.sub_name || r.company || null,
+            is_placeholder: false,
+            has_claimed_account: false,
+            stripe_verification_status: null,
+            claimed_by_user_id: null,
+          });
+        }
+      }
+
+      // Add reference-only companies (no producer match) as informational entries
+      for (const r of refResult.data || []) {
+        const alreadyShown = Array.from(merged.values()).some(
+          (m) => m.company_name?.toLowerCase() === r.name.toLowerCase()
+        );
+        if (!alreadyShown) {
+          merged.set(`ref-${r.name}`, {
+            producer_id: `ref-${r.name}`,
+            producer_name: r.name,
+            company_name: r.name,
+            is_placeholder: null,
+            has_claimed_account: null,
+            stripe_verification_status: null,
+            claimed_by_user_id: null,
+          });
+        }
+      }
+
+      setResults(Array.from(merged.values()).slice(0, 15));
+      setIsOpen(true);
+      setSelectedIndex(-1);
+
+      // Log the search (reuse existing logging pattern)
+      if (!isAdmin && term) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          await supabase.from('search_logs').insert({
+            searched_name: term,
+            matched_producer_id: null,
+            source,
+            user_id: user?.id ?? null,
+            user_email: user?.email ?? null,
+          });
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'admin_notification',
+              to: 'leakedliability@gmail.com',
+              data: {
+                eventType: 'search',
+                searchTerm: term,
+                source,
+                userEmail: user?.email ?? null,
+                timestamp: new Date().toISOString(),
+                adminDashboardUrl: 'https://leakedliability.com/admin',
+              },
+            },
+          });
+        } catch { /* ignore */ }
+      }
+    } catch (err: unknown) {
+      console.error("Company search error:", err);
+      setSearchError("Unable to search. Please try again later.");
+      setResults([]);
+      setIsOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Live search for non-homepage (leaderboard, profile_claim)
