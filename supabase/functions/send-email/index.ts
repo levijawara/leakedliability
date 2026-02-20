@@ -3,6 +3,7 @@ import { Resend } from "https://esm.sh/resend@4.0.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
 import * as React from "https://esm.sh/react@18.3.1";
 import { renderAsync } from "https://esm.sh/@react-email/components@0.0.22?deps=react@18.3.1,react-dom@18.3.1";
+import { requireInternalSecretOrJwt } from "../_shared/auth.ts";
 import { CrewReportConfirmation } from "./_templates/crew-report-confirmation.tsx";
 import { ProducerPaymentConfirmation } from "./_templates/producer-payment-confirmation.tsx";
 import { DisputeSubmission } from "./_templates/dispute-submission.tsx";
@@ -53,6 +54,10 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Auth: require valid JWT (frontend) or internal secret (edge-to-edge)
+  const auth = await requireInternalSecretOrJwt(req, corsHeaders);
+  if (!auth.authorized) return auth.response!;
 
   try {
     const supabase = createClient(

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
+import { requireInternalSecretOrJwt } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,10 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Auth: require JWT or internal secret
+  const auth = await requireInternalSecretOrJwt(req, corsHeaders);
+  if (!auth.authorized) return auth.response!;
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
