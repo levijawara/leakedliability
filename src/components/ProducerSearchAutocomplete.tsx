@@ -324,7 +324,7 @@ export function ProducerSearchAutocomplete({
         /* Homepage: producer identity boxes OR production company box */
         <div className="space-y-4">
           {/* Producer path: first + last name */}
-          <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3">
             <div
               className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
               aria-hidden="true"
@@ -351,15 +351,6 @@ export function ProducerSearchAutocomplete({
                 className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
               />
             </div>
-            {canSearchProducer && (
-              <Button
-                onClick={handleProducerSearch}
-                disabled={loading}
-                className="h-12 px-6 rounded-xl shrink-0"
-              >
-                Search
-              </Button>
-            )}
           </div>
 
           <div className="flex items-center gap-3">
@@ -383,15 +374,20 @@ export function ProducerSearchAutocomplete({
               onKeyDown={(e) => e.key === "Enter" && canSearchCompany && handleCompanySearch()}
               className="flex-1 bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
             />
-            {canSearchCompany && (
-              <Button
-                onClick={handleCompanySearch}
-                disabled={loading}
-                className="h-12 px-6 rounded-xl shrink-0"
-              >
-                Search
-              </Button>
-            )}
+          </div>
+
+          {/* Search button — always visible */}
+          <div className="flex justify-center pt-2">
+            <Button
+              onClick={() => {
+                if (canSearchCompany) handleCompanySearch();
+                else if (canSearchProducer) handleProducerSearch();
+              }}
+              disabled={loading || (!canSearchProducer && !canSearchCompany)}
+              className="h-12 px-8 rounded-xl"
+            >
+              {loading ? "Searching…" : "Search"}
+            </Button>
           </div>
         </div>
       ) : (
