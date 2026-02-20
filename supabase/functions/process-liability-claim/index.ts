@@ -265,7 +265,8 @@ serve(async (req: Request) => {
         };
         
         // 1. Send to ACCEPTOR
-        await supabase.functions.invoke('send-email', {
+      await supabase.functions.invoke('send-email', {
+          headers: internalHeaders(),
           body: {
             type: 'liability_accepted',
             to: tokenData.accused_email,
@@ -283,6 +284,7 @@ serve(async (req: Request) => {
           for (const member of allChainMembers) {
             if (member.accused_email !== tokenData.accused_email) {
               await supabase.functions.invoke('send-email', {
+                headers: internalHeaders(),
                 body: {
                   type: 'liability_accepted',
                   to: member.accused_email,
@@ -305,6 +307,7 @@ serve(async (req: Request) => {
           
         if (reporterProfile?.email) {
           await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               type: 'liability_accepted',
               to: reporterProfile.email,
@@ -321,6 +324,7 @@ serve(async (req: Request) => {
         // 4. Send to ALL ADMINS
         for (const admin of adminEmails) {
           await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               type: 'liability_accepted',
               to: admin.email,
@@ -456,7 +460,8 @@ serve(async (req: Request) => {
             });
           
           // Send loop detection emails
-          await supabase.functions.invoke('send-email', {
+        await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               to: originalEntry.accused_email,
               cc: "leakedliability@gmail.com",
@@ -512,6 +517,7 @@ serve(async (req: Request) => {
       const { data: notificationResult, error: notificationError } = await supabase.functions.invoke(
         'send-liability-notification',
         {
+          headers: internalHeaders(),
           body: {
             report_id: tokenData.report_id,
             accused_name: redirect_to.name,
