@@ -152,6 +152,22 @@ export default function Leaderboard() {
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const [isAccessBlocked, setIsAccessBlocked] = useState(false);
 
+  // Fetch leaderboard config for delinquent-only toggle (must be before producers query)
+  const { data: leaderboardConfig, refetch: refetchConfig } = useQuery({
+    queryKey: ["leaderboard_config"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leaderboard_config")
+        .select("show_delinquent_only")
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const showDelinquentOnly = leaderboardConfig?.show_delinquent_only ?? false;
+
   const { data: activeProductions, isLoading: isLoadingActive, refetch: refetchActive, error: activeError } = useQuery({
     queryKey: ["production_instances"],
     queryFn: async () => {
@@ -167,32 +183,19 @@ export default function Leaderboard() {
   });
 
   const { data: producers, isLoading: isLoadingLiabilities, refetch: refetchProducers, error: queryError } = useQuery({
-    queryKey: ["public_leaderboard"],
+    queryKey: ["public_leaderboard", showDelinquentOnly],
     queryFn: async () => {
       if (!supabase) {
         throw new Error("Database connection unavailable");
       }
 
       const { data, error } = await supabase
-        .from("public_leaderboard")
-        .select("*");
+        .rpc("get_leaderboard_data", { p_delinquent_only: showDelinquentOnly });
       
       if (error) {
         const errorMsg = error.message?.toLowerCase() || '';
-        const errorCode = error.code || '';
         
-        // Check if table/view doesn't exist
-        const isTableMissing = 
-          errorCode === '42P01' || // PostgreSQL: relation does not exist
-          errorCode === 'PGRST204' || // PostgREST: relation not found
-          errorMsg.includes('does not exist') ||
-          (errorMsg.includes('relation') && errorMsg.includes('not found'));
-        
-        if (isTableMissing) {
-          setIsAccessBlocked(false);
-          setLeaderboardError("Leaderboard data is currently unavailable. Please check back later.");
-          throw new Error("Leaderboard view does not exist - migrations may not have been run");
-        } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+        if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
           setIsAccessBlocked(true);
           setLeaderboardError("Access to leaderboard data is restricted. A subscription may be required to view producer information.");
         } else {
@@ -206,7 +209,7 @@ export default function Leaderboard() {
       setIsAccessBlocked(false);
       return data;
     },
-    retry: false, // Don't retry on error - show message immediately
+    retry: false,
   });
 
   const updateProducer = async (
@@ -248,22 +251,6 @@ export default function Leaderboard() {
       return data;
     },
   });
-
-  // Fetch leaderboard config for delinquent-only toggle
-  const { data: leaderboardConfig, refetch: refetchConfig } = useQuery({
-    queryKey: ["leaderboard_config"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("leaderboard_config")
-        .select("show_delinquent_only")
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const showDelinquentOnly = leaderboardConfig?.show_delinquent_only ?? false;
 
   const toggleDelinquentOnly = async () => {
     const newValue = !showDelinquentOnly;

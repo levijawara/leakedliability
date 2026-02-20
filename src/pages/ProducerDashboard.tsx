@@ -120,19 +120,6 @@ export default function ProducerDashboard() {
 
   const loadPscsScore = async (producerId: string) => {
     try {
-      // Try to get from public_leaderboard view first (has calculated score)
-      const { data: leaderboardData } = await supabase
-        .from("public_leaderboard")
-        .select("pscs_score")
-        .eq("producer_id", producerId)
-        .single();
-
-      if (leaderboardData?.pscs_score !== undefined) {
-        setPscsScore(leaderboardData.pscs_score);
-        return;
-      }
-
-      // Fallback to producers table
       const { data: producerData } = await supabase
         .from("producers")
         .select("pscs_score")
@@ -144,7 +131,6 @@ export default function ProducerDashboard() {
       }
     } catch (error) {
       console.error("Error loading PSCS score:", error);
-      // Don't show error toast - PSCS is not critical for dashboard to function
     }
   };
 
