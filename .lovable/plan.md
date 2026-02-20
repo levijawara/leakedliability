@@ -1,36 +1,53 @@
 
 
-## Skip Search Logging and Email Notifications for Admin Accounts
+## Re-implement Homepage Search Layout
 
-### Goal
-When an admin searches a name (on the leaderboard or homepage), the system should **not** insert a row into `search_logs` and **not** send an email notification. Only non-admin searches trigger these actions.
+The homepage search changes (dual-input layout, ghost/badge removal) were lost from `ProducerSearchAutocomplete.tsx`. The file currently has a single-input layout for all sources with ghosts and badges shown everywhere. This plan restores the intended behavior.
 
-### Current State
-- **Leaderboard (`src/pages/Leaderboard.tsx`)**: Already has `isAdmin` state via `has_role` RPC. Currently skips the email notification for hardcoded admin emails, but still inserts into `search_logs` for everyone.
-- **Homepage autocomplete (`src/components/ProducerSearchAutocomplete.tsx`)**: Has no admin awareness. Uses hardcoded `ADMIN_EMAILS` list to skip email only. Still inserts into `search_logs` for everyone.
+### What was lost
 
-### Changes (2 files, ~20 lines)
+1. **Dual-input layout** (First name + Last name, OR Production company) for homepage
+2. **`isHomepage` flag** to conditionally render the homepage vs. leaderboard layout
+3. **Ghost icons and status badges removed** from homepage results
+4. **"Unclaimed profiles require subscription to view" footer removed** from homepage results
+5. **Prompt copy** should say "Search by producer name or production company to find out."
 
-**File 1: `src/pages/Leaderboard.tsx`**
-- In the search logging `useEffect` (line ~304), wrap the entire block (both `search_logs` insert and `send-email` call) in an `if (!isAdmin)` guard.
-- Remove the now-redundant hardcoded `ADMIN_EMAILS` check since the `isAdmin` state (from `has_role` RPC) is the proper gate.
-- Add `isAdmin` to the `useEffect` dependency array.
+### Changes (1 file, ~50 lines)
 
-**File 2: `src/components/ProducerSearchAutocomplete.tsx`**
-- Add an `isAdmin` state and check it on mount using `supabase.rpc('has_role', ...)`.
-- In the debounced search logging callback (line ~140), wrap the entire block (both insert and email) in `if (!isAdmin)`.
-- In the `handleSelect` function (line ~192), also guard the `search_logs` insert with `if (!isAdmin)`.
-- Remove the hardcoded `ADMIN_EMAILS` list.
+**File: `src/components/ProducerSearchAutocomplete.tsx`**
 
-### What Will NOT Change
-- No schema changes
-- No new files
-- No UI or layout changes
-- Non-admin search behavior is completely unchanged
-- The `get_top_searches` RPC and Search Insights dashboard are unaffected
+1. Add `isHomepage` derived from `source === 'homepage'`
+2. Add `firstName`, `lastName`, `productionCompany` state variables
+3. Add `handleProducerSearch` (combines first+last, searches `producer_name`)
+4. Add `handleCompanySearch` (searches `company_name`)
+5. Add `Button` import
+6. Replace the single-input JSX with a conditional:
+   - **Homepage**: Two rows separated by "or" divider
+     - Row 1: First name + Last name inputs + Search button (visible when both filled)
+     - Row 2: Production company input + Search button (visible when filled)
+   - **Non-homepage**: Keep existing single-input autocomplete unchanged
+7. In the results dropdown, conditionally hide ghost icons, all status badges, and the "Unclaimed profiles" footer when `isHomepage` is true
+8. Skip the live-search `useEffect` for homepage (homepage uses explicit button clicks)
+
+**File: `src/pages/Index.tsx`** (1 line)
+
+Update the prompt text from "Search any producer or production company name to find out." to "Search by producer name or production company to find out."
+
+### Technical details
+
+- The `performSearch` function gains an optional `searchBy` parameter (`"producer_name"` or `"company_name"`) to support company searches
+- Homepage searches are button-triggered (not debounced/live) since the user fills two fields
+- Non-homepage behavior is completely unchanged (single input, live search, ghosts, badges)
+- No new files, no schema changes, no new dependencies
+
+### What will NOT change
+- Leaderboard and profile_claim search behavior
+- Search logging and admin notification logic (already gated by `isAdmin`)
+- Database schema
+- Any other files
 
 ### Verification
-1. Log in as admin (Levi's account) and search a name on the leaderboard -- confirm no new row in `search_logs` and no email received.
-2. Log in as a non-admin and search a name -- confirm the row is inserted and the email is sent as before.
-3. Search from the homepage (unauthenticated) -- confirm the row is inserted and the email is sent as before.
-
+1. Navigate to homepage, confirm dual-input layout with "or" divider
+2. Search a producer name -- confirm results show without ghost icons or badges
+3. Search a company name -- confirm results appear
+4. Navigate to leaderboard -- confirm single-input with ghosts and badges still works
