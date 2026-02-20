@@ -146,14 +146,14 @@ export function ProducerSearchAutocomplete({
           const ids = data.map((r: ProducerSearchResult) => r.producer_id).filter((id: string) => !id.startsWith('ref-'));
           if (ids.length > 0) {
             const { data: debtData } = await supabase
-              .from("producers")
-              .select("id, total_amount_owed")
-              .in("id", ids);
+              .from("public_leaderboard")
+              .select("producer_id, total_amount_owed")
+              .in("producer_id", ids);
             const activeSet = new Set<string>();
             const knownSet = new Set<string>();
             for (const p of debtData || []) {
-              knownSet.add(p.id);
-              if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.id);
+              knownSet.add(p.producer_id);
+              if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.producer_id);
             }
             setActiveDebtIds(activeSet);
             setKnownProducerIds(knownSet);
@@ -233,8 +233,8 @@ export function ProducerSearchAutocomplete({
           .order("producer_name")
           .limit(10),
         supabase
-          .from("producers")
-          .select("id, name, company, sub_name, total_amount_owed")
+          .from("public_leaderboard")
+          .select("producer_id, producer_name, company_name, sub_name, total_amount_owed")
           .ilike("sub_name", `%${term}%`)
           .gt("total_amount_owed", 0)
           .limit(10),
@@ -255,13 +255,13 @@ export function ProducerSearchAutocomplete({
 
       // Add active-debt producers matched by sub_name
       for (const r of debtResult.data || []) {
-        activeSet.add(r.id);
-        knownSet.add(r.id);
-        if (!merged.has(r.id)) {
-          merged.set(r.id, {
-            producer_id: r.id,
-            producer_name: r.name,
-            company_name: r.sub_name || r.company || null,
+        activeSet.add(r.producer_id);
+        knownSet.add(r.producer_id);
+        if (!merged.has(r.producer_id)) {
+          merged.set(r.producer_id, {
+            producer_id: r.producer_id,
+            producer_name: r.producer_name,
+            company_name: r.sub_name || r.company_name || null,
             is_placeholder: false,
             has_claimed_account: false,
             stripe_verification_status: null,
@@ -293,11 +293,11 @@ export function ProducerSearchAutocomplete({
         const viewIds = (viewResult.data || []).map((r: ProducerSearchResult) => r.producer_id);
         if (viewIds.length > 0) {
           const { data: debtData } = await supabase
-            .from("producers")
-            .select("id, total_amount_owed")
-            .in("id", viewIds);
+            .from("public_leaderboard")
+            .select("producer_id, total_amount_owed")
+            .in("producer_id", viewIds);
           for (const p of debtData || []) {
-            if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.id);
+            if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.producer_id);
           }
         }
         setActiveDebtIds(activeSet);
