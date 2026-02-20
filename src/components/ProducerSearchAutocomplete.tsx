@@ -2,9 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Ghost, User, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const isHomepageSource = (s?: string) => s === "homepage";
 
 interface ProducerSearchResult {
   producer_id: string;
@@ -32,7 +35,11 @@ export function ProducerSearchAutocomplete({
   source = 'leaderboard'
 }: ProducerSearchAutocompleteProps) {
   const navigate = useNavigate();
+  const isHomepage = isHomepageSource(source);
   const [searchTerm, setSearchTerm] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [productionCompany, setProductionCompany] = useState("");
   const [results, setResults] = useState<ProducerSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +49,10 @@ export function ProducerSearchAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const logTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const effectiveSearchTerm = searchTerm;
+  const canSearchProducer = firstName.trim().length > 0 && lastName.trim().length > 0;
+  const canSearchCompany = productionCompany.trim().length > 0;
 
   // Check admin status on mount
   useEffect(() => {
@@ -76,130 +87,161 @@ export function ProducerSearchAutocomplete({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [rlsBlocked, setRlsBlocked] = useState(false);
 
-  // Search for producers as user types
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (searchTerm.trim().length < 2) {
-      setResults([]);
-      setIsOpen(false);
-      setSearchError(null);
-      return;
-    }
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      setLoading(true);
-      setSearchError(null);
-      try {
-        if (!supabase) {
-          setSearchError("Search is currently unavailable. Please try again later.");
-          setResults([]);
-          setIsOpen(true); // Keep dropdown open to show message
-          setRlsBlocked(false);
-          setLoading(false);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("public_producer_search")
-          .select("*")
-          .ilike("producer_name", `%${searchTerm.trim()}%`)
-          .order("producer_name")
-          .limit(10);
-
-        if (error) {
-          const errorMsg = error.message?.toLowerCase() || '';
-          
-          // Check for network/connection errors
-          if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('failed to fetch')) {
-            setSearchError("Search is temporarily unavailable. Please check your connection.");
-            setRlsBlocked(false);
-          } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
-            setSearchError("Search requires authentication to access producer data");
-            setRlsBlocked(true);
-          } else {
-            setSearchError("Unable to search. Please try again later.");
-            setRlsBlocked(false);
-          }
-          
-          // Only log unexpected errors (not network/RLS issues which are handled gracefully)
-          if (!errorMsg.includes('network') && !errorMsg.includes('row-level security')) {
-            console.error("Search error:", error);
-          }
-          
-          setResults([]);
-          setIsOpen(true); // Keep dropdown open to show message
-        }
-        
-        setResults(data || []);
+  const performSearch = async (
+    term: string,
+    shouldLog: boolean,
+    searchBy: "producer_name" | "company_name" = "producer_name"
+  ) => {
+    const trimmed = term.trim();
+    setLoading(true);
+    setSearchError(null);
+    try {
+      if (!supabase) {
+        setSearchError("Search is currently unavailable. Please try again later.");
+        setResults([]);
         setIsOpen(true);
-        setSelectedIndex(-1);
-      } catch (error: any) {
-        // Handle network errors gracefully
-        const errorMsg = error?.message?.toLowerCase() || '';
-        if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+        setRlsBlocked(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("public_producer_search")
+        .select("*")
+        .ilike(searchBy, `%${trimmed}%`)
+        .order("producer_name")
+        .limit(10);
+
+      if (error) {
+        const errorMsg = error.message?.toLowerCase() || '';
+        if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('failed to fetch')) {
           setSearchError("Search is temporarily unavailable. Please check your connection.");
+          setRlsBlocked(false);
+        } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+          setSearchError("Search requires authentication to access producer data");
+          setRlsBlocked(true);
         } else {
           setSearchError("Unable to search. Please try again later.");
+          setRlsBlocked(false);
+        }
+        if (!errorMsg.includes('network') && !errorMsg.includes('row-level security')) {
           console.error("Search error:", error);
         }
         setResults([]);
-        setIsOpen(true); // Keep dropdown open to show message
-        setRlsBlocked(false);
-      } finally {
-        setLoading(false);
+        setIsOpen(true);
+      } else {
+        setResults(data || []);
+        setIsOpen(true);
+        setSelectedIndex(-1);
       }
-    }, 300);
 
-    // Debounced search logging with admin notification (skip for admins)
-    if (logTimeoutRef.current) {
-      clearTimeout(logTimeoutRef.current);
-    }
-    if (!isAdmin) {
-      logTimeoutRef.current = setTimeout(async () => {
+      if (shouldLog && !isAdmin && trimmed) {
         try {
-          // Get current user info
           const { data: { user } } = await supabase.auth.getUser();
-          const userEmail = user?.email || null;
-          const userId = user?.id || null;
-          
-          // Log search with user info
           await supabase.from('search_logs').insert({
-            searched_name: searchTerm.trim(),
+            searched_name: trimmed,
             matched_producer_id: null,
             source,
-            user_id: userId,
-            user_email: userEmail
+            user_id: user?.id ?? null,
+            user_email: user?.email ?? null,
           });
-          
-          // Send admin notification
           await supabase.functions.invoke('send-email', {
             body: {
               type: 'admin_notification',
               to: 'leakedliability@gmail.com',
               data: {
                 eventType: 'search',
-                searchTerm: searchTerm.trim(),
+                searchTerm: trimmed,
                 source,
-                userEmail: userEmail || null,
+                userEmail: user?.email ?? null,
                 timestamp: new Date().toISOString(),
                 adminDashboardUrl: 'https://leakedliability.com/admin',
               },
             },
           });
         } catch {
-          // Fail silently
+          /* ignore */
         }
-      }, 1500);
+      }
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message?.toLowerCase() || '';
+      if (msg.includes('network') || msg.includes('fetch')) {
+        setSearchError("Search is temporarily unavailable. Please check your connection.");
+      } else {
+        setSearchError("Unable to search. Please try again later.");
+        console.error("Search error:", err);
+      }
+      setResults([]);
+      setIsOpen(true);
+      setRlsBlocked(false);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  const handleProducerSearch = () => {
+    const term = `${firstName.trim()} ${lastName.trim()}`.trim();
+    if (!term) return;
+    setSearchTerm(term);
+    performSearch(term, true, "producer_name");
+  };
+
+  const handleCompanySearch = () => {
+    const term = productionCompany.trim();
+    if (!term) return;
+    setSearchTerm(term);
+    performSearch(term, true, "company_name");
+  };
+
+  // Live search for non-homepage (leaderboard, profile_claim)
+  useEffect(() => {
+    if (isHomepage) return;
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (searchTerm.trim().length < 2) {
+      setResults([]);
+      setIsOpen(false);
+      setSearchError(null);
+      return;
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(searchTerm, false);
+      if (logTimeoutRef.current) clearTimeout(logTimeoutRef.current);
+      if (!isAdmin) {
+        logTimeoutRef.current = setTimeout(async () => {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            await supabase.from('search_logs').insert({
+              searched_name: searchTerm.trim(),
+              matched_producer_id: null,
+              source,
+              user_id: user?.id ?? null,
+              user_email: user?.email ?? null,
+            });
+            await supabase.functions.invoke('send-email', {
+              body: {
+                type: 'admin_notification',
+                to: 'leakedliability@gmail.com',
+                data: {
+                  eventType: 'search',
+                  searchTerm: searchTerm.trim(),
+                  source,
+                  userEmail: user?.email ?? null,
+                  timestamp: new Date().toISOString(),
+                  adminDashboardUrl: 'https://leakedliability.com/admin',
+                },
+              },
+            });
+          } catch {
+            /* ignore */
+          }
+        }, 1500);
+      }
+    }, 300);
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
       if (logTimeoutRef.current) clearTimeout(logTimeoutRef.current);
     };
-  }, [searchTerm, source, isAdmin]);
+  }, [isHomepage, searchTerm, source, isAdmin]);
 
   // Notify parent of search changes
   useEffect(() => {
@@ -207,13 +249,15 @@ export function ProducerSearchAutocomplete({
   }, [searchTerm, onSearchChange]);
 
   const handleSelect = async (producer: ProducerSearchResult) => {
-    // Log the matched producer (fire and forget, skip for admins)
     if (!isAdmin) {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
         await supabase.from('search_logs').insert({
-          searched_name: searchTerm.trim(),
+          searched_name: effectiveSearchTerm.trim(),
           matched_producer_id: producer.producer_id,
-          source
+          source,
+          user_id: user?.id ?? null,
+          user_email: user?.email ?? null,
         });
       } catch {
         // Fail silently
@@ -276,28 +320,103 @@ export function ProducerSearchAutocomplete({
 
   return (
     <div ref={wrapperRef} className={cn("relative w-full", className)}>
-      <div className="flex items-center gap-3">
-        <div
-          className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
-          aria-hidden="true"
-        >
-          <Search className={cn("h-5 w-5 text-muted-foreground", loading && "animate-pulse")} />
+      {isHomepage ? (
+        /* Homepage: producer identity boxes OR production company box */
+        <div className="space-y-4">
+          {/* Producer path: first + last name */}
+          <div className="flex items-center gap-3">
+            <div
+              className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
+              aria-hidden="true"
+            >
+              <Search className={cn("h-5 w-5 text-muted-foreground", loading && "animate-pulse")} />
+            </div>
+            <div className="flex-1 grid grid-cols-2 gap-3">
+              <Input
+                type="text"
+                aria-label="First name or alias"
+                placeholder="First name or alias"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && canSearchProducer && handleProducerSearch()}
+                className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              />
+              <Input
+                type="text"
+                aria-label="Last name"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && canSearchProducer && handleProducerSearch()}
+                className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              />
+            </div>
+            {canSearchProducer && (
+              <Button
+                onClick={handleProducerSearch}
+                disabled={loading}
+                className="h-12 px-6 rounded-xl shrink-0"
+              >
+                Search
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" aria-hidden="true" />
+            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">or</span>
+            <div className="h-px flex-1 bg-border" aria-hidden="true" />
+          </div>
+
+          {/* Production company path */}
+          <div className="flex items-center gap-3">
+            <div
+              className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0 opacity-0"
+              aria-hidden="true"
+            />
+            <Input
+              type="text"
+              aria-label="Production company name"
+              placeholder="Production company name"
+              value={productionCompany}
+              onChange={(e) => setProductionCompany(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && canSearchCompany && handleCompanySearch()}
+              className="flex-1 bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+            />
+            {canSearchCompany && (
+              <Button
+                onClick={handleCompanySearch}
+                disabled={loading}
+                className="h-12 px-6 rounded-xl shrink-0"
+              >
+                Search
+              </Button>
+            )}
+          </div>
         </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <div
+            className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
+            aria-hidden="true"
+          >
+            <Search className={cn("h-5 w-5 text-muted-foreground", loading && "animate-pulse")} />
+          </div>
+          <Input
+            ref={inputRef}
+            type="text"
+            aria-label="Search producers or production companies"
+            placeholder={placeholder}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => results.length > 0 && setIsOpen(true)}
+            className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
+          />
+        </div>
+      )}
 
-        <Input
-          ref={inputRef}
-          type="text"
-          aria-label="Search producers or production companies"
-          placeholder={placeholder}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => results.length > 0 && setIsOpen(true)}
-          className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
-        />
-      </div>
-
-      {/* Autocomplete Dropdown */}
+      {/* Results dropdown: simplified for homepage (no ghosts, no badges), full for others */}
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
           <ul className="max-h-64 overflow-y-auto">
@@ -307,16 +426,18 @@ export function ProducerSearchAutocomplete({
                 className={cn(
                   "px-4 py-3 cursor-pointer flex items-center justify-between gap-2 transition-colors",
                   index === selectedIndex ? "bg-muted" : "hover:bg-muted/50",
-                  producer.is_placeholder && "opacity-90"
+                  producer.is_placeholder && !isHomepage && "opacity-90"
                 )}
                 onClick={() => handleSelect(producer)}
                 onMouseEnter={() => setSelectedIndex(index)}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  {producer.is_placeholder ? (
-                    <Ghost className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  ) : (
-                    <User className="h-4 w-4 text-primary flex-shrink-0" />
+                  {!isHomepage && (
+                    producer.is_placeholder ? (
+                      <Ghost className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    ) : (
+                      <User className="h-4 w-4 text-primary flex-shrink-0" />
+                    )
                   )}
                   <span className="truncate font-medium">{producer.producer_name}</span>
                   {producer.company_name && (
@@ -325,36 +446,37 @@ export function ProducerSearchAutocomplete({
                     </span>
                   )}
                 </div>
-                
-                {/* Verification Status Badges */}
-                {producer.has_claimed_account && producer.stripe_verification_status === 'verified' && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500/50 text-green-500 gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Verified Owner
-                  </Badge>
-                )}
-                {producer.stripe_verification_status === 'pending' && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500/50 text-orange-500 gap-1">
-                    <Clock className="h-3 w-3" />
-                    Verifying
-                  </Badge>
-                )}
-                {producer.stripe_verification_status === 'pending_admin' && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-yellow-500/50 text-yellow-500 gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    Pending Review
-                  </Badge>
-                )}
-                {(producer.is_placeholder || (!producer.has_claimed_account && (!producer.stripe_verification_status || producer.stripe_verification_status === 'unverified'))) && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-muted-foreground/30 text-muted-foreground">
-                    Unclaimed
-                  </Badge>
+                {!isHomepage && (
+                  <>
+                    {producer.has_claimed_account && producer.stripe_verification_status === 'verified' && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500/50 text-green-500 gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Verified Owner
+                      </Badge>
+                    )}
+                    {producer.stripe_verification_status === 'pending' && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500/50 text-orange-500 gap-1">
+                        <Clock className="h-3 w-3" />
+                        Verifying
+                      </Badge>
+                    )}
+                    {producer.stripe_verification_status === 'pending_admin' && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-yellow-500/50 text-yellow-500 gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Pending Review
+                      </Badge>
+                    )}
+                    {(producer.is_placeholder || (!producer.has_claimed_account && (!producer.stripe_verification_status || producer.stripe_verification_status === 'unverified'))) && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-muted-foreground/30 text-muted-foreground">
+                        Unclaimed
+                      </Badge>
+                    )}
+                  </>
                 )}
               </li>
             ))}
           </ul>
-          
-          {results.some(r => r.is_placeholder) && (
+          {!isHomepage && results.some(r => r.is_placeholder) && (
             <div className="px-4 py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
               <Ghost className="h-3 w-3 inline mr-1" />
               Unclaimed profiles require subscription to view
