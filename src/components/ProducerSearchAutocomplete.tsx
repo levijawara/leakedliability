@@ -146,9 +146,7 @@ export function ProducerSearchAutocomplete({
           const ids = data.map((r: ProducerSearchResult) => r.producer_id).filter((id: string) => !id.startsWith('ref-'));
           if (ids.length > 0) {
             const { data: debtData } = await supabase
-              .from("public_leaderboard")
-              .select("producer_id, total_amount_owed")
-              .in("producer_id", ids);
+              .rpc("get_leaderboard_debt_check", { p_producer_ids: ids });
             const activeSet = new Set<string>();
             const knownSet = new Set<string>();
             for (const p of debtData || []) {
@@ -219,8 +217,8 @@ export function ProducerSearchAutocomplete({
     setLoading(true);
     setSearchError(null);
     try {
-      // Three parallel queries: reference list, producer search view, active-debt sub_name
-      const [refResult, viewResult, debtResult] = await Promise.all([
+      // Two parallel queries: reference list + producer search view
+      const [refResult, viewResult] = await Promise.all([
         supabase
           .from("production_companies")
           .select("name")
@@ -231,12 +229,6 @@ export function ProducerSearchAutocomplete({
           .select("*")
           .ilike("company_name", `%${term}%`)
           .order("producer_name")
-          .limit(10),
-        supabase
-          .from("public_leaderboard")
-          .select("producer_id, producer_name, company_name, sub_name, total_amount_owed")
-          .ilike("sub_name", `%${term}%`)
-          .gt("total_amount_owed", 0)
           .limit(10),
       ]);
 
@@ -251,23 +243,6 @@ export function ProducerSearchAutocomplete({
       for (const r of viewResult.data || []) {
         merged.set(r.producer_id, r);
         knownSet.add(r.producer_id);
-      }
-
-      // Add active-debt producers matched by sub_name
-      for (const r of debtResult.data || []) {
-        activeSet.add(r.producer_id);
-        knownSet.add(r.producer_id);
-        if (!merged.has(r.producer_id)) {
-          merged.set(r.producer_id, {
-            producer_id: r.producer_id,
-            producer_name: r.producer_name,
-            company_name: r.sub_name || r.company_name || null,
-            is_placeholder: false,
-            has_claimed_account: false,
-            stripe_verification_status: null,
-            claimed_by_user_id: null,
-          });
-        }
       }
 
       // Add reference-only companies (no producer match) as informational entries
@@ -293,9 +268,7 @@ export function ProducerSearchAutocomplete({
         const viewIds = (viewResult.data || []).map((r: ProducerSearchResult) => r.producer_id);
         if (viewIds.length > 0) {
           const { data: debtData } = await supabase
-            .from("public_leaderboard")
-            .select("producer_id, total_amount_owed")
-            .in("producer_id", viewIds);
+            .rpc("get_leaderboard_debt_check", { p_producer_ids: viewIds });
           for (const p of debtData || []) {
             if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.producer_id);
           }

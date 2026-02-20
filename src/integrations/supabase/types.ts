@@ -3370,6 +3370,34 @@ export type Database = {
           visitor_count: number
         }[]
       }
+      get_leaderboard_data: {
+        Args: { p_delinquent_only?: boolean }
+        Returns: {
+          company_name: string
+          last_closed_date: string
+          momentum_active_until: string
+          oldest_debt_date: string
+          oldest_debt_days: number
+          paid_crew_count: number
+          paid_jobs_count: number
+          producer_id: string
+          producer_name: string
+          pscs_score: number
+          sub_name: string
+          total_amount_owed: number
+          total_cities_owed: number
+          total_crew_owed: number
+          total_jobs_owed: number
+          total_vendors_owed: number
+        }[]
+      }
+      get_leaderboard_debt_check: {
+        Args: { p_producer_ids: string[] }
+        Returns: {
+          producer_id: string
+          total_amount_owed: number
+        }[]
+      }
       get_top_searches: {
         Args: never
         Returns: {
