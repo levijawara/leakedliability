@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Ghost, User, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
 const isHomepageSource = (s?: string) => s === "homepage";
 
@@ -36,6 +38,7 @@ export function ProducerSearchAutocomplete({
 }: ProducerSearchAutocompleteProps) {
   const navigate = useNavigate();
   const isHomepage = isHomepageSource(source);
+  const { accessState } = useLeaderboardAccess(isHomepage);
   const [searchTerm, setSearchTerm] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -45,6 +48,10 @@ export function ProducerSearchAutocomplete({
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [activeDebtIds, setActiveDebtIds] = useState<Set<string>>(new Set());
+  const [knownProducerIds, setKnownProducerIds] = useState<Set<string>>(new Set());
+  const [showActiveDebtModal, setShowActiveDebtModal] = useState(false);
+  const [selectedDebtProducer, setSelectedDebtProducer] = useState<ProducerSearchResult | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -133,6 +140,25 @@ export function ProducerSearchAutocomplete({
         setResults(data || []);
         setIsOpen(true);
         setSelectedIndex(-1);
+
+        // Enrich with debt status on homepage
+        if (isHomepage && data && data.length > 0) {
+          const ids = data.map((r: ProducerSearchResult) => r.producer_id).filter((id: string) => !id.startsWith('ref-'));
+          if (ids.length > 0) {
+            const { data: debtData } = await supabase
+              .from("producers")
+              .select("id, total_amount_owed")
+              .in("id", ids);
+            const activeSet = new Set<string>();
+            const knownSet = new Set<string>();
+            for (const p of debtData || []) {
+              knownSet.add(p.id);
+              if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.id);
+            }
+            setActiveDebtIds(activeSet);
+            setKnownProducerIds(knownSet);
+          }
+        }
       }
 
       if (shouldLog && !isAdmin && trimmed) {
@@ -217,13 +243,20 @@ export function ProducerSearchAutocomplete({
       // Build merged results: start with producer search view matches
       const merged = new Map<string, ProducerSearchResult>();
 
+      // Build debt tracking sets for homepage
+      const activeSet = new Set<string>();
+      const knownSet = new Set<string>();
+
       // Add view results (already in the right shape)
       for (const r of viewResult.data || []) {
         merged.set(r.producer_id, r);
+        knownSet.add(r.producer_id);
       }
 
       // Add active-debt producers matched by sub_name
       for (const r of debtResult.data || []) {
+        activeSet.add(r.id);
+        knownSet.add(r.id);
         if (!merged.has(r.id)) {
           merged.set(r.id, {
             producer_id: r.id,
@@ -253,6 +286,22 @@ export function ProducerSearchAutocomplete({
             claimed_by_user_id: null,
           });
         }
+      }
+
+      // Enrich view results with debt data for homepage
+      if (isHomepage) {
+        const viewIds = (viewResult.data || []).map((r: ProducerSearchResult) => r.producer_id);
+        if (viewIds.length > 0) {
+          const { data: debtData } = await supabase
+            .from("producers")
+            .select("id, total_amount_owed")
+            .in("id", viewIds);
+          for (const p of debtData || []) {
+            if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.id);
+          }
+        }
+        setActiveDebtIds(activeSet);
+        setKnownProducerIds(knownSet);
       }
 
       setResults(Array.from(merged.values()).slice(0, 15));
@@ -365,6 +414,19 @@ export function ProducerSearchAutocomplete({
       } catch {
         // Fail silently
       }
+    }
+
+    // Homepage: handle active debt modal logic
+    if (isHomepage && activeDebtIds.has(producer.producer_id)) {
+      if (accessState?.hasAccess) {
+        navigate(`/leaderboard?search=${encodeURIComponent(producer.producer_name)}`);
+      } else {
+        setSelectedDebtProducer(producer);
+        setShowActiveDebtModal(true);
+      }
+      setSearchTerm(producer.producer_name);
+      setIsOpen(false);
+      return;
     }
 
     // If already claimed/verified by someone else, just navigate to leaderboard
@@ -545,6 +607,26 @@ export function ProducerSearchAutocomplete({
                     </span>
                   )}
                 </div>
+                {/* Homepage debt-status disclaimers */}
+                {isHomepage && (
+                  <>
+                    {activeDebtIds.has(producer.producer_id) && (
+                      <span className="text-xs font-semibold text-destructive flex-shrink-0">
+                        Active Debt ⚠️
+                      </span>
+                    )}
+                    {!activeDebtIds.has(producer.producer_id) && knownProducerIds.has(producer.producer_id) && (
+                      <span className="text-xs text-green-500 flex-shrink-0">
+                        No active debts found. ✅
+                      </span>
+                    )}
+                    {!activeDebtIds.has(producer.producer_id) && !knownProducerIds.has(producer.producer_id) && (
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        (unknown / never reported)
+                      </span>
+                    )}
+                  </>
+                )}
                 {!isHomepage && (
                   <>
                     {producer.has_claimed_account && producer.stripe_verification_status === 'verified' && (
@@ -618,6 +700,36 @@ export function ProducerSearchAutocomplete({
           No producers found matching "{searchTerm}"
         </div>
       )}
+
+      {/* Active Debt Modal */}
+      <Dialog open={showActiveDebtModal} onOpenChange={setShowActiveDebtModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Identity Found on Leaderboard</DialogTitle>
+            <DialogDescription className="pt-2 text-sm leading-relaxed">
+              The identity you've just searched has been previously reported, and has an{" "}
+              <span className="font-bold text-destructive">ACTIVE DEBT</span>{" "}
+              on the leaderboard. Subscribe to gain viewing access.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowActiveDebtModal(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setShowActiveDebtModal(false);
+                navigate('/subscribe');
+              }}
+            >
+              Subscribe
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
