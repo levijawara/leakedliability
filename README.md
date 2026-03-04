@@ -1,73 +1,128 @@
-# Welcome to your Lovable project
+# Leaked Liability
 
-## Project info
+Leaked Liability is a production-industry accountability platform for tracking unpaid or late payments, improving transparency, and helping crews, vendors, and producers resolve payment disputes faster.
 
-**URL**: https://lovable.dev/projects/a050ad99-5356-4821-971b-6b46b3f0ffd4
+## Problem -> Solution
 
-## How can I edit this code?
+### Problem
+Freelancers and vendors in production often have fragmented, private, and inconsistent visibility into payment behavior across producers and companies.
 
-There are several ways of editing your application.
+### Solution
+Leaked Liability provides a structured, user-driven system for:
 
-**Use Lovable**
+- Reporting payment timelines and outcomes
+- Surfacing accountability data in a public leaderboard
+- Enabling secure escrow-assisted resolution flows
+- Giving admins tooling to moderate, verify, and manage risk
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/a050ad99-5356-4821-971b-6b46b3f0ffd4) and start prompting.
+## Tech stack
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Frontend:** React 18, TypeScript, Vite, React Router
+- **UI:** Tailwind CSS, shadcn/ui, Radix UI
+- **Data/auth:** Supabase (Postgres, Auth, Realtime, Storage)
+- **Payments:** Stripe
+- **Testing:** Vitest
+- **Tooling:** ESLint, tsx scripts
 
-**Use your preferred IDE**
+## Key features
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+- Public leaderboard and transparency views
+- Report submission and confirmation flows
+- Liability claim and liability arena workflows
+- Escrow initiation, payment, and redemption
+- Producer dashboard and profile/account flows
+- Admin dashboards (report editing, producer merge, analytics, network graph)
+- Call sheet manager and reservoir workflows (beta-gated)
+- Security and reliability validation helpers for env, storage, and RLS assumptions
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Architecture (high level)
 
-Follow these steps:
+```mermaid
+flowchart TD
+    U[User Browser] --> FE[React + Vite Frontend]
+    FE --> SA[Supabase Auth]
+    FE --> DB[Supabase Postgres]
+    FE --> RT[Supabase Realtime]
+    FE --> ST[Supabase Storage]
+    FE --> EF[Supabase Edge Functions]
+    EF --> STRIPE[Stripe]
+    EF --> EXT[Email/Analytics Integrations]
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Repository layout
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+```text
+src/
+  components/     Reusable UI and feature components
+  pages/          Route-level pages and flows
+  lib/            App utilities and domain helpers
+  config/         Runtime/env configuration and validation
+  integrations/   External clients (including Supabase client wiring)
+supabase/
+  migrations/     Database migrations
+  functions/      Edge Functions for backend workflows
+tests/
+  integration/    Integration tests (checkout and escrow paths)
+docs/             Security and launch diagnostics
+```
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Quickstart
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### 1) Install dependencies
+
+```bash
+npm install
+```
+
+### 2) Configure environment variables
+
+Create a `.env.local` file:
+
+```bash
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+VITE_STRIPE_PUBLISHABLE_KEY=... # required for payment flows
+```
+
+### 3) Run development server
+
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### 4) Run quality checks
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+npm run lint
+npm run test:integration
+```
 
-**Use GitHub Codespaces**
+### 5) Build for production
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+npm run build
+```
 
-## What technologies are used for this project?
+## What I built
 
-This project is built with:
+- Designed and implemented the frontend architecture for multi-flow user journeys (public reporting, claims, escrow, admin)
+- Built resilient client-side guards around environment configuration, Supabase connectivity, and role-based access
+- Integrated payment workflows with Stripe-backed escrow paths
+- Implemented operational tooling for call sheet workflows, analytics surfaces, and admin moderation actions
+- Shipped the product with security-focused checklists and diagnostics documentation
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Screenshots
 
-## How can I deploy this project?
+Add screenshots in `docs/screenshots/` and reference them here:
 
-Simply open [Lovable](https://lovable.dev/projects/a050ad99-5356-4821-971b-6b46b3f0ffd4) and click on Share -> Publish.
+- `docs/screenshots/leaderboard.png`
+- `docs/screenshots/submit-report.png`
+- `docs/screenshots/admin-dashboard.png`
 
-## Can I connect a custom domain to my Lovable project?
+## Notes
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+- This platform hosts user-submitted production payment data and includes legal/privacy/disclaimer pages in-app.
+- For operational and security context, see:
+  - `docs/SECURITY_SCORECARD_AND_LAUNCH_CHECKLIST.md`
+  - `SECURITY_FIXES_COMPLETED.md`
+  - `PRODUCTION_DIAGNOSTICS_REPORT.md`
