@@ -1,5 +1,11 @@
 # Leaked Liability
 
+[![Integration Tests](https://github.com/levijawara/leakedliability/actions/workflows/integration-tests.yml/badge.svg?branch=main)](https://github.com/levijawara/leakedliability/actions/workflows/integration-tests.yml)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Platform-3ECF8E?logo=supabase&logoColor=white)
+![Stripe](https://img.shields.io/badge/Stripe-Escrow-635BFF?logo=stripe&logoColor=white)
+
 Leaked Liability is a production-industry accountability platform for tracking unpaid or late payments, improving transparency, and helping crews, vendors, and producers resolve payment disputes faster.
 
 ## Problem -> Solution
@@ -111,6 +117,14 @@ npm run build
 - Implemented operational tooling for call sheet workflows, analytics surfaces, and admin moderation actions
 - Shipped the product with security-focused checklists and diagnostics documentation
 
+## Frontend engineering highlights
+
+- **Flow orchestration:** Implemented route-level UX for public, authenticated, admin, escrow, and beta-gated paths without fragmenting the core app shell.
+- **Reliability-by-default:** Added startup env/config checks and backend assumption validation to catch misconfiguration early.
+- **Operational UX:** Built admin and observability-oriented surfaces (analytics, network graph, diagnostics links) to support day-2 operations.
+- **Guarded access patterns:** Enforced auth/admin/beta access requirements through reusable route wrappers and context providers.
+- **Maintainable structure:** Kept `pages`, `components`, `lib`, and `config` concerns clearly separated for iterative product velocity.
+
 ## Screenshots
 
 Add screenshots in `docs/screenshots/` and reference them here:
@@ -118,6 +132,13 @@ Add screenshots in `docs/screenshots/` and reference them here:
 - `docs/screenshots/leaderboard.png`
 - `docs/screenshots/submit-report.png`
 - `docs/screenshots/admin-dashboard.png`
+- `docs/screenshots/escrow-flow.png`
+
+Screenshot capture guidance: `docs/screenshots/README.md`
+
+## Architecture decisions
+
+- High-level decision log: `docs/ARCHITECTURE_DECISIONS.md`
 
 ## Notes
 
