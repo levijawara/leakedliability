@@ -2269,6 +2269,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                {renderDetailPanel('vendor_report')}
               </TabsContent>
 
               {/* Producer Reports Tab */}
