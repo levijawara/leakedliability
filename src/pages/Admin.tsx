@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Papa from 'papaparse';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigation } from "@/components/Navigation";
@@ -6,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, Shield, Upload, Youtube, RefreshCw } from "lucide-react";
+import { Loader2, Power, PowerOff, Eye, Search, CalendarIcon, Bell, Map, ChevronDown, Image, GitMerge, Edit, Unlock, Link, MessageSquare, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,11 +44,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Footer } from "@/components/Footer";
-import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
-import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
-import { BetaAccessPanel } from "@/components/admin/BetaAccessPanel";
+
 import { BroadcastEmailSender } from "@/components/admin/BroadcastEmailSender";
 import { DatabaseExportPanel } from "@/components/admin/DatabaseExportPanel";
+import { ProducerNotificationSelector } from "@/components/admin/ProducerNotificationSelector";
+import { ManualEmailSender } from "@/components/admin/ManualEmailSender";
+import { ProjectTimelineJsonUploader } from "@/components/admin/ProjectTimelineJsonUploader";
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -93,6 +95,7 @@ export default function Admin() {
   const [reportFilter, setReportFilter] = useState<'all' | 'proxy' | 'user'>('all');
   const [notificationPanelExpanded, setNotificationPanelExpanded] = useState(false);
   const [backfillLoading, setBackfillLoading] = useState(false);
+  
   const [verifyingSubmissionId, setVerifyingSubmissionId] = useState<string | null>(null);
   const [createUserForm, setCreateUserForm] = useState({
     email: '',
@@ -110,19 +113,6 @@ export default function Admin() {
     new_producer_email: ''
   });
   const [producers, setProducers] = useState<any[]>([]);
-  const [identityClaims, setIdentityClaims] = useState<any[]>([]);
-  const [processingClaimId, setProcessingClaimId] = useState<string | null>(null);
-  const [callSheetRateLimitEnabled, setCallSheetRateLimitEnabled] = useState(false);
-  const [callSheetRateLimitPerHour, setCallSheetRateLimitPerHour] = useState(20);
-  const [callSheetConfigId, setCallSheetConfigId] = useState<string | null>(null);
-  const [processingQueue, setProcessingQueue] = useState(false);
-  const [queuedCallSheetsCount, setQueuedCallSheetsCount] = useState(0);
-  const [syncingYouTube, setSyncingYouTube] = useState(false);
-  
-  // IG Master List state
-  const [igMasterImporting, setIgMasterImporting] = useState(false);
-  const [igMasterStats, setIgMasterStats] = useState<{ total: number } | null>(null);
-  const [igMasterFile, setIgMasterFile] = useState<File | null>(null);
 
   useEffect(() => {
     checkAdminAccess();
@@ -246,24 +236,6 @@ export default function Admin() {
         setLeaderboardConfigId(leaderboardConfig.id);
       }
 
-      // Load call sheet config for rate limiting
-      const { data: callSheetConfig } = await supabase
-        .from("call_sheet_config")
-        .select("*")
-        .single();
-      
-      if (callSheetConfig) {
-        setCallSheetRateLimitEnabled(callSheetConfig.rate_limit_enabled ?? false);
-        setCallSheetRateLimitPerHour(callSheetConfig.rate_limit_per_hour ?? 20);
-        setCallSheetConfigId(callSheetConfig.id);
-      }
-
-      // Load queued call sheets count
-      const { count: queuedCount } = await supabase
-        .from("global_call_sheets")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "queued");
-      setQueuedCallSheetsCount(queuedCount || 0);
 
       // Load queued notifications count
       const { data: queued } = await supabase
@@ -413,17 +385,10 @@ export default function Admin() {
     // Load all producers for the create user form dropdown
     const { data: producersList } = await supabase
       .from('producers')
-      .select('id, name, company, email')
+      .select('id, name, company, email, total_amount_owed, oldest_debt_days')
       .order('name', { ascending: true });
     setProducers(producersList || []);
 
-    // Load identity claims pending admin review
-    const { data: claims } = await supabase
-      .from('producers')
-      .select('id, name, company, email, stripe_verification_status, claimed_by_user_id, stripe_verification_session_id')
-      .eq('stripe_verification_status', 'pending_admin')
-      .order('updated_at', { ascending: false });
-    setIdentityClaims(claims || []);
 
     // Load leading users for each submission type
     await loadLeadingUsers();
@@ -519,6 +484,7 @@ export default function Admin() {
     }
   };
 
+
   const loadAllUsers = async () => {
     const { data: profiles } = await supabase
       .from('profiles')
@@ -612,9 +578,16 @@ export default function Admin() {
       // Create payment report for crew reports
       if (submission?.submission_type === 'crew_report') {
         const formData = submission.form_data;
-        const producerName = formData.producer_name?.company || 
-          `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-          'Unknown Producer';
+        const producerName = (
+          // Format 1: flat fields from CrewReportForm (current)
+          (typeof formData.producer_name === 'string' && formData.producer_name)
+            ? (formData.producer_company && formData.reporting_type === 'production_company'
+                ? formData.producer_company
+                : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+            // Format 2: nested object (legacy/defensive)
+            : formData.producer_name?.company || 
+              `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+        ) || 'Unknown Producer';
         
         // Check if payment report already exists for this submission
         const { data: existingReport } = await supabase
@@ -781,9 +754,16 @@ export default function Admin() {
     // Create payment report for vendor reports  
     if (submission?.submission_type === 'vendor_report') {
       const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
+      const producerName = (
+        // Format 1: flat fields from CrewReportForm (current)
+        (typeof formData.producer_name === 'string' && formData.producer_name)
+          ? (formData.producer_company && formData.reporting_type === 'production_company'
+              ? formData.producer_company
+              : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+          // Format 2: nested object (legacy/defensive)
+          : formData.producer_name?.company || 
+            `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+      ) || 'Unknown Producer';
       
       // Find or create the producer
       let { data: existingProducer } = await supabase
@@ -966,9 +946,16 @@ export default function Admin() {
     // Send rejection email if it's a crew report
     if (submission?.submission_type === 'crew_report') {
       const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
+      const producerName = (
+        // Format 1: flat fields from CrewReportForm (current)
+        (typeof formData.producer_name === 'string' && formData.producer_name)
+          ? (formData.producer_company && formData.reporting_type === 'production_company'
+              ? formData.producer_company
+              : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+          // Format 2: nested object (legacy/defensive)
+          : formData.producer_name?.company || 
+            `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+      ) || 'Unknown Producer';
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
@@ -997,9 +984,16 @@ export default function Admin() {
     // Send rejection email if it's a vendor report
     if (submission?.submission_type === 'vendor_report') {
       const formData = submission.form_data;
-      const producerName = formData.producer_name?.company || 
-        `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim() ||
-        'Unknown Producer';
+      const producerName = (
+        // Format 1: flat fields from CrewReportForm (current)
+        (typeof formData.producer_name === 'string' && formData.producer_name)
+          ? (formData.producer_company && formData.reporting_type === 'production_company'
+              ? formData.producer_company
+              : `${formData.producer_name} ${formData.producer_last_name || ''}`.trim())
+          // Format 2: nested object (legacy/defensive)
+          : formData.producer_name?.company || 
+            `${formData.producer_name?.firstName || ''} ${formData.producer_name?.lastName || ''}`.trim()
+      ) || 'Unknown Producer';
 
       const { error: emailError } = await supabase.functions.invoke('send-email', {
         body: {
@@ -1088,6 +1082,152 @@ export default function Admin() {
     } finally {
       setLoadingUrls(false);
     }
+  };
+
+  const renderDetailPanel = (submissionType: string) => {
+    if (!selectedItem || selectedItem.submission_type !== submissionType) return null;
+    return (
+      <Card className="p-6 mt-4">
+        <h3 className="text-lg font-bold mb-4">Review Submission</h3>
+        <div className="space-y-4">
+          <div>
+            <p><strong>Name:</strong> {selectedItem.full_name}</p>
+            <p><strong>Email:</strong> {selectedItem.email}</p>
+            <p><strong>Type:</strong> {selectedItem.submission_type}</p>
+            {selectedItem.role_department && (
+              <p><strong>Role/Vendor Type:</strong> {selectedItem.role_department}</p>
+            )}
+          </div>
+          
+          {selectedItem.submission_type === 'vendor_report' && selectedItem.form_data && (
+            <div className="space-y-3 border-l-4 border-primary/30 pl-4">
+              <h4 className="font-semibold text-sm uppercase text-muted-foreground">Vendor Information</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-muted-foreground">Company</p>
+                  <p className="font-medium">{selectedItem.form_data.vendor_company}</p>
+                </div>
+                {selectedItem.form_data.vendor_dba && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">DBA</p>
+                    <p className="font-medium">{selectedItem.form_data.vendor_dba}</p>
+                  </div>
+                )}
+                <div>
+                  <p className="text-xs text-muted-foreground">Vendor Type</p>
+                  <p className="font-medium">{selectedItem.form_data.vendor_type === 'Other' ? selectedItem.form_data.vendor_type_other : selectedItem.form_data.vendor_type}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Contact</p>
+                  <p className="font-medium">{selectedItem.form_data.contact_name}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Invoice #</p>
+                  <p className="font-mono text-sm">{selectedItem.form_data.invoice_number}</p>
+                </div>
+                {selectedItem.form_data.purchase_order_number && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">PO #</p>
+                    <p className="font-mono text-sm">{selectedItem.form_data.purchase_order_number}</p>
+                  </div>
+                )}
+                {selectedItem.form_data.net_terms && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Net Terms</p>
+                    <p className="font-medium">{selectedItem.form_data.net_terms}</p>
+                  </div>
+                )}
+                {selectedItem.form_data.booking_method && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Booking Method</p>
+                    <p className="font-medium">{selectedItem.form_data.booking_method}</p>
+                  </div>
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">Service Description</p>
+                <p className="text-sm mt-1">{selectedItem.form_data.service_description}</p>
+              </div>
+            </div>
+          )}
+          
+          <div>
+            <strong>Form Data:</strong>
+            <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto max-h-96">
+              {JSON.stringify(selectedItem.form_data, null, 2)}
+            </pre>
+          </div>
+
+          {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <strong>Documents:</strong>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => downloadAllAsZip(selectedItem.document_urls, selectedItem.id, 'submission')}
+                >
+                  Download All as ZIP
+                </Button>
+              </div>
+              {loadingUrls ? (
+                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading documents...</span>
+                </div>
+              ) : (
+                <ul className="mt-2 space-y-1">
+                  {documentSignedUrls.map((url: string, idx: number) => (
+                    <li key={idx}>
+                      <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                        Document {idx + 1}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="text-sm font-medium">
+              Admin Notes
+              <span className="text-xs text-muted-foreground ml-2">
+                ({adminNotes.length.toLocaleString()} characters)
+              </span>
+            </label>
+            <Textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="Add notes about this submission..."
+              className="mt-2"
+              rows={6}
+            />
+          </div>
+
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => handleVerifySubmission(selectedItem.id)}
+              disabled={!!verifyingSubmissionId}
+            >
+              {verifyingSubmissionId === selectedItem.id ? "Verifying..." : "Verify & Approve"}
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={() => handleRejectSubmission(selectedItem.id)}
+            >
+              Reject
+            </Button>
+            <Button variant="outline" onClick={() => {
+              setSelectedItem(null);
+              setAdminNotes("");
+            }}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
   };
 
   const downloadAllAsZip = async (documentPaths: string[], itemId: string, itemType: string) => {
@@ -1210,132 +1350,6 @@ export default function Admin() {
     });
   };
 
-  const toggleCallSheetRateLimit = async () => {
-    if (!callSheetConfigId) return;
-
-    const newEnabled = !callSheetRateLimitEnabled;
-    const { error } = await supabase
-      .from("call_sheet_config")
-      .update({ rate_limit_enabled: newEnabled })
-      .eq("id", callSheetConfigId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: mapDatabaseError(error),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCallSheetRateLimitEnabled(newEnabled);
-
-    await supabase.functions.invoke('log-event', {
-      body: {
-        event_type: 'call_sheet_rate_limit_toggled',
-        payload: { enabled: newEnabled, limit: callSheetRateLimitPerHour }
-      }
-    });
-
-    toast({
-      title: newEnabled ? "Rate Limiting Enabled" : "Rate Limiting Disabled",
-      description: newEnabled 
-        ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
-        : "No upload limits (seeding mode)",
-    });
-  };
-
-  const updateCallSheetRateLimit = async (newLimit: number) => {
-    if (!callSheetConfigId || newLimit < 1) return;
-
-    const { error } = await supabase
-      .from("call_sheet_config")
-      .update({ rate_limit_per_hour: newLimit })
-      .eq("id", callSheetConfigId);
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: mapDatabaseError(error),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setCallSheetRateLimitPerHour(newLimit);
-    toast({
-      title: "Rate Limit Updated",
-      description: `Users now limited to ${newLimit} uploads/hour`,
-    });
-  };
-
-  const triggerQueueProcessor = async () => {
-    setProcessingQueue(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("queue-processor", {
-        body: { triggered_by: "admin" },
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Queue Processor Triggered",
-        description: `Processing ${data?.processed || 0} call sheets. ${data?.remaining || 0} remaining.`,
-      });
-
-      // Refresh the queued count
-      const { count } = await supabase
-        .from("global_call_sheets")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "queued");
-      setQueuedCallSheetsCount(count || 0);
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to trigger queue processor",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingQueue(false);
-    }
-  };
-
-  const triggerYouTubeSync = async () => {
-    setSyncingYouTube(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sync-youtube-views`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ syncAll: true, staleOnly: false }),
-        }
-      );
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "YouTube Sync Complete",
-          description: `Synced ${result.videosUpserted || 0} videos, linked ${result.sheetsLinked || 0} call sheets`,
-        });
-      } else {
-        throw new Error(result.error || "Sync failed");
-      }
-    } catch (error: any) {
-      toast({
-        title: "Sync Failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSyncingYouTube(false);
-    }
-  };
 
   const handleGenerateEscrowLink = async (reportId: string) => {
     setGeneratingEscrowLink(reportId);
@@ -1554,66 +1568,6 @@ export default function Admin() {
     }
   };
 
-  const handleApproveIdentityClaim = async (producerId: string) => {
-    setProcessingClaimId(producerId);
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-approve-claim', {
-        body: { producer_id: producerId, approved: true }
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: "✅ Identity Claim Approved",
-        description: "Producer profile has been verified and claimed.",
-      });
-      await loadAdminData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve claim",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingClaimId(null);
-    }
-  };
-
-  const handleRejectIdentityClaim = async (producerId: string, reason: string) => {
-    if (!reason.trim()) {
-      toast({
-        title: "Reason Required",
-        description: "Please provide a reason for rejection",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setProcessingClaimId(producerId);
-    try {
-      const { data, error } = await supabase.functions.invoke('admin-approve-claim', {
-        body: { producer_id: producerId, approved: false, rejection_reason: reason }
-      });
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast({
-        title: "Identity Claim Rejected",
-        description: "The claim has been rejected and the user notified.",
-      });
-      await loadAdminData();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reject claim",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingClaimId(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -1800,98 +1754,18 @@ export default function Admin() {
               />
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="space-y-1">
-                <Label htmlFor="rate-limit" className="text-lg font-semibold flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-muted-foreground" />
-                  Call Sheet Upload Rate Limiting
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {callSheetRateLimitEnabled 
-                    ? `Users limited to ${callSheetRateLimitPerHour} uploads/hour (admins bypass)` 
-                    : "No upload limits — seeding mode active"}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                {callSheetRateLimitEnabled && (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={callSheetRateLimitPerHour}
-                      onChange={(e) => setCallSheetRateLimitPerHour(parseInt(e.target.value) || 20)}
-                      onBlur={(e) => updateCallSheetRateLimit(parseInt(e.target.value) || 20)}
-                      className="w-20 h-8 text-center"
-                    />
-                    <span className="text-sm text-muted-foreground">/hr</span>
-                  </div>
-                )}
-                <Switch
-                  id="rate-limit"
-                  checked={callSheetRateLimitEnabled}
-                  onCheckedChange={toggleCallSheetRateLimit}
-                  variant="status"
-                />
-              </div>
+            <Button
+              onClick={() => navigate("/admin/call-sheet-reservoir")}
+              size="lg"
+              className="w-full mt-4 py-6 text-lg font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-amber-50 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              <BookOpen className="h-6 w-6 mr-2" />
+              ALEXANDRIA
+            </Button>
+            <div className="mt-3">
+              <ProjectTimelineJsonUploader variant="default" />
             </div>
 
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="space-y-1">
-                <Label className="text-lg font-semibold flex items-center gap-2">
-                  <Youtube className="h-5 w-5 text-destructive" />
-                  YouTube Data Sync
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Refresh view counts and metadata for all linked videos
-                </p>
-              </div>
-              <Button
-                onClick={triggerYouTubeSync}
-                disabled={syncingYouTube}
-                variant="outline"
-              >
-                {syncingYouTube ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Syncing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Sync Now
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="flex items-center justify-between pt-4 border-t">
-              <div className="space-y-1">
-                <Label className="text-lg font-semibold flex items-center gap-2">
-                  <Loader2 className={`h-5 w-5 text-muted-foreground ${processingQueue ? 'animate-spin' : ''}`} />
-                  Call Sheet Parse Queue
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  {queuedCallSheetsCount > 0 
-                    ? `${queuedCallSheetsCount} call sheets waiting to be parsed` 
-                    : "No call sheets in queue"}
-                </p>
-              </div>
-              <Button
-                onClick={triggerQueueProcessor}
-                disabled={processingQueue || queuedCallSheetsCount === 0}
-                variant={queuedCallSheetsCount > 0 ? "default" : "outline"}
-              >
-                {processingQueue ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  `Process Queue${queuedCallSheetsCount > 0 ? ` (${queuedCallSheetsCount})` : ''}`
-                )}
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -1901,154 +1775,21 @@ export default function Admin() {
         </div>
       </Card>
 
-      {/* User Search */}
-      <Card className="p-6 shadow-sm hover:shadow-md transition-shadow">
-        <div className="space-y-4">
-          <div>
-            <h2 className="text-xl font-semibold mb-1 flex items-center gap-2">
-              <Search className="h-5 w-5" />
-              User Search
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Search by name or email to view submission statistics
-            </p>
-          </div>
-
-          {/* Account Statistics */}
-          <div className="grid grid-cols-4 gap-4 mb-4">
-            <Card className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Crew Member Accounts</div>
-              <div className="text-3xl font-bold">⚠️ {accountStats.crew}</div>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Vendor / Service Provider Accounts</div>
-              <div className="text-3xl font-bold">🛠️ {accountStats.vendor}</div>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Producer Accounts</div>
-              <div className="text-3xl font-bold">🏢 {accountStats.producer}</div>
-            </Card>
-            
-            <Card className="p-4">
-              <div className="text-sm text-muted-foreground mb-1">Production Company Accounts</div>
-              <div className="text-3xl font-bold">🎬 {accountStats.company}</div>
-            </Card>
-          </div>
-
-          {/* User Dropdown */}
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-full max-w-md justify-between"
-              >
-                {selectedUser 
-                  ? `${selectedUser.name} - ${selectedUser.email}`
-                  : "Select a user..."}
-                <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[500px] p-0" align="start">
-              <Command>
-                <CommandInput placeholder="Search by name or email..." />
-                <CommandEmpty>No user found.</CommandEmpty>
-                <CommandList>
-                  <CommandGroup>
-                    {allUsers.map((user) => (
-                      <CommandItem
-                        key={user.user_id}
-                        value={`${user.name} ${user.email}`}
-                        onSelect={() => {
-                          setSelectedUser(user);
-                          setOpen(false);
-                          handleUserSelect(user.user_id);
-                        }}
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium">{user.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {user.email} • {user.account_type}
-                            {user.business_name && ` • ${user.business_name}`}
-                          </span>
-                        </div>
-                      </CommandItem>
-                    ))}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-
-          {searchResults && (
-            <Card className="p-4 bg-muted/50">
-              {searchResults.notFound ? (
-                <p className="text-muted-foreground">No user found matching your search.</p>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <p className="font-semibold">{searchResults.name}</p>
-                    <p className="text-sm text-muted-foreground">{searchResults.email}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Crew Member Reports ⚠️</div>
-                      <div className="text-2xl font-bold">{searchResults.stats.crew_report}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Payment Documentations</div>
-                      <div className="text-2xl font-bold">{searchResults.stats.payment_documentation}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Payment Confirmations</div>
-                      <div className="text-2xl font-bold">{searchResults.stats.payment_confirmation}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Report Explanations</div>
-                      <div className="text-2xl font-bold">{searchResults.stats.report_explanation}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Counter-Disputes</div>
-                      <div className="text-2xl font-bold">{searchResults.stats.counter_dispute}</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-sm text-muted-foreground">Report Disputes</div>
-                      <div className="text-2xl font-bold">{searchResults.stats.report_dispute}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </Card>
-          )}
-        </div>
-      </Card>
-
       <Tabs value={currentTab} onValueChange={setCurrentTab} className="w-full">
         <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 gap-1 h-auto p-1">
           <TabsTrigger value="payments_due" className="text-xs sm:text-sm px-2 py-1.5">Payments Due</TabsTrigger>
           <TabsTrigger value="payments_paid" className="text-xs sm:text-sm px-2 py-1.5">Paid</TabsTrigger>
-          <TabsTrigger value="settings" className="text-xs sm:text-sm px-2 py-1.5">Settings</TabsTrigger>
           <TabsTrigger value="users" className="text-xs sm:text-sm px-2 py-1.5">Users</TabsTrigger>
-          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 py-1.5">Notifications</TabsTrigger>
           <TabsTrigger value="broadcast" className="text-xs sm:text-sm px-2 py-1.5">Broadcast</TabsTrigger>
           <TabsTrigger value="all_submissions" className="text-xs sm:text-sm px-2 py-1.5">All Submissions</TabsTrigger>
-          <TabsTrigger value="identity_claims" className="text-xs sm:text-sm px-2 py-1.5">
-            Identity Claims
-            {identityClaims.length > 0 && (
-              <Badge variant="destructive" className="ml-1">{identityClaims.length}</Badge>
-            )}
-          </TabsTrigger>
           <TabsTrigger value="suggestions" className="text-xs sm:text-sm px-2 py-1.5">
             Suggestions
             {suggestions.length > 0 && (
               <Badge variant="secondary" className="ml-1">{suggestions.length}</Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="ig_master" className="text-xs sm:text-sm px-2 py-1.5">
-            IG Master
+          <TabsTrigger value="reversal_other" className="text-xs sm:text-sm px-2 py-1.5">
+            Reversal Other
           </TabsTrigger>
         </TabsList>
 
@@ -2184,62 +1925,6 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        {/* Settings Tab */}
-        <TabsContent value="settings">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Site Settings</h2>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="maintenance-mode" className="text-base">Maintenance Mode</Label>
-                  <p className="text-sm text-muted-foreground">Toggle site-wide maintenance mode</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {maintenanceMode ? <PowerOff className="h-4 w-4" /> : <Power className="h-4 w-4" />}
-                  <Switch
-                    id="maintenance-mode"
-                    checked={maintenanceMode}
-                    onCheckedChange={toggleMaintenanceMode}
-                  />
-                </div>
-              </div>
-              
-              {maintenanceMode && (
-                <div className="space-y-2">
-                  <Label htmlFor="maintenance-message">Maintenance Message</Label>
-                  <Textarea
-                    id="maintenance-message"
-                    value={maintenanceMessage}
-                    onChange={(e) => setMaintenanceMessage(e.target.value)}
-                    onBlur={toggleMaintenanceMode}
-                    placeholder="Enter maintenance message..."
-                  />
-                </div>
-              )}
-              
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="free-access" className="text-base">Free Leaderboard Access</Label>
-                  <p className="text-sm text-muted-foreground">Enable free access to leaderboard</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Unlock className="h-4 w-4" />
-                  <Switch
-                    id="free-access"
-                    checked={freeAccessEnabled}
-                    onCheckedChange={toggleFreeAccess}
-                  />
-                </div>
-              </div>
-            </div>
-          </Card>
-          
-          {/* Beta Access Panel */}
-          <div className="mt-6">
-            <BetaAccessPanel />
-          </div>
-        </TabsContent>
-
         {/* Users Tab */}
         <TabsContent value="users">
           <Card className="p-6">
@@ -2320,21 +2005,6 @@ export default function Admin() {
                 </Card>
               )}
             </div>
-          </Card>
-        </TabsContent>
-
-        {/* Producer Notifications Tab */}
-        <TabsContent value="notifications">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">Producer Notifications</h2>
-            <p className="text-sm text-muted-foreground mb-4">Send email notifications to producers about outstanding payments</p>
-            <ProducerNotificationSelector 
-              queuedNotifications={queuedNotifications}
-              onEmailsSent={() => {
-                toast({ title: "Notification emails queued" });
-                loadAdminData();
-              }}
-            />
           </Card>
         </TabsContent>
 
@@ -2504,7 +2174,11 @@ export default function Admin() {
                               <Button variant="ghost" size="sm">Actions</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="z-50 bg-popover">
-                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                              <DropdownMenuItem onClick={async () => {
+                                setSelectedItem(submission);
+                                setAdminNotes(submission.admin_notes || "");
+                                await loadDocumentUrls(submission.document_urls || []);
+                              }}>
                                 View Details
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
@@ -2527,6 +2201,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                {renderDetailPanel('crew_report')}
               </TabsContent>
 
               {/* Vendor Reports Tab */}
@@ -2575,7 +2250,11 @@ export default function Admin() {
                               <Button variant="ghost" size="sm">Actions</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="z-50 bg-popover">
-                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                              <DropdownMenuItem onClick={async () => {
+                                setSelectedItem(submission);
+                                setAdminNotes(submission.admin_notes || "");
+                                await loadDocumentUrls(submission.document_urls || []);
+                              }}>
                                 View Details
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
@@ -2598,6 +2277,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                {renderDetailPanel('vendor_report')}
               </TabsContent>
 
               {/* Producer Reports Tab */}
@@ -2646,7 +2326,11 @@ export default function Admin() {
                               <Button variant="ghost" size="sm">Actions</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="z-50 bg-popover">
-                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                              <DropdownMenuItem onClick={async () => {
+                                setSelectedItem(submission);
+                                setAdminNotes(submission.admin_notes || "");
+                                await loadDocumentUrls(submission.document_urls || []);
+                              }}>
                                 View Details
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
@@ -2669,6 +2353,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                {renderDetailPanel('producer_report')}
               </TabsContent>
 
               {/* Disputes Tab */}
@@ -2878,7 +2563,8 @@ export default function Admin() {
           </Table>
         </TabsContent>
 
-          {['crew_report', 'vendor_report', 'payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
+          {/* Note: crew_report and vendor_report have explicit TabsContent above; map only handles types without dedicated tabs */}
+          {['payment_confirmation', 'counter_dispute', 'payment_documentation', 'report_explanation', 'report_dispute'].map((type) => {
           const filteredSubmissions = submissions.filter(s => s.submission_type === type);
           const leadingUser = leadingUsers[type];
           
@@ -3003,243 +2689,10 @@ export default function Admin() {
                 </TableBody>
               </Table>
 
-              {selectedItem && selectedItem.submission_type === type && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-bold mb-4">Review Submission</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <p><strong>Name:</strong> {selectedItem.full_name}</p>
-                      <p><strong>Email:</strong> {selectedItem.email}</p>
-                      <p><strong>Type:</strong> {selectedItem.submission_type}</p>
-                      {selectedItem.role_department && (
-                        <p><strong>Role/Vendor Type:</strong> {selectedItem.role_department}</p>
-                      )}
-                    </div>
-                    
-                    {/* Vendor-specific fields display */}
-                    {selectedItem.submission_type === 'vendor_report' && selectedItem.form_data && (
-                      <div className="space-y-3 border-l-4 border-primary/30 pl-4">
-                        <h4 className="font-semibold text-sm uppercase text-muted-foreground">Vendor Information</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-muted-foreground">Company</p>
-                            <p className="font-medium">{selectedItem.form_data.vendor_company}</p>
-                          </div>
-                          {selectedItem.form_data.vendor_dba && (
-                            <div>
-                              <p className="text-xs text-muted-foreground">DBA</p>
-                              <p className="font-medium">{selectedItem.form_data.vendor_dba}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs text-muted-foreground">Vendor Type</p>
-                            <p className="font-medium">{selectedItem.form_data.vendor_type === 'Other' ? selectedItem.form_data.vendor_type_other : selectedItem.form_data.vendor_type}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Contact</p>
-                            <p className="font-medium">{selectedItem.form_data.contact_name}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-muted-foreground">Invoice #</p>
-                            <p className="font-mono text-sm">{selectedItem.form_data.invoice_number}</p>
-                          </div>
-                          {selectedItem.form_data.purchase_order_number && (
-                            <div>
-                              <p className="text-xs text-muted-foreground">PO #</p>
-                              <p className="font-mono text-sm">{selectedItem.form_data.purchase_order_number}</p>
-                            </div>
-                          )}
-                          {selectedItem.form_data.net_terms && (
-                            <div>
-                              <p className="text-xs text-muted-foreground">Net Terms</p>
-                              <p className="font-medium">{selectedItem.form_data.net_terms}</p>
-                            </div>
-                          )}
-                          {selectedItem.form_data.booking_method && (
-                            <div>
-                              <p className="text-xs text-muted-foreground">Booking Method</p>
-                              <p className="font-medium">{selectedItem.form_data.booking_method}</p>
-                            </div>
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Service Description</p>
-                          <p className="text-sm mt-1">{selectedItem.form_data.service_description}</p>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div>
-                      <strong>Form Data:</strong>
-                      <pre className="mt-2 p-4 bg-muted rounded-md text-sm overflow-auto max-h-96">
-                        {JSON.stringify(selectedItem.form_data, null, 2)}
-                      </pre>
-                    </div>
-
-                    {selectedItem.document_urls && selectedItem.document_urls.length > 0 && (
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <strong>Documents:</strong>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => downloadAllAsZip(selectedItem.document_urls, selectedItem.id, 'submission')}
-                          >
-                            Download All as ZIP
-                          </Button>
-                        </div>
-                        {loadingUrls ? (
-                          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Loading documents...</span>
-                          </div>
-                        ) : (
-                          <ul className="mt-2 space-y-1">
-                            {documentSignedUrls.map((url: string, idx: number) => (
-                              <li key={idx}>
-                                <a href={url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                  Document {idx + 1}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-
-                    <div>
-                      <label className="text-sm font-medium">
-                        Admin Notes
-                        <span className="text-xs text-muted-foreground ml-2">
-                          ({adminNotes.length.toLocaleString()} characters)
-                        </span>
-                      </label>
-                      <Textarea
-                        value={adminNotes}
-                        onChange={(e) => setAdminNotes(e.target.value)}
-                        placeholder="Add notes about this submission..."
-                        className="mt-2"
-                        rows={6}
-                      />
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => handleVerifySubmission(selectedItem.id)}
-                        disabled={!!verifyingSubmissionId}
-                      >
-                        {verifyingSubmissionId === selectedItem.id ? "Verifying..." : "Verify & Approve"}
-                      </Button>
-                      <Button 
-                        variant="destructive" 
-                        onClick={() => handleRejectSubmission(selectedItem.id)}
-                      >
-                        Reject
-                      </Button>
-                      <Button variant="outline" onClick={() => {
-                        setSelectedItem(null);
-                        setAdminNotes("");
-                      }}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              )}
+              {renderDetailPanel(type)}
             </TabsContent>
           );
         })}
-
-        {/* Identity Claims Tab */}
-        <TabsContent value="identity_claims">
-          <Card className="p-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-1">Identity Verification Claims</h2>
-              <p className="text-sm text-muted-foreground">Review and approve producer identity verification requests</p>
-            </div>
-            
-            {identityClaims.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No pending identity claims to review
-              </div>
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Producer Name</TableHead>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {identityClaims.map((claim) => (
-                    <TableRow key={claim.id}>
-                      <TableCell className="font-medium">{claim.name}</TableCell>
-                      <TableCell>{claim.company || '-'}</TableCell>
-                      <TableCell>{claim.email || '-'}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-yellow-500 border-yellow-500">
-                          Pending Admin Review
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="default"
-                            onClick={() => handleApproveIdentityClaim(claim.id)}
-                            disabled={processingClaimId === claim.id}
-                          >
-                            {processingClaimId === claim.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              'Approve'
-                            )}
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                disabled={processingClaimId === claim.id}
-                              >
-                                Reject
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-64">
-                              <div className="p-2">
-                                <Label className="text-xs">Rejection Reason</Label>
-                                <Textarea
-                                  id={`reject-reason-${claim.id}`}
-                                  placeholder="Enter reason for rejection..."
-                                  className="mt-1 text-sm"
-                                  rows={3}
-                                />
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  className="w-full mt-2"
-                                  onClick={() => {
-                                    const textarea = document.getElementById(`reject-reason-${claim.id}`) as HTMLTextAreaElement;
-                                    handleRejectIdentityClaim(claim.id, textarea?.value || '');
-                                  }}
-                                >
-                                  Confirm Rejection
-                                </Button>
-                              </div>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </Card>
-        </TabsContent>
 
         {/* Suggestions Tab */}
         <TabsContent value="suggestions">
@@ -3730,154 +3183,16 @@ export default function Admin() {
           </Card>
         </TabsContent>
 
-        {/* IG Master List Tab */}
-        <TabsContent value="ig_master">
+        <TabsContent value="reversal_other">
           <Card className="p-6">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-1">IG Master List</h2>
-              <p className="text-sm text-muted-foreground">
-                Global Instagram handle registry for auto-matching contacts
+              <h2 className="text-xl font-semibold mb-1">Payment Reversals — &quot;Other&quot; Responses</h2>
+              <p className="text-sm text-muted-foreground mb-4">
+                Call sheets where users changed Yes → No and selected &quot;Other&quot; with a free-text explanation.
               </p>
-            </div>
-
-            <div className="space-y-6">
-              {/* Stats */}
-              <div className="flex items-center gap-4">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={async () => {
-                    const { count } = await supabase
-                      .from('ig_master_identities')
-                      .select('*', { count: 'exact', head: true });
-                    setIgMasterStats({ total: count || 0 });
-                    toast({
-                      title: "Stats Loaded",
-                      description: `Master list contains ${count || 0} entries.`,
-                    });
-                  }}
-                >
-                  Refresh Stats
-                </Button>
-                {igMasterStats && (
-                  <Badge variant="secondary">{igMasterStats.total} entries</Badge>
-                )}
-              </div>
-
-              {/* Import Section */}
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="font-medium">Import Seed Data</h3>
-                <p className="text-sm text-muted-foreground">
-                  Upload a JSON file with contacts (name, instagram, roles, phone, email fields).
-                </p>
-                
-                {/* File Input Zone */}
-                <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-primary/50 transition-colors">
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) setIgMasterFile(file);
-                    }}
-                    className="hidden"
-                    id="ig-master-file-input"
-                  />
-                  <label 
-                    htmlFor="ig-master-file-input" 
-                    className="cursor-pointer block"
-                  >
-                    {igMasterFile ? (
-                      <div className="space-y-2">
-                        <p className="font-medium">{igMasterFile.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {(igMasterFile.size / 1024).toFixed(1)} KB
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
-                        <p>Click to select JSON file</p>
-                      </div>
-                    )}
-                  </label>
-                </div>
-                
-                <div className="flex gap-2">
-                  <Button
-                    onClick={async () => {
-                      if (!igMasterFile) {
-                        toast({ title: "No file selected", variant: "destructive" });
-                        return;
-                      }
-                      
-                      try {
-                        setIgMasterImporting(true);
-                        
-                        // Read file content
-                        const text = await igMasterFile.text();
-                        const contacts = JSON.parse(text);
-                        
-                        if (!Array.isArray(contacts)) throw new Error("JSON must be an array");
-                        
-                        const { data, error } = await supabase.functions.invoke('import-ig-master-list', {
-                          body: { contacts, source: 'admin_file_import' }
-                        });
-                        
-                        if (error) throw error;
-                        
-                        toast({
-                          title: "Import Complete",
-                          description: `Imported: ${data.imported}, Updated: ${data.updated}, Skipped: ${data.skipped}`,
-                        });
-                        
-                        // Reset file input
-                        setIgMasterFile(null);
-                        const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
-                        if (fileInput) fileInput.value = '';
-                        
-                        // Refresh stats
-                        const { count } = await supabase
-                          .from('ig_master_identities')
-                          .select('*', { count: 'exact', head: true });
-                        setIgMasterStats({ total: count || 0 });
-                        
-                      } catch (err: any) {
-                        toast({
-                          title: "Import Failed",
-                          description: err.message || "Invalid JSON file",
-                          variant: "destructive"
-                        });
-                      } finally {
-                        setIgMasterImporting(false);
-                      }
-                    }}
-                    disabled={!igMasterFile || igMasterImporting}
-                  >
-                    {igMasterImporting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Importing...
-                      </>
-                    ) : (
-                      'Import File'
-                    )}
-                  </Button>
-                  {igMasterFile && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setIgMasterFile(null);
-                        const fileInput = document.getElementById('ig-master-file-input') as HTMLInputElement;
-                        if (fileInput) fileInput.value = '';
-                      }}
-                    >
-                      Clear
-                    </Button>
-                  )}
-                </div>
-              </div>
+              <Button onClick={() => navigate("/admin/payment-reversals-other")}>
+                View All &quot;Other&quot; Responses
+              </Button>
             </div>
           </Card>
         </TabsContent>

@@ -2,9 +2,14 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Ghost, User, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLeaderboardAccess } from "@/hooks/useLeaderboardAccess";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+
+const isHomepageSource = (s?: string) => s === "homepage";
 
 interface ProducerSearchResult {
   producer_id: string;
@@ -32,15 +37,48 @@ export function ProducerSearchAutocomplete({
   source = 'leaderboard'
 }: ProducerSearchAutocompleteProps) {
   const navigate = useNavigate();
+  const isHomepage = isHomepageSource(source);
+  const { accessState } = useLeaderboardAccess(isHomepage);
   const [searchTerm, setSearchTerm] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [productionCompany, setProductionCompany] = useState("");
   const [results, setResults] = useState<ProducerSearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [activeDebtIds, setActiveDebtIds] = useState<Set<string>>(new Set());
+  const [knownProducerIds, setKnownProducerIds] = useState<Set<string>>(new Set());
+  const [showActiveDebtModal, setShowActiveDebtModal] = useState(false);
+  const [selectedDebtProducer, setSelectedDebtProducer] = useState<ProducerSearchResult | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const logTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const effectiveSearchTerm = searchTerm;
+  const canSearchProducer = firstName.trim().length > 0 && lastName.trim().length > 0;
+  const canSearchCompany = productionCompany.trim().length > 0;
+
+  // Check admin status on mount
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const { data } = await supabase.rpc('has_role', {
+            _user_id: user.id,
+            _role: 'admin'
+          });
+          setIsAdmin(!!data);
+        }
+      } catch {
+        // Not admin, fail silently
+      }
+    };
+    checkAdmin();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -56,131 +94,279 @@ export function ProducerSearchAutocomplete({
   const [searchError, setSearchError] = useState<string | null>(null);
   const [rlsBlocked, setRlsBlocked] = useState(false);
 
-  // Search for producers as user types
-  useEffect(() => {
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
-    }
-
-    if (searchTerm.trim().length < 2) {
-      setResults([]);
-      setIsOpen(false);
-      setSearchError(null);
-      return;
-    }
-
-    searchTimeoutRef.current = setTimeout(async () => {
-      setLoading(true);
-      setSearchError(null);
-      try {
-        if (!supabase) {
-          setSearchError("Search is currently unavailable. Please try again later.");
-          setResults([]);
-          setIsOpen(true); // Keep dropdown open to show message
-          setRlsBlocked(false);
-          setLoading(false);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from("public_producer_search")
-          .select("*")
-          .ilike("producer_name", `%${searchTerm.trim()}%`)
-          .order("producer_name")
-          .limit(10);
-
-        if (error) {
-          const errorMsg = error.message?.toLowerCase() || '';
-          
-          // Check for network/connection errors
-          if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('failed to fetch')) {
-            setSearchError("Search is temporarily unavailable. Please check your connection.");
-            setRlsBlocked(false);
-          } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
-            setSearchError("Search requires authentication to access producer data");
-            setRlsBlocked(true);
-          } else {
-            setSearchError("Unable to search. Please try again later.");
-            setRlsBlocked(false);
-          }
-          
-          // Only log unexpected errors (not network/RLS issues which are handled gracefully)
-          if (!errorMsg.includes('network') && !errorMsg.includes('row-level security')) {
-            console.error("Search error:", error);
-          }
-          
-          setResults([]);
-          setIsOpen(true); // Keep dropdown open to show message
-        }
-        
-        setResults(data || []);
+  const performSearch = async (
+    term: string,
+    shouldLog: boolean,
+    searchBy: "producer_name" | "company_name" = "producer_name"
+  ) => {
+    const trimmed = term.trim();
+    setLoading(true);
+    setSearchError(null);
+    try {
+      if (!supabase) {
+        setSearchError("Search is currently unavailable. Please try again later.");
+        setResults([]);
         setIsOpen(true);
-        setSelectedIndex(-1);
-      } catch (error: any) {
-        // Handle network errors gracefully
-        const errorMsg = error?.message?.toLowerCase() || '';
-        if (errorMsg.includes('network') || errorMsg.includes('fetch')) {
+        setRlsBlocked(false);
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("public_producer_search")
+        .select("*")
+        .ilike(searchBy, `%${trimmed}%`)
+        .order("producer_name")
+        .limit(10);
+
+      if (error) {
+        const errorMsg = error.message?.toLowerCase() || '';
+        if (errorMsg.includes('network') || errorMsg.includes('fetch') || errorMsg.includes('failed to fetch')) {
           setSearchError("Search is temporarily unavailable. Please check your connection.");
+          setRlsBlocked(false);
+        } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+          setSearchError("Search requires authentication to access producer data");
+          setRlsBlocked(true);
         } else {
           setSearchError("Unable to search. Please try again later.");
+          setRlsBlocked(false);
+        }
+        if (!errorMsg.includes('network') && !errorMsg.includes('row-level security')) {
           console.error("Search error:", error);
         }
         setResults([]);
-        setIsOpen(true); // Keep dropdown open to show message
-        setRlsBlocked(false);
-      } finally {
-        setLoading(false);
-      }
-    }, 300);
+        setIsOpen(true);
+      } else {
+        setResults(data || []);
+        setIsOpen(true);
+        setSelectedIndex(-1);
 
-    // Debounced search logging with admin notification
-    if (logTimeoutRef.current) {
-      clearTimeout(logTimeoutRef.current);
-    }
-    logTimeoutRef.current = setTimeout(async () => {
-      try {
-        // Get current user info
-        const { data: { user } } = await supabase.auth.getUser();
-        const userEmail = user?.email || null;
-        const userId = user?.id || null;
-        
-        // Log search with user info
-        await supabase.from('search_logs').insert({
-          searched_name: searchTerm.trim(),
-          matched_producer_id: null,
-          source,
-          user_id: userId,
-          user_email: userEmail
-        });
-        
-        // Send admin notification (skip for admin accounts)
-        const ADMIN_EMAILS = ['leakedliability@gmail.com', 'lojawara@gmail.com'];
-        if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
+        // Enrich with debt status on homepage
+        if (isHomepage && data && data.length > 0) {
+          const ids = data.map((r: ProducerSearchResult) => r.producer_id).filter((id: string) => !id.startsWith('ref-'));
+          if (ids.length > 0) {
+            const { data: debtData } = await supabase
+              .rpc("get_leaderboard_debt_check", { p_producer_ids: ids });
+            const activeSet = new Set<string>();
+            const knownSet = new Set<string>();
+            for (const p of debtData || []) {
+              knownSet.add(p.producer_id);
+              if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.producer_id);
+            }
+            setActiveDebtIds(activeSet);
+            setKnownProducerIds(knownSet);
+          }
+        }
+      }
+
+      if (shouldLog && !isAdmin && trimmed) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          await supabase.from('search_logs').insert({
+            searched_name: trimmed,
+            matched_producer_id: null,
+            source,
+            user_id: user?.id ?? null,
+            user_email: user?.email ?? null,
+          });
           await supabase.functions.invoke('send-email', {
             body: {
               type: 'admin_notification',
               to: 'leakedliability@gmail.com',
               data: {
                 eventType: 'search',
-                searchTerm: searchTerm.trim(),
+                searchTerm: trimmed,
                 source,
-                userEmail: userEmail || null,
+                userEmail: user?.email ?? null,
                 timestamp: new Date().toISOString(),
                 adminDashboardUrl: 'https://leakedliability.com/admin',
               },
             },
           });
+        } catch {
+          /* ignore */
         }
-      } catch {
-        // Fail silently
       }
-    }, 1500);
+    } catch (err: unknown) {
+      const msg = (err as Error)?.message?.toLowerCase() || '';
+      if (msg.includes('network') || msg.includes('fetch')) {
+        setSearchError("Search is temporarily unavailable. Please check your connection.");
+      } else {
+        setSearchError("Unable to search. Please try again later.");
+        console.error("Search error:", err);
+      }
+      setResults([]);
+      setIsOpen(true);
+      setRlsBlocked(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const handleProducerSearch = () => {
+    const term = `${firstName.trim()} ${lastName.trim()}`.trim();
+    if (!term) return;
+    setSearchTerm(term);
+    performSearch(term, true, "producer_name");
+  };
+
+  const handleCompanySearch = async () => {
+    const term = productionCompany.trim();
+    if (!term) return;
+    setSearchTerm(term);
+    setLoading(true);
+    setSearchError(null);
+    try {
+      // Two parallel queries: reference list + producer search view
+      const [refResult, viewResult] = await Promise.all([
+        supabase
+          .from("production_companies")
+          .select("name")
+          .ilike("name", `%${term}%`)
+          .limit(10),
+        supabase
+          .from("public_producer_search")
+          .select("*")
+          .ilike("company_name", `%${term}%`)
+          .order("producer_name")
+          .limit(10),
+      ]);
+
+      // Build merged results: start with producer search view matches
+      const merged = new Map<string, ProducerSearchResult>();
+
+      // Build debt tracking sets for homepage
+      const activeSet = new Set<string>();
+      const knownSet = new Set<string>();
+
+      // Add view results (already in the right shape)
+      for (const r of viewResult.data || []) {
+        merged.set(r.producer_id, r);
+        knownSet.add(r.producer_id);
+      }
+
+      // Add reference-only companies (no producer match) as informational entries
+      for (const r of refResult.data || []) {
+        const alreadyShown = Array.from(merged.values()).some(
+          (m) => m.company_name?.toLowerCase() === r.name.toLowerCase()
+        );
+        if (!alreadyShown) {
+          merged.set(`ref-${r.name}`, {
+            producer_id: `ref-${r.name}`,
+            producer_name: r.name,
+            company_name: r.name,
+            is_placeholder: null,
+            has_claimed_account: null,
+            stripe_verification_status: null,
+            claimed_by_user_id: null,
+          });
+        }
+      }
+
+      // Enrich view results with debt data for homepage
+      if (isHomepage) {
+        const viewIds = (viewResult.data || []).map((r: ProducerSearchResult) => r.producer_id);
+        if (viewIds.length > 0) {
+          const { data: debtData } = await supabase
+            .rpc("get_leaderboard_debt_check", { p_producer_ids: viewIds });
+          for (const p of debtData || []) {
+            if ((p.total_amount_owed ?? 0) > 0) activeSet.add(p.producer_id);
+          }
+        }
+        setActiveDebtIds(activeSet);
+        setKnownProducerIds(knownSet);
+      }
+
+      setResults(Array.from(merged.values()).slice(0, 15));
+      setIsOpen(true);
+      setSelectedIndex(-1);
+
+      // Log the search (reuse existing logging pattern)
+      if (!isAdmin && term) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          await supabase.from('search_logs').insert({
+            searched_name: term,
+            matched_producer_id: null,
+            source,
+            user_id: user?.id ?? null,
+            user_email: user?.email ?? null,
+          });
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'admin_notification',
+              to: 'leakedliability@gmail.com',
+              data: {
+                eventType: 'search',
+                searchTerm: term,
+                source,
+                userEmail: user?.email ?? null,
+                timestamp: new Date().toISOString(),
+                adminDashboardUrl: 'https://leakedliability.com/admin',
+              },
+            },
+          });
+        } catch { /* ignore */ }
+      }
+    } catch (err: unknown) {
+      console.error("Company search error:", err);
+      setSearchError("Unable to search. Please try again later.");
+      setResults([]);
+      setIsOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Live search for non-homepage (leaderboard, profile_claim)
+  useEffect(() => {
+    if (isHomepage) return;
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    if (searchTerm.trim().length < 2) {
+      setResults([]);
+      setIsOpen(false);
+      setSearchError(null);
+      return;
+    }
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(searchTerm, false);
+      if (logTimeoutRef.current) clearTimeout(logTimeoutRef.current);
+      if (!isAdmin) {
+        logTimeoutRef.current = setTimeout(async () => {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            await supabase.from('search_logs').insert({
+              searched_name: searchTerm.trim(),
+              matched_producer_id: null,
+              source,
+              user_id: user?.id ?? null,
+              user_email: user?.email ?? null,
+            });
+            await supabase.functions.invoke('send-email', {
+              body: {
+                type: 'admin_notification',
+                to: 'leakedliability@gmail.com',
+                data: {
+                  eventType: 'search',
+                  searchTerm: searchTerm.trim(),
+                  source,
+                  userEmail: user?.email ?? null,
+                  timestamp: new Date().toISOString(),
+                  adminDashboardUrl: 'https://leakedliability.com/admin',
+                },
+              },
+            });
+          } catch {
+            /* ignore */
+          }
+        }, 1500);
+      }
+    }, 300);
     return () => {
       if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
       if (logTimeoutRef.current) clearTimeout(logTimeoutRef.current);
     };
-  }, [searchTerm, source]);
+  }, [isHomepage, searchTerm, source, isAdmin]);
 
   // Notify parent of search changes
   useEffect(() => {
@@ -188,15 +374,32 @@ export function ProducerSearchAutocomplete({
   }, [searchTerm, onSearchChange]);
 
   const handleSelect = async (producer: ProducerSearchResult) => {
-    // Log the matched producer (fire and forget)
-    try {
-      await supabase.from('search_logs').insert({
-        searched_name: searchTerm.trim(),
-        matched_producer_id: producer.producer_id,
-        source
-      });
-    } catch {
-      // Fail silently
+    if (!isAdmin) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        await supabase.from('search_logs').insert({
+          searched_name: effectiveSearchTerm.trim(),
+          matched_producer_id: producer.producer_id,
+          source,
+          user_id: user?.id ?? null,
+          user_email: user?.email ?? null,
+        });
+      } catch {
+        // Fail silently
+      }
+    }
+
+    // Homepage: handle active debt modal logic
+    if (isHomepage && activeDebtIds.has(producer.producer_id)) {
+      if (accessState?.hasAccess) {
+        navigate(`/leaderboard?search=${encodeURIComponent(producer.producer_name)}`);
+      } else {
+        setSelectedDebtProducer(producer);
+        setShowActiveDebtModal(true);
+      }
+      setSearchTerm(producer.producer_name);
+      setIsOpen(false);
+      return;
     }
 
     // If already claimed/verified by someone else, just navigate to leaderboard
@@ -255,28 +458,99 @@ export function ProducerSearchAutocomplete({
 
   return (
     <div ref={wrapperRef} className={cn("relative w-full", className)}>
-      <div className="flex items-center gap-3">
-        <div
-          className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
-          aria-hidden="true"
-        >
-          <Search className={cn("h-5 w-5 text-muted-foreground", loading && "animate-pulse")} />
+      {isHomepage ? (
+        /* Homepage: producer identity boxes OR production company box */
+        <div className="space-y-4">
+          {/* Producer path: first + last name */}
+        <div className="flex items-center gap-3">
+            <div
+              className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
+              aria-hidden="true"
+            >
+              <Search className={cn("h-5 w-5 text-muted-foreground", loading && "animate-pulse")} />
+            </div>
+            <div className="flex-1 grid grid-cols-2 gap-3">
+              <Input
+                type="text"
+                aria-label="First name or alias"
+                placeholder="First name or alias"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && canSearchProducer && handleProducerSearch()}
+                className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              />
+              <Input
+                type="text"
+                aria-label="Last name"
+                placeholder="Last name"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && canSearchProducer && handleProducerSearch()}
+                className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="h-px flex-1 bg-border" aria-hidden="true" />
+            <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">or</span>
+            <div className="h-px flex-1 bg-border" aria-hidden="true" />
+          </div>
+
+          {/* Production company path */}
+          <div className="flex items-center gap-3">
+            <div
+              className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0 opacity-0"
+              aria-hidden="true"
+            />
+            <Input
+              type="text"
+              aria-label="Production company name"
+              placeholder="Production company name"
+              value={productionCompany}
+              onChange={(e) => setProductionCompany(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && canSearchCompany && handleCompanySearch()}
+              className="flex-1 bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+            />
+          </div>
+
+          {/* Search button — always visible */}
+          <div className="flex justify-center pt-2">
+            <Button
+              onClick={() => {
+                if (canSearchCompany) handleCompanySearch();
+                else if (canSearchProducer) handleProducerSearch();
+              }}
+              disabled={loading || (!canSearchProducer && !canSearchCompany)}
+              className="h-12 px-8 rounded-xl"
+            >
+              {loading ? "Searching…" : "Search"}
+            </Button>
+          </div>
         </div>
+      ) : (
+        <div className="flex items-center gap-3">
+          <div
+            className="h-12 w-12 rounded-xl bg-muted border border-border flex items-center justify-center flex-shrink-0"
+            aria-hidden="true"
+          >
+            <Search className={cn("h-5 w-5 text-muted-foreground", loading && "animate-pulse")} />
+          </div>
+          <Input
+            ref={inputRef}
+            type="text"
+            aria-label="Search producers or production companies"
+            placeholder={placeholder}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => results.length > 0 && setIsOpen(true)}
+            className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
+          />
+        </div>
+      )}
 
-        <Input
-          ref={inputRef}
-          type="text"
-          aria-label="Search producers or production companies"
-          placeholder={placeholder}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyDown={handleKeyDown}
-          onFocus={() => results.length > 0 && setIsOpen(true)}
-          className="bg-background border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 w-full"
-        />
-      </div>
-
-      {/* Autocomplete Dropdown */}
+      {/* Results dropdown: simplified for homepage (no ghosts, no badges), full for others */}
       {isOpen && results.length > 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-lg z-50 overflow-hidden">
           <ul className="max-h-64 overflow-y-auto">
@@ -286,16 +560,18 @@ export function ProducerSearchAutocomplete({
                 className={cn(
                   "px-4 py-3 cursor-pointer flex items-center justify-between gap-2 transition-colors",
                   index === selectedIndex ? "bg-muted" : "hover:bg-muted/50",
-                  producer.is_placeholder && "opacity-90"
+                  producer.is_placeholder && !isHomepage && "opacity-90"
                 )}
                 onClick={() => handleSelect(producer)}
                 onMouseEnter={() => setSelectedIndex(index)}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  {producer.is_placeholder ? (
-                    <Ghost className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                  ) : (
-                    <User className="h-4 w-4 text-primary flex-shrink-0" />
+                  {!isHomepage && (
+                    producer.is_placeholder ? (
+                      <Ghost className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    ) : (
+                      <User className="h-4 w-4 text-primary flex-shrink-0" />
+                    )
                   )}
                   <span className="truncate font-medium">{producer.producer_name}</span>
                   {producer.company_name && (
@@ -304,36 +580,57 @@ export function ProducerSearchAutocomplete({
                     </span>
                   )}
                 </div>
-                
-                {/* Verification Status Badges */}
-                {producer.has_claimed_account && producer.stripe_verification_status === 'verified' && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500/50 text-green-500 gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    Verified Owner
-                  </Badge>
+                {/* Homepage debt-status disclaimers */}
+                {isHomepage && (
+                  <>
+                    {activeDebtIds.has(producer.producer_id) && (
+                      <span className="text-xs font-semibold text-destructive flex-shrink-0">
+                        Active Debt ⚠️
+                      </span>
+                    )}
+                    {!activeDebtIds.has(producer.producer_id) && knownProducerIds.has(producer.producer_id) && (
+                      <span className="text-xs text-green-500 flex-shrink-0">
+                        No active debts found. ✅
+                      </span>
+                    )}
+                    {!activeDebtIds.has(producer.producer_id) && !knownProducerIds.has(producer.producer_id) && (
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        (unknown / never reported)
+                      </span>
+                    )}
+                  </>
                 )}
-                {producer.stripe_verification_status === 'pending' && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500/50 text-orange-500 gap-1">
-                    <Clock className="h-3 w-3" />
-                    Verifying
-                  </Badge>
-                )}
-                {producer.stripe_verification_status === 'pending_admin' && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-yellow-500/50 text-yellow-500 gap-1">
-                    <AlertTriangle className="h-3 w-3" />
-                    Pending Review
-                  </Badge>
-                )}
-                {(producer.is_placeholder || (!producer.has_claimed_account && (!producer.stripe_verification_status || producer.stripe_verification_status === 'unverified'))) && (
-                  <Badge variant="outline" className="text-xs flex-shrink-0 border-muted-foreground/30 text-muted-foreground">
-                    Unclaimed
-                  </Badge>
+                {!isHomepage && (
+                  <>
+                    {producer.has_claimed_account && producer.stripe_verification_status === 'verified' && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-green-500/50 text-green-500 gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        Verified Owner
+                      </Badge>
+                    )}
+                    {producer.stripe_verification_status === 'pending' && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-orange-500/50 text-orange-500 gap-1">
+                        <Clock className="h-3 w-3" />
+                        Verifying
+                      </Badge>
+                    )}
+                    {producer.stripe_verification_status === 'pending_admin' && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-yellow-500/50 text-yellow-500 gap-1">
+                        <AlertTriangle className="h-3 w-3" />
+                        Pending Review
+                      </Badge>
+                    )}
+                    {(producer.is_placeholder || (!producer.has_claimed_account && (!producer.stripe_verification_status || producer.stripe_verification_status === 'unverified'))) && (
+                      <Badge variant="outline" className="text-xs flex-shrink-0 border-muted-foreground/30 text-muted-foreground">
+                        Unclaimed
+                      </Badge>
+                    )}
+                  </>
                 )}
               </li>
             ))}
           </ul>
-          
-          {results.some(r => r.is_placeholder) && (
+          {!isHomepage && results.some(r => r.is_placeholder) && (
             <div className="px-4 py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
               <Ghost className="h-3 w-3 inline mr-1" />
               Unclaimed profiles require subscription to view
@@ -376,6 +673,36 @@ export function ProducerSearchAutocomplete({
           No producers found matching "{searchTerm}"
         </div>
       )}
+
+      {/* Active Debt Modal */}
+      <Dialog open={showActiveDebtModal} onOpenChange={setShowActiveDebtModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Identity Found on Leaderboard</DialogTitle>
+            <DialogDescription className="pt-2 text-sm leading-relaxed">
+              The identity you've just searched has been previously reported, and has an{" "}
+              <span className="font-bold text-destructive">ACTIVE DEBT</span>{" "}
+              on the leaderboard. Subscribe to gain viewing access.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowActiveDebtModal(false)}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={() => {
+                setShowActiveDebtModal(false);
+                navigate('/subscribe');
+              }}
+            >
+              Subscribe
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

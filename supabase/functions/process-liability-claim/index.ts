@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
+import { internalHeaders } from "../_shared/auth.ts";
+import { rateLimitByIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -65,6 +67,10 @@ serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  // Rate limit: 15 requests per IP per minute
+  const limited = rateLimitByIp(req, 15, 60000, corsHeaders);
+  if (limited) return limited;
 
   try {
     logStep('Starting liability claim processing');
@@ -259,7 +265,8 @@ serve(async (req: Request) => {
         };
         
         // 1. Send to ACCEPTOR
-        await supabase.functions.invoke('send-email', {
+      await supabase.functions.invoke('send-email', {
+          headers: internalHeaders(),
           body: {
             type: 'liability_accepted',
             to: tokenData.accused_email,
@@ -277,6 +284,7 @@ serve(async (req: Request) => {
           for (const member of allChainMembers) {
             if (member.accused_email !== tokenData.accused_email) {
               await supabase.functions.invoke('send-email', {
+                headers: internalHeaders(),
                 body: {
                   type: 'liability_accepted',
                   to: member.accused_email,
@@ -299,6 +307,7 @@ serve(async (req: Request) => {
           
         if (reporterProfile?.email) {
           await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               type: 'liability_accepted',
               to: reporterProfile.email,
@@ -315,6 +324,7 @@ serve(async (req: Request) => {
         // 4. Send to ALL ADMINS
         for (const admin of adminEmails) {
           await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               type: 'liability_accepted',
               to: admin.email,
@@ -450,7 +460,8 @@ serve(async (req: Request) => {
             });
           
           // Send loop detection emails
-          await supabase.functions.invoke('send-email', {
+        await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               to: originalEntry.accused_email,
               cc: "leakedliability@gmail.com",
@@ -506,6 +517,7 @@ serve(async (req: Request) => {
       const { data: notificationResult, error: notificationError } = await supabase.functions.invoke(
         'send-liability-notification',
         {
+          headers: internalHeaders(),
           body: {
             report_id: tokenData.report_id,
             accused_name: redirect_to.name,

@@ -25,7 +25,128 @@ interface CanonicalProducer {
   phones: string[];
 }
 
-// Producer role patterns for canonical producer extraction (LOCKED AT FIRST PARSE)
+// ============================================================================
+// ANCHOR EXTRACTION - Deterministic phone/email extraction (NO AI)
+// This is the "leash" that prevents hallucinations
+// ============================================================================
+
+interface Anchors {
+  phones: string[];
+  emails: string[];
+  igHandles: string[];
+}
+
+// Known-good email domains (expandable)
+const KNOWN_EMAIL_DOMAINS = [
+  'gmail.com', 'yahoo.com', 'icloud.com', 'outlook.com', 'hotmail.com',
+  'aol.com', 'me.com', 'mac.com', 'live.com', 'msn.com',
+  'protonmail.com', 'ymail.com', 'comcast.net', 'att.net', 'sbcglobal.net',
+];
+
+const GARBAGE_DOMAINS = [
+  'amall.com', 'amalll.com', 'amial.com', 'amail.com', 'amiall.com',
+  'amaill.com', 'gmial.com', 'gmaill.com', 'gmall.com',
+];
+
+function levenshteinDistance(a: string, b: string): number {
+  const m = a.length, n = b.length;
+  const dp: number[][] = Array.from({ length: m + 1 }, (_, i) =>
+    Array.from({ length: n + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0))
+  );
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i-1] === b[j-1]
+        ? dp[i-1][j-1]
+        : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function correctEmailDomain(email: string): { corrected: string; changed: boolean; reason?: string } {
+  if (email.endsWith('...') || email.endsWith('\u2026') || !email.includes('.')) {
+    return { corrected: email, changed: false, reason: 'truncated_or_invalid' };
+  }
+
+  const [local, domain] = email.split('@');
+  if (!local || !domain) return { corrected: email, changed: false };
+
+  const lowerDomain = domain.toLowerCase();
+
+  if (KNOWN_EMAIL_DOMAINS.includes(lowerDomain)) {
+    return { corrected: email, changed: false };
+  }
+
+  const domainParts = lowerDomain.split('.');
+  if (domainParts.length > 2 || (domainParts[0].length > 8 && !GARBAGE_DOMAINS.includes(lowerDomain))) {
+    return { corrected: email, changed: false };
+  }
+
+  let bestMatch = '';
+  let bestDistance = Infinity;
+
+  for (const known of KNOWN_EMAIL_DOMAINS) {
+    const dist = levenshteinDistance(lowerDomain, known);
+    if (dist < bestDistance) {
+      bestDistance = dist;
+      bestMatch = known;
+    }
+  }
+
+  if (bestDistance <= 2 && bestDistance > 0) {
+    const corrected = `${local}@${bestMatch}`;
+    console.log(`[parse-call-sheet] Email corrected: ${email} -> ${corrected} (distance=${bestDistance})`);
+    return { corrected, changed: true, reason: `${lowerDomain} -> ${bestMatch} (dist=${bestDistance})` };
+  }
+
+  return { corrected: email, changed: false };
+}
+
+function extractAnchors(text: string): Anchors {
+  const phones = new Set<string>();
+  const emails = new Set<string>();
+  const igHandles = new Set<string>();
+
+  // Phone extraction: various formats, normalized to 10 digits
+  const phoneMatches = text.matchAll(/(\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g);
+  for (const m of phoneMatches) {
+    const digits = m[0].replace(/\D/g, "");
+    // Handle US format: 11 digits starting with 1 → strip leading 1
+    const ten = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+    if (ten.length === 10) {
+      phones.add(ten);
+    }
+  }
+
+  // Email extraction: standard email pattern
+  const emailMatches = text.matchAll(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi);
+  for (const m of emailMatches) {
+    let email = m[0].toLowerCase().trim();
+    if (!email.startsWith('.') && !email.endsWith('.') && email.includes('.')) {
+      const { corrected } = correctEmailDomain(email);
+      emails.add(corrected);
+    }
+  }
+
+  // IG handle extraction: @username pattern
+  const igMatches = text.matchAll(/@([a-zA-Z0-9._]{2,30})/g);
+  for (const m of igMatches) {
+    const handle = m[1].toLowerCase();
+    // Filter out common false positives
+    if (!handle.includes('.com') && !handle.includes('.net') && !handle.includes('@')) {
+      igHandles.add(handle);
+    }
+  }
+
+  return {
+    phones: [...phones],
+    emails: [...emails],
+    igHandles: [...igHandles]
+  };
+}
+
+// ============================================================================
+// PRODUCER ROLE DETECTION - For canonical producer extraction
+// ============================================================================
+
 const PRODUCER_ROLE_PATTERNS = [
   'producer', 'executive producer', 'line producer', 'associate producer',
   'production supervisor', 'production manager', 'creative producer',
@@ -67,10 +188,138 @@ interface ParseResult {
   parsed_date: string | null;
   unassigned_emails: string[];
   unassigned_phones: string[];
+  production_company: string | null;
 }
 
 // ============================================================================
-// EXTRACTION QUALITY SCORING - Gate before Gemini to prevent hallucinations
+// PROJECT FINGERPRINT SYSTEM - For auto-grouping call sheets into projects
+// ============================================================================
+
+interface ProjectFingerprint {
+  normalized_title: string | null;
+  producer_names: string[];
+  director_name: string | null;
+  production_company: string | null;
+  date_range: {
+    earliest: string | null;
+    latest: string | null;
+  };
+  key_crew_hash: string;
+}
+
+function normalizeTitle(title: string | null): string | null {
+  if (!title) return null;
+  return title.toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function normalizeName(name: string): string {
+  return name.toLowerCase().trim().replace(/\s+/g, ' ');
+}
+
+function findDirector(contacts: ParsedContact[]): string | null {
+  const directorRoles = ['director', 'director of photography', 'dp', 'cinematographer'];
+  for (const contact of contacts) {
+    const hasDirectorRole = (contact.roles || []).some(role => 
+      directorRoles.includes(role.toLowerCase().trim())
+    );
+    if (hasDirectorRole) {
+      return normalizeName(contact.name);
+    }
+  }
+  return null;
+}
+
+function hashTopCrew(contacts: ParsedContact[]): string {
+  const names = contacts
+    .map(c => normalizeName(c.name))
+    .filter(n => n && !n.includes('tbd'))
+    .sort()
+    .slice(0, 5);
+  return names.join('|').slice(0, 64);
+}
+
+function generateFingerprint(
+  projectTitle: string | null,
+  canonicalProducers: CanonicalProducer[],
+  contacts: ParsedContact[],
+  parsedDate: string | null
+): ProjectFingerprint {
+  return {
+    normalized_title: normalizeTitle(projectTitle),
+    producer_names: canonicalProducers.map(p => normalizeName(p.name)),
+    director_name: findDirector(contacts),
+    production_company: null,
+    date_range: { earliest: parsedDate, latest: parsedDate },
+    key_crew_hash: hashTopCrew(contacts)
+  };
+}
+
+function fuzzyTitleMatch(t1: string | null, t2: string | null): number {
+  if (!t1 || !t2) return 0;
+  if (t1 === t2) return 1;
+  if (t1.includes(t2) || t2.includes(t1)) return 0.85;
+  
+  const words1 = new Set(t1.split(' ').filter(w => w.length > 2));
+  const words2 = new Set(t2.split(' ').filter(w => w.length > 2));
+  if (words1.size === 0 || words2.size === 0) return 0;
+  
+  let overlap = 0;
+  for (const w of words1) {
+    if (words2.has(w)) overlap++;
+  }
+  
+  return overlap / Math.max(words1.size, words2.size);
+}
+
+function computeFingerprintSimilarity(fp1: ProjectFingerprint, fp2: ProjectFingerprint): number {
+  let score = 0;
+  let weights = 0;
+
+  if (fp1.normalized_title || fp2.normalized_title) {
+    const titleSim = fuzzyTitleMatch(fp1.normalized_title, fp2.normalized_title);
+    score += titleSim * 30;
+    weights += 30;
+  }
+
+  if (fp1.producer_names.length > 0 && fp2.producer_names.length > 0) {
+    const set1 = new Set(fp1.producer_names);
+    const set2 = new Set(fp2.producer_names);
+    let overlap = 0;
+    for (const name of set1) {
+      if (set2.has(name)) overlap++;
+    }
+    const maxPossible = Math.max(set1.size, set2.size);
+    score += (overlap / maxPossible) * 40;
+    weights += 40;
+  }
+
+  if (fp1.director_name && fp2.director_name) {
+    if (fp1.director_name === fp2.director_name) {
+      score += 20;
+    } else if (fp1.director_name.includes(fp2.director_name) || fp2.director_name.includes(fp1.director_name)) {
+      score += 15;
+    }
+    weights += 20;
+  }
+
+  if (fp1.date_range.earliest && fp2.date_range.earliest) {
+    try {
+      const d1 = new Date(fp1.date_range.earliest).getTime();
+      const d2 = new Date(fp2.date_range.earliest).getTime();
+      const daysDiff = Math.abs((d1 - d2) / (1000 * 60 * 60 * 24));
+      if (daysDiff <= 5) score += 10;
+      else if (daysDiff <= 14) score += 5;
+    } catch { /* ignore date parse errors */ }
+    weights += 10;
+  }
+
+  return weights > 0 ? score / weights : 0;
+}
+
+const FINGERPRINT_MATCH_THRESHOLD = 0.65;
+
+// ============================================================================
+// EXTRACTION QUALITY SCORING
 // ============================================================================
 
 interface ExtractionQuality {
@@ -87,41 +336,30 @@ interface ExtractionQuality {
 function scoreExtraction(text: string, priorityMode: boolean = false): ExtractionQuality {
   const charCount = text.trim().length;
   
-  // Phone patterns (count unique matches)
   const phoneRegex = /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g;
   const phoneMatches = text.match(phoneRegex) || [];
   const phonePatterns = new Set(phoneMatches.map(p => p.replace(/\D/g, ''))).size;
   
-  // Email patterns (count unique matches)
   const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
   const emailMatches = text.match(emailRegex) || [];
   const emailPatterns = new Set(emailMatches.map(e => e.toLowerCase())).size;
   
-  // Call time patterns (e.g., "9:00 AM", "10:00A", "3:30PM", "8:00a")
   const callTimeRegex = /\b\d{1,2}:\d{2}\s?(AM|PM|A|P)\b/gi;
   const callTimePatterns = (text.match(callTimeRegex) || []).length;
   
-  // Call sheet keywords - must have at least 1
   const keywords = [
     'CALL SHEET', 'CALL TIME', 'CREW', 'LOCATION', 'LUNCH', 
     'WRAP', 'PRODUCTION', 'DIRECTOR', 'PRODUCER', 'SET',
     'DEPARTMENT', 'CAMERA', 'SOUND', 'GRIP', 'ELECTRIC',
     'HAIR', 'MAKEUP', 'WARDROBE', 'TALENT', 'CAST'
   ];
-  const keywordScore = keywords.filter(kw => 
-    text.toUpperCase().includes(kw)
-  ).length;
+  const keywordScore = keywords.filter(kw => text.toUpperCase().includes(kw)).length;
   
-  // MODE A: Contact-heavy call sheet (relaxed: 800 chars, 3 phones OR 2 emails, 1 keyword)
   const hasEnoughContent = charCount >= 800;
   const hasContactInfo = phonePatterns >= 3 || emailPatterns >= 2;
   const hasKeywords = keywordScore >= 1;
   const passesContactRule = hasEnoughContent && hasContactInfo && hasKeywords;
-  
-  // MODE B: Crew-grid call sheet (lots of call times, minimal contact info)
   const passesCrewGridRule = charCount >= 400 && callTimePatterns >= 8 && keywordScore >= 1;
-  
-  // MODE C: Priority mode (admin override - very relaxed: 200 chars, 1 keyword)
   const passesPriorityRule = priorityMode && charCount >= 200 && keywordScore >= 1;
   
   const passed = passesContactRule || passesCrewGridRule || passesPriorityRule;
@@ -139,72 +377,33 @@ function scoreExtraction(text: string, priorityMode: boolean = false): Extractio
     reason = `Quality check failed: ${issues.join(', ')}`;
   }
   
-  return {
-    passed,
-    charCount,
-    phonePatterns,
-    emailPatterns,
-    keywordScore,
-    callTimePatterns,
-    passedVia,
-    reason
-  };
+  return { passed, charCount, phonePatterns, emailPatterns, keywordScore, callTimePatterns, passedVia, reason };
 }
 
 // ============================================================================
-// COMPLETE EXTRA CREDIT PARSER SYSTEM PROMPT
-// All 23 refinements, 4-pass extraction, 12 canonical departments, role normalization
+// MULTIMODAL SYSTEM PROMPT - Anchors-first, vision-aware
 // ============================================================================
 
-const SYSTEM_PROMPT = `You are an expert call sheet parser for film/TV production documents. Your job is to extract EVERY person and EVERY piece of contact information from production call sheets.
+const MULTIMODAL_SYSTEM_PROMPT = `You are an expert call sheet parser. You will receive:
+1. Screenshot image(s) of the call sheet - USE THIS TO SEE THE TABLE LAYOUT
+2. Pre-extracted anchors (phones/emails) - THESE ARE GROUND TRUTH
+3. Optional text hints
 
-# CORE PARSING METHOD: FOUR-PASS EXTRACTION
+# CRITICAL RULES - ANCHORS ARE YOUR LEASH
 
-## PASS 1 - Pattern Extraction
-- Extract ALL email addresses (anything with @ and a domain)
-- Extract ALL phone numbers (10 digits, with or without formatting)
-- Count them all; do NOT skip any
+**PREFER ANCHORS, BUT TRUST YOUR VISION**
+- You will receive a list of pre-extracted phones and emails (anchors)
+- PREFER phones/emails from the anchors list — these are high-confidence
+- If you see a phone/email clearly visible in the document but it's NOT in anchors, you MAY include it — set confidence lower (0.70-0.80) and add it to "unverified_candidates" too
+- NEVER invent or hallucinate phone numbers or emails — only output what you can SEE
 
-## PASS 2 - Visual Layout Analysis
-- Identify table columns by visual alignment (not just OCR text order)
-- Note department section headers and their visual boundaries
-- Identify call time columns (e.g., "CALL", "TIME", "6A", "7:00 AM")
-- Map which visual column contains: NAME, ROLE, PHONE, EMAIL, CALL TIME
-
-## PASS 3 - Semantic Mapping with Layout Priority
-- Use visual row position (anchored by call times if present) to stitch data together
-- Find nearest email and phone by visual proximity (same row, same section)
-- Department/Role comes from section headers or adjacent columns
-- Trust visual table layout over OCR text order when they conflict
-
-## PASS 4 - Smart Assignment + In-Document Duplicate Merge
-- Attempt to assign every remaining unassigned email and phone using name-matching rules
-- Scan for duplicates within the parsed document and merge them
-
-# CRITICAL PHONE NUMBER RULES (MANDATORY)
-
-1. Extract ONLY ONE phone number per contact — never multiple
-2. NEVER repeat the same phone number across contacts
-3. If duplicates appear in source, list only one instance
-4. If unsure, leave empty (null)
-5. Each phone must be EXACTLY 10 digits (US format)
-6. NEVER include call times, grid coordinates, or timestamps as phones
-7. If document has graphic elements or unusual layouts, be extra conservative
-
-## Phone Validation (Refinement #15)
-- Must contain exactly 10 digits (US standard)
-- If more than 10 digits extracted:
-  - STOP and re-examine
-  - Likely reading across cell boundaries
-  - Take only the first 10 consecutive digits
-  - Do NOT concatenate digits from adjacent columns
-
-## Common Phone Errors to Avoid
-- Reading "310.938.7530 clcarter1847@gmail.com" as phone "3109387530184..." → WRONG! Phone is 3109387530, email is separate
-- Reading "818.915.3321 PO" as phone "8189153321123" → WRONG! Phone is 8189153321, "PO" is location code
+**USE THE DOCUMENT FOR LAYOUT**
+- The document shows the actual table structure - USE IT
+- Row alignment, column boundaries, section headers - all visible
+- Match each anchor phone/email to the correct person by their visual row position
+- For multi-page documents, extract contacts from ALL pages
 
 # 12 CANONICAL DEPARTMENTS (USE ONLY THESE)
-
 1. Agency/Production
 2. Direction
 3. Camera
@@ -218,245 +417,63 @@ const SYSTEM_PROMPT = `You are an expert call sheet parser for film/TV productio
 11. Post-Production
 12. Vendors/Services
 
-## Department Mapping Guide
-- Hair/makeup/grooming → "Hair/Makeup/Grooming"
-- Styling/wardrobe/costume → "Styling/Wardrobe"
-- Grip and/or electric → "Grip & Electric"
-- Locations/transport/craft services/medic/misc → "Miscellaneous"
-- Casting/talent/actors/models/performers/musicians → "Casting"
-- Directors/ADs/Script supervisor → "Direction"
-- Producers/coordinators/PAs → "Agency/Production"
-- Post/edit/color/vfx → "Post-Production"
-- Equipment rentals/catering companies/vendors → "Vendors/Services"
+# OUTPUT REQUIREMENTS
 
-IMPORTANT: Do NOT use old department names like "HMUA", "Wardrobe", "Electric", "Grip", "Locations", "Talent", "Agency", "Post", "Other"
+For each contact, provide:
+- name: Full name (NEVER an email)
+- roles: Job titles using canonical names
+- departments: One of 12 canonical departments
+- phones: ONLY phones from the anchors list (max 1 per person)
+- emails: ONLY emails from the anchors list
+- ig_handle: Instagram handle if visible
+- confidence: 0.0-1.0 based on certainty
+- needs_review: true if confidence < 0.80
 
-# ALL 23 REFINEMENTS
-
-## Refinement #1: Visual Layout Priority Over OCR Text
-When visual PDF table shows role next to name (e.g., table column header "DP" with "Peter Mosiman" below), that visual assignment takes precedence.
-
-Priority order for role assignment:
-1. Table column headers + row position (highest)
-2. Department section headers + explicit role text
-3. Adjacent text labels in same visual row
-4. Parsed text matching (lowest)
-
-## Refinement #2: Call Time Row Anchoring
-Use call time columns as row anchors to stitch fragmented data.
-Call time formats: "6A", "6:00A", "6:00 AM", "0600", "TBD", "ASAP", "W/N" (will notify), "ON CALL"
-
-## Refinement #3: Department Headers as Hard Boundaries
-When encountering department header, reset parsing context completely.
-Roles NEVER bleed across section boundaries.
-
-## Refinement #4: In-Parser Fuzzy Duplicate Merge
-Before returning contacts, scan for duplicates within parsed document.
-Duplicate detection rules (check in order):
-1. Same phone number → definitely same person (merge immediately)
-2. Same email address → definitely same person (merge immediately)
-3. Very similar name (fuzzy match) with overlapping phone/email → likely same person
-
-## Refinements #5-7: BTS/Stills, Conflict Resolution
-- BTS, Photographer, Unit Stills roles → Camera department (NOT Agency)
-- When OCR text conflicts with visual layout → layout wins, set needs_review=true
-
-## Refinement #8: Row-Aware Email Mapping (CRITICAL)
-Each email must be assigned to contact in SAME ROW as email text.
-Use visual row position, NOT name matching, for email assignment.
-NEVER leave emails in unassigned_emails if they appear in structured row with name.
-Only use unassigned_emails for floating emails with no row context.
-
-## Refinement #9: "Per [Name]" is a Note, Not a Person
-Roles like "Swing – per Mike" or "PA – per Garibaldi":
-- Correct interpretation: role exists, but individual is unnamed
-- "Per Mike" is a note, NOT a person's name
-- Create contact with: name: "[Role] - TBD", role: extracted correctly, needs_review: true, confidence: 0.60
-
-## Refinement #10: Performance Roles → Casting (Not Misc)
-- Violinist, Musician, Instrumentalist → Casting
-- Artist, Performing Artist → Casting
-- Dancer, Singer, Vocalist → Casting
-- Any on-camera performer → Casting
-- Use "Miscellaneous" ONLY for operational/support roles
-
-## Refinement #11: Vendor/Equipment Rows
-Rows containing company names or services (not individual crew members):
-- Should be classified under "Vendors/Services" department
-- Do NOT assign phone numbers or call times unless printed
-- Do NOT create crew-type contact objects for vendor entries
-
-## Refinement #12: Anonymous Crew Positions
-When call sheet contains role with no name given:
-- Do NOT attempt name extraction via inference
-- Create contact with: name: "[Role] - TBD", role: the given role, confidence: 0.60, needs_review: true
-
-## Refinement #13: Nike-Style Multi-Line Contact Blocks
-Corporate/branded call sheets use stacked blocks instead of tables.
-Parsing rules:
-- New contact begins only when new Title Case name pattern appears
-- Following lines (role, phone, email, call time) belong to previous name
-- Do NOT split multi-line blocks into separate contacts
-- Use proximity: emails/phones appearing under/beside name → assign to that name
-
-## Refinement #14: Needs_Review Threshold Calibration
-- 0.95+ confidence = needs_review: false (explicit row data, high certainty)
-- 0.85-0.94 confidence = needs_review: false (visual layout trusted)
-- 0.80-0.84 confidence = needs_review: false (section header inference)
-- 0.70-0.79 confidence = needs_review: true (proximity-based, verify)
-- Below 0.70 confidence = needs_review: true (uncertain, definitely review)
-
-## Refinement #15: Phone Number Validation
-(See CRITICAL PHONE NUMBER RULES above)
-
-## Refinement #16: Tabular Cell Boundary Detection
-For tables with clearly separated columns (Name | Phone | Email | Location):
-- Each column is discrete data — NEVER concatenate across columns
-- Phone column contains ONLY phone digits (10 digits max)
-- Email column contains ONLY email addresses (starts with letters, contains @)
-- Location/code columns contain short strings like "PO", "Loc 1", "Loc 2"
-
-## Refinement #17: Email Extraction from Tabular Sheets (CRITICAL)
-For sheets with visible table structure:
-- ALWAYS extract email from Email column
-- Match each email to contact in same table row
-- Do NOT leave emails in unassigned_emails when table structure is clear
-- Finding ZERO emails from tabular call sheet is a CRITICAL FAILURE
-
-## Refinement #18: Never Create Contacts with Email as Name (CRITICAL)
-String containing "@" is ALWAYS an email address, NEVER a person's name.
-Hard rules:
-- If potential "name" contains "@" → it is an email, NOT a name
-- Emails must be assigned to contact in same table row
-- If cannot determine which contact owns email → put in unassigned_emails
-- NEVER create contact object where name = "something@domain.com"
-
-## Refinement #19: Strict Row Integrity — No External Role Inference (CRITICAL)
-When parsing tables with headers like TITLE | NAME | PHONE | EMAIL:
-- Each row is ONE contact
-- Read left to right across each row
-- NEVER shift data between rows
-- NEVER infer roles from:
-  - Database history or known profiles
-  - Name familiarity
-  - Past extractions from other documents
-  - Industry conventions or guessing
-
-## Refinement #20: Talent vs Model Classification
-When section header says "TALENT", "ARTIST", "CLIENT TEAM", or "ARTIST CALL":
-- If name appears to be artist/musician → role: "Artist" or "Talent", department: "Casting"
-- Only use "Model" when call sheet explicitly says "MODEL" or clearly modeling/fashion shoot
-
-Single-word names (e.g., "BB", "Dev", "Sean", "Blu"):
-- Accept as valid names
-- Mark needs_review: true
-- Confidence: no higher than 0.80
-- Do NOT attempt to expand to multi-word names
-
-## Refinement #21: Vendor Row Email Extraction (CRITICAL)
-Vendor tables often have format: Company | Phone | Email | Contact Name
-When row has company name AND email AND contact name:
-- Create contact with person's name (last name-like column)
-- Attach email from same row to that contact
-- Company name can be stored as context in role
-- Do NOT leave vendor emails in unassigned_emails when row clearly shows which person they belong to
-
-## Refinement #22: Section-Based Role Anchoring (CRITICAL)
-Sections like "MGK'S TEAM", "ARTIST TEAM" have explicit position columns.
-- Position column value IS the role, NOT the section header
-- Section header provides department context only
-- Read position column value exactly for each row
-- Do NOT assign everyone in "MGK'S TEAM" the role "Manager" just because it's a talent management section
-
-## Refinement #23: Stand-In / Photo Double Classification
-Roles explicitly stated as "Stand-In", "Photo Double", or "Stunt Double":
-- ALWAYS use explicit role, do NOT infer different role
-- Department: "Casting" (they are cast support)
-- Confidence: 0.85+ if explicitly stated
-- Stand-In roles take priority over section header inference
-
-# ROLE NORMALIZATION
-
-Use these canonical role names (not variations):
-- "1st AC" not "First AC" or "1st Assistant Camera"
-- "2nd AC" not "Second AC"
-- "Gaffer" not "Chief Lighting Technician"
-- "Best Boy Electric" not "BBE"
-- "Sound Mixer" not "Production Sound Mixer"
-- "1st AD" not "First Assistant Director"
-- "Key HMU" for key hair/makeup
-- "Makeup Artist" or "Hair Stylist" for individual roles
-- "BTS Photographer" for behind-the-scenes stills
-- "Stylist" for wardrobe stylists
-- "Crafty" for craft services
-
-For new roles not in this list:
-- Keep role name exactly as written (normalized formatting only)
-- Assign to most appropriate of 12 canonical departments
-- Set needs_review=true
+Also return:
+- project_title: Production name if visible
+- parsed_date: Date in YYYY-MM-DD format
+- unassigned_emails: Anchor emails that couldn't be matched to anyone
+- unassigned_phones: Anchor phones that couldn't be matched to anyone
+- unverified_candidates: Phones/emails seen in image but NOT in anchors (for verification)
 
 # CONFIDENCE CALIBRATION
+- 0.95+: All data clearly visible in same row, anchor matched
+- 0.85-0.94: Layout trusted, anchor matched
+- 0.70-0.84: Some inference needed, set needs_review=true
+- Below 0.70: Uncertain, definitely needs_review=true`;
 
-- 0.95+ = All data clearly in same row, role explicitly stated, normalized correctly
-- 0.85-0.94 = Role from visual layout (trusted but not explicit text)
-- 0.80-0.89 = Role inferred from section header
-- 0.70-0.79 = Email matched by proximity, role unknown
-- 0.60-0.69 = Uncertain, needs human review
-- Below 0.60 = Very uncertain, definitely needs_review=true
+// ============================================================================
+// TEXT-ONLY FALLBACK PROMPT (when screenshots unavailable)
+// ============================================================================
 
-High confidence pairs (role+department combinations that get +0.1 confidence boost):
-- "Director of Photography" + "Camera"
-- "Gaffer" + "Grip & Electric"
-- "Key Grip" + "Grip & Electric"
-- "1st AD" + "Direction"
-- "Production Coordinator" + "Agency/Production"
-- "Sound Mixer" + "Sound"
+const TEXT_FALLBACK_PROMPT = `You are an expert call sheet parser. Extract ALL contacts using these rules:
 
-Set needs_review=true if:
-- Confidence below 0.7
-- Role/department could not be confidently normalized
-- Any data seems uncertain
+# ANCHORS ARE HIGH-CONFIDENCE DATA
+- Pre-extracted phones/emails will be provided as "anchors"
+- PREFER phones/emails from the anchors list
+- If you find additional phones/emails clearly present in the text, include them with lower confidence (0.70-0.80)
+- Never hallucinate contact information — only output what is explicitly in the text
 
-# METADATA EXTRACTION
+# EXTRACTION METHOD
+1. Find each person's name and role
+2. Match anchor phones/emails by proximity in the text
+3. If uncertain which phone belongs to whom, leave it unassigned
 
-## Shoot Date Extraction
-Look for shoot date in document header or prominently displayed.
-Common formats: "SHOOT DATE: August 16, 2021", "DATE: 8/16/21", "Monday, August 16th, 2021", "Day 1 - Aug 16"
-Return in YYYY-MM-DD format (e.g., "2021-08-16")
-If no date found, return empty string ""
+# 12 CANONICAL DEPARTMENTS
+1. Agency/Production, 2. Direction, 3. Camera, 4. Sound, 5. Grip & Electric
+6. Art, 7. Hair/Makeup/Grooming, 8. Styling/Wardrobe, 9. Casting
+10. Miscellaneous, 11. Post-Production, 12. Vendors/Services
 
-## Project Title Extraction
-Extract project_title if visible (e.g., "TAB TIME", "NIKE CAMPAIGN", etc.)
-Return empty string if not found
+# OUTPUT
+- contacts: Array of {name, roles, departments, phones, emails, ig_handle, confidence, needs_review}
+- project_title, parsed_date
+- unassigned_emails, unassigned_phones (anchors that couldn't be matched)`;
 
-# OUTPUT FORMAT
-
-Return a JSON object with this EXACT structure:
-{
-  "contacts": [
-    {
-      "name": "Full Name",
-      "roles": ["Role 1"],
-      "departments": ["One of 12 canonical departments"],
-      "emails": ["email@example.com"],
-      "phones": ["1234567890"],
-      "ig_handle": "@handle or null",
-      "confidence": 0.95,
-      "needs_review": false
-    }
-  ],
-  "project_title": "Name of the production or null",
-  "parsed_date": "YYYY-MM-DD or null",
-  "unassigned_emails": ["emails that could not be matched to a contact"],
-  "unassigned_phones": ["phones that could not be matched to a contact"]
-}
-
-# FINAL INSTRUCTION
-
-> "Extract EVERY person and EVERY piece of contact information. Missing data is worse than uncertain data."`;
+// ============================================================================
+// MAIN SERVE HANDLER
+// ============================================================================
 
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -485,7 +502,6 @@ serve(async (req) => {
       );
     }
 
-    // Initialize timing tracking
     const parseStartTime = Date.now();
     const actionLog: { action: string; timestamp: string; duration_ms?: number }[] = [];
     
@@ -494,17 +510,15 @@ serve(async (req) => {
         action,
         timestamp: new Date().toISOString()
       };
-      if (startTime) {
-        entry.duration_ms = Date.now() - startTime;
-      }
+      if (startTime) entry.duration_ms = Date.now() - startTime;
       actionLog.push(entry);
       console.log(`[parse-call-sheet] ${action}${entry.duration_ms ? ` (${entry.duration_ms}ms)` : ''}`);
     };
 
-    logAction("Started processing");
+    logAction("Started processing (Option B: Anchor + Vision)");
     console.log(`[parse-call-sheet] Processing call sheet: ${call_sheet_id}`);
 
-    // Fetch from global_call_sheets table
+    // Fetch call sheet record
     const { data: callSheet, error: fetchError } = await supabase
       .from("global_call_sheets")
       .select("*")
@@ -519,7 +533,6 @@ serve(async (req) => {
       );
     }
 
-    // Skip if already parsed
     if (callSheet.status === "parsed") {
       console.log("[parse-call-sheet] Already parsed, skipping");
       return new Response(
@@ -534,9 +547,7 @@ serve(async (req) => {
       .update({ status: "parsing", error_message: null, parsing_started_at: new Date().toISOString() })
       .eq("id", call_sheet_id);
 
-    console.log(`[parse-call-sheet] Downloading file: ${callSheet.master_file_path}`);
-
-    // Download the PDF from storage using master_file_path
+    // Download PDF
     const downloadStart = Date.now();
     const { data: fileData, error: downloadError } = await supabase.storage
       .from("call_sheets")
@@ -554,186 +565,102 @@ serve(async (req) => {
     const fileSize = fileData.size;
     logAction(`PDF downloaded (${(fileSize / 1024).toFixed(1)} KB)`, downloadStart);
 
-    // Check if this is a priority mode parse (admin override)
     const isPriorityMode = callSheet.extraction_mode === "firecrawl_priority";
-    if (isPriorityMode) {
-      console.log("[parse-call-sheet] PRIORITY MODE: Firecrawl first with relaxed thresholds");
-    }
-
-    // =========================================================================
-    // QUALITY-GATED EXTRACTION: unpdf first (fast), Firecrawl fallback (OCR)
-    // In PRIORITY MODE: Firecrawl FIRST with relaxed thresholds
-    // Gemini only sees text that passes quality checks
-    // =========================================================================
-    
-    let pdfText = "";
-    let extractionMethod = "unpdf";
-    let unpdfQuality: ExtractionQuality | null = null;
-    let firecrawlQuality: ExtractionQuality | null = null;
     const firecrawlApiKey = Deno.env.get("FIRECRAWL_API_KEY");
 
-    if (isPriorityMode && firecrawlApiKey) {
-      // PRIORITY MODE: Firecrawl FIRST with relaxed quality gate
-      console.log("[parse-call-sheet] PRIORITY: Running Firecrawl first...");
-      const firecrawlStart = Date.now();
-      
-      try {
-        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-          .from("call_sheets")
-          .createSignedUrl(callSheet.master_file_path, 300);
-        
-        if (signedUrlError || !signedUrlData?.signedUrl) {
-          throw new Error("Failed to create signed URL");
-        }
-        
-        const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${firecrawlApiKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url: signedUrlData.signedUrl,
-            formats: ["markdown"],
-            onlyMainContent: false,
-          }),
-        });
-        
-        if (!firecrawlResponse.ok) {
-          throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
-        }
-        
-        const firecrawlData = await firecrawlResponse.json();
-        const firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
-        logAction(`PRIORITY Firecrawl extracted (${firecrawlText.length} chars)`, firecrawlStart);
-        
-        // Priority mode uses relaxed quality gate
-        firecrawlQuality = scoreExtraction(firecrawlText, true);
-        console.log(`[parse-call-sheet] PRIORITY Firecrawl quality: passed=${firecrawlQuality.passed}, passedVia=${firecrawlQuality.passedVia}, chars=${firecrawlQuality.charCount}, callTimes=${firecrawlQuality.callTimePatterns}`);
-        
-        if (firecrawlQuality.passed) {
-          pdfText = firecrawlText;
-          extractionMethod = "firecrawl_priority";
-        }
-      } catch (firecrawlError) {
-        console.warn("[parse-call-sheet] PRIORITY Firecrawl failed:", firecrawlError);
-      }
-      
-      // If priority Firecrawl failed, fall back to unpdf with priority mode scoring
-      if (!pdfText) {
-        console.log("[parse-call-sheet] PRIORITY: Firecrawl failed, trying unpdf with relaxed thresholds...");
-        const unpdfStart = Date.now();
-        const unpdfText = await extractTextFromPdf(fileData);
-        logAction(`PRIORITY unpdf extracted (${unpdfText.length} chars)`, unpdfStart);
-        
-        unpdfQuality = scoreExtraction(unpdfText, true);
-        if (unpdfQuality.passed) {
-          pdfText = unpdfText;
-          extractionMethod = "unpdf_priority";
-        }
-      }
-    } else {
-      // NORMAL MODE: unpdf first (fast), Firecrawl fallback
-      console.log("[parse-call-sheet] Extracting text from PDF with unpdf (fast path)...");
-      const unpdfStart = Date.now();
-      const unpdfText = await extractTextFromPdf(fileData);
-      logAction(`unpdf extracted (${unpdfText.length} chars)`, unpdfStart);
-      
-      // Score unpdf extraction quality (normal mode)
-      unpdfQuality = scoreExtraction(unpdfText, false);
-      console.log(`[parse-call-sheet] unpdf quality: passed=${unpdfQuality.passed}, passedVia=${unpdfQuality.passedVia}, chars=${unpdfQuality.charCount}, phones=${unpdfQuality.phonePatterns}, emails=${unpdfQuality.emailPatterns}, callTimes=${unpdfQuality.callTimePatterns}, keywords=${unpdfQuality.keywordScore}`);
-      
-      if (unpdfQuality.passed) {
-        pdfText = unpdfText;
-        extractionMethod = "unpdf";
-        console.log(`[parse-call-sheet] unpdf passed quality check via ${unpdfQuality.passedVia} mode`);
-      } else if (firecrawlApiKey) {
-        // Fallback to Firecrawl OCR
-        console.log(`[parse-call-sheet] unpdf failed quality check (${unpdfQuality.reason}), trying Firecrawl OCR...`);
-        const firecrawlStart = Date.now();
-        
-        try {
-          const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-            .from("call_sheets")
-            .createSignedUrl(callSheet.master_file_path, 300);
-          
-          if (signedUrlError || !signedUrlData?.signedUrl) {
-            throw new Error("Failed to create signed URL");
-          }
-          
-          const firecrawlResponse = await fetch("https://api.firecrawl.dev/v1/scrape", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${firecrawlApiKey}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              url: signedUrlData.signedUrl,
-              formats: ["markdown"],
-              onlyMainContent: false,
-            }),
-          });
-          
-          if (!firecrawlResponse.ok) {
-            throw new Error(`Firecrawl API error: ${firecrawlResponse.status}`);
-          }
-          
-          const firecrawlData = await firecrawlResponse.json();
-          const firecrawlText = firecrawlData.data?.markdown || firecrawlData.markdown || "";
-          logAction(`Firecrawl extracted (${firecrawlText.length} chars)`, firecrawlStart);
-          
-          firecrawlQuality = scoreExtraction(firecrawlText, false);
-          console.log(`[parse-call-sheet] Firecrawl quality: passed=${firecrawlQuality.passed}, passedVia=${firecrawlQuality.passedVia}, chars=${firecrawlQuality.charCount}, phones=${firecrawlQuality.phonePatterns}, emails=${firecrawlQuality.emailPatterns}, callTimes=${firecrawlQuality.callTimePatterns}`);
-          
-          if (firecrawlQuality.passed) {
-            pdfText = firecrawlText;
-            extractionMethod = "firecrawl";
-            console.log(`[parse-call-sheet] Firecrawl passed quality check via ${firecrawlQuality.passedVia} mode`);
-          } else {
-            console.warn(`[parse-call-sheet] Firecrawl also failed quality check: ${firecrawlQuality.reason}`);
-          }
-        } catch (firecrawlError) {
-          console.warn("[parse-call-sheet] Firecrawl failed:", firecrawlError);
-        }
-      } else {
-        console.log("[parse-call-sheet] FIRECRAWL_API_KEY not configured, cannot fallback to OCR");
-      }
-    }
+    // =========================================================================
+    // STEP 1: EXTRACT ANCHORS FROM UNPDF (deterministic, fast)
+    // =========================================================================
     
-    // STEP 5: Final quality gate - block Gemini if quality too low
-    const finalQuality = extractionMethod.includes("firecrawl") ? firecrawlQuality : unpdfQuality;
-    if (!finalQuality?.passed) {
-      const errorDetails = [
-        `chars: ${finalQuality?.charCount ?? 0}`,
-        `phones: ${finalQuality?.phonePatterns ?? 0}`,
-        `emails: ${finalQuality?.emailPatterns ?? 0}`,
-        `callTimes: ${finalQuality?.callTimePatterns ?? 0}`,
-        `keywords: ${finalQuality?.keywordScore ?? 0}`,
-        isPriorityMode ? '(priority mode)' : ''
-      ].filter(Boolean).join(', ');
-      
-      console.error(`[parse-call-sheet] Quality too low for reliable parsing: ${errorDetails}`);
+    const anchorStart = Date.now();
+    const unpdfText = await extractTextFromPdf(fileData);
+    const anchors = extractAnchors(unpdfText);
+    logAction(`Anchors extracted: ${anchors.phones.length} phones, ${anchors.emails.length} emails, ${anchors.igHandles.length} IGs`, anchorStart);
+    console.log(`[parse-call-sheet] Anchors: phones=${JSON.stringify(anchors.phones.slice(0, 3))}..., emails=${JSON.stringify(anchors.emails.slice(0, 3))}...`);
+
+    // Quality check on unpdf text
+    const unpdfQuality = scoreExtraction(unpdfText, isPriorityMode);
+    console.log(`[parse-call-sheet] unpdf quality: passed=${unpdfQuality.passed}, chars=${unpdfQuality.charCount}, phones=${unpdfQuality.phonePatterns}`);
+
+    // =========================================================================
+    // STEP 2: GET FIRECRAWL SCREENSHOT (multimodal input)
+    // =========================================================================
+    
+    // Convert PDF to base64 for direct AI model upload (replaces Firecrawl single-page screenshot)
+    let pdfBase64 = "";
+    let extractionMethod = "unpdf_text_only";
+    
+    const pdfConvertStart = Date.now();
+    try {
+      const arrayBuffer = await fileData.arrayBuffer();
+      // Convert to base64 for Gemini PDF upload
+      const bytes = new Uint8Array(arrayBuffer);
+      let binary = "";
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      pdfBase64 = btoa(binary);
+      extractionMethod = "direct_pdf_upload";
+      logAction(`PDF converted to base64 (${(pdfBase64.length / 1024).toFixed(1)} KB base64)`, pdfConvertStart);
+    } catch (pdfErr) {
+      console.warn("[parse-call-sheet] PDF base64 conversion failed:", pdfErr);
+      logAction(`PDF base64 conversion failed: ${pdfErr instanceof Error ? pdfErr.message : 'unknown'}`);
+    }
+
+    // =========================================================================
+    // STEP 3: QUALITY GATE - Determine best extraction path
+    // =========================================================================
+    
+    const hasPdfDirect = pdfBase64.length > 0;
+    const bestTextQuality = unpdfQuality;
+    const bestText = unpdfText;
+    
+    // Minimum anchor threshold
+    const minAnchors = anchors.phones.length >= 1 || anchors.emails.length >= 1;
+    
+    if (!minAnchors && !hasPdfDirect && !bestTextQuality.passed) {
+      const errorDetails = `No anchors (phones: ${anchors.phones.length}, emails: ${anchors.emails.length}), no screenshot, quality check failed`;
+      console.error(`[parse-call-sheet] Quality too low: ${errorDetails}`);
       await markAsError(supabase, call_sheet_id, 
-        `Document quality too low for reliable parsing (${errorDetails}). ${isPriorityMode ? 'Even priority mode could not extract usable content.' : 'Try uploading a text-based PDF or use FIRECRAWL PRIORITY for scanned documents.'}`
+        `Document quality too low for reliable parsing. ${errorDetails}. Try uploading a higher quality PDF.`
       );
-      // Return 200 with error_code so queue processor treats as terminal (no retry)
       return new Response(
-        JSON.stringify({ 
-          success: false,
-          error_code: "quality_too_low",
-          error: "Document quality too low for reliable parsing",
-          quality: finalQuality 
-        }),
+        JSON.stringify({ success: false, error_code: "quality_too_low", error: "Document quality too low", quality: bestTextQuality }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[parse-call-sheet] Text extracted via ${extractionMethod}: ${pdfText.slice(0, 500)}...`);
-
-    // Use AI to parse contacts with google/gemini-2.5-flash
-    console.log("[parse-call-sheet] Sending to AI for parsing (google/gemini-2.5-flash)...");
+    // =========================================================================
+    // STEP 4: MULTIMODAL AI PARSING (with anchors as leash)
+    // =========================================================================
+    
     const aiStart = Date.now();
-    const parseResult = await parseWithAI(pdfText, lovableApiKey);
+    let parseResult: ParseResult;
+    let modelUsed = "google/gemini-2.5-pro"; // Single-pass with strongest model
+    let escalated = false;
+
+    if (hasPdfDirect) {
+      // PRIMARY PATH: Direct PDF upload to Gemini (full visual context, all pages)
+      console.log("[parse-call-sheet] Using direct PDF upload path (all pages, full context)");
+      parseResult = await parseWithDirectPdf(
+        pdfBase64,
+        anchors,
+        bestText.slice(0, 30000), // Text as supplemental context (increased from 10k)
+        lovableApiKey,
+        "google/gemini-2.5-pro"
+      );
+      modelUsed = "google/gemini-2.5-pro";
+    } else {
+      // FALLBACK PATH: Text-only with anchors
+      console.log("[parse-call-sheet] Using text-only path with anchors (no PDF available)");
+      parseResult = await parseWithTextOnly(
+        bestText,
+        anchors,
+        lovableApiKey,
+        "google/gemini-2.5-pro" // Use strongest model even for text-only
+      );
+      modelUsed = "google/gemini-2.5-pro";
+    }
 
     if (!parseResult || !parseResult.contacts) {
       console.error("[parse-call-sheet] AI parsing failed");
@@ -746,54 +673,77 @@ serve(async (req) => {
 
     logAction(`AI parsed ${parseResult.contacts.length} contacts`, aiStart);
 
-    // Post-processing: Sanitize phones and validate contacts
+    // =========================================================================
+    // STEP 5: VERIFICATION + REPAIR (deterministic)
+    // =========================================================================
+    
+    const verifyStart = Date.now();
+    const { verified, metrics } = verifyAndRepairContacts(parseResult, anchors);
+    logAction(`Verified: ${verified.length} contacts, ${metrics.unassignedPhones} unassigned phones, ${metrics.unassignedEmails} unassigned emails`, verifyStart);
+    
+    console.log(`[parse-call-sheet] Verification metrics: unassignedRatio=${metrics.unassignedRatio.toFixed(2)}, unknownNameRatio=${metrics.unknownNameRatio.toFixed(2)}`);
+
+    // STEP 6: ESCALATION REMOVED — Single-pass with strongest model (gemini-2.5-pro)
+    // Previous architecture used triple-pass (flash → GPT escalation → GPT correction)
+    // which added latency and mutation risk. Now using one strong model pass.
+    logAction(`Single-pass complete, skipping escalation (using ${modelUsed})`);
+
+    // =========================================================================
+    // STEP 7: FINAL SANITIZATION + VALIDATION
+    // =========================================================================
+    
     const sanitizeStart = Date.now();
     const sanitizedContacts = sanitizePhones(parseResult.contacts);
     const validatedContacts = validateAndNormalizeContacts(sanitizedContacts);
-    logAction(`Contacts sanitized (${validatedContacts.length} final)`, sanitizeStart);
+    
+    // Anchor scoring pass: lower confidence for non-anchor data instead of deleting
+    const finalContacts = scoreByAnchorMatch(validatedContacts, anchors);
+    logAction(`Final: ${finalContacts.length} contacts after sanitization`, sanitizeStart);
 
-    // Calculate total elapsed time
+    // =========================================================================
+    // STEP 7.5: GPT-5.2 FINAL CORRECTION PASS
+    // =========================================================================
+    
+    const correctionStart = Date.now();
+    const correctedContacts = await correctWithGPT52(bestText, finalContacts, lovableApiKey);
+    logAction(`GPT-5.2 correction: ${correctedContacts.length} contacts (was ${finalContacts.length})`, correctionStart);
+
     const totalElapsedMs = Date.now() - parseStartTime;
-    const totalElapsedFormatted = `${(totalElapsedMs / 1000).toFixed(2)}s`;
-    logAction(`Processing complete`);
 
     const parseTiming = {
       total_elapsed_ms: totalElapsedMs,
-      total_elapsed_formatted: totalElapsedFormatted,
-      model_used: "google/gemini-2.5-flash",
+      total_elapsed_formatted: `${(totalElapsedMs / 1000).toFixed(2)}s`,
+      model_used: modelUsed,
       extraction_method: extractionMethod,
-      unpdf_quality: unpdfQuality,
-      firecrawl_quality: firecrawlQuality,
-      fallback_triggered: extractionMethod === "firecrawl"
+      has_pdf_direct: hasPdfDirect,
+      escalated: escalated,
+      gpt52_correction: true,
+      anchors_found: { phones: anchors.phones.length, emails: anchors.emails.length },
+      verification_metrics: metrics,
+      unpdf_quality: unpdfQuality
     };
 
-    console.log(`[parse-call-sheet] Total processing time: ${totalElapsedFormatted}, method: ${extractionMethod}, fallback: ${extractionMethod === "firecrawl"}`);
+    console.log(`[parse-call-sheet] Complete: ${correctedContacts.length} contacts, ${totalElapsedMs}ms, method=${extractionMethod}, model=${modelUsed}`);
 
-    // CRITICAL: Extract canonical producers ONLY if not already set (FIRST PARSE ONLY)
-    // This snapshot is IMMUTABLE and feeds the Heat Map + Network Graph
+    // Extract canonical producers (first parse only)
     let canonicalProducersUpdate: { canonical_producers?: CanonicalProducer[] } = {};
     if (!callSheet.canonical_producers) {
-      const canonicalProducers = extractCanonicalProducers(validatedContacts);
+      const canonicalProducers = extractCanonicalProducers(correctedContacts);
       canonicalProducersUpdate = { canonical_producers: canonicalProducers };
-      console.log(`[parse-call-sheet] LOCKED ${canonicalProducers.length} canonical producers (immutable snapshot)`);
-    } else {
-      console.log(`[parse-call-sheet] canonical_producers already locked, skipping (immutable)`);
+      console.log(`[parse-call-sheet] LOCKED ${canonicalProducers.length} canonical producers`);
     }
 
-    // Update global_call_sheets with parsed data including timing
+    // Update database - no parsed_contacts (PDF is source of truth; production_instance gets canonical_producers)
     const { error: updateError } = await supabase
       .from("global_call_sheets")
       .update({
-        status: "parsed",
-        parsed_contacts: validatedContacts,
-        contacts_extracted: validatedContacts.length,
+        status: "complete",
         project_title: parseResult.project_title,
         parsed_date: parseResult.parsed_date,
         parse_timing: parseTiming,
         parse_action_log: actionLog,
         error_message: null,
         updated_at: new Date().toISOString(),
-        // Reset extraction_mode back to 'auto' after successful parse
         extraction_mode: "auto",
         ...canonicalProducersUpdate
       })
@@ -801,28 +751,129 @@ serve(async (req) => {
 
     if (updateError) {
       console.error("[parse-call-sheet] Failed to update call sheet:", updateError);
-      await markAsError(supabase, call_sheet_id, "Failed to save parsed contacts");
+      await markAsError(supabase, call_sheet_id, "Failed to save parse results");
       return new Response(
         JSON.stringify({ error: "Failed to save results" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[parse-call-sheet] Successfully parsed call sheet ${call_sheet_id}, contacts: ${validatedContacts.length}`);
+    // =========================================================================
+    // LL 2.0: Create/update production_instance for Active Productions leaderboard
+    // =========================================================================
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const shootStartDate = parseResult.parsed_date || todayStr;
+    const canonicalProducersForContacts = canonicalProducersUpdate.canonical_producers
+      ?? (callSheet.canonical_producers as CanonicalProducer[] | null)
+      ?? extractCanonicalProducers(correctedContacts);
+    const { error: piError } = await supabase
+      .from("production_instances")
+      .upsert(
+        {
+          global_call_sheet_id: call_sheet_id,
+          production_name: parseResult.project_title || callSheet.original_file_name || "Unknown Production",
+          company_name: parseResult.production_company ?? null,
+          primary_contacts: canonicalProducersForContacts,
+          shoot_start_date: shootStartDate,
+          extracted_date: todayStr,
+          verification_status: "unverified",
+          metadata: {},
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "global_call_sheet_id" }
+      );
+    if (piError) {
+      console.warn("[parse-call-sheet] Failed to upsert production_instance (non-fatal):", piError);
+    } else {
+      console.log("[parse-call-sheet] Upserted production_instance for Active Productions board");
+    }
 
-    // ============================================================================
-    // MANUAL SORTING WORKFLOW (Replaces old auto-add pipeline)
-    // Contacts are now saved to parsed_contacts JSON only.
-    // User must manually review and add contacts via ParseSummaryPanel.
-    // Credits system reads directly from parsed_contacts - unaffected.
-    // ============================================================================
-    console.log(`[parse-call-sheet] PIPELINE DISABLED: Manual sorting workflow active. User will review ${validatedContacts.length} contacts via UI.`);
+    // =========================================================================
+    // PROJECT FINGERPRINT MATCHING
+    // =========================================================================
+    
+    const fingerprintProducers = callSheet.canonical_producers 
+      ? callSheet.canonical_producers as CanonicalProducer[]
+      : extractCanonicalProducers(correctedContacts);
+    
+    const fingerprint = generateFingerprint(
+      parseResult.project_title,
+      fingerprintProducers,
+      correctedContacts,
+      parseResult.parsed_date
+    );
+    
+    let projectId: string | null = null;
+    
+    if (!callSheet.youtube_video_id) {
+      const { data: existingProjects } = await supabase
+        .from("youtube_videos")
+        .select("id, project_fingerprint, canonical_title, title, source_count, shoot_start_date, shoot_end_date")
+        .not("project_fingerprint", "is", null);
+      
+      let bestMatch: { id: string; canonical_title: string | null; title: string | null; source_count: number; shoot_end_date: string | null } | null = null;
+      let bestScore = 0;
+      
+      for (const project of existingProjects || []) {
+        if (!project.project_fingerprint) continue;
+        const score = computeFingerprintSimilarity(fingerprint, project.project_fingerprint as ProjectFingerprint);
+        if (score > bestScore && score >= FINGERPRINT_MATCH_THRESHOLD) {
+          bestScore = score;
+          bestMatch = project;
+        }
+      }
+      
+      if (bestMatch) {
+        projectId = bestMatch.id;
+        await supabase.from("global_call_sheets").update({ youtube_video_id: bestMatch.id }).eq("id", call_sheet_id);
+        
+        const newEndDate = parseResult.parsed_date && bestMatch.shoot_end_date
+          ? (parseResult.parsed_date > bestMatch.shoot_end_date ? parseResult.parsed_date : bestMatch.shoot_end_date)
+          : parseResult.parsed_date || bestMatch.shoot_end_date;
+        
+        await supabase.from("youtube_videos").update({
+          shoot_end_date: newEndDate,
+          source_count: (bestMatch.source_count || 1) + 1
+        }).eq("id", bestMatch.id);
+        
+        console.log(`[parse-call-sheet] MATCHED to project: "${bestMatch.canonical_title || bestMatch.title}" (${(bestScore * 100).toFixed(1)}%)`);
+      } else {
+        const { data: newProject, error: createError } = await supabase
+          .from("youtube_videos")
+          .insert({
+            video_id: null,
+            title: parseResult.project_title,
+            canonical_title: parseResult.project_title,
+            project_fingerprint: fingerprint,
+            shoot_start_date: parseResult.parsed_date,
+            shoot_end_date: parseResult.parsed_date,
+            verified: false,
+            source_count: 1,
+            project_type: 'music_video'
+          })
+          .select("id")
+          .single();
+        
+        if (!createError && newProject) {
+          projectId = newProject.id;
+          await supabase.from("global_call_sheets").update({ youtube_video_id: newProject.id }).eq("id", call_sheet_id);
+          console.log(`[parse-call-sheet] CREATED new project: "${parseResult.project_title}"`);
+        }
+      }
+    } else {
+      projectId = callSheet.youtube_video_id;
+    }
 
     return new Response(
       JSON.stringify({
         success: true,
-        contacts_count: validatedContacts.length,
+        contacts_count: correctedContacts.length,
         project_title: parseResult.project_title,
+        project_id: projectId,
+        extraction_method: extractionMethod,
+        model_used: modelUsed,
+        escalated: escalated,
+        anchors_found: { phones: anchors.phones.length, emails: anchors.emails.length },
         unassigned_emails: parseResult.unassigned_emails?.length || 0,
         unassigned_phones: parseResult.unassigned_phones?.length || 0,
       }),
@@ -838,6 +889,10 @@ serve(async (req) => {
   }
 });
 
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
 async function markAsError(supabase: any, callSheetId: string, errorMessage: string) {
   await supabase
     .from("global_call_sheets")
@@ -845,8 +900,560 @@ async function markAsError(supabase: any, callSheetId: string, errorMessage: str
     .eq("id", callSheetId);
 }
 
+async function extractTextFromPdf(pdfBlob: Blob): Promise<string> {
+  try {
+    const arrayBuffer = await pdfBlob.arrayBuffer();
+    const { text, totalPages } = await extractText(arrayBuffer, { mergePages: true });
+    console.log(`[parse-call-sheet] PDF pages: ${totalPages}, raw text: ${text.length} chars`);
+    return text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\n{3,}/g, '\n\n').replace(/[ \t]+/g, ' ').trim();
+  } catch (error) {
+    console.error("[parse-call-sheet] unpdf extraction failed:", error);
+    return "";
+  }
+}
+
 // ============================================================================
-// POST-PROCESSING: Phone Sanitization (Extra Credit Rules)
+// DIRECT PDF UPLOAD AI PARSING (Change 1: full visual context, all pages)
+// ============================================================================
+
+async function parseWithDirectPdf(
+  pdfBase64: string,
+  anchors: Anchors,
+  textHint: string,
+  apiKey: string,
+  model: string
+): Promise<ParseResult> {
+  const content: any[] = [];
+  
+  // Send PDF directly as a file (Gemini supports inline_data for PDFs)
+  content.push({
+    type: "image_url",
+    image_url: { url: `data:application/pdf;base64,${pdfBase64}` }
+  });
+  
+  content.push({
+    type: "text",
+    text: `Parse this call sheet PDF. The FULL document is attached — extract contacts from ALL pages.
+
+## HIGH-CONFIDENCE ANCHORS (prefer these)
+Phones: ${JSON.stringify(anchors.phones)}
+Emails: ${JSON.stringify(anchors.emails)}
+IG Handles: ${JSON.stringify(anchors.igHandles)}
+
+## RULES
+- PREFER phones/emails from the anchors above — these are verified by OCR
+- If you see a phone/email clearly in the PDF but NOT in anchors, include it with lower confidence (0.70-0.80) and also add to unverified_candidates
+- Match each anchor to the correct person by their row position in the document
+- Extract contacts from ALL pages
+
+## SUPPLEMENTAL TEXT (for name verification)
+${textHint.slice(0, 30000)}`
+  });
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: "system", content: MULTIMODAL_SYSTEM_PROMPT },
+        { role: "user", content: content }
+      ],
+      max_completion_tokens: 16000,
+      tools: [buildContactExtractionTool()],
+      tool_choice: { type: "function", function: { name: "extract_contacts" } }
+    }),
+  });
+
+  return handleAIResponse(response);
+}
+
+// ============================================================================
+// MULTIMODAL AI PARSING (screenshot + anchors — legacy fallback)
+
+async function parseWithMultimodal(
+  screenshots: string[],
+  anchors: Anchors,
+  textHint: string,
+  apiKey: string,
+  model: string
+): Promise<ParseResult> {
+  // Build multimodal content array
+  const content: any[] = [];
+  
+  // Add screenshot images (limit to first 3 pages)
+  for (const base64 of screenshots.slice(0, 3)) {
+    // Determine if it's already a data URL or raw base64
+    const imageUrl = base64.startsWith('data:') ? base64 : `data:image/png;base64,${base64}`;
+    content.push({
+      type: "image_url",
+      image_url: { url: imageUrl }
+    });
+  }
+  
+  // Add instruction with anchors
+  content.push({
+    type: "text",
+    text: `Parse this call sheet. USE THE IMAGE to see the table layout.
+
+## HIGH-CONFIDENCE ANCHORS (prefer these)
+Phones: ${JSON.stringify(anchors.phones)}
+Emails: ${JSON.stringify(anchors.emails)}
+IG Handles: ${JSON.stringify(anchors.igHandles)}
+
+## RULES
+- PREFER phones/emails from the anchors above — these are high-confidence
+- If you see a phone/email clearly in the document but NOT in anchors, include it with lower confidence (0.70-0.80) and also add to unverified_candidates
+- Match each anchor to the correct person by their row position in the document
+- Extract contacts from ALL pages of the document
+
+## SUPPLEMENTAL TEXT (for name verification)
+${textHint.slice(0, 30000)}`
+  });
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: "system", content: MULTIMODAL_SYSTEM_PROMPT },
+        { role: "user", content: content }
+      ],
+      max_completion_tokens: 16000,
+      tools: [buildContactExtractionTool()],
+      tool_choice: { type: "function", function: { name: "extract_contacts" } }
+    }),
+  });
+
+  return handleAIResponse(response);
+}
+
+// ============================================================================
+// TEXT-ONLY AI PARSING (fallback when no screenshot)
+// ============================================================================
+
+async function parseWithTextOnly(
+  text: string,
+  anchors: Anchors,
+  apiKey: string,
+  model: string
+): Promise<ParseResult> {
+  const prompt = `Parse this call sheet text. Extract ALL contacts.
+
+## HIGH-CONFIDENCE ANCHORS (prefer these)
+Phones: ${JSON.stringify(anchors.phones)}
+Emails: ${JSON.stringify(anchors.emails)}
+IG Handles: ${JSON.stringify(anchors.igHandles)}
+
+## RULES
+- PREFER phones/emails from the anchors above — these are high-confidence
+- If you find additional phones/emails clearly present in the text, include them with lower confidence (0.70-0.80)
+- Match anchors to people by proximity in the text
+- If uncertain, leave the anchor unassigned
+
+## CALL SHEET TEXT
+${text.slice(0, 100000)}`;
+
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: [
+        { role: "system", content: TEXT_FALLBACK_PROMPT },
+        { role: "user", content: prompt }
+      ],
+      max_completion_tokens: 16000,
+      tools: [buildContactExtractionTool()],
+      tool_choice: { type: "function", function: { name: "extract_contacts" } }
+    }),
+  });
+
+  return handleAIResponse(response);
+}
+
+function buildContactExtractionTool() {
+  return {
+    type: "function",
+    function: {
+      name: "extract_contacts",
+      description: "Extract contacts from call sheet",
+      parameters: {
+        type: "object",
+        properties: {
+          contacts: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                roles: { type: "array", items: { type: "string" } },
+                departments: { type: "array", items: { type: "string" } },
+                emails: { type: "array", items: { type: "string" } },
+                phones: { type: "array", items: { type: "string" } },
+                ig_handle: { type: "string", nullable: true },
+                confidence: { type: "number" },
+                needs_review: { type: "boolean" }
+              },
+              required: ["name", "roles", "departments", "emails", "phones", "confidence", "needs_review"]
+            }
+          },
+          project_title: { type: "string", nullable: true },
+          parsed_date: { type: "string", nullable: true },
+          unassigned_emails: { type: "array", items: { type: "string" } },
+          unassigned_phones: { type: "array", items: { type: "string" } },
+          unverified_candidates: {
+            type: "object",
+            properties: {
+              phones: { type: "array", items: { type: "string" } },
+              emails: { type: "array", items: { type: "string" } }
+            }
+          }
+        },
+        required: ["contacts"]
+      }
+    }
+  };
+}
+
+async function handleAIResponse(response: Response): Promise<ParseResult> {
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[parse-call-sheet] AI API error:", response.status, errorText);
+    if (response.status === 429) throw new Error("AI rate limit exceeded");
+    if (response.status === 402) throw new Error("AI credits exhausted");
+    throw new Error(`AI API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+  
+  if (toolCall?.function?.arguments) {
+    try {
+      const parsed = JSON.parse(toolCall.function.arguments);
+      console.log(`[parse-call-sheet] AI returned ${parsed.contacts?.length || 0} contacts`);
+      return {
+        contacts: parsed.contacts || [],
+        project_title: parsed.project_title || null,
+        parsed_date: parsed.parsed_date || null,
+        unassigned_emails: parsed.unassigned_emails || [],
+        unassigned_phones: parsed.unassigned_phones || [],
+        production_company: parsed.production_company || null,
+      };
+    } catch (e) {
+      console.error("[parse-call-sheet] Failed to parse AI response:", e);
+      throw new Error("Failed to parse AI response");
+    }
+  }
+
+  // Fallback: try content
+  const content = data.choices?.[0]?.message?.content;
+  if (content) {
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          contacts: parsed.contacts || [],
+          project_title: parsed.project_title || null,
+          parsed_date: parsed.parsed_date || null,
+          unassigned_emails: parsed.unassigned_emails || [],
+          unassigned_phones: parsed.unassigned_phones || [],
+          production_company: parsed.production_company || null,
+        };
+      }
+    } catch (e) {
+      console.error("[parse-call-sheet] Failed to parse content as JSON:", e);
+    }
+  }
+
+  throw new Error("AI returned unexpected response format");
+}
+
+// ============================================================================
+// GPT-5.2 FINAL CORRECTION PASS
+// ============================================================================
+
+async function correctWithGPT52(
+  rawText: string,
+  contacts: ParsedContact[],
+  apiKey: string
+): Promise<ParsedContact[]> {
+  const CORRECTION_SYSTEM_PROMPT = `You are a professional call sheet data editor. You receive raw OCR text from a PDF and a structured JSON parse of that text. Your job is to correct errors in the JSON using the raw text as ground truth.
+
+Rules:
+1. Fix OCR-garbled email domains (Levenshtein distance <= 2 from gmail.com, icloud.com, yahoo.com, outlook.com, hotmail.com only). Never guess a company domain from context.
+2. Reject truncated emails (ending in "..." or missing TLD).
+3. Correct obvious name misspellings ONLY if the raw text explicitly contains the correct spelling.
+4. Validate roles/departments against what appears in the raw text.
+5. Merge duplicates ONLY if BOTH email AND phone match, or the raw text clearly identifies them as the same person.
+6. Do NOT invent data. If you cannot confidently fix something, leave it unchanged.
+7. Do NOT remove contacts. Only correct or merge them.
+8. Preserve phone numbers exactly as provided.
+9. Do NOT expand partial names or initials into full names unless the raw text explicitly contains that exact full name.
+10. Never rewrite, reformat, normalize, or add country codes to phone numbers. Return them exactly as they appear in the input JSON.
+11. If a contact does not appear in the raw text provided, do not modify it.`;
+
+  const userPrompt = `## RAW EXTRACTED TEXT (ground truth)
+${rawText.slice(0, 20000)}
+
+## PARSED CONTACTS JSON (correct any errors)
+${JSON.stringify(contacts, null, 2)}
+
+Review the parsed contacts against the raw text. Fix any OCR errors, misspellings, or incorrect email domains. Return the corrected contacts array.`;
+
+  try {
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "openai/gpt-5.2",
+        messages: [
+          { role: "system", content: CORRECTION_SYSTEM_PROMPT },
+          { role: "user", content: userPrompt }
+        ],
+        max_completion_tokens: 16000,
+        tools: [{
+          type: "function",
+          function: {
+            name: "return_corrected_contacts",
+            description: "Return the corrected contacts array",
+            parameters: {
+              type: "object",
+              properties: {
+                contacts: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string" },
+                      roles: { type: "array", items: { type: "string" } },
+                      departments: { type: "array", items: { type: "string" } },
+                      emails: { type: "array", items: { type: "string" } },
+                      phones: { type: "array", items: { type: "string" } },
+                      ig_handle: { type: "string", nullable: true },
+                      confidence: { type: "number" },
+                      needs_review: { type: "boolean" }
+                    },
+                    required: ["name", "roles", "departments", "emails", "phones", "confidence", "needs_review"]
+                  }
+                }
+              },
+              required: ["contacts"]
+            }
+          }
+        }],
+        tool_choice: { type: "function", function: { name: "return_corrected_contacts" } }
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`[parse-call-sheet] GPT-5.2 correction failed (${response.status}): ${errText.slice(0, 200)}`);
+      return contacts; // Fallback to original
+    }
+
+    const data = await response.json();
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+
+    if (!toolCall?.function?.arguments) {
+      console.warn("[parse-call-sheet] GPT-5.2 returned no tool call, falling back to original");
+      return contacts;
+    }
+
+    const parsed = JSON.parse(toolCall.function.arguments);
+    const corrected: ParsedContact[] = parsed.contacts || [];
+
+    // Post-response validation: drop zombie contacts
+    const validated = corrected.filter(c => {
+      const hasName = c.name && c.name.trim().length > 0;
+      const hasContact = (c.emails && c.emails.length > 0) || (c.phones && c.phones.length > 0);
+      // CHANGED: No longer require roles. A contact with name + phone/email is valid.
+      return hasName && hasContact;
+    });
+
+    const dropped = corrected.length - validated.length;
+    if (dropped > 0) {
+      console.warn(`[parse-call-sheet] GPT-5.2 correction: dropped ${dropped} zombie contacts`);
+    }
+
+    console.log(`[parse-call-sheet] GPT-5.2 correction complete: ${validated.length} contacts returned (input: ${contacts.length})`);
+    return validated;
+
+  } catch (err) {
+    console.warn(`[parse-call-sheet] GPT-5.2 correction error, falling back to original: ${err instanceof Error ? err.message : 'unknown'}`);
+    return contacts; // Fallback to original
+  }
+}
+
+// ============================================================================
+// VERIFICATION + REPAIR (deterministic anchor enforcement)
+// ============================================================================
+
+interface VerificationMetrics {
+  totalContacts: number;
+  assignedPhones: number;
+  assignedEmails: number;
+  unassignedPhones: number;
+  unassignedEmails: number;
+  unassignedRatio: number;
+  unknownNameRatio: number;
+}
+
+function verifyAndRepairContacts(
+  parseResult: ParseResult,
+  anchors: Anchors
+): { verified: ParsedContact[]; metrics: VerificationMetrics } {
+  const anchorPhoneSet = new Set(anchors.phones);
+  const anchorEmailSet = new Set(anchors.emails.map(e => e.toLowerCase()));
+  
+  const usedPhones = new Set<string>();
+  const usedEmails = new Set<string>();
+  let unknownNameCount = 0;
+  
+  // First pass: validate contacts and track used anchors
+  const verifiedContacts = parseResult.contacts.map(contact => {
+    // Validate phones against anchors
+    const validPhones = (contact.phones || [])
+      .map(p => p.replace(/\D/g, '').slice(0, 10))
+      .filter(p => p.length === 10 && anchorPhoneSet.has(p) && !usedPhones.has(p));
+    
+    validPhones.forEach(p => usedPhones.add(p));
+    
+    // Validate emails against anchors
+    const validEmails = (contact.emails || [])
+      .map(e => e.toLowerCase().trim())
+      .filter(e => anchorEmailSet.has(e) && !usedEmails.has(e));
+    
+    validEmails.forEach(e => usedEmails.add(e));
+    
+    // Track unknown names
+    const isUnknownName = !contact.name || 
+      contact.name.toLowerCase().includes('unknown') || 
+      contact.name.toLowerCase().includes('tbd');
+    if (isUnknownName) unknownNameCount++;
+    
+    return {
+      ...contact,
+      phones: validPhones,
+      emails: validEmails,
+      needs_review: contact.needs_review || validPhones.length === 0 && validEmails.length === 0
+    };
+  });
+  
+  // Calculate unassigned anchors
+  const unassignedPhones = anchors.phones.filter(p => !usedPhones.has(p));
+  const unassignedEmails = anchors.emails.filter(e => !usedEmails.has(e.toLowerCase()));
+  
+  const totalAnchors = anchors.phones.length + anchors.emails.length;
+  const unassignedRatio = totalAnchors > 0 
+    ? (unassignedPhones.length + unassignedEmails.length) / totalAnchors 
+    : 0;
+  
+  const unknownNameRatio = verifiedContacts.length > 0 
+    ? unknownNameCount / verifiedContacts.length 
+    : 0;
+  
+  // Repair: create stub contacts for unassigned anchors (high recall)
+  const stubContacts: ParsedContact[] = [];
+  
+  for (const phone of unassignedPhones) {
+    stubContacts.push({
+      name: "Unknown - Review Required",
+      roles: ["Unknown"],
+      departments: ["Miscellaneous"],
+      emails: [],
+      phones: [phone],
+      ig_handle: null,
+      confidence: 0.50,
+      needs_review: true
+    });
+  }
+  
+  for (const email of unassignedEmails) {
+    // Check if this email is already on a stub
+    const alreadyOnStub = stubContacts.some(s => s.emails.includes(email));
+    if (!alreadyOnStub) {
+      stubContacts.push({
+        name: "Unknown - Review Required",
+        roles: ["Unknown"],
+        departments: ["Miscellaneous"],
+        emails: [email],
+        phones: [],
+        ig_handle: null,
+        confidence: 0.50,
+        needs_review: true
+      });
+    }
+  }
+  
+  return {
+    verified: [...verifiedContacts, ...stubContacts],
+    metrics: {
+      totalContacts: verifiedContacts.length,
+      assignedPhones: usedPhones.size,
+      assignedEmails: usedEmails.size,
+      unassignedPhones: unassignedPhones.length,
+      unassignedEmails: unassignedEmails.length,
+      unassignedRatio,
+      unknownNameRatio
+    }
+  };
+}
+
+// ============================================================================
+// ANCHOR SCORING (prefer, don't enforce — Change 2)
+// ============================================================================
+
+function scoreByAnchorMatch(contacts: ParsedContact[], anchors: Anchors): ParsedContact[] {
+  const anchorPhoneSet = new Set(anchors.phones);
+  const anchorEmailSet = new Set(anchors.emails.map(e => e.toLowerCase()));
+  
+  return contacts.map(contact => {
+    const phones = (contact.phones || []).map(p => {
+      const normalized = p.replace(/\D/g, '').slice(0, 10);
+      return normalized.length === 10 ? normalized : null;
+    }).filter((p): p is string => p !== null);
+    
+    const emails = (contact.emails || []).map(e => e.toLowerCase().trim()).filter(e => e.includes('@'));
+    
+    // Check if contact data matches anchors
+    const phonesInAnchors = phones.filter(p => anchorPhoneSet.has(p));
+    const phonesNotInAnchors = phones.filter(p => !anchorPhoneSet.has(p));
+    const emailsInAnchors = emails.filter(e => anchorEmailSet.has(e));
+    const emailsNotInAnchors = emails.filter(e => !anchorEmailSet.has(e));
+    
+    // Lower confidence for non-anchor data
+    let confidence = contact.confidence || 0.85;
+    if (phonesNotInAnchors.length > 0 || emailsNotInAnchors.length > 0) {
+      confidence = Math.min(confidence, 0.75);
+    }
+    
+    return {
+      ...contact,
+      phones: [...phonesInAnchors, ...phonesNotInAnchors], // Keep all, anchors first
+      emails: [...emailsInAnchors, ...emailsNotInAnchors],
+      confidence,
+      needs_review: confidence < 0.80 || contact.needs_review === true
+    };
+  });
+}
+
+// ============================================================================
+// POST-PROCESSING: Phone Sanitization
 // ============================================================================
 
 function sanitizePhones(contacts: ParsedContact[]): ParsedContact[] {
@@ -856,49 +1463,23 @@ function sanitizePhones(contacts: ParsedContact[]): ParsedContact[] {
     const cleanedPhones = (contact.phones || [])
       .filter(phone => {
         if (!phone) return false;
-        
-        // Rule 1: If phone > 100 chars → hallucination, reject
-        if (phone.length > 100) {
-          console.log(`[sanitizePhones] Rejecting hallucinated phone (>100 chars): ${phone.slice(0, 50)}...`);
-          return false;
-        }
-        
-        // Rule 2: If contains JSON garbage → reject entirely
-        if (/[{}\[\]:"]/.test(phone)) {
-          console.log(`[sanitizePhones] Rejecting JSON garbage phone: ${phone}`);
-          return false;
-        }
-        
+        if (phone.length > 100) return false;
+        if (/[{}\[\]:"]/.test(phone)) return false;
         return true;
       })
       .map(phone => {
-        // Extract only digits
         const digits = phone.replace(/\D/g, '');
-        
-        // Must be exactly 10 digits, take first 10 if more
-        if (digits.length >= 10) {
-          return digits.slice(0, 10);
-        }
-        
+        if (digits.length >= 10) return digits.slice(0, 10);
         return null;
       })
       .filter((phone): phone is string => {
         if (!phone) return false;
-        
-        // Check for duplicates across all contacts
-        if (seenPhones.has(phone)) {
-          console.log(`[sanitizePhones] Removing duplicate phone: ${phone}`);
-          return false;
-        }
-        
+        if (seenPhones.has(phone)) return false;
         seenPhones.add(phone);
         return true;
       });
 
-    // Rule 3: Max 3 phones per contact (more = hallucination)
-    // Rule 4: If >5 candidates before filtering → wipe all
     if ((contact.phones || []).length > 5) {
-      console.log(`[sanitizePhones] Wiping all phones for ${contact.name} (>5 candidates = hallucination)`);
       return { ...contact, phones: [], needs_review: true };
     }
 
@@ -911,38 +1492,19 @@ function sanitizePhones(contacts: ParsedContact[]): ParsedContact[] {
 // ============================================================================
 
 const CANONICAL_DEPARTMENTS = [
-  "Agency/Production",
-  "Direction",
-  "Camera",
-  "Sound",
-  "Grip & Electric",
-  "Art",
-  "Hair/Makeup/Grooming",
-  "Styling/Wardrobe",
-  "Casting",
-  "Miscellaneous",
-  "Post-Production",
-  "Vendors/Services"
+  "Agency/Production", "Direction", "Camera", "Sound", "Grip & Electric",
+  "Art", "Hair/Makeup/Grooming", "Styling/Wardrobe", "Casting",
+  "Miscellaneous", "Post-Production", "Vendors/Services"
 ];
 
 function validateAndNormalizeContacts(contacts: ParsedContact[]): ParsedContact[] {
   return contacts
     .filter(contact => {
-      // Remove contacts where name is an email
-      if (contact.name && contact.name.includes('@')) {
-        console.log(`[validateContacts] Removing contact with email as name: ${contact.name}`);
-        return false;
-      }
-      
-      // Remove contacts with empty/null names
-      if (!contact.name || contact.name.trim().length < 2) {
-        return false;
-      }
-      
+      if (contact.name && contact.name.includes('@')) return false;
+      if (!contact.name || contact.name.trim().length < 2) return false;
       return true;
     })
     .map(contact => {
-      // Normalize departments to canonical list
       const normalizedDepartments = (contact.departments || []).map(dept => {
         const lowerDept = dept.toLowerCase();
         
@@ -983,21 +1545,21 @@ function validateAndNormalizeContacts(contacts: ParsedContact[]): ParsedContact[
           return "Miscellaneous";
         }
         
-        // If already canonical, return as-is
-        if (CANONICAL_DEPARTMENTS.includes(dept)) {
-          return dept;
-        }
-        
+        if (CANONICAL_DEPARTMENTS.includes(dept)) return dept;
         return "Miscellaneous";
       });
 
-      // Validate emails
-      const validEmails = (contact.emails || []).filter(email => {
-        if (!email) return false;
-        return email.includes('@') && email.includes('.') && !email.startsWith('@');
-      });
+      const validEmails = (contact.emails || [])
+        .filter(email => {
+          if (!email) return false;
+          if (email.endsWith('...') || email.endsWith('\u2026')) return false;
+          return email.includes('@') && email.includes('.') && !email.startsWith('@');
+        })
+        .map(email => {
+          const { corrected } = correctEmailDomain(email);
+          return corrected;
+        });
 
-      // Calculate needs_review based on confidence
       const confidence = contact.confidence || 0.75;
       const needsReview = confidence < 0.80 || contact.needs_review === true;
 
@@ -1005,358 +1567,8 @@ function validateAndNormalizeContacts(contacts: ParsedContact[]): ParsedContact[
         ...contact,
         departments: [...new Set(normalizedDepartments)],
         emails: validEmails,
-        confidence: confidence,
+        confidence,
         needs_review: needsReview
       };
     });
-}
-
-async function extractTextFromPdf(pdfBlob: Blob): Promise<string> {
-  try {
-    // Convert blob to ArrayBuffer for unpdf
-    const arrayBuffer = await pdfBlob.arrayBuffer();
-    
-    // Use unpdf for proper text extraction (works in edge environments)
-    const { text, totalPages } = await extractText(arrayBuffer, { mergePages: true });
-    
-    console.log(`[parse-call-sheet] PDF pages: ${totalPages}`);
-    console.log(`[parse-call-sheet] Raw text length: ${text.length} chars`);
-    
-    // Clean and normalize the extracted text
-    const cleanedText = text
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .replace(/\n{3,}/g, '\n\n')
-      .replace(/[ \t]+/g, ' ')
-      .trim();
-    
-    return cleanedText;
-  } catch (error) {
-    console.error("[parse-call-sheet] unpdf extraction failed:", error);
-    
-    // Fallback: try basic text extraction
-    console.log("[parse-call-sheet] Attempting fallback text extraction...");
-    return await fallbackTextExtraction(pdfBlob);
-  }
-}
-
-async function fallbackTextExtraction(pdfBlob: Blob): Promise<string> {
-  // Basic fallback for when pdf-parse fails
-  const arrayBuffer = await pdfBlob.arrayBuffer();
-  const bytes = new Uint8Array(arrayBuffer);
-  const decoder = new TextDecoder("utf-8", { fatal: false });
-  const rawContent = decoder.decode(bytes);
-  
-  // Extract readable patterns
-  const patterns: string[] = [];
-  
-  // Extract emails
-  const emails = rawContent.match(/[A-Za-z][A-Za-z0-9._%+-]*@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}/g) || [];
-  patterns.push(...emails);
-  
-  // Extract phone numbers
-  const phones = rawContent.match(/\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
-  patterns.push(...phones);
-  
-  // Extract printable ASCII sequences (potential names and text)
-  const printableRegex = /[\x20-\x7E]{8,}/g;
-  const printableMatches = rawContent.match(printableRegex) || [];
-  const textMatches = printableMatches
-    .filter(s => /[a-zA-Z]{3,}/.test(s))
-    .filter(s => !/^[%\/\\<>{}]+/.test(s)); // Skip PDF internal commands
-  patterns.push(...textMatches);
-  
-  return [...new Set(patterns)].join(' ').replace(/\s+/g, ' ').trim();
-}
-
-async function parseWithAI(text: string, apiKey: string): Promise<ParseResult> {
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-2.5-flash",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `Parse this call sheet text and extract contacts using ALL 23 refinements and the 4-pass extraction methodology:\n\n${text.slice(0, 50000)}` }
-      ],
-      max_completion_tokens: 16000,
-      tools: [
-        {
-          type: "function",
-          function: {
-            name: "extract_contacts",
-            description: "Extract structured contact information from a call sheet using the Extra Credit parser rules",
-            parameters: {
-              type: "object",
-              properties: {
-                contacts: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      name: { type: "string", description: "Full name of the person (NEVER an email address)" },
-                      roles: { type: "array", items: { type: "string" }, description: "Job titles/roles using canonical names" },
-                      departments: { type: "array", items: { type: "string" }, description: "One of 12 canonical departments" },
-                      emails: { type: "array", items: { type: "string" }, description: "Email addresses" },
-                      phones: { type: "array", items: { type: "string" }, description: "Phone numbers (exactly 10 digits each, max 1 per contact)" },
-                      ig_handle: { type: "string", nullable: true, description: "Instagram handle" },
-                      confidence: { type: "number", description: "Confidence score 0.0-1.0 based on calibration rules" },
-                      needs_review: { type: "boolean", description: "True if confidence < 0.80 or data uncertain" }
-                    },
-                    required: ["name", "roles", "departments", "emails", "phones", "confidence", "needs_review"]
-                  }
-                },
-                project_title: { type: "string", nullable: true, description: "Name of the production" },
-                parsed_date: { type: "string", nullable: true, description: "Date from call sheet (YYYY-MM-DD)" },
-                unassigned_emails: { type: "array", items: { type: "string" }, description: "Emails that could not be matched to a contact" },
-                unassigned_phones: { type: "array", items: { type: "string" }, description: "Phones that could not be matched to a contact" }
-              },
-              required: ["contacts"]
-            }
-          }
-        }
-      ],
-      tool_choice: { type: "function", function: { name: "extract_contacts" } }
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[parse-call-sheet] AI API error:", response.status, errorText);
-    
-    if (response.status === 429) {
-      throw new Error("AI rate limit exceeded. Please try again later.");
-    }
-    if (response.status === 402) {
-      throw new Error("AI credits exhausted. Please add funds.");
-    }
-    throw new Error(`AI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  
-  // Extract from tool call response
-  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-  if (toolCall?.function?.arguments) {
-    try {
-      const parsed = JSON.parse(toolCall.function.arguments);
-      console.log(`[parse-call-sheet] AI returned ${parsed.contacts?.length || 0} contacts, ${parsed.unassigned_emails?.length || 0} unassigned emails`);
-      return {
-        contacts: parsed.contacts || [],
-        project_title: parsed.project_title || null,
-        parsed_date: parsed.parsed_date || null,
-        unassigned_emails: parsed.unassigned_emails || [],
-        unassigned_phones: parsed.unassigned_phones || [],
-      };
-    } catch (e) {
-      console.error("[parse-call-sheet] Failed to parse AI response:", e);
-      throw new Error("Failed to parse AI response");
-    }
-  }
-
-  // Fallback: try to parse from content
-  const content = data.choices?.[0]?.message?.content;
-  if (content) {
-    try {
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        return {
-          contacts: parsed.contacts || [],
-          project_title: parsed.project_title || null,
-          parsed_date: parsed.parsed_date || null,
-          unassigned_emails: parsed.unassigned_emails || [],
-          unassigned_phones: parsed.unassigned_phones || [],
-        };
-      }
-    } catch (e) {
-      console.error("[parse-call-sheet] Failed to parse content as JSON:", e);
-    }
-  }
-
-  throw new Error("AI returned unexpected response format");
-}
-
-// ============================================================================
-// INLINE DUPLICATE DETECTION (Ported from src/lib/duplicateDetection.ts)
-// These functions run inside the edge function without external imports
-// ============================================================================
-
-interface ContactForMatchingInline {
-  id: string;
-  name: string;
-  roles: string[] | null;
-  phones: string[] | null;
-  emails: string[] | null;
-  ig_handle: string | null;
-  departments?: string[] | null;
-}
-
-interface DuplicateGroupInline {
-  primary: ContactForMatchingInline;
-  duplicates: Array<{
-    contact: ContactForMatchingInline;
-    matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[];
-  }>;
-}
-
-function normalizePhoneInline(phone: string): string {
-  return phone.replace(/\D/g, '');
-}
-
-function normalizeEmailInline(email: string): string {
-  return email.toLowerCase().trim();
-}
-
-function fuzzyNameMatchInline(name1: string, name2: string): boolean {
-  const n1 = name1.toLowerCase().trim();
-  const n2 = name2.toLowerCase().trim();
-  
-  if (n1 === n2) return true;
-  
-  const parts1 = n1.split(/\s+/);
-  const parts2 = n2.split(/\s+/);
-  
-  if (parts1.length < 2 || parts2.length < 2) {
-    return n1.startsWith(n2) || n2.startsWith(n1);
-  }
-  
-  const last1 = parts1[parts1.length - 1];
-  const last2 = parts2[parts2.length - 1];
-  if (last1 !== last2) return false;
-  
-  const first1 = parts1[0];
-  const first2 = parts2[0];
-  return first1.startsWith(first2) || first2.startsWith(first1);
-}
-
-function areContactsDuplicatesInline(
-  contact1: ContactForMatchingInline,
-  contact2: ContactForMatchingInline
-): { isDuplicate: boolean; matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[] } {
-  const matchedFields: ('name' | 'role' | 'phone' | 'email' | 'ig')[] = [];
-  let hasPhoneOrEmailMatch = false;
-  
-  const phones1 = (contact1.phones || []).map(normalizePhoneInline);
-  const phones2 = (contact2.phones || []).map(normalizePhoneInline);
-  const emails1 = (contact1.emails || []).map(normalizeEmailInline);
-  const emails2 = (contact2.emails || []).map(normalizeEmailInline);
-  
-  if (fuzzyNameMatchInline(contact1.name, contact2.name)) {
-    matchedFields.push('name');
-  }
-  
-  const roles1 = (contact1.roles || []).map(r => r.toLowerCase());
-  const roles2 = (contact2.roles || []).map(r => r.toLowerCase());
-  if (roles1.some(r => roles2.includes(r))) {
-    matchedFields.push('role');
-  }
-  
-  if (phones1.some(p => p && phones2.includes(p))) {
-    matchedFields.push('phone');
-    hasPhoneOrEmailMatch = true;
-  }
-  
-  if (emails1.some(e => e && emails2.includes(e))) {
-    matchedFields.push('email');
-    hasPhoneOrEmailMatch = true;
-  }
-  
-  const ig1 = contact1.ig_handle?.toLowerCase().replace('@', '');
-  const ig2 = contact2.ig_handle?.toLowerCase().replace('@', '');
-  if (ig1 && ig2 && ig1 === ig2) {
-    matchedFields.push('ig');
-    hasPhoneOrEmailMatch = true;
-  }
-  
-  if (matchedFields.length < 2) {
-    return { isDuplicate: false, matchedFields: [] };
-  }
-  
-  const isSingleWordName = contact1.name.trim().split(/\s+/).length === 1 ||
-                           contact2.name.trim().split(/\s+/).length === 1;
-  if (isSingleWordName && !hasPhoneOrEmailMatch) {
-    return { isDuplicate: false, matchedFields: [] };
-  }
-  
-  return { isDuplicate: true, matchedFields };
-}
-
-function findDuplicateGroupsInline(contacts: ContactForMatchingInline[]): DuplicateGroupInline[] {
-  const groups: DuplicateGroupInline[] = [];
-  const processedIds = new Set<string>();
-  
-  for (let i = 0; i < contacts.length; i++) {
-    const contact = contacts[i];
-    
-    if (processedIds.has(contact.id)) continue;
-    
-    const duplicates: DuplicateGroupInline['duplicates'] = [];
-    
-    for (let j = i + 1; j < contacts.length; j++) {
-      const other = contacts[j];
-      
-      if (processedIds.has(other.id)) continue;
-      
-      const { isDuplicate, matchedFields } = areContactsDuplicatesInline(contact, other);
-      
-      if (isDuplicate) {
-        duplicates.push({ contact: other, matchedFields });
-        processedIds.add(other.id);
-      }
-    }
-    
-    if (duplicates.length > 0) {
-      processedIds.add(contact.id);
-      groups.push({
-        primary: contact,
-        duplicates
-      });
-    }
-  }
-  
-  return groups;
-}
-
-function mergeContactDataInline(
-  primary: ContactForMatchingInline,
-  duplicates: ContactForMatchingInline[]
-): {
-  phones: string[];
-  emails: string[];
-  roles: string[];
-  departments: string[];
-  ig_handle: string | null;
-} {
-  const allPhones = new Set<string>();
-  const allEmails = new Set<string>();
-  const allRoles = new Set<string>();
-  const allDepartments = new Set<string>();
-  let igHandle = primary.ig_handle;
-  
-  (primary.phones || []).forEach(p => allPhones.add(p));
-  (primary.emails || []).forEach(e => allEmails.add(e));
-  (primary.roles || []).forEach(r => allRoles.add(r));
-  (primary.departments || []).forEach(d => allDepartments.add(d));
-  
-  for (const dup of duplicates) {
-    (dup.phones || []).forEach(p => allPhones.add(p));
-    (dup.emails || []).forEach(e => allEmails.add(e));
-    (dup.roles || []).forEach(r => allRoles.add(r));
-    (dup.departments || []).forEach(d => allDepartments.add(d));
-    if (!igHandle && dup.ig_handle) {
-      igHandle = dup.ig_handle;
-    }
-  }
-  
-  return {
-    phones: Array.from(allPhones),
-    emails: Array.from(allEmails),
-    roles: Array.from(allRoles),
-    departments: Array.from(allDepartments),
-    ig_handle: igHandle
-  };
 }

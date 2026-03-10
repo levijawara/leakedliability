@@ -1,0 +1,1 @@
+ALTER TABLE public.production_instances ADD COLUMN IF NOT EXISTS crew_size INTEGER;

@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Normalize phone to digits only for comparison
+// Normalize phone to digits only for comparison (last 10)
 function normalizePhone(phone: string): string {
   return phone.replace(/\D/g, '').slice(-10);
 }
@@ -15,35 +15,14 @@ function normalizeEmail(email: string): string {
   return email.toLowerCase().trim();
 }
 
-// Fuzzy name match: last name exact + first name prefix (3+ chars)
-function fuzzyNameMatch(name1: string, name2: string): boolean {
-  const normalize = (n: string) => n.toLowerCase().trim().replace(/[^a-z\s]/g, '');
-  const n1 = normalize(name1);
-  const n2 = normalize(name2);
-  
-  const parts1 = n1.split(/\s+/).filter(Boolean);
-  const parts2 = n2.split(/\s+/).filter(Boolean);
-  
-  if (parts1.length < 2 || parts2.length < 2) {
-    // Single-word names: exact match
-    return n1 === n2;
-  }
-  
-  // Last name must match exactly
-  const lastName1 = parts1[parts1.length - 1];
-  const lastName2 = parts2[parts2.length - 1];
-  if (lastName1 !== lastName2) return false;
-  
-  // First name: prefix match (at least 3 chars)
-  const firstName1 = parts1[0];
-  const firstName2 = parts2[0];
-  const minLen = Math.min(firstName1.length, firstName2.length);
-  
-  if (minLen < 3) {
-    return firstName1 === firstName2;
-  }
-  
-  return firstName1.substring(0, 3) === firstName2.substring(0, 3);
+// Normalize name for comparison
+function normalizeName(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, ' ')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
 }
 
 Deno.serve(async (req) => {
@@ -65,7 +44,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     
-    // Use service role to bypass RLS for admin contact lookup
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Parse request body
@@ -80,93 +58,128 @@ Deno.serve(async (req) => {
 
     console.log('[get-seed-ig-suggestion] Lookup for:', { name, phones, emails });
 
-    // Get admin user IDs
-    const { data: adminRoles, error: rolesError } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'admin');
+    // Query the ig_master_identities table (all 833+ records)
+    const { data: masterIdentities, error: identitiesError } = await supabase
+      .from('ig_master_identities')
+      .select('instagram, raw_name, normalized_name, phones, emails, roles')
+      .not('instagram', 'is', null);
 
-    if (rolesError) {
-      console.error('[get-seed-ig-suggestion] Failed to fetch admin roles:', rolesError);
-      throw rolesError;
+    if (identitiesError) {
+      console.error('[get-seed-ig-suggestion] Failed to fetch master identities:', identitiesError);
+      throw identitiesError;
     }
 
-    if (!adminRoles || adminRoles.length === 0) {
-      console.log('[get-seed-ig-suggestion] No admin users found');
+    if (!masterIdentities || masterIdentities.length === 0) {
+      console.log('[get-seed-ig-suggestion] No master identities found');
       return new Response(
         JSON.stringify({ seedSuggestion: null }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const adminUserIds = adminRoles.map(r => r.user_id);
-    console.log('[get-seed-ig-suggestion] Admin user IDs:', adminUserIds);
-
-    // Query admin contacts with IG handles
-    const { data: adminContacts, error: contactsError } = await supabase
-      .from('crew_contacts')
-      .select('name, emails, phones, ig_handle')
-      .in('user_id', adminUserIds)
-      .not('ig_handle', 'is', null);
-
-    if (contactsError) {
-      console.error('[get-seed-ig-suggestion] Failed to fetch admin contacts:', contactsError);
-      throw contactsError;
-    }
-
-    if (!adminContacts || adminContacts.length === 0) {
-      console.log('[get-seed-ig-suggestion] No admin contacts with IG handles found');
-      return new Response(
-        JSON.stringify({ seedSuggestion: null }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    console.log('[get-seed-ig-suggestion] Found', adminContacts.length, 'admin contacts with IG handles');
+    console.log('[get-seed-ig-suggestion] Searching', masterIdentities.length, 'master identities');
 
     // Normalize input arrays
-    const normalizedPhones = (phones || []).map(normalizePhone).filter((p: string) => p.length >= 7);
-    const normalizedEmails = (emails || []).map(normalizeEmail).filter((e: string) => e.includes('@'));
+    const normalizedInputPhones = (phones || [])
+      .map((p: string) => normalizePhone(p))
+      .filter((p: string) => p.length >= 7);
+    const normalizedInputEmails = (emails || [])
+      .map((e: string) => normalizeEmail(e))
+      .filter((e: string) => e.includes('@'));
+    const normalizedInputName = normalizeName(name);
 
-    // Find a match
-    for (const contact of adminContacts) {
-      // Check email match (highest confidence)
-      if (normalizedEmails.length > 0 && contact.emails) {
-        for (const adminEmail of contact.emails) {
-          const normalizedAdminEmail = normalizeEmail(adminEmail);
-          if (normalizedEmails.includes(normalizedAdminEmail)) {
-            console.log('[get-seed-ig-suggestion] Email match found:', contact.ig_handle);
-            return new Response(
-              JSON.stringify({ seedSuggestion: contact.ig_handle, confidence: 'high' }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-        }
-      }
-
-      // Check phone match (high confidence)
-      if (normalizedPhones.length > 0 && contact.phones) {
-        for (const adminPhone of contact.phones) {
-          const normalizedAdminPhone = normalizePhone(adminPhone);
-          if (normalizedPhones.includes(normalizedAdminPhone)) {
-            console.log('[get-seed-ig-suggestion] Phone match found:', contact.ig_handle);
-            return new Response(
-              JSON.stringify({ seedSuggestion: contact.ig_handle, confidence: 'high' }),
-              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
+    // PRIORITY 1: Phone match (HIGH confidence)
+    if (normalizedInputPhones.length > 0) {
+      for (const identity of masterIdentities) {
+        if (identity.phones && Array.isArray(identity.phones)) {
+          for (const identityPhone of identity.phones) {
+            const normalizedIdentityPhone = normalizePhone(identityPhone);
+            if (normalizedIdentityPhone.length >= 7 && normalizedInputPhones.includes(normalizedIdentityPhone)) {
+              console.log('[get-seed-ig-suggestion] Phone match found:', identity.instagram);
+              return new Response(
+                JSON.stringify({ 
+                  seedSuggestion: identity.instagram, 
+                  confidence: 'high',
+                  matchReason: 'phone',
+                  matchedName: identity.raw_name
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
           }
         }
       }
     }
 
-    // Check name match (medium confidence) - separate loop for priority
-    for (const contact of adminContacts) {
-      if (fuzzyNameMatch(name, contact.name)) {
-        console.log('[get-seed-ig-suggestion] Name match found:', contact.ig_handle);
+    // PRIORITY 2: Email match (HIGH confidence)
+    if (normalizedInputEmails.length > 0) {
+      for (const identity of masterIdentities) {
+        if (identity.emails && Array.isArray(identity.emails)) {
+          for (const identityEmail of identity.emails) {
+            const normalizedIdentityEmail = normalizeEmail(identityEmail);
+            if (normalizedInputEmails.includes(normalizedIdentityEmail)) {
+              console.log('[get-seed-ig-suggestion] Email match found:', identity.instagram);
+              return new Response(
+                JSON.stringify({ 
+                  seedSuggestion: identity.instagram, 
+                  confidence: 'high',
+                  matchReason: 'email',
+                  matchedName: identity.raw_name
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+          }
+        }
+      }
+    }
+
+    // PRIORITY 3: Name match (MEDIUM confidence) - exact normalized name comparison
+    for (const identity of masterIdentities) {
+      if (identity.normalized_name === normalizedInputName) {
+        console.log('[get-seed-ig-suggestion] Exact name match found:', identity.instagram);
         return new Response(
-          JSON.stringify({ seedSuggestion: contact.ig_handle, confidence: 'medium' }),
+          JSON.stringify({ 
+            seedSuggestion: identity.instagram, 
+            confidence: 'medium',
+            matchReason: 'name',
+            matchedName: identity.raw_name
+          }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+    }
+
+    // PRIORITY 4: Fuzzy name match - last name exact + first name prefix (3+ chars)
+    const inputParts = normalizedInputName.split(' ').filter(Boolean);
+    if (inputParts.length >= 2) {
+      const inputLastName = inputParts[inputParts.length - 1];
+      const inputFirstName = inputParts[0];
+      
+      for (const identity of masterIdentities) {
+        const identityParts = identity.normalized_name.split(' ').filter(Boolean);
+        if (identityParts.length >= 2) {
+          const identityLastName = identityParts[identityParts.length - 1];
+          const identityFirstName = identityParts[0];
+          
+          // Last name must match exactly
+          if (inputLastName === identityLastName) {
+            // First name prefix match (at least 3 chars)
+            const minLen = Math.min(inputFirstName.length, identityFirstName.length);
+            if (minLen >= 3 && inputFirstName.substring(0, 3) === identityFirstName.substring(0, 3)) {
+              console.log('[get-seed-ig-suggestion] Fuzzy name match found:', identity.instagram);
+              return new Response(
+                JSON.stringify({ 
+                  seedSuggestion: identity.instagram, 
+                  confidence: 'medium',
+                  matchReason: 'name',
+                  matchedName: identity.raw_name
+                }),
+                { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+          }
+        }
       }
     }
 

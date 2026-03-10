@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { supabase } from "@/integrations/supabase/client";
 import { AdminProxyProvider } from "@/contexts/AdminProxyContext";
@@ -54,14 +54,12 @@ import Results from "./pages/Results";
 import FAFOGenerator from "./pages/FAFOGenerator";
 import ClaimProducer from "./pages/ClaimProducer";
 import CallSheetManager from "./pages/CallSheetManager";
-import CrewContacts from "./pages/CrewContacts";
-import ParseReview from "./pages/ParseReview";
-import IGMatching from "./pages/IGMatching";
 import AdminCallSheetReservoir from "./pages/AdminCallSheetReservoir";
+import AdminPaymentReversalsOther from "./pages/AdminPaymentReversalsOther";
 import AdminNetworkGraph from "./pages/AdminNetworkGraph";
 import BetaUnlock from "./pages/BetaUnlock";
-import ContactYouTubePortfolio from "./pages/ContactYouTubePortfolio";
 import { FailureIndicator } from "./components/FailureIndicator";
+import { PortalLayout } from "./components/PortalLayout";
 
 const queryClient = new QueryClient();
 
@@ -73,6 +71,36 @@ const AppContent = () => {
   const [connectionValidated, setConnectionValidated] = useState(false);
   const [rlsValidated, setRlsValidated] = useState(false);
   const location = useLocation();
+
+  // Domain-based redirect AND metadata for extracredit.studio
+  useEffect(() => {
+    const hostname = window.location.hostname;
+    const isExtraCreditDomain = 
+      hostname === 'extracredit.studio' || 
+      hostname === 'www.extracredit.studio';
+    
+    // Update title and favicon for Extra Credit domain
+    if (isExtraCreditDomain) {
+      document.title = 'Extra Credit';
+      const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
+      if (favicon) {
+        favicon.href = '/favicon-ec.png';
+      }
+    }
+    
+    // Only redirect if on extracredit.studio AND not already in /extra-credit path
+    if (isExtraCreditDomain && !location.pathname.startsWith('/extra-credit')) {
+      // Preserve the path for auth/reset-password, map others to portal
+      const portalPaths = ['/auth', '/reset-password', '/verify-email'];
+      const currentPath = location.pathname;
+      
+      if (portalPaths.includes(currentPath)) {
+        window.location.href = `/extra-credit${currentPath}`;
+      } else {
+        window.location.href = '/extra-credit/call-sheets';
+      }
+    }
+  }, [location.pathname]);
 
   // Dev-mode route config validator
   if (import.meta.env.DEV) {
@@ -415,14 +443,17 @@ const AppContent = () => {
         <Route path="/escrow/redeem" element={<EscrowRedeem />} />
         <Route path="/claim/:producerId" element={<ClaimProducer />} />
         <Route path="/call-sheets" element={<RequireAuth requireBeta><CallSheetManager /></RequireAuth>} />
-        <Route path="/call-sheets/:id/review" element={<RequireAuth requireBeta><ParseReview /></RequireAuth>} />
-        <Route path="/call-sheets/:id/ig-matching" element={<RequireAuth requireBeta><IGMatching /></RequireAuth>} />
-        <Route path="/crew-contacts" element={<RequireAuth requireBeta><CrewContacts /></RequireAuth>} />
-        <Route path="/crew-contacts/:contactId/youtube" element={<RequireAuth requireBeta><ContactYouTubePortfolio /></RequireAuth>} />
         <Route path="/admin/call-sheet-reservoir" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
+        <Route path="/admin/payment-reversals-other" element={<RequireAuth requireAdmin><AdminPaymentReversalsOther /></RequireAuth>} />
         <Route path="/admin/intelligence/network-graph" element={<RequireAuth requireAdmin><AdminNetworkGraph /></RequireAuth>} />
-        <Route path="/admin/intelligence/heat-map" element={<RequireAuth requireAdmin><AdminCallSheetReservoir /></RequireAuth>} />
         <Route path="/beta-unlock" element={<RequireAuth><BetaUnlock /></RequireAuth>} />
+        {/* Extra Credit portal routes — same pages, portal-only layout */}
+        <Route path="/extra-credit" element={<Navigate to="/extra-credit/call-sheets" replace />} />
+        <Route path="/extra-credit/auth" element={<PortalLayout><Auth /></PortalLayout>} />
+        <Route path="/extra-credit/reset-password" element={<PortalLayout><ResetPassword /></PortalLayout>} />
+        <Route path="/extra-credit/verify-email" element={<PortalLayout><VerifyEmail /></PortalLayout>} />
+        <Route path="/extra-credit/ban/:banId" element={<PortalLayout><BanPage /></PortalLayout>} />
+        <Route path="/extra-credit/call-sheets" element={<PortalLayout><RequireAuth requireBeta><CallSheetManager /></RequireAuth></PortalLayout>} />
         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
         <Route path="*" element={<NotFound />} />
         </Routes>

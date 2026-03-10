@@ -1,28 +1,21 @@
-import { useState } from "react";
-import { FileText, Users, Eye, Trash2, RefreshCw, Clock, Loader2, CheckCircle, AlertCircle, FileType, List, Youtube } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { FileText, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { PaymentStatusRadio } from "./PaymentStatusRadio";
-import { YouTubeUrlEditor } from "./YouTubeUrlEditor";
-import { formatViewCount } from "@/lib/youtubeHelpers";
 
 interface GlobalCallSheet {
   id: string;
   original_file_name: string;
   master_file_path: string;
   status: string;
-  contacts_extracted: number | null;
   error_message: string | null;
   created_at: string;
-  parsed_contacts: unknown;
   parsed_date: string | null;
-  youtube_url: string | null;
-  youtube_view_count: number | null;
-  youtube_last_synced: string | null;
 }
 
 interface UserCallSheetLink {
@@ -30,9 +23,11 @@ interface UserCallSheetLink {
   user_label: string | null;
   created_at: string;
   global_call_sheet_id: string;
+  payment_status: string | null;
+  payment_status_confirmed_at: string | null;
+  payment_reversal_reason: string | null;
+  payment_reversal_reason_other: string | null;
   global_call_sheets: GlobalCallSheet;
-  payment_status: string;
-  payment_status_locked: boolean;
 }
 
 interface CallSheetCardProps {
@@ -40,13 +35,13 @@ interface CallSheetCardProps {
   sortField: 'uploadDate' | 'shootDate';
   isSelected?: boolean;
   isAdmin?: boolean;
-  onSelect?: (linkId: string, selected: boolean) => void;
-  onView: (sheet: GlobalCallSheet) => void;
+  onSelect?: (linkId: string, selected: boolean, event?: React.MouseEvent) => void;
   onViewPdf: (sheet: GlobalCallSheet) => void;
-  onCredits: (sheet: GlobalCallSheet) => void;
-  onRetry: (sheet: GlobalCallSheet) => void;
+  onMarkPaid: (link: UserCallSheetLink, status: 'paid') => void;
+  onRequestNo: (link: UserCallSheetLink) => void;
+  canReverse: (link: UserCallSheetLink) => boolean;
+  getNextReversalDate: (link: UserCallSheetLink) => string | null;
   onDelete: (link: UserCallSheetLink) => void;
-  onPaymentStatusChange?: (linkId: string, status: string, locked: boolean) => void;
 }
 
 export function CallSheetCard({ 
@@ -55,94 +50,47 @@ export function CallSheetCard({
   isSelected = false,
   isAdmin = false,
   onSelect,
-  onView, 
-  onViewPdf, 
-  onCredits, 
-  onRetry, 
-  onDelete,
-  onPaymentStatusChange
+  onViewPdf,
+  onMarkPaid,
+  onRequestNo,
+  canReverse,
+  getNextReversalDate,
+  onDelete
 }: CallSheetCardProps) {
-  const [youtubeUrl, setYoutubeUrl] = useState(link.global_call_sheets.youtube_url);
-  const [youtubeViewCount, setYoutubeViewCount] = useState(link.global_call_sheets.youtube_view_count);
-  
   const sheet = link.global_call_sheets;
   const displayName = link.user_label || sheet.original_file_name;
-  
-  const paymentStatus = link.payment_status as 'unanswered' | 'waiting' | 'paid' | 'unpaid_needs_proof' | 'free_labor';
-  const paymentLocked = link.payment_status_locked;
 
-  const handleYoutubeUrlUpdate = (newUrl: string | null) => {
-    setYoutubeUrl(newUrl);
-    // Clear view count when URL changes (will be re-synced)
-    if (newUrl !== sheet.youtube_url) {
-      setYoutubeViewCount(null);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'queued':
-        return (
-          <Badge variant="outline" className="gap-1">
-            <Clock className="h-3 w-3" />
-            Queued
-          </Badge>
-        );
-      case 'parsing':
-        return (
-          <Badge variant="secondary" className="gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Parsing
-          </Badge>
-        );
-      case 'parsed':
-        return (
-          <Badge className="gap-1 bg-green-500 hover:bg-green-600">
-            <CheckCircle className="h-3 w-3" />
-            Complete
-          </Badge>
-        );
-      case 'error':
-        return (
-          <Badge variant="destructive" className="gap-1">
-            <AlertCircle className="h-3 w-3" />
-            Error
-          </Badge>
-        );
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
+  const hasResponded = link.payment_status === 'paid' || link.payment_status === 'unpaid_needs_proof';
+  const isPaid = link.payment_status === 'paid';
+  const toggleDisabled = isPaid && !canReverse(link); // Can't flip Yes→No during cooldown
 
   return (
     <Card className={`hover:border-primary/50 transition-colors ${isSelected ? 'border-primary ring-1 ring-primary' : ''}`}>
       <CardContent className="p-4 space-y-3">
-        {/* Header: Checkbox + Status + Contact Count */}
+        {/* Header: Checkbox */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             {onSelect && (
               <Checkbox
                 checked={isSelected}
-                onCheckedChange={(checked) => onSelect(link.id, !!checked)}
-                onClick={(e) => e.stopPropagation()}
+                onCheckedChange={() => {}}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(link.id, !isSelected, e as unknown as React.MouseEvent);
+                }}
               />
             )}
-            {getStatusBadge(sheet.status)}
           </div>
-          {sheet.status === 'parsed' && sheet.contacts_extracted !== null && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              <Users className="h-3 w-3" />
-              <span>{sheet.contacts_extracted}</span>
-            </div>
-          )}
         </div>
 
-        {/* Filename */}
+        {/* Display Name */}
         <div className="flex items-start gap-2">
           <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-          <p className="text-sm font-medium truncate" title={displayName}>
-            {displayName}
-          </p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate" title={displayName}>
+              {displayName}
+            </p>
+          </div>
         </div>
 
         {/* Dates */}
@@ -150,10 +98,7 @@ export function CallSheetCard({
           {sheet.parsed_date && (
             <p>Shoot: {format(new Date(sheet.parsed_date), 'MMM d, yyyy')}</p>
           )}
-          <p>
-            {sortField === 'shootDate' && !sheet.parsed_date ? 'Added: ' : 'Added: '}
-            {format(new Date(link.created_at), 'MMM d, yyyy')}
-          </p>
+          <p>Added: {format(new Date(link.created_at), 'MMM d, yyyy')}</p>
         </div>
 
         {/* Error message */}
@@ -163,83 +108,68 @@ export function CallSheetCard({
           </p>
         )}
 
-        {/* YouTube Link */}
-        <div className="flex items-center justify-between pt-2 border-t">
-          <YouTubeUrlEditor
-            callSheetId={sheet.id}
-            currentUrl={youtubeUrl}
-            onUpdate={handleYoutubeUrlUpdate}
-          />
-          {youtubeViewCount !== null && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <Youtube className="h-3 w-3 text-destructive" />
-              {formatViewCount(youtubeViewCount)} views
-            </span>
-          )}
-        </div>
-
-        {/* Payment Status - show for everyone, hide when locked */}
-        {!paymentLocked && (
-          <div className="pt-2 border-t">
-            <PaymentStatusRadio
-              linkId={link.id}
-              currentStatus={paymentStatus}
-              isLocked={paymentLocked}
-              onStatusChange={(newStatus, locked) => {
-                onPaymentStatusChange?.(link.id, newStatus, locked);
-              }}
-              
-            />
-          </div>
-        )}
-
         {/* Action buttons */}
         <div className="flex items-center gap-1 pt-1 border-t">
           <TooltipProvider delayDuration={300}>
-            {sheet.status === 'parsed' && (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => onView(sheet)}>
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>View contacts</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => onViewPdf(sheet)}>
-                      <FileType className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>View PDF</TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="sm" onClick={() => onCredits(sheet)}>
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Generate credits</TooltipContent>
-                </Tooltip>
-              </>
-            )}
-            
-            {sheet.status === 'error' && (
+            {sheet.master_file_path && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" onClick={() => onRetry(sheet)}>
-                    <RefreshCw className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" onClick={() => onViewPdf(sheet)}>
+                    <FileText className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Retry parsing</TooltipContent>
+                <TooltipContent>View</TooltipContent>
               </Tooltip>
             )}
-            
+            {hasResponded ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">Paid?</span>
+                    <Switch
+                      variant="status"
+                      checked={isPaid}
+                      disabled={toggleDisabled}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          onMarkPaid(link, 'paid');
+                        } else {
+                          onRequestNo(link);
+                        }
+                      }}
+                    />
+                    <span className={cn("text-xs font-medium", isPaid ? "text-green-600" : "text-red-600")}>
+                      {isPaid ? "Yes" : "No"}
+                    </span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {toggleDisabled
+                    ? `Saved. You can change on ${getNextReversalDate(link) ?? 'the next business day'}`
+                    : 'Saved. Click to change.'}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-green-600 hover:text-green-500 hover:bg-green-600/10"
+                  onClick={() => onMarkPaid(link, 'paid')}
+                >
+                  Yes
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-red-600 hover:text-red-500 hover:bg-red-600/10"
+                  onClick={() => onRequestNo(link)}
+                >
+                  No
+                </Button>
+              </>
+            )}
             <div className="flex-1" />
-            
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="sm" onClick={() => onDelete(link)}>

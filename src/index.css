@@ -24,7 +24,7 @@ All colors MUST be HSL.
     --secondary-foreground: 0 0% 10%;
 
     --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted-foreground: 0 0% 38%;
 
     --accent: 0 0% 96%;
     --accent-foreground: 0 0% 10%;
@@ -32,8 +32,8 @@ All colors MUST be HSL.
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
+    --border: 0 0% 85%;
+    --input: 0 0% 85%;
     --ring: 0 0% 10%;
 
     /* Leaked Liability™ Color System */

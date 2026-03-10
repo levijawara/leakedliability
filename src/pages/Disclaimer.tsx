@@ -38,6 +38,26 @@ export default function Disclaimer() {
             </p>
 
             <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Interactive Computer Service and User-Generated Content
+            </h2>
+
+            <p>
+              Leaked Liability™ operates as an interactive computer service within the meaning of Section 230 of the Communications Decency Act (47 U.S.C. § 230). All reports, payment timeline data, and related content displayed on this platform originate from user submissions. Leaked Liability™ does not author, co-author, or materially contribute to the creation of user-submitted content.
+            </p>
+
+            <p>
+              As a platform that hosts and organizes user-generated content, Leaked Liability™ is not the publisher or speaker of information provided by its users. The organization, display, categorization, and scoring of user-submitted data for the purposes of accessibility and transparency does not constitute editorial creation of that content.
+            </p>
+
+            <p>
+              Leaked Liability™ may review, moderate, format, or decline to publish user submissions without assuming the role of publisher or speaker under Section 230(c)(2), which protects good-faith content moderation decisions.
+            </p>
+
+            <p>
+              This platform exists to facilitate crew-reported transparency in production payment practices. Crew members report their experiences. Producers may respond to and dispute those reports. Leaked Liability™ provides the infrastructure for both.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
               Platform Role and Limitations
             </h2>
 
@@ -50,6 +70,7 @@ export default function Disclaimer() {
               <li>A credit reporting agency</li>
               <li>A mediator, arbitrator, or legal representative for any party</li>
               <li>A guarantor of the accuracy of user submitted information</li>
+              <li>The publisher, speaker, or original author of user-submitted reports, reviews, or payment data, within the meaning of 47 U.S.C. § 230</li>
             </ul>
 
             <p>
@@ -95,6 +116,7 @@ export default function Disclaimer() {
               <li>You understand that disputes between users must be resolved independently, through private communication or legal counsel, rather than through Leaked Liability™.</li>
               <li>You understand that the statute of limitations for defamation claims in California is generally one year from the date of publication.</li>
               <li>You understand that public figure status may affect the burden of proof for a defamation claim. Public figures generally must show "actual malice," meaning knowledge of falsity or reckless disregard for the truth.</li>
+              <li>You acknowledge that Leaked Liability™ functions as a user-generated content platform, and that reports submitted by users reflect the experiences and claims of those individual users, not the editorial position of Leaked Liability™.</li>
             </ol>
 
             <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">

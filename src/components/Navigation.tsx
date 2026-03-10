@@ -266,17 +266,11 @@ export function Navigation() {
                     <User className="h-4 w-4 mr-2" />
                     Profile
                   </DropdownMenuItem>
-                  {(hasBetaAccess || isAdmin) && (
-                    <>
-                      <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
-                        <FileSpreadsheet className="h-4 w-4 mr-2" />
-                        Call Sheets
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => navigate("/crew-contacts")}>
-                        <Users className="h-4 w-4 mr-2" />
-                        Crew Contacts
-                      </DropdownMenuItem>
-                    </>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate("/call-sheets")}>
+                      <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      Call Sheets
+                    </DropdownMenuItem>
                   )}
                   {isAdmin && (
                     <>
@@ -353,17 +347,11 @@ export function Navigation() {
                       <User className="h-4 w-4 mr-2" />
                       Profile
                     </DropdownMenuItem>
-                    {(hasBetaAccess || isAdmin) && (
-                      <>
-                        <DropdownMenuItem onClick={() => handleNavigate("/call-sheets")}>
-                          <FileSpreadsheet className="h-4 w-4 mr-2" />
-                          Call Sheets
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleNavigate("/crew-contacts")}>
-                          <Users className="h-4 w-4 mr-2" />
-                          Crew Contacts
-                        </DropdownMenuItem>
-                      </>
+                    {isAdmin && (
+                      <DropdownMenuItem onClick={() => handleNavigate("/call-sheets")}>
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                        Call Sheets
+                      </DropdownMenuItem>
                     )}
                     {isAdmin && (
                       <>

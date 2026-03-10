@@ -4,7 +4,7 @@ export interface RouteMetadata {
   name: string;
   icon: string; // lucide icon name as string
   description: string;
-  category: 'public' | 'authenticated' | 'leaderboard' | 'admin' | 'system';
+  category: 'public' | 'authenticated' | 'leaderboard' | 'admin' | 'system' | 'portal';
   requiresAuth?: boolean;
   requiresAdmin?: boolean;
   tabs?: string[];
@@ -35,8 +35,6 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/suggestions", component: "SuggestionBox", name: "Suggestion Box", icon: "MessageSquare", description: "Platform feedback", category: "authenticated", requiresAuth: true },
   { path: "/confirm", component: "ConfirmReport", name: "Confirm Report", icon: "FileCheck", description: "Corroborate debts", category: "authenticated", requiresAuth: true },
   { path: "/call-sheets", component: "CallSheetManager", name: "Call Sheets", icon: "FileSpreadsheet", description: "Upload and manage call sheets", category: "authenticated", requiresAuth: true },
-  { path: "/crew-contacts", component: "CrewContacts", name: "Crew Contacts", icon: "Users", description: "View and manage extracted crew contacts", category: "authenticated", requiresAuth: true },
-  { path: "/crew-contacts/:contactId/youtube", component: "ContactYouTubePortfolio", name: "YouTube Portfolio", icon: "Youtube", description: "Contact's YouTube project portfolio", category: "authenticated", requiresAuth: true },
 
   // Leaderboard Routes
   { path: "/leaderboard", component: "Leaderboard", name: "Leaderboard", icon: "TrendingUp", description: "Producer ranking board", category: "leaderboard" },
@@ -58,10 +56,10 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/admin-submit-new", component: "AdminSubmitNew", name: "Submit for New User", icon: "UserPlus", description: "Admin proxy submission (new user)", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/leaderboard-analytics", component: "LeaderboardAnalytics", name: "Leaderboard Analytics", icon: "BarChart3", description: "Leaderboard performance metrics", category: "admin", requiresAuth: true, requiresAdmin: true },
   { path: "/admin/call-sheet-reservoir", component: "AdminCallSheetReservoir", name: "Call Sheet Reservoir", icon: "Archive", description: "Complete call sheet archive", category: "admin", requiresAuth: true, requiresAdmin: true },
+  { path: "/admin/payment-reversals-other", component: "AdminPaymentReversalsOther", name: "Reversal Other", icon: "MessageSquare", description: "Payment reversal 'Other' explanations", category: "admin", requiresAuth: true, requiresAdmin: true },
   
   // Intelligence Tools
   { path: "/admin/intelligence/network-graph", component: "AdminNetworkGraph", name: "Network Graph", icon: "Share2", description: "Relationship visualization", category: "admin", requiresAuth: true, requiresAdmin: true },
-  { path: "/admin/intelligence/heat-map", component: "AdminCallSheetReservoir", name: "Payment Heat Map", icon: "Flame", description: "Payment risk analysis", category: "admin", requiresAuth: true, requiresAdmin: true },
 
   // System Routes
   { path: "/sitemap", component: "Sitemap", name: "Platform Sitemap", icon: "Map", description: "Complete navigation map", category: "system", requiresAuth: true, requiresAdmin: true },
@@ -73,6 +71,11 @@ export const ROUTES: RouteMetadata[] = [
   { path: "/pay/:code", component: "PayEscrow", name: "Escrow Payment", icon: "DollarSign", description: "Anonymous payment", category: "system" },
   { path: "/pay/:code/success", component: "PayEscrow", name: "Payment Success", icon: "FileCheck", description: "Post-payment confirmation", category: "system" },
   { path: "*", component: "NotFound", name: "404 Not Found", icon: "FileX", description: "Fallback route", category: "system" },
+
+  // Portal Routes (Extra Credit)
+  { path: "/extra-credit", component: "Redirect", name: "Extra Credit Portal", icon: "Sparkles", description: "Portal redirect to call sheets", category: "portal" },
+  { path: "/extra-credit/auth", component: "Auth", name: "Portal Auth", icon: "LogIn", description: "Portal authentication", category: "portal" },
+  { path: "/extra-credit/call-sheets", component: "CallSheetManager", name: "Portal Call Sheets", icon: "FileSpreadsheet", description: "Call sheet management (portal)", category: "portal" },
 ];
 
-export const ROUTE_CATEGORIES = ['public', 'authenticated', 'leaderboard', 'admin', 'system'] as const;
+export const ROUTE_CATEGORIES = ['public', 'authenticated', 'leaderboard', 'admin', 'system', 'portal'] as const;

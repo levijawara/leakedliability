@@ -86,7 +86,7 @@ const Index = () => {
                 Looking to see if someone's already been reported?
               </h3>
               <p className="text-sm text-muted-foreground">
-                Search any producer or production company name to find out.
+                Search by producer name or production company to find out.
               </p>
             </div>
             

@@ -11,13 +11,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2, Mail, Eye, ArrowLeft, Send } from "lucide-react";
+import { LiabilityNotification } from "../../../supabase/functions/send-email/_templates/liability-notification";
+import { LiabilityLoopDetected } from "../../../supabase/functions/send-email/_templates/liability-loop-detected";
+import { ProducerReportNotification } from "../../../supabase/functions/send-email/_templates/producer-report-notification";
 
 interface Producer {
   id: string;
   name: string;
   email: string;
   company?: string;
+  total_amount_owed?: number;
+  oldest_debt_days?: number;
 }
 
 interface ManualEmailSenderProps {
@@ -58,14 +63,62 @@ const EMAIL_TEMPLATES = [
   { value: "subscription_canceled", label: "Subscription Canceled", category: "Subscription" },
 ];
 
+// Map template value to subject line
+const TEMPLATE_SUBJECTS: Record<string, string> = {
+  liability_notification: "ACTION REQUIRED: Payment Liability Claim",
+  liability_loop_detected: "NOTICE: Liability Loop Detected",
+  liability_accepted: "Liability Accepted - Next Steps",
+  producer_report_notification: "Payment Report Filed Against You",
+  producer_payment: "Payment Confirmation Received",
+  crew_report_payment_confirmed: "Payment Confirmed",
+  crew_report: "Your Report Has Been Received",
+  crew_report_verified: "Your Report Has Been Verified",
+  crew_report_rejected: "Report Requires Additional Information",
+  vendor_report: "Vendor Report Confirmation",
+  vendor_report_verified: "Vendor Report Verified",
+  vendor_report_rejected: "Vendor Report Requires Additional Information",
+  dispute: "Your Dispute Has Been Submitted",
+  counter_dispute: "Your Counter-Dispute Has Been Submitted",
+  dispute_evidence_round_started: "Dispute Evidence Required",
+  dispute_additional_info_required: "Additional Information Required",
+  dispute_resolved_paid: "Dispute Resolved: Payment Confirmed",
+  dispute_resolved_mutual: "Dispute Resolved: Mutual Agreement",
+  dispute_closed_unresolved: "Dispute Closed: Unresolved",
+  welcome: "Welcome to Leaked Liability™",
+  admin_created_account: "Your Leaked Liability Account",
+  email_verification: "Verify Your Email Address",
+  password_reset: "Reset Your Password",
+  subscription_payment_failed: "Payment Failed - Action Required",
+  subscription_canceled: "Subscription Canceled - Resubscribe Anytime",
+};
+
+interface PreviewData {
+  reportId: string;
+  amountOwed: number;
+  projectName: string;
+  invoiceDate: string;
+  daysOverdue: number;
+  accusedName: string;
+  claimUrl: string;
+  expirationDate: string;
+  paymentUrl?: string;
+  paymentCode?: string;
+  oldestDebtDays?: number;
+}
+
 export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderProps) {
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [selectedProducerId, setSelectedProducerId] = useState<string>("");
   const [manualEmail, setManualEmail] = useState<string>("");
   const [sending, setSending] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<PreviewData | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
 
-  const handleSendEmail = async () => {
+  const selectedProducer = producers.find(p => p.id === selectedProducerId);
+
+  const handlePreview = async () => {
     if (!selectedTemplate || !selectedProducerId) {
       toast({
         title: "Missing Selection",
@@ -76,14 +129,7 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
     }
 
     const producer = producers.find(p => p.id === selectedProducerId);
-    if (!producer) {
-      toast({
-        title: "Producer Not Found",
-        description: "Please select a valid producer.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!producer) return;
 
     const finalEmail = manualEmail.trim() || producer.email;
     if (!finalEmail) {
@@ -95,16 +141,85 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
       return;
     }
 
+    setLoadingPreview(true);
+
+    try {
+      // Fetch the latest payment report for this producer
+      const { data: latestReport } = await supabase!
+        .from('payment_reports')
+        .select('id, project_name, invoice_date, amount_owed, days_overdue')
+        .eq('producer_id', selectedProducerId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Fetch escrow payment if exists
+      const { data: escrowPayment } = await supabase!
+        .from('escrow_payments')
+        .select('payment_code')
+        .eq('producer_id', selectedProducerId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const reportId = latestReport?.id?.slice(0, 8)?.toUpperCase() || 'N/A';
+      const amountOwed = producer.total_amount_owed || latestReport?.amount_owed || 0;
+      const daysOverdue = producer.oldest_debt_days || latestReport?.days_overdue || 0;
+      const projectName = latestReport?.project_name || 'Unknown Project';
+      const invoiceDate = latestReport?.invoice_date || new Date().toISOString().split('T')[0];
+
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + 30);
+
+      const paymentCode = escrowPayment?.payment_code;
+
+      setPreviewData({
+        reportId: `CR-${reportId}`,
+        amountOwed,
+        projectName,
+        invoiceDate,
+        daysOverdue,
+        accusedName: producer.name,
+        claimUrl: `https://leakedliability.com/liability/claim/${latestReport?.id || 'unknown'}`,
+        expirationDate: expirationDate.toISOString().split('T')[0],
+        paymentUrl: paymentCode ? `https://leakedliability.com/escrow/pay/${paymentCode}` : undefined,
+        paymentCode: paymentCode || undefined,
+        oldestDebtDays: daysOverdue,
+      });
+
+      setShowPreview(true);
+    } catch (error: any) {
+      console.error("Error fetching preview data:", error);
+      toast({
+        title: "Preview Error",
+        description: "Could not load preview data. You can still send without preview.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    if (!selectedTemplate || !selectedProducerId) return;
+
+    const producer = producers.find(p => p.id === selectedProducerId);
+    if (!producer) return;
+
+    const finalEmail = manualEmail.trim() || producer.email;
+    if (!finalEmail) return;
+
     setSending(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase!.auth.getUser();
       
       if (!user) {
         throw new Error("Not authenticated");
       }
 
-      const { data, error } = await supabase.functions.invoke('send-manual-producer-email', {
+      const { data, error } = await supabase!.functions.invoke('send-manual-producer-email', {
         body: {
           template: selectedTemplate,
           producer_id: selectedProducerId,
@@ -118,13 +233,14 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
       if (data?.success) {
         toast({
           title: "Email Sent Successfully",
-          description: `Email sent to ${producer.name} (${producer.email})`,
+          description: `Email sent to ${producer.name} (${finalEmail})`,
         });
 
-        // Reset form
         setSelectedTemplate("");
         setSelectedProducerId("");
         setManualEmail("");
+        setShowPreview(false);
+        setPreviewData(null);
 
         onEmailSent?.();
       } else {
@@ -142,8 +258,104 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
     }
   };
 
-  const selectedProducer = producers.find(p => p.id === selectedProducerId);
+  const renderPreviewTemplate = () => {
+    if (!previewData) return null;
 
+    switch (selectedTemplate) {
+      case "liability_notification":
+        return <LiabilityNotification {...previewData} />;
+      case "liability_loop_detected":
+        return (
+          <LiabilityLoopDetected
+            reportId={previewData.reportId}
+            originalName={previewData.accusedName}
+            amountOwed={previewData.amountOwed}
+            projectName={previewData.projectName}
+          />
+        );
+      case "producer_report_notification":
+        return (
+          <ProducerReportNotification
+            reportId={previewData.reportId}
+            amountOwed={previewData.amountOwed}
+            daysOverdue={previewData.daysOverdue}
+            oldestDebtDays={previewData.daysOverdue}
+            projectName={previewData.projectName}
+            responseUrl={`https://leakedliability.com/auth`}
+          />
+        );
+      default:
+        return (
+          <div className="p-6 bg-muted/30 rounded-md text-sm text-muted-foreground">
+            <p className="font-medium mb-2">Preview not available for this template.</p>
+            <p>Template: <strong>{EMAIL_TEMPLATES.find(t => t.value === selectedTemplate)?.label}</strong></p>
+            <p>Recipient: <strong>{selectedProducer?.name}</strong></p>
+            <p className="mt-2 text-xs">The email will be sent using server-side data. Click "Confirm & Send" to proceed.</p>
+          </div>
+        );
+    }
+  };
+
+  // Preview mode
+  if (showPreview && previewData) {
+    const finalEmail = manualEmail.trim() || selectedProducer?.email || '';
+    const subject = TEMPLATE_SUBJECTS[selectedTemplate] || 'Leaked Liability Notification';
+
+    return (
+      <Card className="p-6">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Email Preview
+            </h3>
+            <Button variant="ghost" size="sm" onClick={() => setShowPreview(false)}>
+              <ArrowLeft className="mr-1 h-4 w-4" />
+              Back to Edit
+            </Button>
+          </div>
+
+          {/* Email headers */}
+          <div className="p-3 bg-muted/50 rounded-md text-sm space-y-1">
+            <div><strong>From:</strong> noreply@leakedliability.com</div>
+            <div><strong>To:</strong> {selectedProducer?.name} &lt;{finalEmail}&gt;</div>
+            <div><strong>Subject:</strong> {subject}</div>
+          </div>
+
+          {/* Rendered email template */}
+          <div className="border rounded-md overflow-auto max-h-[600px] bg-white">
+            {renderPreviewTemplate()}
+          </div>
+
+          {/* Confirm / Cancel */}
+          <div className="flex gap-3">
+            <Button
+              onClick={handleSendEmail}
+              disabled={sending}
+              className="flex-1"
+            >
+              {sending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Confirm & Send
+                </>
+              )}
+            </Button>
+            <Button variant="outline" onClick={() => setShowPreview(false)} disabled={sending}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
+  // Form mode (original UI preserved exactly)
   return (
     <Card className="p-6">
       <div className="space-y-4">
@@ -237,21 +449,21 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
           </div>
         )}
 
-        {/* Send Button */}
+        {/* Preview Button */}
         <Button 
-          onClick={handleSendEmail} 
-          disabled={!selectedTemplate || !selectedProducerId || sending}
+          onClick={handlePreview} 
+          disabled={!selectedTemplate || !selectedProducerId || loadingPreview}
           className="w-full"
         >
-          {sending ? (
+          {loadingPreview ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Sending Email...
+              Loading Preview...
             </>
           ) : (
             <>
-              <Mail className="mr-2 h-4 w-4" />
-              Send Email
+              <Eye className="mr-2 h-4 w-4" />
+              Preview Email
             </>
           )}
         </Button>
