@@ -2174,7 +2174,11 @@ export default function Admin() {
                               <Button variant="ghost" size="sm">Actions</Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="z-50 bg-popover">
-                              <DropdownMenuItem onClick={() => setSelectedItem(submission)}>
+                              <DropdownMenuItem onClick={async () => {
+                                setSelectedItem(submission);
+                                setAdminNotes(submission.admin_notes || "");
+                                await loadDocumentUrls(submission.document_urls || []);
+                              }}>
                                 View Details
                               </DropdownMenuItem>
                               {submission.status === 'pending' && (
