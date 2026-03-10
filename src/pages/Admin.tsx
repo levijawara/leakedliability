@@ -2197,6 +2197,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                {renderDetailPanel('crew_report')}
               </TabsContent>
 
               {/* Vendor Reports Tab */}
