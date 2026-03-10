@@ -2341,6 +2341,7 @@ export default function Admin() {
                     ))}
                   </TableBody>
                 </Table>
+                {renderDetailPanel('producer_report')}
               </TabsContent>
 
               {/* Disputes Tab */}
