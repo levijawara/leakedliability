@@ -466,7 +466,6 @@ export default function Leaderboard() {
               </div>
             </div>
           </Card>
-        </Card>
 
         {/* Legend */}
         <Card className="mb-8 p-6">
