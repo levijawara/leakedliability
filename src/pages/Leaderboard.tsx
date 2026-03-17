@@ -1167,8 +1167,6 @@ export default function Leaderboard() {
             </Table>
           </div>
         </Card>
-        </>
-        )}
 
         </div>
       </div>
