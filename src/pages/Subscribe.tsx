@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { isStripeAvailable, getStripeInstance } from "@/lib/stripeHelpers";
 import { validateStripeConfig } from "@/config/env";
 import { checkStripeHealth } from "@/lib/stripeHealthCheck";
+import { WageShieldPreview, WageShieldActivity } from "@/components/WageShieldPreview";
 
 type UserRole = "crew" | "producer";
 type BillingFrequency = "monthly" | "annual";
@@ -280,7 +281,7 @@ const Subscribe = () => {
               Choose Your Plan
             </h1>
             <p className="text-xl text-gray-400 mb-8">
-              Get full access to the leaderboard, PSCS scores, and payment histories
+              Active payment protection + full leaderboard access
             </p>
 
             {/* Role Selection */}
@@ -323,6 +324,10 @@ const Subscribe = () => {
             </div>
           </div>
 
+          {/* Wage Shield Preview + Live Activity */}
+          <WageShieldPreview />
+          <WageShieldActivity />
+
           {/* Tier Cards */}
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Crew/Vendor Tier 1 */}
@@ -331,7 +336,7 @@ const Subscribe = () => {
                 <CardHeader>
                   <CardTitle className="text-2xl">Crew/Vendor Access</CardTitle>
                   <CardDescription className="text-gray-400">
-                    Full leaderboard access for industry professionals
+                    Active payment protection + full leaderboard access
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -369,8 +374,15 @@ const Subscribe = () => {
                     onClick={() => handleSubscribe("crew_t1")}
                     disabled={loading === "crew_t1" || !stripeAvailable}
                   >
-                    {loading === "crew_t1" ? "Loading..." : !stripeAvailable ? "Unavailable" : "Subscribe Now"}
+                    {loading === "crew_t1"
+                      ? "Loading..."
+                      : !stripeAvailable
+                        ? "Unavailable"
+                        : "Activate Wage Shield"}
                   </Button>
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    Most crew wait months before taking action. Producers count on that.
+                  </p>
                 </CardFooter>
               </Card>
             )}
