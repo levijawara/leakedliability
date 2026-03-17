@@ -1,6 +1,6 @@
 export function WageShieldPreview() {
   return (
-    <div className="w-full max-w-3xl mx-auto mb-8 border border-green-500/40 p-6 bg-black rounded-xl shadow-lg shadow-green-500/10">
+    <div className="w-full border border-green-500/40 p-6 bg-black rounded-xl shadow-lg shadow-green-500/10">
       <div className="flex items-center justify-between mb-4">
         <span className="text-green-500 text-xs tracking-[0.25em]">
           WAGE SHIELD
@@ -26,16 +26,6 @@ export function WageShieldPreview() {
         <span className="text-gray-400">You stay anonymous.</span>
         <span className="text-green-500">They stay accountable.</span>
       </div>
-    </div>
-  );
-}
-
-export function WageShieldActivity() {
-  return (
-    <div className="max-w-3xl mx-auto mb-10 text-xs sm:text-sm text-gray-400 space-y-1.5">
-      <p>● Producer contacted (2m ago)</p>
-      <p>● Payment secured ($700)</p>
-      <p>● Case resolved (Los Angeles)</p>
     </div>
   );
 }

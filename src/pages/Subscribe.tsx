@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { isStripeAvailable, getStripeInstance } from "@/lib/stripeHelpers";
 import { validateStripeConfig } from "@/config/env";
 import { checkStripeHealth } from "@/lib/stripeHealthCheck";
-import { WageShieldPreview, WageShieldActivity } from "@/components/WageShieldPreview";
+import { WageShieldPreview } from "@/components/WageShieldPreview";
 
 type UserRole = "crew" | "producer";
 type BillingFrequency = "monthly" | "annual";
@@ -324,67 +324,67 @@ const Subscribe = () => {
             </div>
           </div>
 
-          {/* Wage Shield Preview + Live Activity */}
-          <WageShieldPreview />
-          <WageShieldActivity />
-
           {/* Tier Cards */}
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Crew/Vendor Tier 1 */}
+            {/* Crew/Vendor Tier 1 + Wage Shield */}
             {selectedRole === "crew" && (
-              <Card className="bg-gray-900 border-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-2xl">Crew/Vendor Access</CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Active payment protection + full leaderboard access
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="mb-6">
-                    <span className="text-4xl font-bold">{getPrice("crew_t1")}</span>
-                    <span className="text-gray-400">/{billingFrequency === "monthly" ? "mo" : "yr"}</span>
-                    {billingFrequency === "annual" && (
-                      <p className="text-sm text-green-500 mt-2">
-                        Save ${getAnnualSavings("crew_t1")} per year
-                      </p>
-                    )}
-                  </div>
-                  <ul className="space-y-3 mb-6">
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Full leaderboard access</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>View all PSCS scores</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Payment timelines & histories</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>Producer profiles & analytics</span>
-                    </li>
-                  </ul>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    className="w-full"
-                    onClick={() => handleSubscribe("crew_t1")}
-                    disabled={loading === "crew_t1" || !stripeAvailable}
-                  >
-                    {loading === "crew_t1"
-                      ? "Loading..."
-                      : !stripeAvailable
-                        ? "Unavailable"
-                        : "Activate Wage Shield"}
-                  </Button>
-                  <p className="text-xs text-gray-500 mt-3 text-center">
-                    Most crew wait months before taking action. Producers count on that.
-                  </p>
-                </CardFooter>
-              </Card>
+              <>
+                <Card className="bg-gray-900 border-gray-800">
+                  <CardHeader>
+                    <CardTitle className="text-2xl">Crew/Vendor Access</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Active payment protection + full leaderboard access
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-6">
+                      <span className="text-4xl font-bold">{getPrice("crew_t1")}</span>
+                      <span className="text-gray-400">/{billingFrequency === "monthly" ? "mo" : "yr"}</span>
+                      {billingFrequency === "annual" && (
+                        <p className="text-sm text-green-500 mt-2">
+                          Save ${getAnnualSavings("crew_t1")} per year
+                        </p>
+                      )}
+                    </div>
+                    <ul className="space-y-3 mb-6">
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>Full leaderboard access</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>View all PSCS scores</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>Payment timelines & histories</span>
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>Producer profiles & analytics</span>
+                      </li>
+                    </ul>
+                  </CardContent>
+                  <CardFooter>
+                    <Button
+                      className="w-full"
+                      onClick={() => handleSubscribe("crew_t1")}
+                      disabled={loading === "crew_t1" || !stripeAvailable}
+                    >
+                      {loading === "crew_t1"
+                        ? "Loading..."
+                        : !stripeAvailable
+                          ? "Unavailable"
+                          : "Activate Wage Shield"}
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-3 text-center">
+                      Most crew wait months before taking action. Producers count on that.
+                    </p>
+                  </CardFooter>
+                </Card>
+
+                <WageShieldPreview />
+              </>
             )}
 
             {/* Producer Tier 1 */}
