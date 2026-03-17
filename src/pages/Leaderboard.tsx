@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { ProjectTimelineJsonUploader } from "@/components/admin/ProjectTimelineJsonUploader";
 
 const getDaysColor = (days: number | null) => {
   if (!days || days < 0) return "bg-background text-foreground";
@@ -134,15 +133,12 @@ function AdminEditableCell({
   );
 }
 
-type LeaderboardSide = "active" | "liabilities";
-
 export default function Leaderboard() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
   const [managingBilling, setManagingBilling] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<'admin' | 'public'>('admin');
-  const [leaderboardSide, setLeaderboardSide] = useState<LeaderboardSide>("active"); // Front side = default
   const searchLogTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [expandedPenalty, setExpandedPenalty] = useState<'age' | 'amount' | 'repeat' | null>(null);
   
@@ -167,20 +163,6 @@ export default function Leaderboard() {
   });
 
   const showDelinquentOnly = leaderboardConfig?.show_delinquent_only ?? false;
-
-  const { data: activeProductions, isLoading: isLoadingActive, refetch: refetchActive, error: activeError } = useQuery({
-    queryKey: ["production_instances"],
-    queryFn: async () => {
-      if (!supabase) throw new Error("Database connection unavailable");
-      const { data, error } = await supabase
-        .from("production_instances")
-        .select("id, production_name, company_name, primary_contacts, shoot_start_date, extracted_date, verification_status, crew_size")
-        .order("shoot_start_date", { ascending: true, nullsFirst: true });
-      if (error) throw error;
-      return data ?? [];
-    },
-    retry: false,
-  });
 
   const { data: producers, isLoading: isLoadingLiabilities, refetch: refetchProducers, error: queryError } = useQuery({
     queryKey: ["public_leaderboard", showDelinquentOnly],
@@ -427,7 +409,7 @@ export default function Leaderboard() {
           </h1>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <p className="text-xl md:text-2xl font-bold text-muted-foreground">
-              {leaderboardSide === "active" ? "Project Timeline" : "Producer Debt Leaderboard"}
+              Producer Debt Leaderboard
             </p>
             <span className="text-muted-foreground">|</span>
             <a 
@@ -470,41 +452,7 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* LL 2.0 Leaderboard Toggle + Admin JSON upload */}
-        <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
-          {isAdmin && (
-            <ProjectTimelineJsonUploader variant="compact" onSuccess={() => refetchActive()} />
-          )}
-          <div className="inline-flex rounded-lg border-2 border-primary/30 bg-card p-1">
-            <button
-              type="button"
-              onClick={() => setLeaderboardSide("active")}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-semibold transition-colors",
-                leaderboardSide === "active"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Project Timeline
-            </button>
-            <button
-              type="button"
-              onClick={() => setLeaderboardSide("liabilities")}
-              className={cn(
-                "px-4 py-2 rounded-md text-sm font-semibold transition-colors",
-                leaderboardSide === "liabilities"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Verified Liabilities
-            </button>
-          </div>
-        </div>
-
-        {/* Alert Banner - Liabilities only */}
-        {leaderboardSide === "liabilities" && (
+        {/* Alert Banner - Verified Liabilities */}
           <Card className="mb-8 p-6 border-l-4 border-status-critical bg-status-critical/10">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-6 w-6 text-status-critical mt-1 flex-shrink-0" />
@@ -518,19 +466,9 @@ export default function Leaderboard() {
               </div>
             </div>
           </Card>
-        )}
+        </Card>
 
-        {/* Project Timeline notice - gentle, no accusations */}
-        {leaderboardSide === "active" && (
-          <Card className="mb-8 p-6 border-l-4 border-primary/50 bg-primary/5">
-            <p className="text-sm text-muted-foreground">
-              Productions tracked from call sheet uploads. Producers are expected to pay crew directly.
-            </p>
-          </Card>
-        )}
-
-        {/* Legend - Liabilities only */}
-        {leaderboardSide === "liabilities" && (
+        {/* Legend */}
         <Card className="mb-8 p-6">
           <h3 className="font-bold text-lg mb-4">Days-Since-Wrap color coding:</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -556,10 +494,8 @@ export default function Leaderboard() {
             </div>
           </div>
         </Card>
-        )}
 
-        {/* PSCS Formula - Redesigned - Liabilities only */}
-        {leaderboardSide === "liabilities" && (
+        {/* PSCS Formula - Redesigned */}
         <Card className="mb-8 p-4 md:p-5 bg-gradient-to-br from-primary/5 to-accent/5 border-2 max-w-5xl mx-auto">
           {/* Tier 1: Title, Subtitle, Formula Banner */}
           <div className="mb-4">
@@ -704,7 +640,7 @@ export default function Leaderboard() {
           <div className="relative flex-1 max-w-md">
             <input
               type="text"
-              placeholder={leaderboardSide === "active" ? "Search by production or company..." : "Search by producer name or company..."}
+              placeholder="Search by producer name or company..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
@@ -720,8 +656,8 @@ export default function Leaderboard() {
             )}
           </div>
           
-          {/* Admin View Toggle - Only visible to admins on liabilities */}
-          {isAdmin && leaderboardSide === "liabilities" && (
+          {/* Admin View Toggle - Only visible to admins */}
+          {isAdmin && (
             <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
               <Label htmlFor="view-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
                 {viewMode === 'admin' ? 'Admin View' : 'Public View'}
@@ -734,8 +670,8 @@ export default function Leaderboard() {
             </div>
           )}
           
-          {/* Delinquent Toggle - Only visible to admins on liabilities */}
-          {isAdmin && leaderboardSide === "liabilities" && (
+          {/* Delinquent Toggle - Only visible to admins */}
+          {isAdmin && (
             <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
               <Label htmlFor="delinquent-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
                 {showDelinquentOnly ? 'Delinquent' : 'All'}
@@ -749,100 +685,7 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Project Timeline View (Front Side) */}
-        {leaderboardSide === "active" && (() => {
-          const list = [...(activeProductions ?? [])].sort((a, b) => {
-            const dateA = a.extracted_date ? new Date(a.extracted_date).getTime() : 0;
-            const dateB = b.extracted_date ? new Date(b.extracted_date).getTime() : 0;
-            return dateB - dateA;
-          });
-          const filtered = !searchTerm.trim()
-            ? list
-            : list.filter((p) => {
-                const s = searchTerm.trim().toLowerCase();
-                return (p.production_name || "").toLowerCase().includes(s) || (p.company_name || "").toLowerCase().includes(s);
-              });
-          return (
-            <>
-              <Card className="overflow-hidden md:hidden mb-4">
-                {isLoadingActive ? (
-                  <div className="text-center py-12 text-muted-foreground">Loading...</div>
-                ) : activeError ? (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">Unable to load active productions.</p>
-                    <Button variant="outline" size="sm" onClick={() => refetchActive()} className="mt-2">Try Again</Button>
-                  </div>
-                ) : filtered.length > 0 ? (
-                  <div className="divide-y">
-                    {filtered.map((p) => (
-                      <div key={p.id} className="p-4 flex flex-col gap-2">
-                        <div className="font-semibold">{p.production_name || "—"}</div>
-                        {p.company_name && <div className="text-sm text-muted-foreground">{p.company_name}</div>}
-                        <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
-                          {p.verification_status}
-                        </Badge>
-                        {p.crew_size != null && <div className="text-xs text-muted-foreground">Crew: {p.crew_size}</div>}
-                        {p.extracted_date && <div className="text-xs text-muted-foreground">Job Date: {formatPacific(p.extracted_date, "MM/dd/yyyy")}</div>}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-muted-foreground">
-                    {searchTerm ? "No matching productions." : "No active productions yet. Call sheet uploads will appear here."}
-                  </div>
-                )}
-              </Card>
-              <Card className="overflow-hidden hidden md:block">
-                {isLoadingActive ? (
-                  <div className="text-center py-12 text-muted-foreground">Loading...</div>
-                ) : activeError ? (
-                  <div className="text-center py-12">
-                    <p className="text-muted-foreground">Unable to load active productions.</p>
-                    <Button variant="outline" size="sm" onClick={() => refetchActive()} className="mt-2">Try Again</Button>
-                  </div>
-                ) : (
-                   <div className="overflow-x-auto">
-                     <Table>
-                       <TableHeader>
-                         <TableRow className="bg-primary hover:bg-primary">
-                           <TableHead className="text-primary-foreground font-black text-sm">PRODUCTION AUTHORITY</TableHead>
-                           <TableHead className="text-primary-foreground font-black text-sm">COMPANY</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm">CREW SIZE</TableHead>
-                          <TableHead className="text-primary-foreground font-black text-sm text-center">JOB DATE</TableHead>
-                           <TableHead className="text-primary-foreground font-black text-sm text-center">STATUS</TableHead>
-                         </TableRow>
-                       </TableHeader>
-                       <TableBody>
-                         {filtered.length > 0 ? filtered.map((p) => (
-                           <TableRow key={p.id} className="hover:bg-muted/50">
-                             <TableCell className="font-semibold">{p.production_name || "—"}</TableCell>
-                             <TableCell>{p.company_name || "—"}</TableCell>
-                            <TableCell className="text-center">{p.crew_size ?? "—"}</TableCell>
-                            <TableCell className="text-center">{p.extracted_date ? formatPacific(p.extracted_date, "MM/dd/yy") : "—"}</TableCell>
-                             <TableCell className="text-center">
-                               <Badge variant={p.verification_status === "verified" ? "default" : "secondary"}>
-                                 {p.verification_status}
-                               </Badge>
-                             </TableCell>
-                           </TableRow>
-                         )) : (
-                           <TableRow>
-                             <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                               {searchTerm ? "No matching productions." : "No active productions yet. Call sheet uploads will appear here."}
-                             </TableCell>
-                           </TableRow>
-                         )}
-                       </TableBody>
-                     </Table>
-                   </div>
-                 )}
-              </Card>
-            </>
-          );
-        })()}
-
-        {/* Liabilities View - Mobile Accordion + Desktop Table */}
-        {leaderboardSide === "liabilities" && (
+        {/* Verified Liabilities View - Mobile Accordion + Desktop Table */}
         <>
         <Card className="overflow-hidden md:hidden">
           {isLoadingLiabilities ? (
