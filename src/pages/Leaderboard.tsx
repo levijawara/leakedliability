@@ -632,7 +632,6 @@ export default function Leaderboard() {
             </div>
           </div>
         </Card>
-        )}
 
         {/* Search Filter + View Toggle */}
         <div className="mb-4 flex items-center gap-3">
