@@ -466,7 +466,6 @@ export default function Leaderboard() {
               </div>
             </div>
           </Card>
-        </Card>
 
         {/* Legend */}
         <Card className="mb-8 p-6">
@@ -633,7 +632,6 @@ export default function Leaderboard() {
             </div>
           </div>
         </Card>
-        )}
 
         {/* Search Filter + View Toggle */}
         <div className="mb-4 flex items-center gap-3">
@@ -1169,8 +1167,6 @@ export default function Leaderboard() {
             </Table>
           </div>
         </Card>
-        </>
-        )}
 
         </div>
       </div>
