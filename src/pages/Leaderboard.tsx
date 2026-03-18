@@ -220,19 +220,52 @@ export default function Leaderboard() {
     await refetchProducers();
   };
 
-  // Fetch site settings for blur toggle and public readiness flag
+  // Fetch site settings for leaderboard header copy and public readiness flag
   const { data: settings } = useQuery({
     queryKey: ["site_settings"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("public_leaderboard_ready")
+        .select("id, public_leaderboard_ready, leaderboard_main_header, leaderboard_sub_header")
         .single();
       
       if (error) throw error;
       return data;
     },
   });
+
+  const [leaderboardHeaderMainDraft, setLeaderboardHeaderMainDraft] = useState<string>("");
+  const [leaderboardHeaderSubDraft, setLeaderboardHeaderSubDraft] = useState<string>("");
+  const [leaderboardHeaderSaving, setLeaderboardHeaderSaving] = useState(false);
+  const [leaderboardHeaderSavedAt, setLeaderboardHeaderSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!settings) return;
+    setLeaderboardHeaderMainDraft(settings.leaderboard_main_header || "Producer Debt Leaderboard");
+    setLeaderboardHeaderSubDraft(settings.leaderboard_sub_header || "");
+  }, [settings]);
+
+  const saveLeaderboardHeaderCopy = async () => {
+    if (!settings?.id) return;
+    try {
+      setLeaderboardHeaderSaving(true);
+      const { error } = await supabase
+        .from("site_settings")
+        .update({
+          leaderboard_main_header: leaderboardHeaderMainDraft,
+          leaderboard_sub_header: leaderboardHeaderSubDraft,
+        })
+        .eq("id", settings.id);
+
+      if (error) throw error;
+      setLeaderboardHeaderSavedAt(Date.now());
+      window.setTimeout(() => setLeaderboardHeaderSavedAt(null), 3000);
+    } catch (e) {
+      console.error("Failed to save leaderboard header copy:", e);
+    } finally {
+      setLeaderboardHeaderSaving(false);
+    }
+  };
 
   const toggleDelinquentOnly = async () => {
     const newValue = !showDelinquentOnly;
@@ -409,7 +442,7 @@ export default function Leaderboard() {
           </h1>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <p className="text-xl md:text-2xl font-bold text-muted-foreground">
-              Producer Debt Leaderboard
+              {settings?.leaderboard_main_header || "Producer Debt Leaderboard"}
             </p>
             <span className="text-muted-foreground">|</span>
             <a 
@@ -422,6 +455,11 @@ export default function Leaderboard() {
               <Instagram className="h-4 w-4" />
             </a>
           </div>
+          {settings?.leaderboard_sub_header ? (
+            <p className="text-sm text-muted-foreground max-w-3xl mx-auto">
+              {settings.leaderboard_sub_header}
+            </p>
+          ) : null}
           <p className="text-sm text-muted-foreground">
             Last Updated: {formatPacific(nowPacific(), "MM/dd/yy")}
           </p>
@@ -682,6 +720,51 @@ export default function Leaderboard() {
             </div>
           )}
         </div>
+
+        {/* Leaderboard header copy editor (admin view only) */}
+        {isAdmin && viewMode === "admin" && (
+          <div className="mb-6 max-w-3xl mx-auto space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="leaderboard-main-header" className="text-sm font-semibold">
+                MAIN / Header Text
+              </Label>
+              <input
+                id="leaderboard-main-header"
+                type="text"
+                value={leaderboardHeaderMainDraft}
+                onChange={(e) => setLeaderboardHeaderMainDraft(e.target.value)}
+                className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="leaderboard-sub-header" className="text-sm font-semibold">
+                Sub-header Text
+              </Label>
+              <input
+                id="leaderboard-sub-header"
+                type="text"
+                value={leaderboardHeaderSubDraft}
+                onChange={(e) => setLeaderboardHeaderSubDraft(e.target.value)}
+                className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="(Optional)"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-1">
+              {leaderboardHeaderSavedAt ? (
+                <span className="text-xs text-green-500 font-semibold">Saved ✓</span>
+              ) : null}
+              <Button
+                onClick={saveLeaderboardHeaderCopy}
+                disabled={leaderboardHeaderSaving}
+                className="min-w-[160px]"
+              >
+                {leaderboardHeaderSaving ? "Saving..." : "Save Header Copy"}
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Verified Liabilities View - Mobile Accordion + Desktop Table */}
         <>

@@ -14,6 +14,7 @@ interface ManualEmailRequest {
   producer_id: string;
   admin_id: string;
   manual_email?: string;
+  manual_emails?: string[];
   custom_data?: any;
 }
 
@@ -21,6 +22,8 @@ serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
+
+  let requestBody: ManualEmailRequest | null = null;
 
   try {
     const supabase = createClient(
@@ -54,7 +57,8 @@ serve(async (req) => {
       );
     }
 
-    const { template, producer_id, admin_id, manual_email, custom_data }: ManualEmailRequest = await req.json();
+    requestBody = await req.json();
+    const { template, producer_id, admin_id, manual_email, manual_emails, custom_data } = requestBody;
 
     console.log('[Manual Email] Request:', { template, producer_id, admin_id });
 
@@ -69,14 +73,31 @@ serve(async (req) => {
       throw new Error('Producer not found');
     }
 
-    // Prioritize manual email over producer email
-    const finalEmail = manual_email?.trim() || producer.email;
-    
-    if (!finalEmail) {
-      throw new Error('No email address provided. Please enter one manually.');
+    // Recipients: prioritize explicit manual list, then manual single email, then producer.email.
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const normalize = (email: string) => email.trim().toLowerCase();
+
+    const manualEmailSingle = manual_email?.trim() ? normalize(manual_email) : null;
+    const manualEmailList = Array.isArray(manual_emails)
+      ? manual_emails
+          .map((e) => (typeof e === "string" ? e : ""))
+          .map(normalize)
+      : [];
+
+    const recipientsRaw: string[] = [];
+    if (manualEmailList.length > 0) recipientsRaw.push(...manualEmailList);
+    else if (manualEmailSingle) recipientsRaw.push(manualEmailSingle);
+    else if (producer.email?.trim()) recipientsRaw.push(normalize(producer.email));
+
+    const recipients = [...new Set(recipientsRaw)].filter((e) => EMAIL_REGEX.test(e));
+
+    if (recipients.length === 0) {
+      throw new Error("No valid email address provided. Please enter one manually.");
     }
 
-    console.log('[Manual Email] Producer found:', producer.name, producer.email);
+    const usedManualEmail = manualEmailList.length > 0 || !!manualEmailSingle;
+
+    console.log('[Manual Email] Producer found:', producer.name, producer.email, 'recipients:', recipients);
 
     // Fetch latest payment report for this producer (if needed for template data)
     const { data: latestReport } = await supabase
@@ -92,52 +113,93 @@ serve(async (req) => {
 
     console.log('[Manual Email] Sending email with template:', template);
 
-    // Call send-email function with manual origin flag
-    const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-email', {
-      body: {
-        type: template,
-        to: finalEmail,
-        data: templateData,
-        origin: 'manual_admin'
-      },
-      headers: internalHeaders(),
-    });
+    let sentCount = 0;
+    let failedCount = 0;
 
-    if (emailError) {
-      throw emailError;
-    }
+    // Send one email per recipient (send-email supports a single `to`).
+    for (const recipientEmail of recipients) {
+      try {
+        const { error: emailError } = await supabase.functions.invoke("send-email", {
+          body: {
+            type: template,
+            to: recipientEmail,
+            data: templateData,
+            origin: "manual_admin",
+          },
+          headers: internalHeaders(),
+        });
 
-    console.log('[Manual Email] Email sent successfully');
+        if (emailError) throw emailError;
 
-    // Log to manual_email_logs table
-    const { error: logError } = await supabase
-      .from('manual_email_logs')
-      .insert({
-        admin_id: admin_id,
-        producer_id: producer_id,
-        template_key: template,
-        producer_email: finalEmail,
-        status: 'success',
-        metadata: { 
-          producer_name: producer.name,
-          used_manual_email: !!manual_email,
-          manual_email_value: manual_email || null,
-          template_data: templateData
+        sentCount++;
+
+        const { error: logError } = await supabase
+          .from("manual_email_logs")
+          .insert({
+            admin_id: admin_id,
+            producer_id: producer_id,
+            template_key: template,
+            producer_email: recipientEmail,
+            status: "success",
+            metadata: {
+              producer_name: producer.name,
+              used_manual_email: usedManualEmail,
+              manual_email_value: usedManualEmail
+                ? manualEmailList.length > 0
+                  ? manualEmailList
+                  : manualEmailSingle
+                : null,
+              template_data: templateData,
+            },
+          });
+
+        if (logError) {
+          console.error("[Manual Email] Failed to log success:", logError);
         }
-      });
+      } catch (e: any) {
+        failedCount++;
+        const errorMessage = e?.message || "Failed to send email";
 
-    if (logError) {
-      console.error('[Manual Email] Failed to log email:', logError);
+        try {
+          const { error: logError } = await supabase
+            .from("manual_email_logs")
+            .insert({
+              admin_id: admin_id,
+              producer_id: producer_id,
+              template_key: template,
+              producer_email: recipientEmail,
+              status: "failed",
+              error_message: errorMessage,
+              metadata: {
+                producer_name: producer.name,
+                used_manual_email: usedManualEmail,
+                template_data: templateData,
+              },
+            });
+
+          if (logError) {
+            console.error("[Manual Email] Failed to log failure:", logError);
+          }
+        } catch (logCatch) {
+          console.error("[Manual Email] Failure logging threw:", logCatch);
+        }
+      }
     }
+
+    const success = failedCount === 0 && sentCount > 0;
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Email sent to ${producer.name} (${finalEmail})` 
+      JSON.stringify({
+        success,
+        sent: sentCount,
+        failed: failedCount,
+        error: success
+          ? undefined
+          : `Email sending completed with failures. Sent ${sentCount}, failed ${failedCount}.`,
       }),
-      { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
       }
     );
 
@@ -151,15 +213,16 @@ serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
       );
 
-      const body = await req.json();
-      await supabase.from('manual_email_logs').insert({
-        admin_id: body.admin_id,
-        producer_id: body.producer_id,
-        template_key: body.template,
-        producer_email: 'unknown',
-        status: 'failed',
-        error_message: error.message
-      });
+      if (requestBody) {
+        await supabase.from("manual_email_logs").insert({
+          admin_id: requestBody.admin_id,
+          producer_id: requestBody.producer_id,
+          template_key: requestBody.template,
+          producer_email: "unknown",
+          status: "failed",
+          error_message: error.message,
+        });
+      }
     } catch (logError) {
       console.error('[Manual Email] Failed to log error:', logError);
     }

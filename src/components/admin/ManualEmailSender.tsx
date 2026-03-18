@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,9 @@ import { Loader2, Mail, Eye, ArrowLeft, Send } from "lucide-react";
 import { LiabilityNotification } from "../../../supabase/functions/send-email/_templates/liability-notification";
 import { LiabilityLoopDetected } from "../../../supabase/functions/send-email/_templates/liability-loop-detected";
 import { ProducerReportNotification } from "../../../supabase/functions/send-email/_templates/producer-report-notification";
+
+// Basic email validation for admin tooling.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface Producer {
   id: string;
@@ -110,13 +114,37 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
   const { toast } = useToast();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const [selectedProducerId, setSelectedProducerId] = useState<string>("");
-  const [manualEmail, setManualEmail] = useState<string>("");
+  const [manualEmailsText, setManualEmailsText] = useState<string>("");
   const [sending, setSending] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [loadingPreview, setLoadingPreview] = useState(false);
 
   const selectedProducer = producers.find(p => p.id === selectedProducerId);
+
+  const parsedManualRecipients = useMemo(() => {
+    const raw = manualEmailsText.trim();
+    if (!raw) return { valid: [] as string[], invalid: [] as string[] };
+
+    const rawEmails = raw
+      .split(/[\n,;\s]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e.length > 0);
+
+    const unique = [...new Set(rawEmails)];
+    const valid: string[] = [];
+    const invalid: string[] = [];
+
+    for (const email of unique) {
+      if (EMAIL_REGEX.test(email)) valid.push(email);
+      else invalid.push(email);
+    }
+
+    return { valid, invalid };
+  }, [manualEmailsText]);
+
+  const producerEmail = selectedProducer?.email?.trim() ? selectedProducer.email.trim().toLowerCase() : "";
+  const manualRecipientsProvided = manualEmailsText.trim().length > 0;
 
   const handlePreview = async () => {
     if (!selectedTemplate || !selectedProducerId) {
@@ -131,11 +159,16 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
     const producer = producers.find(p => p.id === selectedProducerId);
     if (!producer) return;
 
-    const finalEmail = manualEmail.trim() || producer.email;
-    if (!finalEmail) {
+    const recipients = manualRecipientsProvided
+      ? parsedManualRecipients.valid
+      : producer.email?.trim()
+        ? [producer.email.trim().toLowerCase()]
+        : [];
+
+    if (recipients.length === 0) {
       toast({
         title: "No Email Address",
-        description: "Please enter an email address or select a producer with an email on file.",
+        description: "Please enter a valid email address(es) or select a producer with an email on file.",
         variant: "destructive",
       });
       return;
@@ -207,8 +240,13 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
     const producer = producers.find(p => p.id === selectedProducerId);
     if (!producer) return;
 
-    const finalEmail = manualEmail.trim() || producer.email;
-    if (!finalEmail) return;
+    const recipients = manualRecipientsProvided
+      ? parsedManualRecipients.valid
+      : producer.email?.trim()
+        ? [producer.email.trim().toLowerCase()]
+        : [];
+
+    if (recipients.length === 0) return;
 
     setSending(true);
 
@@ -219,26 +257,30 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
         throw new Error("Not authenticated");
       }
 
-      const { data, error } = await supabase!.functions.invoke('send-manual-producer-email', {
-        body: {
-          template: selectedTemplate,
-          producer_id: selectedProducerId,
-          admin_id: user.id,
-          manual_email: manualEmail.trim() || undefined,
-        },
-      });
+      const payload: Record<string, unknown> = {
+        template: selectedTemplate,
+        producer_id: selectedProducerId,
+        admin_id: user.id,
+      };
+
+      // Only override producer.email when the admin explicitly provided recipients.
+      if (manualRecipientsProvided) {
+        payload.manual_emails = recipients;
+      }
+
+      const { data, error } = await supabase!.functions.invoke("send-manual-producer-email", { body: payload });
 
       if (error) throw error;
 
       if (data?.success) {
         toast({
           title: "Email Sent Successfully",
-          description: `Email sent to ${producer.name} (${finalEmail})`,
+          description: `Email sent to ${recipients.length} recipient${recipients.length === 1 ? "" : "s"}`,
         });
 
         setSelectedTemplate("");
         setSelectedProducerId("");
-        setManualEmail("");
+        setManualEmailsText("");
         setShowPreview(false);
         setPreviewData(null);
 
@@ -298,7 +340,15 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
 
   // Preview mode
   if (showPreview && previewData) {
-    const finalEmail = manualEmail.trim() || selectedProducer?.email || '';
+    const toEmails =
+      manualRecipientsProvided && parsedManualRecipients.valid.length > 0
+        ? parsedManualRecipients.valid
+        : selectedProducer?.email?.trim()
+          ? [selectedProducer.email.trim().toLowerCase()]
+          : [];
+
+    const toFirst = toEmails[0] || "";
+    const toMoreCount = Math.max(0, toEmails.length - 1);
     const subject = TEMPLATE_SUBJECTS[selectedTemplate] || 'Leaked Liability Notification';
 
     return (
@@ -318,7 +368,10 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
           {/* Email headers */}
           <div className="p-3 bg-muted/50 rounded-md text-sm space-y-1">
             <div><strong>From:</strong> noreply@leakedliability.com</div>
-            <div><strong>To:</strong> {selectedProducer?.name} &lt;{finalEmail}&gt;</div>
+            <div>
+              <strong>To:</strong> {selectedProducer?.name} &lt;{toFirst}&gt;
+              {toMoreCount > 0 ? ` (+${toMoreCount} more)` : ""}
+            </div>
             <div><strong>Subject:</strong> {subject}</div>
           </div>
 
@@ -419,7 +472,11 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
             <div>
               <div className="text-sm font-medium mb-1">Email will be sent to:</div>
               <div className="text-sm text-muted-foreground">
-                {selectedProducer.name} — {selectedProducer.email || "No email on file"}
+                {manualRecipientsProvided
+                  ? parsedManualRecipients.valid.length > 0
+                    ? `${parsedManualRecipients.valid.length} recipient${parsedManualRecipients.valid.length === 1 ? "" : "s"} (manual)`
+                    : "No valid email addresses entered"
+                  : selectedProducer.name + " — " + (selectedProducer.email || "No email on file")}
               </div>
               {selectedProducer.company && (
                 <div className="text-xs text-muted-foreground mt-0.5">
@@ -429,20 +486,28 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="manual-email" className="text-sm">
-                Or manually enter an email address:
+              <Label htmlFor="manual-emails" className="text-sm">
+                Or manually enter email address(es):
               </Label>
-              <input
-                id="manual-email"
-                type="email"
-                placeholder="producer@example.com"
-                value={manualEmail}
-                onChange={(e) => setManualEmail(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              <Textarea
+                id="manual-emails"
+                placeholder={"email1@example.com\nemail2@example.com\nemail3@example.com"}
+                value={manualEmailsText}
+                onChange={(e) => setManualEmailsText(e.target.value)}
+                rows={4}
+                className="font-mono text-sm"
               />
-              {manualEmail && (
-                <div className="text-xs text-muted-foreground">
-                  ✓ Will use: {manualEmail}
+
+              {manualRecipientsProvided && (
+                <div className="text-xs text-muted-foreground space-y-1">
+                  {parsedManualRecipients.valid.length > 0 && (
+                    <div>✓ Will use: {parsedManualRecipients.valid.length} valid recipient(s)</div>
+                  )}
+                  {parsedManualRecipients.invalid.length > 0 && (
+                    <div className="text-destructive">
+                      {parsedManualRecipients.invalid.length} invalid value(s) will be ignored
+                    </div>
+                  )}
                 </div>
               )}
             </div>
