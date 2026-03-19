@@ -2808,6 +2808,8 @@ export type Database = {
       site_settings: {
         Row: {
           id: string
+          leaderboard_main_header: string | null
+          leaderboard_sub_header: string | null
           maintenance_message: string | null
           maintenance_mode: boolean
           public_leaderboard_ready: boolean | null
@@ -2816,6 +2818,8 @@ export type Database = {
         }
         Insert: {
           id?: string
+          leaderboard_main_header?: string | null
+          leaderboard_sub_header?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
           public_leaderboard_ready?: boolean | null
@@ -2824,6 +2828,8 @@ export type Database = {
         }
         Update: {
           id?: string
+          leaderboard_main_header?: string | null
+          leaderboard_sub_header?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
           public_leaderboard_ready?: boolean | null
