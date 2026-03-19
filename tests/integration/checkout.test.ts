@@ -3,16 +3,6 @@ import { describe, it, expect } from "vitest";
 const SUPABASE_URL = process.env.TEST_SUPABASE_URL || "https://blpbeopmdfahiosglomx.supabase.co";
 const CHECKOUT_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/create-leaderboard-checkout`;
 
-// Test all tier/frequency combinations
-const TIER_COMBINATIONS = [
-  { tier: "crew_t1", billing_frequency: "monthly" },
-  { tier: "crew_t1", billing_frequency: "annual" },
-  { tier: "producer_t1", billing_frequency: "monthly" },
-  { tier: "producer_t1", billing_frequency: "annual" },
-  { tier: "producer_t2", billing_frequency: "monthly" },
-  { tier: "producer_t2", billing_frequency: "annual" },
-];
-
 describe("Checkout Integration Tests", () => {
   describe("create-leaderboard-checkout function", () => {
     it("should be reachable and handle OPTIONS (CORS preflight)", async () => {
@@ -76,6 +66,29 @@ describe("Checkout Integration Tests", () => {
 
       // Auth is checked first, so fake token returns 401 before frequency validation
       expect(response.status).toBe(401);
+    });
+
+    it("should return JSON for unauthenticated POST", async () => {
+      const response = await fetch(CHECKOUT_FUNCTION_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tier: "crew_t1",
+          billing_frequency: "monthly",
+        }),
+      });
+      expect([401, 500]).toContain(response.status);
+      const contentType = response.headers.get("content-type") || "";
+      expect(contentType).toContain("application/json");
+      const data = await response.json();
+      expect(data).toBeDefined();
+      const errText =
+        typeof (data as { error?: string }).error === "string"
+          ? (data as { error: string }).error
+          : typeof (data as { message?: string }).message === "string"
+            ? (data as { message: string }).message
+            : JSON.stringify(data);
+      expect(errText.length).toBeGreaterThan(0);
     });
   });
 
