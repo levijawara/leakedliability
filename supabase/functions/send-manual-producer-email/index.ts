@@ -207,31 +207,30 @@ serve(async (req) => {
     );
 
   } catch (error: any) {
-    console.error('[Manual Email] Error:', error);
+    console.error('[Manual Email] Error:', error?.message || error);
 
-    // Try to log failure
-    try {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
+    if (requestBody) {
+      try {
+        const supabase = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
 
-      if (requestBody) {
         await supabase.from("manual_email_logs").insert({
           admin_id: requestBody.admin_id,
           producer_id: requestBody.producer_id,
           template_key: requestBody.template,
           producer_email: "unknown",
           status: "failed",
-          error_message: error.message,
+          error_message: error?.message || "Unknown error",
         });
+      } catch (logError: any) {
+        console.error('[Manual Email] Failed to log error:', logError?.message || logError);
       }
-    } catch (logError) {
-      console.error('[Manual Email] Failed to log error:', logError);
     }
 
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: error?.message || "An unexpected error occurred" }),
       { 
         status: 500, 
         headers: { 'Content-Type': 'application/json', ...corsHeaders } 

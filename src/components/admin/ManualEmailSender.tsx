@@ -270,7 +270,18 @@ export function ManualEmailSender({ producers, onEmailSent }: ManualEmailSenderP
 
       const { data, error } = await supabase!.functions.invoke("send-manual-producer-email", { body: payload });
 
-      if (error) throw error;
+      if (error) {
+        let errorMessage = "Failed to send email";
+        try {
+          if (error.context && typeof (error.context as any).json === "function") {
+            const body = await (error.context as any).json();
+            if (body?.error) errorMessage = body.error;
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+        } catch { /* fallback */ }
+        throw new Error(errorMessage);
+      }
 
       if (data?.success) {
         toast({
