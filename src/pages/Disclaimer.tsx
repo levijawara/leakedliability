@@ -16,7 +16,7 @@ export default function Disclaimer() {
             </CardTitle>
             <p className="text-center text-muted-foreground">Last Updated: {format(new Date(), "MMMM d, yyyy")}</p>
           </CardHeader>
-          <CardContent className="prose prose-sm max-w-none space-y-4 text-muted-foreground">
+          <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-4 text-muted-foreground">
             <p>
               Leaked Liability™ is a user-driven transparency platform where individuals may share information about payment practices within the production industry, including experiences involving freelance crew, vendors, service providers, producers, and production companies. The information presented on this platform is user generated and is made available "as is" for general informational purposes only. Leaked Liability™ does not independently verify, investigate, or authenticate the accuracy of each submission.
             </p>
@@ -35,6 +35,14 @@ export default function Disclaimer() {
 
             <p>
               Leaked Liability™ does not guarantee that user submissions constitute accurate factual representations of events. Users and third parties are encouraged to conduct their own independent verification.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              License to your submissions
+            </h2>
+
+            <p>
+              By submitting content to the platform (including but not limited to invoices, screenshots, call sheets, contracts, and written statements), you grant Leaked Liability a non-exclusive, worldwide, royalty-free license to use, reproduce, display, distribute, and create derivative works from that content for the purposes of operating the platform, facilitating dispute resolution, and producing case documentation.
             </p>
 
             <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
@@ -82,6 +90,22 @@ export default function Disclaimer() {
             </p>
 
             <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Payment facilitation and third-party processors
+            </h2>
+
+            <p>
+              Leaked Liability may offer optional escrow or payment facilitation tools powered by third-party payment processors (currently Stripe). These tools are provided as a convenience to help parties resolve outstanding payments. LL does not hold, manage, or guarantee funds. LL is not a bank, financial institution, or money services business. All payment processing is handled by Stripe subject to Stripe&apos;s own terms of service. LL is not liable for failed transactions, chargebacks, processing errors, or disputes arising from the use of these tools.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              No guarantee of outcomes
+            </h2>
+
+            <p>
+              Leaked Liability does not guarantee that any report will result in payment, resolution, or any specific outcome. The platform provides visibility and accountability tools; resolution depends entirely on the parties involved.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
               Content Moderation
             </h2>
 
@@ -120,11 +144,39 @@ export default function Disclaimer() {
             </ol>
 
             <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Indemnification
+            </h2>
+
+            <p>
+              By submitting content to Leaked Liability, you agree to indemnify, defend, and hold harmless Leaked Liability, its operators, and affiliates from any claims, damages, losses, or expenses (including reasonable attorney&apos;s fees) arising out of your submissions, your use of the platform, or your violation of these terms.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Limitation of liability
+            </h2>
+
+            <p>
+              To the maximum extent permitted by law, Leaked Liability&apos;s total liability for any claim arising from your use of the platform shall not exceed the amount you have paid to LL in the twelve (12) months preceding the claim, or $100, whichever is greater. LL shall not be liable for any indirect, incidental, consequential, or punitive damages.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
+              Governing law and venue
+            </h2>
+
+            <p>
+              This Disclaimer and your use of Leaked Liability shall be governed by the laws of the State of California, without regard to conflict of law principles. Any disputes arising from your use of the platform shall be subject to the exclusive jurisdiction of the courts located in Los Angeles County, California.
+            </p>
+
+            <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
               Retaliation, Harassment, and Interference
             </h2>
 
             <p>
               Any attempt to intimidate, harass, threaten, or retaliate against users for lawful participation on this platform may be documented. Such conduct may also be disclosed in transparency reports if necessary for platform safety and integrity.
+            </p>
+
+            <p>
+              LL may also retain and publish records of attempts to suppress, intimidate, or interfere with lawful user participation, including but not limited to cease and desist letters, threats of litigation, or demands for content removal that lack legal basis.
             </p>
 
             <h2 className="font-semibold text-foreground text-lg mt-6 mb-3">
