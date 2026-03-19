@@ -195,20 +195,29 @@ export function RequireAuth({
 
   // Unauthenticated - redirect to auth page with return URL
   if (authState === 'unauthenticated') {
-    const redirectUrl = createRedirectUrl(location.pathname + location.search);
+    const path = location.pathname + location.search;
+    const isPortal = location.pathname.startsWith("/extra-credit");
+    const redirectUrl = isPortal
+      ? `/extra-credit/auth?redirect=${encodeURIComponent(path)}`
+      : createRedirectUrl(path);
     return <Navigate to={redirectUrl} replace />;
   }
 
   // Unauthorized (authenticated but lacks required role/access)
   if (authState === 'unauthorized') {
-    // For admin pages, redirect home; for beta pages, redirect to profile
-    const destination = requireAdmin ? "/" : "/profile";
+    const isPortal = location.pathname.startsWith("/extra-credit");
+    const destination = isPortal
+      ? "/extra-credit/call-sheets"
+      : requireAdmin ? "/" : "/profile";
     return <Navigate to={destination} replace />;
   }
 
   // Banned/suspended - redirect to ban page (no sign-out here; BanPage handles it)
   if (authState === 'banned') {
-    const destination = banId ? `/ban/${banId}` : "/";
+    const isPortal = location.pathname.startsWith("/extra-credit");
+    const destination = banId
+      ? isPortal ? `/extra-credit/ban/${banId}` : `/ban/${banId}`
+      : isPortal ? "/extra-credit/auth" : "/";
     return <Navigate to={destination} replace />;
   }
 

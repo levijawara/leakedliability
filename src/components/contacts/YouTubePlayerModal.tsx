@@ -1,6 +1,10 @@
-```tsx
 import { useEffect, useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -21,6 +25,7 @@ import { toast } from "sonner";
 interface CreditEntry {
   role: string | null;
   name: string;
+  ig_handle: string | null;
 }
 
 interface YouTubeVideo {
@@ -81,7 +86,10 @@ function abbreviateRole(role: string): string {
 function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
   const [copied, setCopied] = useState(false);
 
-  const copyCredits = async (options: { abbreviated: boolean }) => {
+  const copyCredits = async (options: {
+    abbreviated: boolean;
+    useHandles: boolean;
+  }) => {
     const text = credits
       .map((c) => {
         const role = c.role
@@ -89,7 +97,13 @@ function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
             ? abbreviateRole(c.role)
             : c.role
           : null;
-        return role ? `${role}: ${c.name}` : c.name;
+        
+        // Choose name or IG handle (fallback to name if no handle)
+        const identifier = options.useHandles && c.ig_handle
+          ? `@${c.ig_handle.replace(/^@/, '')}`
+          : c.name;
+        
+        return role ? `${role}: ${identifier}` : identifier;
       })
       .join("\n");
 
@@ -120,10 +134,24 @@ function CopyCreditsDropdown({ credits }: { credits: CreditEntry[] }) {
       <DropdownMenuContent align="end" className="bg-popover">
         <DropdownMenuLabel className="text-xs">Copy Credits</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true })}>
+        
+        {/* By Name */}
+        <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider pt-1">By Name</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true, useHandles: false })}>
           Abbreviated Roles
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false })}>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false, useHandles: false })}>
+          Full Role Names
+        </DropdownMenuItem>
+        
+        <DropdownMenuSeparator />
+        
+        {/* By IG Handle */}
+        <DropdownMenuLabel className="text-[10px] text-muted-foreground uppercase tracking-wider pt-1">By IG Handle</DropdownMenuLabel>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: true, useHandles: true })}>
+          Abbreviated Roles
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => copyCredits({ abbreviated: false, useHandles: true })}>
           Full Role Names
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -172,21 +200,24 @@ export function YouTubePlayerModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="h-[90vh] max-w-6xl w-[95vw] overflow-hidden p-0 gap-0">
-        <div className="flex h-full flex-col">
-          {/* Top bar - fixed height, never scrolls */}
-          <div className="shrink-0 border-b p-4 lg:p-5">
-            <h2 className="font-semibold text-lg leading-tight line-clamp-2">
+      <DialogContent 
+        className="h-[90vh] w-[95vw] max-w-7xl p-0 overflow-hidden flex flex-col"
+        aria-describedby={undefined}
+      >
+        <VisuallyHidden>
+          <DialogTitle>{video?.title || "YouTube Video Player"}</DialogTitle>
+        </VisuallyHidden>
+          {/* Top bar - fixed height */}
+          <div className="shrink-0 border-b px-5 py-4">
+            <h2 className="text-lg font-semibold leading-tight line-clamp-2">
               {video.title || "Untitled Video"}
             </h2>
             {video.channel_title && (
-              <p className="text-sm text-muted-foreground mt-0.5">
-                {video.channel_title}
-              </p>
+              <p className="text-sm text-muted-foreground mt-0.5">{video.channel_title}</p>
             )}
-            <div className="flex flex-wrap gap-3 text-sm mt-2">
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-2">
               {video.view_count !== null && (
-                <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex items-center gap-1.5">
                   <Eye className="h-4 w-4" />
                   <span className="font-mono font-medium text-foreground">
                     {formatFullViewCount(video.view_count)}
@@ -195,38 +226,34 @@ export function YouTubePlayerModal({
                 </div>
               )}
               {video.published_at && (
-                <div className="flex items-center gap-1.5 text-muted-foreground">
+                <div className="flex items-center gap-1.5">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {formatDistanceToNow(new Date(video.published_at), {
-                      addSuffix: true,
-                    })}
+                    {formatDistanceToNow(new Date(video.published_at), { addSuffix: true })}
                   </span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Main row - flex, fills remaining height */}
+          {/* Main area - flex row, can shrink */}
           <div className="flex flex-1 min-h-0">
-            {/* Player - left side */}
-            <div className="flex-1 min-w-0 bg-black flex items-center justify-center p-3">
-              <div className="w-full h-full rounded-xl overflow-hidden">
-                <AspectRatio ratio={16 / 9} className="h-full">
-                  <iframe
-                    src={embedUrl}
-                    className="w-full h-full"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    title={video.title || "Video player"}
-                  />
-                </AspectRatio>
+            {/* Player - left side, letterboxes naturally */}
+            <div className="flex-1 bg-black flex items-center justify-center">
+              <div className="w-full h-full max-w-[1100px] max-h-full flex items-center justify-center p-3">
+                <iframe
+                  src={embedUrl}
+                  className="w-full h-full rounded-lg"
+                  style={{ aspectRatio: "16 / 9" }}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={video.title || "Video player"}
+                />
               </div>
             </div>
 
-            {/* Credits - right side, scrolls internally */}
-            <div className="w-[360px] shrink-0 border-l flex flex-col min-h-0">
-              {/* Credits header - pinned */}
+            {/* Credits - right side, fixed width, scrolls internally */}
+            <div className="w-[320px] border-l flex flex-col min-h-0">
               <div className="shrink-0 px-4 py-3 border-b flex items-center justify-between">
                 <h3 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider">
                   Project Credits
@@ -234,69 +261,59 @@ export function YouTubePlayerModal({
                 <CopyCreditsDropdown credits={video.credits} />
               </div>
 
-              {/* Credits list - scrollable */}
-              <div className="flex-1 min-h-0">
-                <ScrollArea className="h-full w-full">
-                  {video.credits && video.credits.length > 0 ? (
-                    <div className="space-y-1 font-mono text-sm p-4">
-                      {video.credits.map((credit, i) => {
-                        const isMe = isContactMatch(credit.name);
-                        return (
-                          <div
-                            key={i}
-                            className={cn(
-                              "flex gap-2 py-0.5 px-1 -mx-1 rounded",
-                              isMe && "text-primary font-bold bg-primary/10"
-                            )}
-                          >
-                            {credit.role && (
-                              <span className="text-muted-foreground shrink-0">
-                                {abbreviateRole(credit.role)}:
-                              </span>
-                            )}
-                            <span className="truncate">{credit.name}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="p-4 text-sm text-muted-foreground">
-                      No credits available
-                    </div>
-                  )}
-                </ScrollArea>
+              <div className="flex-1 min-h-0 overflow-y-auto">
+                {video.credits && video.credits.length > 0 ? (
+                  <div className="space-y-1 font-mono text-sm p-4">
+                    {video.credits.map((credit, i) => {
+                      const isMe = isContactMatch(credit.name);
+                      return (
+                        <div
+                          key={i}
+                          className={cn(
+                            "flex gap-2 py-0.5 px-1 -mx-1 rounded",
+                            isMe && "text-primary font-bold bg-primary/10"
+                          )}
+                        >
+                          {credit.role && (
+                            <span className="text-muted-foreground shrink-0">
+                              {abbreviateRole(credit.role)}:
+                            </span>
+                          )}
+                          <span className="truncate">{credit.name}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="p-4 text-sm text-muted-foreground">No credits available</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Bottom strip - fixed height, never scrolls */}
+          {/* Bottom carousel - pinned, always visible */}
           {otherVideos.length > 0 && (
-            <div className="shrink-0 border-t bg-muted/30 p-3 h-[140px]">
+            <div className="shrink-0 h-32 border-t bg-muted/30 px-4 py-3">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-medium flex items-center gap-2">
                   <Youtube className="h-4 w-4 text-destructive" />
                   More from {contactName}
                 </h3>
                 <span className="text-xs text-muted-foreground">
-                  {otherVideos.length} other project
-                  {otherVideos.length !== 1 ? "s" : ""}
+                  {otherVideos.length} other project{otherVideos.length !== 1 ? "s" : ""}
                 </span>
               </div>
 
-              {/* Horizontal carousel - scrolls sideways only */}
-              <div
-                className="flex gap-2 overflow-x-auto overflow-y-hidden pb-2"
-                style={{ scrollbarWidth: "thin" }}
-              >
+              <div className="flex gap-3 overflow-x-auto overflow-y-hidden">
                 {otherVideos.map((v) => {
                   const originalIndex = allVideos.findIndex((av) => av.id === v.id);
                   return (
                     <button
                       key={v.id}
                       onClick={() => onNavigate(originalIndex)}
-                      className="flex-shrink-0 w-28 rounded overflow-hidden hover:ring-2 ring-primary transition-all group"
+                      className="flex-shrink-0 w-28 rounded-lg overflow-hidden hover:ring-2 ring-primary transition-all group"
                     >
-                      <AspectRatio ratio={16 / 9}>
+                      <div className="aspect-video">
                         {v.thumbnail_url ? (
                           <img
                             src={v.thumbnail_url}
@@ -308,16 +325,14 @@ export function YouTubePlayerModal({
                             <Youtube className="h-4 w-4 text-muted-foreground" />
                           </div>
                         )}
-                      </AspectRatio>
+                      </div>
                     </button>
                   );
                 })}
               </div>
             </div>
           )}
-        </div>
       </DialogContent>
     </Dialog>
   );
 }
-```

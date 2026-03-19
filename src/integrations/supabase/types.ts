@@ -1228,6 +1228,7 @@ export type Database = {
           id: string
           locked_at: string | null
           producer_count_at_lock: number | null
+          show_delinquent_only: boolean
           threshold_locked: boolean
           updated_at: string | null
         }
@@ -1237,6 +1238,7 @@ export type Database = {
           id?: string
           locked_at?: string | null
           producer_count_at_lock?: number | null
+          show_delinquent_only?: boolean
           threshold_locked?: boolean
           updated_at?: string | null
         }
@@ -1246,6 +1248,7 @@ export type Database = {
           id?: string
           locked_at?: string | null
           producer_count_at_lock?: number | null
+          show_delinquent_only?: boolean
           threshold_locked?: boolean
           updated_at?: string | null
         }
@@ -1739,6 +1742,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      nova_master_identities: {
+        Row: {
+          created_at: string | null
+          full_name: string
+          id: string
+          normalized_name: string
+          profile_url: string
+          roles: string[] | null
+          sources: string[] | null
+          updated_at: string | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          full_name: string
+          id?: string
+          normalized_name: string
+          profile_url: string
+          roles?: string[] | null
+          sources?: string[] | null
+          updated_at?: string | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string
+          id?: string
+          normalized_name?: string
+          profile_url?: string
+          roles?: string[] | null
+          sources?: string[] | null
+          updated_at?: string | null
+          username?: string
+        }
+        Relationships: []
       }
       past_debts: {
         Row: {
@@ -2310,6 +2349,77 @@ export type Database = {
         }
         Relationships: []
       }
+      production_companies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      production_instances: {
+        Row: {
+          company_name: string | null
+          created_at: string
+          crew_size: number | null
+          extracted_date: string | null
+          global_call_sheet_id: string | null
+          id: string
+          metadata: Json | null
+          primary_contacts: Json | null
+          production_name: string | null
+          shoot_start_date: string | null
+          updated_at: string
+          verification_status: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          created_at?: string
+          crew_size?: number | null
+          extracted_date?: string | null
+          global_call_sheet_id?: string | null
+          id?: string
+          metadata?: Json | null
+          primary_contacts?: Json | null
+          production_name?: string | null
+          shoot_start_date?: string | null
+          updated_at?: string
+          verification_status?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          created_at?: string
+          crew_size?: number | null
+          extracted_date?: string | null
+          global_call_sheet_id?: string | null
+          id?: string
+          metadata?: Json | null
+          primary_contacts?: Json | null
+          production_name?: string | null
+          shoot_start_date?: string | null
+          updated_at?: string
+          verification_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "production_instances_global_call_sheet_id_fkey"
+            columns: ["global_call_sheet_id"]
+            isOneToOne: true
+            referencedRelation: "global_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           account_status: string | null
@@ -2360,6 +2470,105 @@ export type Database = {
           legal_first_name?: string
           legal_last_name?: string
           updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      project_call_sheets: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          user_call_sheet_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          user_call_sheet_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          user_call_sheet_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_call_sheets_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_call_sheets_user_call_sheet_id_fkey"
+            columns: ["user_call_sheet_id"]
+            isOneToOne: false
+            referencedRelation: "user_call_sheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_videos: {
+        Row: {
+          created_at: string | null
+          id: string
+          project_id: string
+          video_id: string
+          youtube_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          project_id: string
+          video_id: string
+          youtube_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          project_id?: string
+          video_id?: string
+          youtube_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_videos_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_videos_video_id_fkey"
+            columns: ["video_id"]
+            isOneToOne: false
+            referencedRelation: "youtube_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2599,6 +2808,8 @@ export type Database = {
       site_settings: {
         Row: {
           id: string
+          leaderboard_main_header: string | null
+          leaderboard_sub_header: string | null
           maintenance_message: string | null
           maintenance_mode: boolean
           public_leaderboard_ready: boolean | null
@@ -2607,6 +2818,8 @@ export type Database = {
         }
         Insert: {
           id?: string
+          leaderboard_main_header?: string | null
+          leaderboard_sub_header?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
           public_leaderboard_ready?: boolean | null
@@ -2615,6 +2828,8 @@ export type Database = {
         }
         Update: {
           id?: string
+          leaderboard_main_header?: string | null
+          leaderboard_sub_header?: string | null
           maintenance_message?: string | null
           maintenance_mode?: boolean
           public_leaderboard_ready?: boolean | null
@@ -2706,8 +2921,13 @@ export type Database = {
           created_at: string | null
           global_call_sheet_id: string
           id: string
+          payment_reversal_reason: string | null
+          payment_reversal_reason_other: string | null
           payment_status: string | null
+          payment_status_confirmed_at: string | null
           payment_status_locked: boolean | null
+          project_subject: string | null
+          project_type: string | null
           user_id: string
           user_label: string | null
         }
@@ -2715,8 +2935,13 @@ export type Database = {
           created_at?: string | null
           global_call_sheet_id: string
           id?: string
+          payment_reversal_reason?: string | null
+          payment_reversal_reason_other?: string | null
           payment_status?: string | null
+          payment_status_confirmed_at?: string | null
           payment_status_locked?: boolean | null
+          project_subject?: string | null
+          project_type?: string | null
           user_id: string
           user_label?: string | null
         }
@@ -2724,8 +2949,13 @@ export type Database = {
           created_at?: string | null
           global_call_sheet_id?: string
           id?: string
+          payment_reversal_reason?: string | null
+          payment_reversal_reason_other?: string | null
           payment_status?: string | null
+          payment_status_confirmed_at?: string | null
           payment_status_locked?: boolean | null
+          project_subject?: string | null
+          project_type?: string | null
           user_id?: string
           user_label?: string | null
         }
@@ -2977,7 +3207,6 @@ export type Database = {
           producer_id: string | null
           project_name: string | null
           report_id: string | null
-          reporter_id: string | null
           reporter_type: string | null
           status: Database["public"]["Enums"]["payment_status"] | null
           updated_at: string | null
@@ -2995,7 +3224,6 @@ export type Database = {
           producer_id?: string | null
           project_name?: string | null
           report_id?: string | null
-          reporter_id?: string | null
           reporter_type?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           updated_at?: string | null
@@ -3013,7 +3241,6 @@ export type Database = {
           producer_id?: string | null
           project_name?: string | null
           report_id?: string | null
-          reporter_id?: string | null
           reporter_type?: string | null
           status?: Database["public"]["Enums"]["payment_status"] | null
           updated_at?: string | null
@@ -3147,6 +3374,34 @@ export type Database = {
           country: string
           region: string
           visitor_count: number
+        }[]
+      }
+      get_leaderboard_data: {
+        Args: { p_delinquent_only?: boolean }
+        Returns: {
+          company_name: string
+          last_closed_date: string
+          momentum_active_until: string
+          oldest_debt_date: string
+          oldest_debt_days: number
+          paid_crew_count: number
+          paid_jobs_count: number
+          producer_id: string
+          producer_name: string
+          pscs_score: number
+          sub_name: string
+          total_amount_owed: number
+          total_cities_owed: number
+          total_crew_owed: number
+          total_jobs_owed: number
+          total_vendors_owed: number
+        }[]
+      }
+      get_leaderboard_debt_check: {
+        Args: { p_producer_ids: string[] }
+        Returns: {
+          producer_id: string
+          total_amount_owed: number
         }[]
       }
       get_top_searches: {

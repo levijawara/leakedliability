@@ -33,7 +33,7 @@ export default function HowItWorks() {
               <AccordionContent>
                 <CardContent className="space-y-4">
                   <p className="text-lg">
-                    Leaked Liability™ is a transparency platform designed to protect freelance crew, vendors, and service providers — while motivating producers and companies to act with integrity. <strong>We reward honesty. We verify facts. We track patterns.</strong>
+                    Leaked Liability™ is a transparency platform designed to protect freelance crew, vendors, and service providers — while motivating producers and companies to act with integrity. <strong>We display user-submitted reports. We organize patterns. Crew and vendors drive the data.</strong>
                   </p>
                 </CardContent>
               </AccordionContent>

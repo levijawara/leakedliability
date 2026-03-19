@@ -1,6 +1,14 @@
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Mail, User, Calendar } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Mail, User, Calendar, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { WelcomeEmail } from "../../../supabase/functions/send-email/_templates/welcome";
 import { CrewReportConfirmation } from "../../../supabase/functions/send-email/_templates/crew-report-confirmation";
 import { VendorReportConfirmation } from "../../../supabase/functions/send-email/_templates/vendor-report-confirmation";
@@ -250,7 +258,35 @@ const EMAIL_SUBJECTS: Record<string, string> = {
   "dispute-closed-unresolved.tsx": "Dispute Closed: Unresolved",
   "subscription-payment-failed.tsx": "Payment Failed - Action Required",
   "subscription-canceled.tsx": "Subscription Canceled - Resubscribe Anytime",
+  "ll-cta-email.html": "Leaked Liability™ — The Numbers Don't Lie",
 };
+
+/** Thin wrapper: fetches standalone HTML email and renders in iframe for catalogue preview. */
+function CtaEmailHtmlPreview() {
+  const [html, setHtml] = useState<string | null>(null);
+  const [error, setError] = useState(false);
+  useEffect(() => {
+    fetch("/emails/ll-cta-email.html")
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error("Not found"))))
+      .then(setHtml)
+      .catch(() => setError(true));
+  }, []);
+  if (error || !html) {
+    return (
+      <div className="p-8 text-center text-muted-foreground min-h-[400px] flex items-center justify-center">
+        {error ? "Could not load CTA email preview." : "Loading…"}
+      </div>
+    );
+  }
+  return (
+    <iframe
+      title="CTA - Crew Outreach"
+      srcDoc={html}
+      className="w-full min-h-[800px] border-0 rounded-lg bg-[#0A0A0A]"
+      sandbox="allow-same-origin"
+    />
+  );
+}
 
 interface EmailPreviewProps {
   templateFile: string;
@@ -258,7 +294,13 @@ interface EmailPreviewProps {
   status: "implemented" | "pending";
 }
 
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 2;
+const ZOOM_STEP = 0.25;
+
 export function EmailPreview({ templateFile, emailName, status }: EmailPreviewProps) {
+  const [fullViewOpen, setFullViewOpen] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1);
   const mockData = MOCK_DATA[templateFile];
   const subject = EMAIL_SUBJECTS[templateFile];
 
@@ -565,7 +607,9 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
         return <SubscriptionPaymentFailed {...mockData} />;
       case 'subscription-canceled.tsx':
         return <SubscriptionCanceled {...mockData} />;
-      
+      case 'll-cta-email.html':
+        return <CtaEmailHtmlPreview />;
+
       default:
         return (
           <div className="p-8 text-center text-muted-foreground">
@@ -579,22 +623,36 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
     <div className="h-full flex flex-col">
       {/* Email Header (fake inbox UI) */}
       <Card className="mb-4 p-4 bg-background">
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold">From:</span>
-            <span>Leaked Liability &lt;noreply@leakedliability.com&gt;</span>
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-2 text-sm flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="font-semibold">From:</span>
+              <span className="truncate">Leaked Liability &lt;noreply@leakedliability.com&gt;</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="font-semibold">To:</span>
+              <span className="truncate">recipient@example.com</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <span className="font-semibold">Subject:</span>
+              <span className="font-semibold truncate">{subject}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold">To:</span>
-            <span>recipient@example.com</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="font-semibold">Subject:</span>
-            <span className="font-semibold">{subject}</span>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0"
+            onClick={() => {
+              setFullViewOpen(true);
+              setZoomScale(1);
+            }}
+          >
+            <Maximize2 className="h-4 w-4 mr-1.5" />
+            Full view
+          </Button>
         </div>
       </Card>
 
@@ -604,6 +662,61 @@ export function EmailPreview({ templateFile, emailName, status }: EmailPreviewPr
           {renderEmailComponent()}
         </div>
       </div>
+
+      {/* Full view modal with zoom */}
+      <Dialog open={fullViewOpen} onOpenChange={setFullViewOpen}>
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 py-4 border-b shrink-0">
+            <DialogTitle className="text-lg">{emailName}</DialogTitle>
+            <div className="flex items-center gap-2 mt-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setZoomScale((s) => Math.max(ZOOM_MIN, s - ZOOM_STEP))}
+                disabled={zoomScale <= ZOOM_MIN}
+                aria-label="Zoom out"
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              <span className="text-sm font-medium tabular-nums min-w-[3rem] text-center">
+                {Math.round(zoomScale * 100)}%
+              </span>
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setZoomScale((s) => Math.min(ZOOM_MAX, s + ZOOM_STEP))}
+                disabled={zoomScale >= ZOOM_MAX}
+                aria-label="Zoom in"
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+            </div>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto bg-[#f6f9fc] p-6">
+            <div
+              style={{
+                width: 600 * zoomScale,
+                minHeight: 800 * zoomScale,
+              }}
+            >
+              <div
+                style={{
+                  width: 600,
+                  minHeight: 800,
+                  transform: `scale(${zoomScale})`,
+                  transformOrigin: "top left",
+                }}
+              >
+                <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-sm">
+                  {renderEmailComponent()}
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -17,7 +17,7 @@ const PrivacyPolicy = () => {
           </CardHeader>
           <CardContent className="prose prose-sm dark:prose-invert max-w-none space-y-8">
             <p>
-              Leaked Liability™ ("LL™," "we," "our," or "us") operates a public accountability system designed to increase transparency around late payments in film, TV, commercial, live event, and digital production.
+              Leaked Liability™ ("LL™," "we," "our," or "us") operates a user-generated public accountability platform designed to increase transparency around late payments in film, TV, commercial, live event, and digital production. All payment reports, timelines, and related data displayed on this platform are submitted by individual crew members and vendors. Leaked Liability™ is an interactive computer service that hosts and organizes this user-submitted content within the meaning of Section 230 of the Communications Decency Act (47 U.S.C. § 230).
             </p>
             <p>
               This Privacy Policy explains how we collect, use, store, and protect your information when you use the Leaked Liability platform or related services.
@@ -49,6 +49,14 @@ const PrivacyPolicy = () => {
                 <li>Uploaded receipts or payment confirmations</li>
                 <li>Report comments, explanations, disputes, or resolutions</li>
               </ul>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3">1.2.1 Source of Report Data</h3>
+              <p>All report data listed in Section 1.2 is provided voluntarily by the submitting user. Leaked Liability™ does not independently generate, fabricate, or editorially author report content. Reports reflect the experiences and claims of the individual submitting user.</p>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3">1.2.2 Escrow payments</h3>
+              <p>
+                When producers or crew use the Leaked Liability escrow feature, payment amounts, payer/payee identifiers, and transaction timestamps are processed through Stripe and logged by LL for the purpose of confirming report resolution. LL does not hold funds directly; all escrow transactions are facilitated by Stripe.
+              </p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">1.3 Producer Payment History</h3>
               <p>For purposes of public accountability:</p>
@@ -82,6 +90,14 @@ const PrivacyPolicy = () => {
                 <li>Confirmation timestamps</li>
                 <li>Verification and reset token usage</li>
               </ul>
+              <p className="mt-3">
+                We may use tracking pixels or delivery confirmation tools to determine whether outreach emails to named parties have been delivered and opened. This data is used solely to verify delivery and inform case timelines.
+              </p>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3">1.6 Contact information from production documents</h3>
+              <p>
+                LL may process crew contact information extracted from call sheets or production documents submitted by other users, for the purpose of outreach, report verification, or platform improvement. Individuals identified in these documents may contact us to request review or removal of their information.
+              </p>
             </section>
 
             {/* Section 2 */}
@@ -95,6 +111,9 @@ const PrivacyPolicy = () => {
                 <li>Facilitate producer claims, disputes, and resolutions</li>
                 <li>Detect fraudulent reports or abuse</li>
                 <li>Process subscriptions and payments</li>
+                <li>Confirm escrow-related payments and report resolution through Stripe (see Section 1.2.2)</li>
+                <li>Verify delivery of outreach emails and document case timelines (see Section 1.5)</li>
+                <li>Use contact information from call sheets and production documents as described in Section 1.6</li>
                 <li>Improve platform reliability and performance</li>
                 <li>Comply with legal obligations</li>
               </ul>
@@ -105,18 +124,23 @@ const PrivacyPolicy = () => {
             {/* Section 3 */}
             <section>
               <h2 className="text-2xl font-bold mt-8 mb-4">3. What Information Becomes Public</h2>
-              <p>Leaked Liability publishes data that is directly relevant to financial accountability:</p>
+              <p>Leaked Liability displays user-submitted data that is directly relevant to financial accountability. All publicly visible information originates from crew and vendor reports. The display, organization, and scoring of this data does not constitute editorial authorship of that content.</p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">Publicly Displayed:</h3>
               <ul className="list-disc pl-6 space-y-1">
                 <li>Producer and company names</li>
-                <li>Total outstanding debt</li>
+                <li>Total reported amount</li>
                 <li>Days past due</li>
                 <li>Project names</li>
                 <li>PSCS and leaderboard ranking</li>
                 <li>Report status (Pending Verification, Verified, Paid, Disputed)</li>
                 <li>Producer-submitted explanations or resolutions (if voluntarily posted)</li>
               </ul>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3">Resolved reports and public rankings</h3>
+              <p>
+                Resolved reports may be updated to reflect &apos;PAID&apos; or &apos;RESOLVED&apos; status. Producer names associated with fully resolved reports may be removed from public rankings at LL&apos;s discretion, but historical resolution records are retained internally for audit purposes.
+              </p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">Never Publicly Displayed:</h3>
               <ul className="list-disc pl-6 space-y-1">
@@ -152,8 +176,11 @@ const PrivacyPolicy = () => {
               <p>Database, authentication, storage, logging, and security.</p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">5.2 Stripe</h3>
-              <p>Payment processing, subscription management, customer portal.</p>
+              <p>Payment processing, subscription management, customer portal, and escrow payment facilitation.</p>
               <p className="mt-2">We <strong>do not</strong> store credit card numbers. Stripe handles all payment information.</p>
+              <p className="mt-2">
+                LL does not hold escrow funds; escrow is processed through Stripe. Payment-related data logged for resolution is described in Section 1.2.2.
+              </p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">5.3 Resend / Email Delivery</h3>
               <p>Used solely to send system-required notifications.</p>
@@ -173,6 +200,9 @@ const PrivacyPolicy = () => {
                 <li>Analytics cookies (anonymous or pseudonymized)</li>
               </ul>
               <p className="mt-4 font-semibold">We do not use ad tracking or behavioral advertising.</p>
+              <p className="mt-4">
+                As noted in Section 1.5, some outreach emails may include delivery or open tracking (for example, pixels or provider-level read receipts) solely to confirm delivery and support case timelines, not for advertising.
+              </p>
             </section>
 
             {/* Section 7 */}
@@ -185,6 +215,7 @@ const PrivacyPolicy = () => {
                 <li>Dispute records: retained permanently for audit integrity</li>
                 <li>Verification logs: retained for administrative and legal reasons</li>
                 <li>Stripe billing metadata: retained as required by financial law</li>
+                <li>Internal resolution and audit records: may be retained even when public rankings or producer display is updated after resolution (see Section 3)</li>
               </ul>
               <p className="mt-4">
                 If you delete your account, your personal details are removed, but <strong>public payment history cannot be deleted</strong>, as it is part of a transparency record.
@@ -202,6 +233,7 @@ const PrivacyPolicy = () => {
                 <li>Request restriction of processing</li>
                 <li>Receive a copy of your data ("data portability")</li>
                 <li>Opt out of marketing communications (we do none)</li>
+                <li>Request review or removal of your contact information if it appears in call sheets or production documents submitted by others (see Section 1.6)</li>
               </ul>
               <p className="mt-4">To request access or deletion, email:</p>
               <p className="font-semibold">
@@ -226,6 +258,9 @@ const PrivacyPolicy = () => {
               <p className="mt-4">
                 No system is perfectly secure, but LL™ uses industry-standard protections and never exposes crew identities publicly.
               </p>
+              <p className="mt-4">
+                In the event of a data breach affecting personal information, LL will notify affected users and relevant authorities as required by applicable law.
+              </p>
             </section>
 
             {/* Section 10 */}
@@ -244,7 +279,21 @@ const PrivacyPolicy = () => {
 
             {/* Section 12 */}
             <section>
-              <h2 className="text-2xl font-bold mt-8 mb-4">12. Contact Us</h2>
+              <h2 className="text-2xl font-bold mt-8 mb-4">12. Platform Status Under Federal Law</h2>
+              <p>
+                Leaked Liability™ operates as an interactive computer service under Section 230 of the Communications Decency Act (47 U.S.C. § 230). User-submitted reports, reviews, disputes, and related content are provided by third-party users, not by Leaked Liability™. As such, Leaked Liability™ is not the publisher or speaker of user-generated content hosted on this platform.
+              </p>
+              <p>
+                Leaked Liability™ may moderate, organize, categorize, score, or decline to publish user-submitted content in good faith, consistent with the protections afforded under Section 230(c)(2).
+              </p>
+              <p>
+                Producers and production companies identified in user-submitted reports may respond to, dispute, or provide context for any claims made about them through the platform's built-in dispute process.
+              </p>
+            </section>
+
+            {/* Section 13 */}
+            <section>
+              <h2 className="text-2xl font-bold mt-8 mb-4">13. Contact Us</h2>
               <p>For any questions about this Privacy Policy or your data:</p>
               <p className="mt-2 font-semibold">Leaked Liability™ Support</p>
               <p>

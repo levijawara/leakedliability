@@ -1,0 +1,28 @@
+---
+description: Canonical format for call sheet extraction JSON files. Use this when parsing call sheets for Project Timeline.
+globs: ["**/CALL SHEET EXTRACTIONS/**/*.json", "**/*call*sheet*.json"]
+---
+
+# Call Sheet JSON Format (Canonical)
+
+When parsing call sheets into JSON, **always** use this exact structure. See `docs/CALL_SHEET_JSON_FORMAT.md` for full spec.
+
+```json
+{
+  "source_file": "Production Name M:D:YY.pdf",
+  "production_info": {
+    "production_name": "Production Name",
+    "date": "Month DD, YYYY",
+    "company_name": "Company Name (optional)"
+  },
+  "crew_size": 11,
+  "crew": [
+    {"name": "...", "role": "...", "department": "...", "phone": "...", "email": "..."}
+  ]
+}
+```
+
+- When crew identities exist: include `crew_size` (tally of crew.length) and `crew` array.
+- When call sheet has NO crew identity information: omit `crew_size`, use `crew: []`. Blank CREW SIZE on leaderboard is valid.
+- `production_info.date` = Job Date when known (e.g. "June 10, 2025"); omit if unknown.
+- `crew` = one object per person (name, role, department, phone, email), or [] when no names listed.

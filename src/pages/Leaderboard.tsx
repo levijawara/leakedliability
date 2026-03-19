@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
 import { AlertTriangle, Instagram, ChevronDown, ChevronUp } from "lucide-react";
-import { format } from "date-fns";
+import { formatPacific, nowPacific } from "@/lib/dateUtils";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useState, useEffect, useRef } from "react";
@@ -148,33 +148,36 @@ export default function Leaderboard() {
   const [leaderboardError, setLeaderboardError] = useState<string | null>(null);
   const [isAccessBlocked, setIsAccessBlocked] = useState(false);
 
-  const { data: producers, isLoading, refetch: refetchProducers, error: queryError } = useQuery({
-    queryKey: ["public_leaderboard"],
+  // Fetch leaderboard config for delinquent-only toggle (must be before producers query)
+  const { data: leaderboardConfig, refetch: refetchConfig } = useQuery({
+    queryKey: ["leaderboard_config"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leaderboard_config")
+        .select("show_delinquent_only")
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const showDelinquentOnly = leaderboardConfig?.show_delinquent_only ?? false;
+
+  const { data: producers, isLoading: isLoadingLiabilities, refetch: refetchProducers, error: queryError } = useQuery({
+    queryKey: ["public_leaderboard", showDelinquentOnly],
     queryFn: async () => {
       if (!supabase) {
         throw new Error("Database connection unavailable");
       }
 
       const { data, error } = await supabase
-        .from("public_leaderboard")
-        .select("*");
+        .rpc("get_leaderboard_data", { p_delinquent_only: showDelinquentOnly });
       
       if (error) {
         const errorMsg = error.message?.toLowerCase() || '';
-        const errorCode = error.code || '';
         
-        // Check if table/view doesn't exist
-        const isTableMissing = 
-          errorCode === '42P01' || // PostgreSQL: relation does not exist
-          errorCode === 'PGRST204' || // PostgREST: relation not found
-          errorMsg.includes('does not exist') ||
-          (errorMsg.includes('relation') && errorMsg.includes('not found'));
-        
-        if (isTableMissing) {
-          setIsAccessBlocked(false);
-          setLeaderboardError("Leaderboard data is currently unavailable. Please check back later.");
-          throw new Error("Leaderboard view does not exist - migrations may not have been run");
-        } else if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
+        if (errorMsg.includes('row-level security') || errorMsg.includes('permission denied')) {
           setIsAccessBlocked(true);
           setLeaderboardError("Access to leaderboard data is restricted. A subscription may be required to view producer information.");
         } else {
@@ -188,7 +191,7 @@ export default function Leaderboard() {
       setIsAccessBlocked(false);
       return data;
     },
-    retry: false, // Don't retry on error - show message immediately
+    retry: false,
   });
 
   const updateProducer = async (
@@ -217,19 +220,66 @@ export default function Leaderboard() {
     await refetchProducers();
   };
 
-  // Fetch site settings for blur toggle and public readiness flag
+  // Fetch site settings for leaderboard header copy and public readiness flag
   const { data: settings } = useQuery({
     queryKey: ["site_settings"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_settings")
-        .select("public_leaderboard_ready")
+        .select("id, public_leaderboard_ready, leaderboard_main_header, leaderboard_sub_header")
         .single();
       
       if (error) throw error;
       return data;
     },
   });
+
+  const [leaderboardHeaderMainDraft, setLeaderboardHeaderMainDraft] = useState<string>("");
+  const [leaderboardHeaderSubDraft, setLeaderboardHeaderSubDraft] = useState<string>("");
+  const [leaderboardHeaderSaving, setLeaderboardHeaderSaving] = useState(false);
+  const [leaderboardHeaderSavedAt, setLeaderboardHeaderSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!settings) return;
+    setLeaderboardHeaderMainDraft(settings.leaderboard_main_header || "Producer Debt Leaderboard");
+    setLeaderboardHeaderSubDraft(settings.leaderboard_sub_header || "");
+  }, [settings]);
+
+  const saveLeaderboardHeaderCopy = async () => {
+    if (!settings?.id) return;
+    try {
+      setLeaderboardHeaderSaving(true);
+      const { error } = await supabase
+        .from("site_settings")
+        .update({
+          leaderboard_main_header: leaderboardHeaderMainDraft,
+          leaderboard_sub_header: leaderboardHeaderSubDraft,
+        })
+        .eq("id", settings.id);
+
+      if (error) throw error;
+      setLeaderboardHeaderSavedAt(Date.now());
+      window.setTimeout(() => setLeaderboardHeaderSavedAt(null), 3000);
+    } catch (e) {
+      console.error("Failed to save leaderboard header copy:", e);
+    } finally {
+      setLeaderboardHeaderSaving(false);
+    }
+  };
+
+  const toggleDelinquentOnly = async () => {
+    const newValue = !showDelinquentOnly;
+    const { error } = await supabase
+      .from("leaderboard_config")
+      .update({ show_delinquent_only: newValue })
+      .eq("id", (await supabase.from("leaderboard_config").select("id").single()).data?.id ?? "");
+    
+    if (error) {
+      console.error("Failed to update delinquent toggle:", error);
+      return;
+    }
+    refetchConfig();
+  };
 
   // Check admin status FIRST
   useEffect(() => {
@@ -258,7 +308,7 @@ export default function Leaderboard() {
       clearTimeout(searchLogTimeoutRef.current);
     }
     
-    if (searchTerm.trim().length >= 2) {
+    if (searchTerm.trim().length >= 2 && !isAdmin) {
       searchLogTimeoutRef.current = setTimeout(async () => {
         try {
           // Get current user info
@@ -284,24 +334,21 @@ export default function Leaderboard() {
             user_email: userEmail
           });
           
-          // Send admin notification (skip for admin accounts)
-          const ADMIN_EMAILS = ['leakedliability@gmail.com', 'lojawara@gmail.com'];
-          if (!userEmail || !ADMIN_EMAILS.includes(userEmail.toLowerCase())) {
-            await supabase.functions.invoke('send-email', {
-              body: {
-                type: 'admin_notification',
-                to: 'leakedliability@gmail.com',
-                data: {
-                  eventType: 'search',
-                  searchTerm: searchTerm.trim(),
-                  source: 'leaderboard',
-                  userEmail: userEmail || null,
-                  timestamp: new Date().toISOString(),
-                  adminDashboardUrl: 'https://leakedliability.com/admin',
-                },
+          // Send admin notification
+          await supabase.functions.invoke('send-email', {
+            body: {
+              type: 'admin_notification',
+              to: 'leakedliability@gmail.com',
+              data: {
+                eventType: 'search',
+                searchTerm: searchTerm.trim(),
+                source: 'leaderboard',
+                userEmail: userEmail || null,
+                timestamp: new Date().toISOString(),
+                adminDashboardUrl: 'https://leakedliability.com/admin',
               },
-            });
-          }
+            },
+          });
         } catch (error) {
           // Fail silently - don't disrupt user experience
           console.debug('Search logging failed:', error);
@@ -314,7 +361,7 @@ export default function Leaderboard() {
         clearTimeout(searchLogTimeoutRef.current);
       }
     };
-  }, [searchTerm, producers]);
+  }, [searchTerm, producers, isAdmin]);
 
   const handleManageBilling = async () => {
     try {
@@ -395,7 +442,7 @@ export default function Leaderboard() {
           </h1>
           <div className="flex items-center justify-center gap-3 flex-wrap">
             <p className="text-xl md:text-2xl font-bold text-muted-foreground">
-              Producer Debt Leaderboard
+              {settings?.leaderboard_main_header || "Producer Debt Leaderboard"}
             </p>
             <span className="text-muted-foreground">|</span>
             <a 
@@ -408,8 +455,13 @@ export default function Leaderboard() {
               <Instagram className="h-4 w-4" />
             </a>
           </div>
+          {settings?.leaderboard_sub_header ? (
+            <p className="text-sm text-muted-foreground max-w-3xl mx-auto">
+              {settings.leaderboard_sub_header}
+            </p>
+          ) : null}
           <p className="text-sm text-muted-foreground">
-            Last Updated: {format(new Date(), "MM/dd/yy")}
+            Last Updated: {formatPacific(nowPacific(), "MM/dd/yy")}
           </p>
           
           {/* Access Status Badge */}
@@ -438,20 +490,20 @@ export default function Leaderboard() {
           )}
         </div>
 
-        {/* Alert Banner */}
-        <Card className="mb-8 p-6 border-l-4 border-status-critical bg-status-critical/10">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="h-6 w-6 text-status-critical mt-1 flex-shrink-0" />
-            <div>
-              <h3 className="font-bold text-lg mb-2">Public Accountability Notice</h3>
-              <p className="text-sm text-muted-foreground">
-                This leaderboard tracks producers who owe payments to freelance crew members and vendors. 
-                All data is verified through our review process. Scores update daily and include 
-                time-based forgiveness after debts are closed.
-              </p>
+        {/* Alert Banner - Verified Liabilities */}
+          <Card className="mb-8 p-6 border-l-4 border-status-critical bg-status-critical/10">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="h-6 w-6 text-status-critical mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-bold text-lg mb-2">Public Accountability Notice</h3>
+                <p className="text-sm text-muted-foreground">
+                  This leaderboard displays producers with user-submitted reports of late or unpaid payments from crew members and vendors.
+                  Reports are reviewed for format and legitimacy before display. Scores update daily and include
+                  time-based forgiveness after reports are marked paid.
+                </p>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
         {/* Legend */}
         <Card className="mb-8 p-6">
@@ -619,7 +671,7 @@ export default function Leaderboard() {
           </div>
         </Card>
 
-        {/* Producer Search Filter + View Toggle */}
+        {/* Search Filter + View Toggle */}
         <div className="mb-4 flex items-center gap-3">
           <div className="relative flex-1 max-w-md">
             <input
@@ -653,11 +705,71 @@ export default function Leaderboard() {
               />
             </div>
           )}
+          
+          {/* Delinquent Toggle - Only visible to admins */}
+          {isAdmin && (
+            <div className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
+              <Label htmlFor="delinquent-mode" className="text-sm font-semibold cursor-pointer whitespace-nowrap">
+                {showDelinquentOnly ? 'Delinquent' : 'All'}
+              </Label>
+              <Switch
+                id="delinquent-mode"
+                checked={showDelinquentOnly}
+                onCheckedChange={() => toggleDelinquentOnly()}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Mobile Accordion View */}
+        {/* Leaderboard header copy editor (admin view only) */}
+        {isAdmin && viewMode === "admin" && (
+          <div className="mb-6 max-w-3xl mx-auto space-y-3">
+            <div className="space-y-1">
+              <Label htmlFor="leaderboard-main-header" className="text-sm font-semibold">
+                MAIN / Header Text
+              </Label>
+              <input
+                id="leaderboard-main-header"
+                type="text"
+                value={leaderboardHeaderMainDraft}
+                onChange={(e) => setLeaderboardHeaderMainDraft(e.target.value)}
+                className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label htmlFor="leaderboard-sub-header" className="text-sm font-semibold">
+                Sub-header Text
+              </Label>
+              <input
+                id="leaderboard-sub-header"
+                type="text"
+                value={leaderboardHeaderSubDraft}
+                onChange={(e) => setLeaderboardHeaderSubDraft(e.target.value)}
+                className="w-full px-4 py-2.5 text-sm bg-card border border-border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="(Optional)"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-1">
+              {leaderboardHeaderSavedAt ? (
+                <span className="text-xs text-green-500 font-semibold">Saved ✓</span>
+              ) : null}
+              <Button
+                onClick={saveLeaderboardHeaderCopy}
+                disabled={leaderboardHeaderSaving}
+                className="min-w-[160px]"
+              >
+                {leaderboardHeaderSaving ? "Saving..." : "Save Header Copy"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Verified Liabilities View - Mobile Accordion + Desktop Table */}
+        <>
         <Card className="overflow-hidden md:hidden">
-          {isLoading ? (
+          {isLoadingLiabilities ? (
             <div className="text-center py-12 text-muted-foreground">
               Loading producers...
             </div>
@@ -692,13 +804,18 @@ export default function Leaderboard() {
               </div>
             </div>
           ) : (() => {
-            const filteredProducers = producers?.filter((producer) => {
+            let filteredProducers = producers?.filter((producer) => {
               if (!searchTerm.trim()) return true;
               const search = searchTerm.trim().toLowerCase();
               const name = (producer.producer_name || "").toLowerCase();
               const company = (producer.company_name || "").toLowerCase();
               return name === search || company === search;
             }) || [];
+
+            // Apply delinquent filter if enabled
+            if (showDelinquentOnly) {
+              filteredProducers = filteredProducers.filter(p => (p.total_amount_owed || 0) > 0);
+            }
 
             return filteredProducers.length > 0 ? (
               <Accordion type="multiple" className="w-full">
@@ -777,7 +894,7 @@ export default function Leaderboard() {
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground">Oldest Debt:</span>
                           <span className="text-sm font-medium">
-                            {producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'MM/dd/yyyy') : '—'}
+                            {producer.oldest_debt_date ? formatPacific(producer.oldest_debt_date, 'MM/dd/yyyy') : '—'}
                           </span>
                         </div>
                         
@@ -830,7 +947,7 @@ export default function Leaderboard() {
                   </p>
                   {!searchTerm && (
                     <p className="text-sm text-muted-foreground">
-                      Producer information will appear here once verified payment reports are submitted.
+                      Producer information will appear here once user-submitted payment reports are reviewed and displayed.
                     </p>
                   )}
                 </div>
@@ -891,7 +1008,7 @@ export default function Leaderboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {isLoadingLiabilities ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
                       Loading producers...
@@ -931,7 +1048,7 @@ export default function Leaderboard() {
                   </TableRow>
                 ) : (() => {
                   // Filter producers based on search term
-                  const filteredProducers = producers?.filter((producer) => {
+                  let filteredProducers = producers?.filter((producer) => {
                     if (!searchTerm.trim()) return true; // Show all if no search
                     
                     const search = searchTerm.trim().toLowerCase();
@@ -940,6 +1057,11 @@ export default function Leaderboard() {
                     
                     return name === search || company === search;
                   }) || [];
+
+                  // Apply delinquent filter if enabled
+                  if (showDelinquentOnly) {
+                    filteredProducers = filteredProducers.filter(p => (p.total_amount_owed || 0) > 0);
+                  }
                   
                   return filteredProducers.length > 0 ? (
                     filteredProducers.map((producer) => (
@@ -1055,7 +1177,7 @@ export default function Leaderboard() {
                       isMoney={true}
                     />
                     <AdminEditableCell
-                      value={producer.oldest_debt_date ? format(new Date(producer.oldest_debt_date), 'MM/dd/yyyy') : null}
+                      value={producer.oldest_debt_date ? formatPacific(producer.oldest_debt_date, 'MM/dd/yyyy') : null}
                       onSave={(v) => updateProducer(producer.producer_id, { oldest_debt_date: v as string | null })}
                       className="text-center"
                       isAdmin={isAdmin}
@@ -1116,7 +1238,7 @@ export default function Leaderboard() {
                           </p>
                           {!searchTerm && (
                             <p className="text-sm text-muted-foreground">
-                              Producer information will appear here once verified payment reports are submitted.
+                              Producer information will appear here once user-submitted payment reports are reviewed and displayed.
                             </p>
                           )}
                         </div>
@@ -1128,6 +1250,7 @@ export default function Leaderboard() {
             </Table>
           </div>
         </Card>
+        </>
 
         </div>
       </div>

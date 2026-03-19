@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { internalHeaders } from "../_shared/auth.ts";
 
 export const config = { verify_jwt: true };
 
@@ -66,7 +67,7 @@ serve(async (req) => {
         payment_report_id: report.id,
         producer_id: report.producer_id,
         confirmer_id: user.id,
-        confirmation_type: 'admin_confirmation',
+        confirmation_type: 'admin_verification',
         amount_paid: report.amount_owed,
         verified: true,
         confirmed_by_admin: true,
@@ -122,6 +123,7 @@ serve(async (req) => {
         : 'crew_report_payment_confirmed';
       
       await supabaseClient.functions.invoke('send-email', {
+        headers: internalHeaders(),
         body: {
           type: emailType,
           to: profile.email,

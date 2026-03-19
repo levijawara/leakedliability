@@ -45,8 +45,8 @@ export const EXPECTED_RLS_ASSUMPTIONS: RLSAssumption[] = [
   {
     tableOrView: 'site_settings',
     operation: 'SELECT',
-    shouldBeAccessible: false, // This should NOT be accessible to anonymous users for security
-    description: 'Site settings - should NOT be accessible to anonymous users',
+    shouldBeAccessible: true, // Intentional: maintenance_mode, maintenance_message, free_access_enabled are site-wide UX flags, not secrets
+    description: 'Site settings - maintenance mode and free leaderboard toggle; intentionally readable by anon for global UX',
     critical: false, // Maintenance mode check fails gracefully
   },
 ];

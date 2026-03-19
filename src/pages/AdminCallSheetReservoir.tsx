@@ -32,13 +32,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Loader2, 
@@ -50,18 +43,13 @@ import {
   RefreshCw, 
   Eye,
   Database,
-  Clock,
-  CheckCircle,
-  AlertCircle,
   Copy,
-  Archive,
-  Flame,
-  CheckSquare,
-  Square
+  Archive
 } from "lucide-react";
 import { format } from "date-fns";
 import { ReservoirPaymentButtons, PaymentStatusCounts } from "@/components/callsheets/ReservoirPaymentButtons";
 import { HeatScoreIndicator } from "@/components/callsheets/HeatScoreIndicator";
+import { PDFViewerModal } from "@/components/callsheets/PDFViewerModal";
 
 interface UserPaymentInfo {
   userId: string;
@@ -95,15 +83,12 @@ interface GlobalCallSheet {
   // Heat metrics
   heat_score?: number | null;
   paid_count?: number;
-  waiting_count?: number;
   never_paid_count?: number;
 }
 
 interface ReservoirStats {
   totalSheets: number;
-  totalContacts: number;
   uniqueUploaders: number;
-  statusCounts: Record<string, number>;
 }
 
 export default function AdminCallSheetReservoir() {
@@ -114,25 +99,17 @@ export default function AdminCallSheetReservoir() {
   const [callSheets, setCallSheets] = useState<GlobalCallSheet[]>([]);
   const [stats, setStats] = useState<ReservoirStats>({
     totalSheets: 0,
-    totalContacts: 0,
-    uniqueUploaders: 0,
-    statusCounts: {}
+    uniqueUploaders: 0
   });
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [deleteSheet, setDeleteSheet] = useState<GlobalCallSheet | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [retryingId, setRetryingId] = useState<string | null>(null);
   
   // User submission count modal state
+  const [viewingPdf, setViewingPdf] = useState<{ filePath: string; fileName: string } | null>(null);
   const [showUserCountModal, setShowUserCountModal] = useState(false);
   const [userSubmissionCounts, setUserSubmissionCounts] = useState<UserSubmissionCount[]>([]);
   const [loadingUserCounts, setLoadingUserCounts] = useState(false);
-  
-  // Bulk selection state
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [priorityQueueing, setPriorityQueueing] = useState(false);
-  const [showPriorityConfirm, setShowPriorityConfirm] = useState(false);
 
   useEffect(() => {
     checkAdminAccess();
@@ -176,7 +153,6 @@ export default function AdminCallSheetReservoir() {
   const aggregatePaymentStatus = (userLinks: any[]): PaymentStatusCounts => {
     const result: PaymentStatusCounts = {
       paid: { count: 0, users: [] },
-      waiting: { count: 0, users: [] },
       unpaid: { count: 0, users: [] },
       unanswered: { count: 0, users: [] }
     };
@@ -198,10 +174,6 @@ export default function AdminCallSheetReservoir() {
         case 'paid':
           result.paid.users.push(userInfo);
           result.paid.count++;
-          break;
-        case 'waiting':
-          result.waiting.users.push(userInfo);
-          result.waiting.count++;
           break;
         case 'unpaid_needs_proof':
         case 'free_labor':
@@ -276,7 +248,6 @@ export default function AdminCallSheetReservoir() {
             paymentCounts,
             heat_score: heatData?.heat_score ?? null,
             paid_count: heatData?.paid_count ?? 0,
-            waiting_count: heatData?.waiting_count ?? 0,
             never_paid_count: heatData?.never_paid_count ?? 0,
           };
         })
@@ -285,18 +256,11 @@ export default function AdminCallSheetReservoir() {
       setCallSheets(sheetsWithCounts);
 
       // Calculate stats
-      const totalContacts = sheetsWithCounts.reduce((sum, s) => sum + (s.contacts_extracted || 0), 0);
       const uniqueUploaders = new Set(sheetsWithCounts.map(s => s.first_uploaded_by).filter(Boolean)).size;
-      const statusCounts = sheetsWithCounts.reduce((acc, s) => {
-        acc[s.status || 'unknown'] = (acc[s.status || 'unknown'] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
 
       setStats({
         totalSheets: sheetsWithCounts.length,
-        totalContacts,
-        uniqueUploaders,
-        statusCounts
+        uniqueUploaders
       });
 
     } catch (error: any) {
@@ -306,42 +270,6 @@ export default function AdminCallSheetReservoir() {
         description: error.message,
         variant: "destructive"
       });
-    }
-  };
-
-  const handleRetry = async (sheet: GlobalCallSheet) => {
-    setRetryingId(sheet.id);
-    try {
-      const { error: updateError } = await supabase
-        .from('global_call_sheets')
-        .update({ 
-          status: 'queued', 
-          error_message: null,
-          retry_count: 0,
-          parsing_started_at: null
-        })
-        .eq('id', sheet.id);
-
-      if (updateError) throw updateError;
-
-      await supabase.functions.invoke('parse-call-sheet', {
-        body: { call_sheet_id: sheet.id }
-      });
-
-      toast({
-        title: "Retry initiated",
-        description: "The call sheet has been queued for re-processing."
-      });
-
-      await loadReservoirData();
-    } catch (error: any) {
-      toast({
-        title: "Retry failed",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setRetryingId(null);
     }
   };
 
@@ -379,6 +307,18 @@ export default function AdminCallSheetReservoir() {
         .from('contact_call_sheets')
         .delete()
         .eq('call_sheet_id', deleteSheet.id);
+
+      // Delete production_instances (FK to global_call_sheets)
+      await supabase
+        .from('production_instances')
+        .delete()
+        .eq('global_call_sheet_id', deleteSheet.id);
+
+      // Delete call_sheet_heat_metrics (FK to global_call_sheets)
+      await supabase
+        .from('call_sheet_heat_metrics')
+        .delete()
+        .eq('global_call_sheet_id', deleteSheet.id);
 
       // Delete the global record
       const { error } = await supabase
@@ -430,21 +370,6 @@ export default function AdminCallSheetReservoir() {
       title: "Hash copied",
       description: "Content hash copied to clipboard."
     });
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'queued':
-        return <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3" />Queued</Badge>;
-      case 'parsing':
-        return <Badge variant="secondary" className="gap-1"><Loader2 className="h-3 w-3 animate-spin" />Parsing</Badge>;
-      case 'parsed':
-        return <Badge className="gap-1 bg-green-500 hover:bg-green-600"><CheckCircle className="h-3 w-3" />Parsed</Badge>;
-      case 'error':
-        return <Badge variant="destructive" className="gap-1"><AlertCircle className="h-3 w-3" />Error</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
   };
 
   // Load user submission counts
@@ -507,76 +432,15 @@ export default function AdminCallSheetReservoir() {
     }
   };
 
-  // Toggle selection for a single row
-  const toggleSelection = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  // Toggle select all (for current filtered view)
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filteredSheets.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(filteredSheets.map(s => s.id)));
-    }
-  };
-
-  // Handle FIRECRAWL PRIORITY action
-  const handleFirecrawlPriority = async () => {
-    if (selectedIds.size === 0) return;
-    
-    setPriorityQueueing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('queue-firecrawl-priority', {
-        body: { callSheetIds: Array.from(selectedIds) }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Priority Queue Started",
-        description: `Queued ${data.updated} call sheets for Firecrawl priority parsing`,
-      });
-
-      // Optimistically update status in UI
-      setCallSheets(prev => prev.map(sheet => 
-        selectedIds.has(sheet.id) 
-          ? { ...sheet, status: 'queued', error_message: null }
-          : sheet
-      ));
-      
-      setSelectedIds(new Set());
-      setShowPriorityConfirm(false);
-    } catch (error: any) {
-      console.error('[Reservoir] Priority queue error:', error);
-      toast({
-        title: "Failed to queue priority parsing",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setPriorityQueueing(false);
-    }
-  };
-
   // Filter call sheets
   const filteredSheets = callSheets.filter(sheet => {
-    const matchesSearch = !searchQuery || 
-      sheet.original_file_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sheet.content_hash.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sheet.project_title?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || sheet.status === statusFilter;
-    
-    return matchesSearch && matchesStatus;
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      sheet.original_file_name.toLowerCase().includes(q) ||
+      sheet.content_hash.toLowerCase().includes(q) ||
+      (sheet.project_title?.toLowerCase().includes(q) ?? false)
+    );
   });
 
   if (loading) {
@@ -607,7 +471,7 @@ export default function AdminCallSheetReservoir() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-4 mb-8">
+        <div className="grid gap-4 md:grid-cols-2 mb-8">
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Call Sheets</CardTitle>
@@ -616,18 +480,6 @@ export default function AdminCallSheetReservoir() {
               <div className="flex items-center gap-2">
                 <Database className="h-5 w-5 text-primary" />
                 <span className="text-2xl font-bold">{stats.totalSheets}</span>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Contacts Extracted</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-primary" />
-                <span className="text-2xl font-bold">{stats.totalContacts.toLocaleString()}</span>
               </div>
             </CardContent>
           </Card>
@@ -643,24 +495,9 @@ export default function AdminCallSheetReservoir() {
               </div>
             </CardContent>
           </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Parse Status</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-1 text-xs">
-                {Object.entries(stats.statusCounts).map(([status, count]) => (
-                  <Badge key={status} variant="outline" className="text-xs">
-                    {status}: {count}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Search and Filters */}
+        {/* Search */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex gap-4">
@@ -673,18 +510,6 @@ export default function AdminCallSheetReservoir() {
                   className="pl-10"
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="queued">Queued</SelectItem>
-                  <SelectItem value="parsing">Parsing</SelectItem>
-                  <SelectItem value="parsed">Parsed</SelectItem>
-                  <SelectItem value="error">Error</SelectItem>
-                </SelectContent>
-              </Select>
               <Button variant="outline" onClick={loadReservoirData}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh
@@ -692,40 +517,6 @@ export default function AdminCallSheetReservoir() {
             </div>
           </CardContent>
         </Card>
-
-        {/* Bulk Actions Bar */}
-        {selectedIds.size > 0 && (
-          <Card className="mb-6 border-primary">
-            <CardContent className="pt-4 pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <Badge variant="secondary" className="text-sm">
-                    {selectedIds.size} selected
-                  </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setSelectedIds(new Set())}
-                  >
-                    Clear Selection
-                  </Button>
-                </div>
-                <Button
-                  onClick={() => setShowPriorityConfirm(true)}
-                  disabled={priorityQueueing}
-                  className="gap-2 bg-orange-600 hover:bg-orange-700"
-                >
-                  {priorityQueueing ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Flame className="h-4 w-4" />
-                  )}
-                  FIRECRAWL PRIORITY
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Call Sheets Table */}
         <Card>
@@ -753,24 +544,8 @@ export default function AdminCallSheetReservoir() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-6 w-6 p-0"
-                        onClick={toggleSelectAll}
-                      >
-                        {selectedIds.size === filteredSheets.length && filteredSheets.length > 0 ? (
-                          <CheckSquare className="h-4 w-4" />
-                        ) : (
-                          <Square className="h-4 w-4" />
-                        )}
-                      </Button>
-                    </TableHead>
                     <TableHead>File Name</TableHead>
                     <TableHead>Content Hash</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-center">Contacts</TableHead>
                     <TableHead className="text-center">Users</TableHead>
                     <TableHead>Payment Responses</TableHead>
                     <TableHead>Heat Score</TableHead>
@@ -781,27 +556,13 @@ export default function AdminCallSheetReservoir() {
                 <TableBody>
                   {filteredSheets.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={11} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         No call sheets found
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredSheets.map((sheet) => (
-                      <TableRow key={sheet.id} className={selectedIds.has(sheet.id) ? "bg-muted/50" : ""}>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-6 w-6 p-0"
-                            onClick={() => toggleSelection(sheet.id)}
-                          >
-                            {selectedIds.has(sheet.id) ? (
-                              <CheckSquare className="h-4 w-4 text-primary" />
-                            ) : (
-                              <Square className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </TableCell>
+                      <TableRow key={sheet.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -828,19 +589,6 @@ export default function AdminCallSheetReservoir() {
                             </Button>
                           </div>
                         </TableCell>
-                        <TableCell>
-                          <div className="space-y-1">
-                            {getStatusBadge(sheet.status)}
-                            {sheet.status === 'error' && sheet.error_message && (
-                              <p className="text-xs text-destructive truncate max-w-[150px]" title={sheet.error_message}>
-                                {sheet.error_message}
-                              </p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {sheet.contacts_extracted ?? '—'}
-                        </TableCell>
                         <TableCell className="text-center">
                           <Badge variant={sheet.user_link_count === 0 ? "secondary" : "default"}>
                             {sheet.user_link_count}
@@ -857,7 +605,6 @@ export default function AdminCallSheetReservoir() {
                           <HeatScoreIndicator 
                             heatScore={sheet.heat_score ?? null}
                             paidCount={sheet.paid_count}
-                            waitingCount={sheet.waiting_count}
                             neverPaidCount={sheet.never_paid_count}
                             compact
                           />
@@ -877,21 +624,14 @@ export default function AdminCallSheetReservoir() {
                                 <Eye className="h-4 w-4" />
                               </Button>
                             )}
-                            {sheet.status === 'error' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRetry(sheet)}
-                                disabled={retryingId === sheet.id}
-                                title="Retry parsing"
-                              >
-                                {retryingId === sheet.id ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <RefreshCw className="h-4 w-4" />
-                                )}
-                              </Button>
-                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setViewingPdf({ filePath: sheet.master_file_path, fileName: sheet.original_file_name })}
+                              title="View"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -923,6 +663,14 @@ export default function AdminCallSheetReservoir() {
       </main>
 
       <Footer />
+
+      {/* PDF Viewer Modal */}
+      <PDFViewerModal
+        open={!!viewingPdf}
+        onOpenChange={() => setViewingPdf(null)}
+        filePath={viewingPdf?.filePath ?? ""}
+        fileName={viewingPdf?.fileName ?? ""}
+      />
 
       {/* True Delete Confirmation */}
       <AlertDialog open={!!deleteSheet} onOpenChange={() => setDeleteSheet(null)}>
@@ -1017,55 +765,6 @@ export default function AdminCallSheetReservoir() {
         </DialogContent>
       </Dialog>
 
-      {/* Priority Firecrawl Confirmation Dialog */}
-      <AlertDialog open={showPriorityConfirm} onOpenChange={setShowPriorityConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <Flame className="h-5 w-5 text-orange-500" />
-              Firecrawl Priority Parsing
-            </AlertDialogTitle>
-            <AlertDialogDescription asChild>
-              <div>
-                <p>
-                  Run <strong>{selectedIds.size}</strong> call sheet{selectedIds.size !== 1 ? 's' : ''} through Firecrawl priority parsing?
-                </p>
-                <div className="mt-3 p-3 bg-muted rounded-lg text-sm">
-                  <p className="font-medium mb-1">What this does:</p>
-                  <ul className="list-disc ml-4 space-y-1">
-                    <li>Uses Firecrawl OCR first (not unpdf)</li>
-                    <li>Applies relaxed quality thresholds</li>
-                    <li>Takes ~25 seconds per sheet</li>
-                  </ul>
-                </div>
-                <p className="mt-3 text-muted-foreground text-sm">
-                  Use this for stubborn errors, scanned PDFs, or crew-grid sheets that failed normal parsing.
-                </p>
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={priorityQueueing}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleFirecrawlPriority}
-              disabled={priorityQueueing}
-              className="bg-orange-600 hover:bg-orange-700"
-            >
-              {priorityQueueing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Queueing...
-                </>
-              ) : (
-                <>
-                  <Flame className="h-4 w-4 mr-2" />
-                  Run Priority Parse
-                </>
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

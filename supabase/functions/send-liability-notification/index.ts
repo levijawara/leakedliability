@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.74.0";
+import { internalHeaders } from "../_shared/auth.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -267,6 +268,7 @@ serve(async (req: Request) => {
     });
     
     const { error: emailError } = await supabase.functions.invoke('send-email', {
+      headers: internalHeaders(),
       body: {
         to: targetEmail,
         subject: `You've Been Named as Responsible Party - Report #${report.report_id}`,

@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { internalHeaders } from "../_shared/auth.ts";
 
 const log = (msg: string, extra?: unknown) =>
   console.log(`[LEADERBOARD-WEBHOOKS] ${msg}`, extra ?? "");
@@ -272,6 +273,7 @@ serve(async (req) => {
           const profile = Array.isArray(entitlement.profiles) ? entitlement.profiles[0] : entitlement.profiles;
           
           await supabase.functions.invoke('send-email', {
+            headers: internalHeaders(),
             body: {
               type: 'subscription_canceled',
               to: profile.email,
@@ -282,7 +284,7 @@ serve(async (req) => {
                 resubscribeUrl: `${Deno.env.get("SUPABASE_URL")}/subscribe`,
                 reason: 'manual_cancellation',
               }
-            }
+            },
           });
         }
 
@@ -343,6 +345,7 @@ serve(async (req) => {
             const profile = Array.isArray(entitlement.profiles) ? entitlement.profiles[0] : entitlement.profiles;
             
             await supabase.functions.invoke('send-email', {
+              headers: internalHeaders(),
               body: {
                 type: 'subscription_payment_failed',
                 to: profile.email,
