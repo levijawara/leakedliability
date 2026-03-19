@@ -92,7 +92,10 @@ serve(async (req) => {
     const recipients = [...new Set(recipientsRaw)].filter((e) => EMAIL_REGEX.test(e));
 
     if (recipients.length === 0) {
-      throw new Error("No valid email address provided. Please enter one manually.");
+      return new Response(
+        JSON.stringify({ success: false, error: "No valid email address provided. Please enter one manually." }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
     }
 
     const usedManualEmail = manualEmailList.length > 0 || !!manualEmailSingle;
